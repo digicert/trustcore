@@ -1,0 +1,256 @@
+cmake_minimum_required (VERSION 3.2)
+
+function(init_flags)
+  # initializing flags
+  message("")
+  foreach(stem CXX_FLAGS
+          CXX_FLAGS_DEBUG
+          CXX_FLAGS_RELEASE
+          C_FLAGS
+          C_FLAGS_DEBUG
+          C_FLAGS_RELEASE
+          MODULE_LINKER_FLAGS
+          MODULE_LINKER_FLAGS_DEBUG
+          EXE_LINKER_FLAGS
+          EXE_LINKER_FLAGS_DEBUG
+          SHARED_LINKER_FLAGS
+          SHARED_LINKER_FLAGS_DEBUG)
+      set(CMAKE_${stem} "${CMAKE_${stem}} ${${stem}_MOCANA}")
+      string(STRIP "${CMAKE_${stem}}" CMAKE_${stem})
+      message("----------------")
+      message("${stem}_MOCANA = ${${stem}_MOCANA}")
+      message("CMAKE_${stem}  = ${CMAKE_${stem}}")
+  endforeach()
+
+  if (WIN32)
+      message("---- CFLAGS update for windows ----")
+      #Ensure that the library is built using static version of the run-time library msvcrt
+      foreach(item CXX_FLAGS
+              CXX_FLAGS_RELEASE
+              C_FLAGS
+              C_FLAGS_RELEASE
+              )
+      message("----------------")
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      if ("$ENV{CM_ENV_FORCE_STATIC_LINK}" STREQUAL "1")
+        set(CMAKE_${item} "${CMAKE_${item}} /MT")
+        string(REPLACE "/MD" "/MT" CMAKE_${item} "${CMAKE_${item}}")
+      endif()
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      endforeach()
+
+      foreach(item CXX_FLAGS_DEBUG
+              C_FLAGS_DEBUG
+              )
+      message("----------------")
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      if ("$ENV{CM_ENV_FORCE_STATIC_LINK}" STREQUAL "1")
+        set(CMAKE_${item} "${CMAKE_${item}} /MTd")
+        string(REPLACE "/MDd" "/MTd" CMAKE_${item} "${CMAKE_${item}}")
+      endif()
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      endforeach()
+  endif()
+endfunction()
+
+
+function(buildflags targetdir extraFlags mocana_flags)
+  message("TARGET_DIR = ${targetdir}")
+  init_flags()
+
+  if(CM_ENABLE_EXPORT_ED AND EXISTS "${targetdir}/mocana_export_flags.txt")
+    set(MOCANA_FLAGS_FILE "${targetdir}/mocana_export_flags.txt")
+  else()
+    set(MOCANA_FLAGS_FILE "${targetdir}/mocana_flags.txt")
+  endif()
+
+  if(NOT EXISTS ${MOCANA_FLAGS_FILE})
+      message(FATAL_ERROR "\nMOCANA_FLAGS_FILE = ${MOCANA_FLAGS_FILE} does not exist")
+  endif()
+
+  message("\nMOCANA_FLAGS_FILE = ${MOCANA_FLAGS_FILE}")
+
+  file(STRINGS ${MOCANA_FLAGS_FILE} mocana_flags)
+
+  # Adding suiteb flags
+  if (NOT CM_DISABLE_SUITEB)
+    if(CM_ENABLE_EXPORT_ED AND EXISTS "${targetdir}/../mocana_export_suiteb_flags.txt")
+      set(MOCANA_SUITEB_FLAGS_FILE "${targetdir}/../mocana_export_suiteb_flags.txt")
+      message("\n MOCANA_SUITEB_FLAGS_FILE = ${MOCANA_SUITEB_FLAGS_FILE}")
+      file(STRINGS ${MOCANA_SUITEB_FLAGS_FILE} mocana_suiteb_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_suiteb_flags})
+    else()
+      set(MOCANA_SUITEB_FLAGS_FILE "${targetdir}/../mocana_suiteb_flags.txt")
+      message("\n MOCANA_SUITEB_FLAGS_FILE = ${MOCANA_SUITEB_FLAGS_FILE}")
+      file(STRINGS ${MOCANA_SUITEB_FLAGS_FILE} mocana_suiteb_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_suiteb_flags})
+    endif()
+  endif()
+
+  # Adding ChaCha20 and Poly1305 flags
+  if (CM_ENABLE_CHACHAPOLY)
+    set(MOCANA_CHACHAPOLY_FLAGS_FILE "${targetdir}/../mocana_chachapoly_flags.txt")
+    message("\n MOCANA_CHACHAPOLY_FLAGS_FILE = ${MOCANA_CHACHAPOLY_FLAGS_FILE}")
+    file(STRINGS ${MOCANA_CHACHAPOLY_FLAGS_FILE} mocana_chachapoly_flags)
+    set(mocana_flags ${mocana_flags} ${mocana_chachapoly_flags})
+  endif()
+
+  # Adding Blowfish support flag
+  if (CM_ENABLE_BLOWFISH)
+    string(STRIP "${mocana_flags} -D__ENABLE_BLOWFISH_CIPHERS__" mocana_flags)
+  endif()
+
+  # Adding SSH DSA support flags in NanoSSH
+  if (CM_ENABLE_DSA_SUPPORT)
+    string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_DSA_SUPPORT__" mocana_flags)
+  endif()
+
+  # Removing Ed25519 support flags in NanoSSH
+  if (CM_DISABLE_EDDSA_25519_SUPPORT)
+    string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDSA_25519__" "" mocana_flags "${mocana_flags}")
+  endif()
+
+  # Removing ECDH with Curve25519 flags in NanoSSH
+  if (CM_DISABLE_ECDH_25519_SUPPORT)
+    string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDH_25519__" "" mocana_flags "${mocana_flags}")
+  endif()
+
+  # Adding debug flags
+  if (CM_ENABLE_DEBUG)
+      set(MOCANA_DEBUG_FLAGS_FILE "${targetdir}/../mocana_debug_flags.txt")
+      message("\n MOCANA_DEBUG_FLAGS_FILE = ${MOCANA_DEBUG_FLAGS_FILE}")
+      file(STRINGS ${MOCANA_DEBUG_FLAGS_FILE} mocana_debug_flags)
+      message("\nMOCANA_DEBUG_FLAGS = ${mocana_debug_flags}")
+      if(WIN32)
+          string(REGEX REPLACE "-D__ENABLE_MOCANA_VALGRIND_SUPPORT__" "" mocana_debug_flags "${mocana_debug_flags}")
+      endif()
+      set(mocana_flags ${mocana_flags} ${mocana_debug_flags})
+  endif()
+
+  # Adding tap local flags
+  if (CM_ENABLE_TAP)
+      set(MOCANA_TAP_LOCAL_FLAGS_FILE "${targetdir}/../mocana_tap_local_flags.txt")
+      message("\n MOCANA_TAP_LOCAL_FLAGS_FILE = ${MOCANA_TAP_LOCAL_FLAGS_FILE}")
+      file(STRINGS ${MOCANA_TAP_LOCAL_FLAGS_FILE} mocana_tap_local_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tap_local_flags})
+  endif()
+
+  # Adding tap remote flags
+  if (CM_ENABLE_TAP_REMOTE)
+      set(MOCANA_TAP_REMOTE_FLAGS_FILE "${targetdir}/../mocana_tap_remote_flags.txt")
+      message("\n MOCANA_TAP_REMOTE_FLAGS_FILE = ${MOCANA_TAP_REMOTE_FLAGS_FILE}")
+      file(STRINGS ${MOCANA_TAP_REMOTE_FLAGS_FILE} mocana_tap_remote_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tap_remote_flags})
+   endif()
+
+
+  if(CM_ENABLE_X509_CERTS)
+      set(MOCANA_SSH_CERT_FILE "${targetdir}/../x509/mocana_cert_flags.txt")
+      message("\n MOCANA_SSH_CERT_FILE = ${MOCANA_SSH_CERT_FILE}")
+      file(STRINGS ${MOCANA_SSH_CERT_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  if(CM_ENABLE_SERVER_CERT_AUTH)
+      set(MOCANA_SSH_SERVER_CERT_AUTH_FILE "${targetdir}/../server_cert/mocana_server_cert_auth_flags.txt")
+      message("\n MOCANA_SSH_SERVER_CERT_AUTH_FILE = ${MOCANA_SSH_SERVER_CERT_AUTH_FILE}")
+      file(STRINGS ${MOCANA_SSH_SERVER_CERT_AUTH_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  if(CM_ENABLE_OCSP_CERT)
+      set(MOCANA_CERT_OCSP_FILE "${targetdir}/../x509_ocsp/mocana_cert_ocsp_flags.txt")
+      message("\n MOCANA_CERT_OCSP_FILE = ${MOCANA_CERT_OCSP_FILE}")
+      file(STRINGS ${MOCANA_CERT_OCSP_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  if(CM_ENABLE_OCSP_TIMEOUT_CONFIG)
+      set(MOCANA_OCSP_TIMEOUT_CONFIG_FILE "${targetdir}/../ocsp_cfg/mocana_ocsp_config_timeout_flags.txt")
+      message("\n MOCANA_OCSP_TIMEOUT_CONFIG_FILE = ${MOCANA_OCSP_TIMEOUT_CONFIG_FILE}")
+      file(STRINGS ${MOCANA_OCSP_TIMEOUT_CONFIG_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  if(CM_ENABLE_CLIENT_AUTH)
+      set(MOCANA_SSH_CLIENT_AUTH_FILE "${targetdir}/../client_auth/mocana_client_auth_flags.txt")
+      message("\n MOCANA_SSH_CLIENT_AUTH_FILE = ${MOCANA_SSH_CLIENT_AUTH_FILE}")
+      file(STRINGS ${MOCANA_SSH_CLIENT_AUTH_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  if(CM_ENABLE_CLIENT_CERT_AUTH)
+      set(MOCANA_SSH_CLIENT_CERT_AUTH_FILE "${targetdir}/../client_cert/mocana_client_cert_auth_flags.txt")
+      message("\n MOCANA_SSH_CLIENT_CERT_AUTH_FILE = ${MOCANA_SSH_CLIENT_CERT_AUTH_FILE}")
+      file(STRINGS ${MOCANA_SSH_CLIENT_CERT_AUTH_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  if(CM_ENABLE_MOCANA_PORT_FORWARD)
+      set(MOCANA_SSH_PORT_FORWARDING_FILE "${targetdir}/../port_fw/mocana_port_forwarding_flags.txt")
+      message("\n MOCANA_SSH_PORT_FORWARDING_FILE = ${MOCANA_SSH_PORT_FORWARDING_FILE}")
+      file(STRINGS ${MOCANA_SSH_PORT_FORWARDING_FILE} mocana_pf_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_pf_flags})
+  endif()
+
+  if(CM_ENABLE_MOCANA_REMOTE_PORT_FORWARD)
+      set(MOCANA_SSH_REMOTE_PORT_FORWARDING_FILE "${targetdir}/../remote_pfw/mocana_remote_port_forwarding_flags.txt")
+      message("\n MOCANA_SSH_REMOTE_PORT_FORWARDING_FILE = ${MOCANA_SSH_REMOTE_PORT_FORWARDING_FILE}")
+      file(STRINGS ${MOCANA_SSH_REMOTE_PORT_FORWARDING_FILE} mocana_rpf_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_rpf_flags})
+  endif()
+
+  if(CM_ENABLE_EMULATOR)
+      set(MOCANA_SSH_EMULATOR_FILE "${targetdir}/../emulator/mocana_emulator_flags.txt")
+      message("\n MOCANA_SSH_EMULATOR_FILE = ${MOCANA_SSH_EMULATOR_FILE}")
+      file(STRINGS ${MOCANA_SSH_EMULATOR_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  if(CM_ENABLE_RADIUS)
+      set(MOCANA_SSH_RADIUS_FILE "${targetdir}/../radius/mocana_flags.txt")
+      message("\n MOCANA_SSH_RADIUS_FILE = ${MOCANA_SSH_RADIUS_FILE}")
+      file(STRINGS ${MOCANA_SSH_RADIUS_FILE} mocana_tmp_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tmp_flags})
+  endif()
+
+  # Enabling NanoSSH with SCP example
+  if(CM_ENABLE_SCP_EXAMPLE)
+    string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_SCP_REKEY_EXAMPLE__ -D__ENABLE_MOCANA_SSH_EXEC__" mocana_flags)
+  endif()
+
+  if(NOT CM_DISABLE_PQC)
+      set(MOCANA_PQC_FILE "${targetdir}/../pqc/mocana_flags.txt")
+      message("\n MOCANA_SSH_PQC_FILE = ${MOCANA_PQC_FILE}")
+      file(STRINGS ${MOCANA_PQC_FILE} mocana_pqc_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_pqc_flags})
+  endif()
+
+  if(CM_ENABLE_DATA_PROTECTION)
+      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_DATA_PROTECTION__" mocana_flags)
+  endif()
+
+  if(CM_ENABLE_KEYBOARD_INTERACTIVE)
+      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__" mocana_flags)
+  endif()
+
+  if(CM_ENABLE_SERIAL_CHANNEL)
+      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_SERIAL_CHANNEL__" mocana_flags)
+  endif()
+
+  if(CM_ENABLE_FIPS)
+      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_FIPS_MODULE__" mocana_flags)
+      if (CM_ENABLE_STRICT_DH)
+          string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_STRICT_DH_GROUP__" mocana_flags)
+      endif()
+  endif()
+
+  set(mocana_flags ${mocana_flags} ${extraFlags})
+
+  foreach(flag ${mocana_flags})
+      string(STRIP "${MOCANA_FLAGS} ${flag}" MOCANA_FLAGS)
+  endforeach()
+
+  set(MOCANA_FLAGS ${MOCANA_FLAGS} PARENT_SCOPE)
+
+endfunction()

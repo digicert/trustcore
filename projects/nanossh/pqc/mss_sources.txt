@@ -1,0 +1,2 @@
+MSS_SRC_DIR/ssh/ssh_hybrid.c
+MSS_SRC_DIR/ssh/ssh_qs.c
