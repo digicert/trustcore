@@ -38,7 +38,7 @@ For a more detailed overview and implementation guidance, visit [TrustCore SDK D
 This project is available under a **dual-license model**:
 
 - **Open Source License:**  
-  [GNU Affero General Public License v3 (AGPL v3)](./LICENSE.txt)
+  [GNU Affero General Public License v3 (AGPL v3)](./LICENSE.md)
   This license allows you to use, modify, and distribute the code for free in accordance with AGPL terms.
 
 - **Commercial License:**  
