@@ -203,8 +203,6 @@ LINUX_globalMutexCreate(char *mutexName, RTOS_GLOBAL_MUTEX* ppMutex)
     MSTATUS status = OK;
     sem_t *semDesc;
 
-    /* sem_unlink(mutexName); */
-
     if ((semDesc = sem_open(mutexName, O_CREAT, 0666, 1)) == SEM_FAILED)
     {
         status = ERR_RTOS_MUTEX_CREATE;
@@ -558,7 +556,8 @@ extern MSTATUS
 LINUX_timeGMT(TimeDate* td)
 {
     time_t      currentTime = time(NULL);
-    struct tm*  pCurrentTime = gmtime(&currentTime);
+    struct tm   currentTimeTm;
+    struct tm*  pCurrentTime = gmtime_r(&currentTime, &currentTimeTm);
 
     if (NULL == td)
         return ERR_NULL_POINTER;
@@ -1273,7 +1272,6 @@ extern MSTATUS LINUX_lockFileCreate(char *pLockFile, RTOS_LOCK *ppLock)
 {
     MSTATUS status;
     int fd = -1;
-    int *pLock = NULL;
 
     if ( (NULL == pLockFile) || (NULL == ppLock) )
     {

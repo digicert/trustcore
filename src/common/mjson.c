@@ -295,9 +295,7 @@ fillPrimitiveToken(JSON_TokenType *token, const sbyte *parseString,
         goto exit;
     }
 
-    number[MAX_NUMBER_STRING] = '\0';
-
-    sprintf((char*)number, "%.*s", len, parseString + start);
+    snprintf((char*)number, sizeof(number), "%.*s", len, parseString + start);
 
     token->type = JSON_Undefined; /* In case it won't parse into a real primitive. */
     token->pStart = parseString + start;

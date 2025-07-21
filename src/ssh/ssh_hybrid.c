@@ -123,7 +123,6 @@ static HybridEntry* getHybridEntryReference(ubyte4 hybridIndex)
 static HybridEntry*
 SSH_HYBRID_getHybridEntryByName(const sshStringBuffer* pHybridEntryName)
 {
-    MSTATUS status = OK;
     HybridEntry *pEntry;
     ubyte4 i = 0;
     sbyte4 cmpRes;
@@ -154,8 +153,6 @@ extern MSTATUS
 SSH_HYBRID_getHybridIdsByName(const sshStringBuffer* pHybridEntryName, ubyte4 *pCurveId, ubyte4 *pQsAlgoId)
 {
     MSTATUS status = OK;
-    ubyte4 eccIndex;
-    ubyte4 qsIndex;
     HybridEntry *pEntry;
 
     if ((NULL == pHybridEntryName) || (NULL == pCurveId) || (NULL == pQsAlgoId))
@@ -573,7 +570,6 @@ extern MSTATUS
 SSH_HYBRID_calcHybridSignatureLength(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, intBoolean isCertificate, ubyte4 *pSignatureLength)
 {
     MSTATUS status;
-    ubyte4 elementLen;
     ubyte4 sigLen;
     ubyte4 algoNameLen;
     ubyte4 qsAlgId;

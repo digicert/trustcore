@@ -87,31 +87,43 @@ enum mCiphers {
 #endif
 
 #if defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     CHACHA20_POLY1305_OPENSSH,
+#endif
 #endif
 
 #if (!defined(__DISABLE_AES_CIPHERS__))
 #if (!defined(__DISABLE_AES128_CIPHER__))
     AES128_CTR,
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     AES128_CBC,
     RIJNDAEL128_CBC,
 #endif
+#endif
 #if (!defined(__DISABLE_AES256_CIPHER__))
     AES256_CTR,
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     AES256_CBC,
     RIJNDAEL256_CBC,
 #endif
+#endif
 #ifndef __DISABLE_AES192_CIPHER__
     AES192_CTR,
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     AES192_CBC,
     RIJNDAEL192_CBC,
 #endif
+#endif
 #endif /* __DISABLE_AES_CIPHERS__ */
 #ifdef __ENABLE_BLOWFISH_CIPHERS__
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     BLOWFISH_CBC,
 #endif
+#endif
 #ifndef __DISABLE_3DES_CIPHERS__
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     THREE_DES_CBC,
+#endif
 #endif
     IGNORE
 };
@@ -430,7 +442,6 @@ typedef struct sshClientContext
     void*                   cryptDescrIn2;
     SSH_CipherSuiteInfo*    pDecryptSuiteInfoIn;
     SSH_hmacSuiteInfo*      pHmacSuiteInfoIn;
-    /*ubyte                   decryptIV[40];*/
     ubyte*                  decryptIV;
 
     /* OUTBOUND data structures */
@@ -442,7 +453,6 @@ typedef struct sshClientContext
 
     SSH_CipherSuiteInfo*    pEncryptSuiteInfoOut;
     SSH_hmacSuiteInfo*      pHmacSuiteInfoOut;
-    /*ubyte                   encryptIV[40];*/
     ubyte*                  encryptIV;
 
     sshStringBuffer         sshc_algorithmMethods[10];
@@ -520,7 +530,6 @@ typedef struct sshClientContext
     /* for harness support */
     poolHeaderDescr         smallPool;
     poolHeaderDescr         mediumPool;
-    /*poolHeaderDescr         sha1Pool;*/
 #endif
 
 #ifdef __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__

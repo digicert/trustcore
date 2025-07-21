@@ -46,6 +46,9 @@
 #else
 #ifndef __RTOS_MQX__
 #include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #endif
 #include <stdarg.h>
 #include <string.h>
@@ -124,10 +127,9 @@ static char *getcurrtime()
     time_t secs = tv.tv_sec;
     ptm = localtime(&secs);
     char tmp[512];
-    strftime(tmp, sizeof(g_currtimestring), "%H:%M:%S", ptm);
+    strftime(tmp, sizeof(tmp), "%H:%M:%S", ptm);
     long milliseconds = tv.tv_usec/1000;
-    /* snprintf(g_currtimestring, "%d:%d.%d", tv.tv_sec, tv.tv_usec, milliseconds); */
-    (void) sprintf(g_currtimestring, "%s.%ld", tmp, milliseconds);
+    (void) snprintf(g_currtimestring, sizeof(g_currtimestring), "%s.%ld", tmp, milliseconds);
     RTOS_mutexRelease(getLogMutex());
     return g_currtimestring;
 }
@@ -169,7 +171,7 @@ DEBUG_CONSOLE_printString(sbyte4 errorClass, sbyte *pPrintString)
 
     if (NULL != pPrintString)
     {
-        DB_PRINT((char *)pPrintString);
+        DB_PRINT("%s", (char *)pPrintString);
     }
 }
 
@@ -454,7 +456,7 @@ DEBUG_CONSOLE_printString1Int1(sbyte4 errorClass, sbyte *pPrintString1, sbyte4 v
 
     if (NULL != pPrintString1)
     {
-        DB_PRINT((char *)pPrintString1);
+        DB_PRINT("%s", (char *)pPrintString1);
     }
     DB_PRINT("%d", value1);
 }
@@ -470,7 +472,7 @@ DEBUG_CONSOLE_printString1HexInt1(sbyte4 errorClass, sbyte *pPrintString1, sbyte
 
     if (NULL != pPrintString1)
     {
-        DB_PRINT((char *)pPrintString1);
+        DB_PRINT("%s", (char *)pPrintString1);
     }
     DB_PRINT("%08x", value1);
 }
@@ -538,7 +540,7 @@ DEBUG_CONSOLE_hexDump(sbyte4 errorClass, ubyte *pMesg, ubyte4 mesgLen)
 
     while (index < mesgLen)
     {
-        ubyte4 min = (16 > (mesgLen - index)) ? mesgLen - index : 16;
+        ubyte min = (16 > (mesgLen - index)) ? mesgLen - index : 16;
         ubyte  j, k;
 
         DB_PRINT("  %08x: ", index);
@@ -698,6 +700,7 @@ DEBUG_CONSOLE_setOutput(char *filename)
 #if !defined(__RTOS_ANDROID__) && !defined(__UCOS_DIRECT_RTOS__)
     FILE   *fod;
     MSTATUS status  = OK;
+    int fd = -1;
 
     DB_PRINT("Switching output stream\n");
     if (dboutput)
@@ -705,8 +708,19 @@ DEBUG_CONSOLE_setOutput(char *filename)
         (void) fclose(dboutput);
         dboutput = NULL;
     }
-    fod = fopen(filename, "w");
-    if (NULL == fod)
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd >= 0)
+    {
+        fod = fdopen(fd, "w");
+        if (NULL == fod)
+        {
+            close(fd);
+            ERROR_PRINT(("Failed to open %s for writing", filename));
+            status = ERR_DEBUG_CONSOLE_CHANNEL;
+            goto exit;
+        }
+    }
+    else
     {
         ERROR_PRINT(("Failed to open %s for writing", filename));
         status = ERR_DEBUG_CONSOLE_CHANNEL;
@@ -1012,7 +1026,7 @@ DEBUG_CONSOLE_printf(const char *format, ...)
     va_list ap;
 
     va_start(ap, format);
-    vsprintf(str, format, ap);
+    vnsprintf(str, sizeof(str), format, ap);
     va_end(ap);
 
     /* Pass the formatted string to Net_Secure instead of

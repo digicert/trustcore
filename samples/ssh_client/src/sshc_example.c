@@ -70,6 +70,8 @@ static certStorePtr pSshClientCertStore;
 #define __ENABLE_MOCANA_SSH_CLIENT_EXAMPLE_AUTH__
 #endif
 
+/* WARNING: Hardcoded credentials used below are for illustrative purposes ONLY.
+   DO NOT use hardcoded credentials in production. */
 /* Defaults */
 #define DEFAULT_USERNAME                              "admin"
 #define DEFAULT_PASSWORD                              "secure"
@@ -318,7 +320,6 @@ SSHC_EXAMPLE_getTapContext(TAP_Context **ppTapContext,
             goto exit;
         }
 
-        /*ppTapContext    = g_pTapContext;*/
         *ppTapEntityCred = g_pTapEntityCred;
         *ppTapKeyCred    = g_pTapKeyCred;
     }
@@ -435,15 +436,7 @@ SSHC_EXAMPLE_InitializeTapContext(ubyte *pTpm2ConfigFile, TAP_Context **ppTapCtx
     *ppTapEntityCred = pEntityCredentials;
     *ppTapKeyCred    = pKeyCredentials;
 
-    /* Free module list */
-    /*if ((TRUE == gotModuleList) && (g_moduleList.pModuleList))
-    {
-        status = TAP_freeModuleList(&g_moduleList);
-        if (OK != status)
-            printf("TAP_freeModuleList : %d\n", status);
-    }*/
-
-        /* Free config info */
+    /* Free config info */
     if (NULL != configInfoList.pConfig)
     {
         status = TAP_UTILS_freeConfigInfoList(&configInfoList);
@@ -832,7 +825,7 @@ SSHC_EXAMPLE_userAuthRequestInfoUpcall(int connectionInstance,
         printf("Username: ");
         /* (void) cast no longer ignores unused result. Treating return
          * value as an expression removes warnings. */
-        if(0 >= scanf("%s",usrname))
+        if(0 >= scanf("%15s",usrname))
         {
             printf("Error reading input\n");
             return ERR_GENERAL;
@@ -965,7 +958,7 @@ retry:
     if(MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE == selectedAuthMethod)
     {
         printf("Username: ");
-        if(0 >= scanf("%s",usrname))
+        if(0 >= scanf("%15s",usrname))
         {
             printf("Error reading input\n");
             status = ERR_GENERAL;
@@ -1007,7 +1000,7 @@ SSHC_EXAMPLE_userPasswordUpcall(int connectionInstance,
         /* (void) cast no longer ignores unused result. Treating return
          * value as an expression removes warnings. */
         printf("Password: ");
-        if(0 >= scanf("%s",password))     /* For unix/linux/BSD getpass() can be used for getting password */
+        if(0 >= scanf("%15s",password))     /* For unix/linux/BSD getpass() can be used for getting password */
         {
             printf("Error reading input\n");
             return ERR_GENERAL;
@@ -1072,7 +1065,7 @@ SSHC_EXAMPLE_keyboardInteractiveProcessRequestUpcall(int connectionInstance,
     {
         printf("%s\n", pRequestInfo->prompts[i]->pPrompt);
         /* get input from user */
-        if(0 >= scanf("%s", pResponse))
+        if(0 >= scanf("%127s", pResponse))
         {
             printf("Error reading input\n");
             status = ERR_GENERAL;

@@ -242,7 +242,9 @@ static authPubKeyDescr mAuthPubKeyMethods[] =
     
     /* RSA */
 #if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"ssh-rsa",                      &ssh_rsa_signature,              &ssh_rsa_signature,           CERT_STORE_AUTH_TYPE_RSA,   SHA_HASH_RESULT_SIZE,   SSH_RSA_MIN_SIZE,    SSH_RSA_MAX_SIZE,    CERT_STORE_IDENTITY_TYPE_NAKED },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #ifndef __DISABLE_MOCANA_SHA256__
     { (sbyte *)"rsa-sha2-256",                 &ssh_rsasha256_signature,        &ssh_rsasha256_signature,     CERT_STORE_AUTH_TYPE_RSA,   SHA256_RESULT_SIZE,     SSH_RSA_2048_SIZE,   SSH_RSA_2048_SIZE,   CERT_STORE_IDENTITY_TYPE_NAKED },
 #endif
@@ -502,6 +504,8 @@ sendAuthInfoRequest(sshContext *pContextSSH, keyIntInfoReq* pRequest)
             pPayload[i] = (ubyte) pRequest->prompts[n]->echo;
             i += 1;
         }
+
+        pContextSSH->authContext.authMethod = MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE;
 
         status = SSH_OUT_MESG_sendMessage(pContextSSH,
                                           pPayload, numBytesToWrite,
@@ -1021,8 +1025,9 @@ SSH_AUTH_verifySignature(sshContext *pContextSSH, sshAuthCommonArgs *pAuthCommon
     ubyte*  	pShaOutput = NULL;
     ubyte4  	hashSize   = SHA_HASH_RESULT_SIZE;/* Default use SHA1 */
     vlong*  	pM         = NULL;
+#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__)) && (!defined(__DISABLE_MOCANA_SHA256__))
     sbyte4      primeLen;
-    MDsaKeyTemplate template = {0};
+#endif
 
     /* Based on the RFC, the signature hash len is based on the signature algorithm name.
      */
@@ -1125,8 +1130,6 @@ SSH_AUTH_verifySignature(sshContext *pContextSSH, sshAuthCommonArgs *pAuthCommon
             break;
 
             *pIsGoodKeyType = TRUE;
-            ECCKey *pECCKey = pPublicKey->key.pECC;
-            ubyte4 curveId = 0;
         }
 #endif
 
@@ -1263,7 +1266,6 @@ getCertChainLengthSSH(const ubyte* pSSHCertChainBuf, ubyte4 sshCertChainBufLen, 
 {
     MSTATUS status;
     ubyte4 indexCerts;
-    ubyte4 index;
     ubyte4 certificateCount;
     ubyte4 totalLength;
     sbyte4 cmpRes;
@@ -2099,6 +2101,12 @@ static intBoolean isValidInfoResponse(const sshAuthCommonArgs* pAuthCommonArgs)
             return FALSE;
         }
         index += respLen;
+    }
+
+    if (index != msgLen)
+    {
+        /* we have not consumed the entire message */
+        return FALSE;
     }
 
     return TRUE;

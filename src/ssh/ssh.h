@@ -287,6 +287,9 @@ typedef struct
 struct certChain;
 typedef struct certChain* certChainPtr;
 
+struct certStore;
+typedef struct certStore* certStorePtr;
+
 /**
 @brief      Configuration settings and callback function pointers for NanoSSH
             servers.

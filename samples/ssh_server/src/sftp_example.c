@@ -665,14 +665,22 @@ SFTP_EXAMPLE_handleReadDynamicDirectory(sbyte4 connectionInstance, sbyte *pLongD
     if ((0 == MOC_STRLEN((const sbyte *)fd.cAlternateFileName)) || (SFTP_MAX_FILENAME_LENGTH > MOC_STRLEN((const sbyte*)fd.cFileName)))
     {
         strncpy((sbyte *)(p_sftpFileDescr->fileName),(const char*) fd.cFileName, SFTP_MAX_FILENAME_LENGTH);
-        if (SFTP_MAX_FILENAME_LENGTH < (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cFileName)))
-            p_sftpFileDescr->fileNameLength = SFTP_MAX_FILENAME_LENGTH;
+        if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cFileName)))
+        {
+            /* if source is equal to or greater than specified limit, no null terminator is appended */
+            p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH] = '\0';
+            p_sftpFileDescr->fileNameLength = SFTP_MAX_FILENAME_LENGTH - 1;
+        }
     }
     else
     {
         strncpy((sbyte *)(p_sftpFileDescr->fileName), (const char *)fd.cAlternateFileName, SFTP_MAX_FILENAME_LENGTH);
-        if (SFTP_MAX_FILENAME_LENGTH < (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cAlternateFileName)))
-            p_sftpFileDescr->fileNameLength = SFTP_MAX_FILENAME_LENGTH;
+        if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cAlternateFileName)))
+        {
+            /* if source is equal to or greater than specified limit, no null terminator is appended */
+            p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH] = '\0';
+            p_sftpFileDescr->fileNameLength = SFTP_MAX_FILENAME_LENGTH - 1;
+        }
     }
 
     if (SFTP_TRUE == (p_sftpFileDescr->isDirectory = (0 != (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) ? SFTP_TRUE : SFTP_FALSE))
@@ -722,7 +730,6 @@ SFTP_EXAMPLE_handleOpenDynamicDirectory(sbyte4 connectionInstance, const sbyte *
                                         void* *pDirCookie)
 {
     sbyte*  pDirPath = NULL;
-    DIR*    pDir;
     sbyte4  result = SSH_FTP_FAILURE;
 
     if (NULL == (pDirPath = createPathName(pLongDirectoryName, NULL)))

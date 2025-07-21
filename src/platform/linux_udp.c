@@ -98,10 +98,6 @@ extern MSTATUS
 LINUX_UDP_getInterfaceAddress(sbyte *pHostName,
                                 MOC_IP_ADDRESS_S *pRetIpAddress)
 {
-/*  MSTATUS status = OK;
-
-    *pRetIpAddress = ntohl(INADDR_ANY);
-*/
     /* for example code we just default to the primary interface */
     MSTATUS     status;
     char        myHostName[255/*HOST_NAME_MAX*/];
@@ -134,7 +130,6 @@ LINUX_UDP_getAddressOfHost(sbyte *pHostName, MOC_IP_ADDRESS_S *pRetIpAddress)
     {
 		struct addrinfo    Hints = { 0 }, *AddrInfo;
 		int         RetVal;
-		/*Hints.ai_canonname = (char *)pHostName;*/
 		Hints.ai_family = AF_UNSPEC;
 		Hints.ai_socktype = SOCK_DGRAM;
 		Hints.ai_flags = AI_PASSIVE;

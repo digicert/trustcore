@@ -133,7 +133,6 @@ extern MSTATUS LINUX_TCP_getHostByName(char* pDomainName, char* pIpAddress)
     MSTATUS    status = OK;
     struct addrinfo    Hints = { 0 }, *AddrInfo;
     void* addr6;
-    /*Hints.ai_canonname = (char *)pHostName;*/
     Hints.ai_family = AF_UNSPEC;
     Hints.ai_socktype = SOCK_STREAM;
 
