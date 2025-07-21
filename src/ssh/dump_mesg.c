@@ -24,11 +24,12 @@
 #include "../common/merrors.h"
 #include "../common/mrtos.h"
 #include "../common/debug_console.h"
+#include "../ssh/ssh.h" /* MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE */
 
 /*------------------------------------------------------------------*/
 
 static ubyte *
-sshMessageType(ubyte mesgType)
+sshMessageType(ubyte mesgType, ubyte4 authMethod)
 {
     switch (mesgType)
     {
@@ -54,7 +55,16 @@ sshMessageType(ubyte mesgType)
         case  52: return (ubyte *)"SSH2_MSG_USERAUTH_SUCCESS";
         case  53: return (ubyte *)"SSH_MSG_USERAUTH_BANNER";
 
-        case  60: return (ubyte *)"SSH_MSG_USERAUTH_PK_OK";
+        case  60:
+           if(authMethod == MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE)
+           {
+               return (ubyte *)"SSH_MSG_USERAUTH_INFO_REQUEST";
+           }
+           else
+           {
+               return (ubyte *)"SSH_MSG_USERAUTH_PK_OK";
+           }
+
         case  61: return (ubyte *)"SSH_MSG_USERAUTH_INFO_RESPONSE";
 
         case  80: return (ubyte *)"SSH_MSG_GLOBAL_REQUEST";
@@ -146,7 +156,7 @@ printHexAsciiDump(ubyte *pMesg, ubyte4 mesgLen)
 
     while (index < mesgLen)
     {
-        ubyte4 min = (16 > (mesgLen - index)) ? mesgLen - index : 16;
+        ubyte min = (16 > (mesgLen - index)) ? mesgLen - index : 16;
         ubyte  j, k;
 
         DEBUG_PRINT(DEBUG_SSH_MESSAGES, "  ");
@@ -176,14 +186,14 @@ printHexAsciiDump(ubyte *pMesg, ubyte4 mesgLen)
 /*------------------------------------------------------------------*/
 
 extern void
-DUMP_MESG_sshMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound)
+DUMP_MESG_sshMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound, ubyte4 authMethod)
 {
     if (TRUE == isOutBound)
     {
         DEBUG_PRINT(DEBUG_SSH_MESSAGES, "Time(ms) = ");
         DEBUG_UPTIME(DEBUG_SSH_MESSAGES);
         DEBUG_PRINT(DEBUG_SSH_MESSAGES, ", Outbound message of type ");
-        DEBUG_PRINT(DEBUG_SSH_MESSAGES, (sbyte *)(sshMessageType(*pMesg)));
+        DEBUG_PRINT(DEBUG_SSH_MESSAGES, (sbyte *)(sshMessageType(*pMesg, authMethod)));
         DEBUG_PRINT(DEBUG_SSH_MESSAGES, "(");
         DEBUG_INT(DEBUG_SSH_MESSAGES, *pMesg);
         DEBUG_PRINTNL(DEBUG_SSH_MESSAGES, (sbyte *)("):"));
@@ -193,7 +203,7 @@ DUMP_MESG_sshMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound)
         DEBUG_PRINT(DEBUG_SSH_MESSAGES, "Time(ms) = ");
         DEBUG_UPTIME(DEBUG_SSH_MESSAGES);
         DEBUG_PRINT(DEBUG_SSH_MESSAGES, ",  Inbound message of type ");
-        DEBUG_PRINT(DEBUG_SSH_MESSAGES, (sbyte *)(sshMessageType(*pMesg)));
+        DEBUG_PRINT(DEBUG_SSH_MESSAGES, (sbyte *)(sshMessageType(*pMesg, authMethod)));
         DEBUG_PRINT(DEBUG_SSH_MESSAGES, "(");
         DEBUG_INT(DEBUG_SSH_MESSAGES, *pMesg);
         DEBUG_PRINTNL(DEBUG_SSH_MESSAGES, (sbyte *)("):"));

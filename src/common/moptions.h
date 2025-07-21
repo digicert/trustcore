@@ -23,7 +23,11 @@
 #define __MOCANA_DSF_VERSION_STR__ "rel.trustcore.7.1.0"
 #endif
 
+#ifdef MOPTIONS_CUSTOM_HEADER
+#include MOPTIONS_CUSTOM_HEADER
+#else
 #include "../common/moptions_custom.h"
+#endif
 /* @CODEGEN-START */
 /* @CODEGEN-END   */
 

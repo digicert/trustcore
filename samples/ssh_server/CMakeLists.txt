@@ -23,6 +23,7 @@ include_directories(${INCLUDE_DIR})
 
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ssh_example.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ssh_example_async.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sftp_example.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sftp_example_filesys.c
     ${SRC_DIR}/initialize/digicert_example.c

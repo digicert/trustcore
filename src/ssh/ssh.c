@@ -1347,7 +1347,6 @@ SSH_closeConnection(sbyte4 connectionInstance)
 
             if (NULL != g_connectTable[index].pContextSSH)
             {
-                /*HARDWARE_ACCEL_CLOSE_CHANNEL(MOCANA_SSH, &g_connectTable[index].pContextSSH->hwAccelCookie);*/
                 SSH_SESSION_sendClose(g_connectTable[index].pContextSSH);
                 SSH_CONTEXT_deallocStructures(&(g_connectTable[index].pContextSSH));
             }
@@ -1844,8 +1843,6 @@ SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
     /* a mutex is not necessary, this function should be called after accept */
     /* within the ssh connection daemon */
     sbyte4      index, count, temp;
-    /*    hwAccelDescr            hwAccelCookie;
-    intBoolean  isHwAccelCookieInit   = FALSE;*/
     TCP_SOCKET  socket                = tempSocket;
     sbyte4      instance              = sshGetNextInstance();
     ubyte*      pTempClientHelloClone = NULL;
@@ -1865,10 +1862,6 @@ SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
     for (index = 0; index < g_sshMaxConnections; index++)
         if (CONNECT_CLOSED == g_connectTable[index].connectionState)
         {
-            /*if (OK > (status = (MSTATUS)HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSH, &hwAccelCookie)))
-                goto exit;
-
-            isHwAccelCookieInit = TRUE;*/
 
             if (OK > (status = SSH_CONTEXT_allocStructures(&pContextSSH)))
                 goto exit;
@@ -1878,7 +1871,6 @@ SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
 
             SOCKET(pContextSSH)                   = socket;
             CONNECTION_INSTANCE(pContextSSH)      = instance;
-            /*pContextSSH->hwAccelCookie            = hwAccelCookie;*/
 
             g_connectTable[index].socket          = socket;
             g_connectTable[index].connectionState = CONNECT_NEGOTIATE;
@@ -1978,10 +1970,6 @@ exit:
 
     if (OK > status)
     {
-        /*if (TRUE == isHwAccelCookieInit)
-        {
-            HARDWARE_ACCEL_CLOSE_CHANNEL(MOCANA_SSH, &hwAccelCookie);
-        }*/
         if (ERR_SSH_TOO_MANY_CONNECTIONS != status)
         {
             g_connectTable[index].connectionState = CONNECT_CLOSED;
@@ -2385,7 +2373,6 @@ SSH_ASYNC_closeConnection(sbyte4 connectionInstance)
 
             if (NULL != g_connectTable[index].pContextSSH)
             {
-                /*HARDWARE_ACCEL_CLOSE_CHANNEL(MOCANA_SSH, &g_connectTable[index].pContextSSH->hwAccelCookie);*/
                 SSH_SESSION_sendClose(g_connectTable[index].pContextSSH);
                 SSH_CONTEXT_deallocStructures(&(g_connectTable[index].pContextSSH));
             }

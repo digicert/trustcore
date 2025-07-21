@@ -34,7 +34,7 @@
  * @return void
  *
  */
-MOC_EXTERN void DUMP_MESG_sshMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound);
+MOC_EXTERN void DUMP_MESG_sshMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound, ubyte4 authMethod);
 
 /**
  * @brief Dumps an SFTP message for debugging

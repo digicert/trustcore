@@ -1539,7 +1539,6 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             /* fetch break length in milliseconds */
             pTerminal->breakLength = getUbyte4(pMesg + 1 + 4 + ssh_breakOperation.stringLen + 1);
 
-            /* breakLength = getUbyte4(pMesg + 1 + 4 + ssh_breakOperation.stringLen + 1); */
             callbackFunc  = SSH_SESSION_BREAK_OP_UPCALL;
             callbackEvent = SSH_SESSION_BREAK_OP;
         }

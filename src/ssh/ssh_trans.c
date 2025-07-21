@@ -179,7 +179,9 @@ static MSTATUS SSH_TRANS_doAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, 
 #endif
 
 #if (defined(__ENABLE_MOCANA_CHACHA20__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS SSH_TRANS_doChaCha20(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data, sbyte4 dataLength, sbyte4 encrypt, ubyte* iv);
+#endif
 #endif
 
 /*------------------------------------------------------------------*/
@@ -292,8 +294,10 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuites[] =
 #endif
 #ifndef __ENABLE_MOCANA_FIPS_MODULE__
 #ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"rsa1024-sha1",        (sbyte *)"rsa1024-sha1",                         12, 1024,
         0, &rsaMethods,       &sshHandshakeSHA1,   NULL,          kTransReceiveRSA,                  kReduxTransReceiveRSA },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
 #endif
 #endif
@@ -303,8 +307,10 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuites[] =
     { (sbyte *)"dh-group-ex-256",     (sbyte *)"diffie-hellman-group-exchange-sha256", 36, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA256, NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
 #endif
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group-ex-1",       (sbyte *)"diffie-hellman-group-exchange-sha1",   34, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
 #if (!defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"diffie-hellman-group14-sha256",    (sbyte *)"diffie-hellman-group14-sha256",          29, DH_GROUP_14,
@@ -320,12 +326,14 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuites[] =
     { (sbyte *)"diffie-hellman-group18-sha512",    (sbyte *)"diffie-hellman-group18-sha512",          29, DH_GROUP_18,
         0, &dhClassicMethods, &sshHandshakeSHA512,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #endif
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group14",          (sbyte *)"diffie-hellman-group14-sha1",          27, DH_GROUP_14,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #ifndef __ENABLE_MOCANA_FIPS_MODULE__
     { (sbyte *)"dh-group2",           (sbyte *)"diffie-hellman-group1-sha1",           26, DH_GROUP_2,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic }
 #endif
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 };
 
 #define NUM_SSH_KEYEX_SUITES    (sizeof(mKeyExSuites)/sizeof(SSH_keyExSuiteInfo))
@@ -343,8 +351,10 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuitesNoEcc[] =
 #endif
 #ifndef __ENABLE_MOCANA_FIPS_MODULE__
 #ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"rsa1024-sha1",        (sbyte *)"rsa1024-sha1",                         12, 1024,
         0, &rsaMethods,       &sshHandshakeSHA1,   NULL,          kTransReceiveRSA,                  kReduxTransReceiveRSA },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
 #endif
 #endif
@@ -354,8 +364,10 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuitesNoEcc[] =
     { (sbyte *)"dh-group-ex-256",     (sbyte *)"diffie-hellman-group-exchange-sha256", 36, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA256, NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
 #endif
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group-ex-1",       (sbyte *)"diffie-hellman-group-exchange-sha1",   34, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
 #if (!defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"diffie-hellman-group14-sha256",    (sbyte *)"diffie-hellman-group14-sha256",          29, DH_GROUP_14,
@@ -371,12 +383,14 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuitesNoEcc[] =
     { (sbyte *)"diffie-hellman-group18-sha512",    (sbyte *)"diffie-hellman-group18-sha512",          29, DH_GROUP_18,
         0, &dhClassicMethods, &sshHandshakeSHA512,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #endif
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group14",          (sbyte *)"diffie-hellman-group14-sha1",          27, DH_GROUP_14,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #ifndef __ENABLE_MOCANA_FIPS_MODULE__
     { (sbyte *)"dh-group2",           (sbyte *)"diffie-hellman-group1-sha1",           26, DH_GROUP_2,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic }
 #endif
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 };
 
 #define NUM_SSH_NO_ECC_KEYEX_SUITES    (sizeof(mKeyExSuitesNoEcc)/sizeof(SSH_keyExSuiteInfo))
@@ -495,7 +509,9 @@ static PATCH_CONST SSH_hostKeySuiteInfo mHostKeySuites[] =
 #if (!defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"rsa-sha2-256",               12, (sbyte *)"ssh-rsa", 7, CERT_STORE_AUTH_TYPE_RSA,   SHA256_RESULT_SIZE,     SSH_RSA_2048_SIZE, SSH_RSA_2048_SIZE, CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_CERT_buildRawRsaCert,    SSH_TRANS_buildRsaSignature,   NULL },
 #endif
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"ssh-rsa",                     7, (sbyte *)"ssh-rsa", 7, CERT_STORE_AUTH_TYPE_RSA,   SHA_HASH_RESULT_SIZE,   SSH_RSA_MIN_SIZE,  SSH_RSA_MAX_SIZE,  CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_CERT_buildRawRsaCert,    SSH_TRANS_buildRsaSignature,   NULL },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
     { (sbyte *)"placeholder",                11, (sbyte *)"dummy",   5, 0,                          0,                      0,                 0,                 0,                                     NULL,                        NULL,                          NULL }
 };
@@ -603,6 +619,7 @@ static BulkEncryptionAlgo GCMSuite =
 #endif /* __ENABLE_MOCANA_GCM__ */
 
 #if (defined(__ENABLE_MOCANA_POLY1305__) && defined(__ENABLE_MOCANA_CHACHA20__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static sshAeadAlgo ChaChaPolyAeadSuite =
     /* first two values are used for GCM, can be 0 for chacha20-poly1305, 128 bit tag  */
 #ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
@@ -615,6 +632,7 @@ static BulkEncryptionAlgo ChaChaPolySuite =
     { 64, CRYPTO_INTERFACE_ChaCha20Poly1305_createCtx, CRYPTO_INTERFACE_ChaCha20Poly1305_deleteCtx, SSH_TRANS_doChaCha20, CRYPTO_INTERFACE_ChaCha20Poly1305_cloneCtx };
 #else
     { 64, ChaCha20Poly1305_createCtx, ChaCha20Poly1305_deleteCtx, SSH_TRANS_doChaCha20, ChaCha20Poly1305_cloneCtx };
+#endif
 #endif
 #endif /* (defined(__ENABLE_MOCANA_POLY1305__) && defined(__ENABLE_MOCANA_CHACHA20__)) */
 
@@ -635,35 +653,47 @@ static PATCH_CONST SSH_CipherSuiteInfo mCipherSuites[] =
 #endif
 
 #if defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"chacha20-poly1305@openssh.com", 29, 32, 8, &ChaChaPolySuite, &ChaChaPolyAeadSuite },
+#endif
 #endif
 
 #if (!defined(__DISABLE_AES_CIPHERS__))
 #if (!defined(__DISABLE_AES128_CIPHER__))
     { (sbyte *)"aes128-ctr",            10, 16, 16, &AESCTRSuite,       NULL },
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"aes128-cbc",            10, 16, 16, &AESSuite,          NULL },
     { (sbyte *)"rijndael128-cbc",       15, 16, 16, &AESSuite,          NULL },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif /* __DISABLE_AES128_CIPHER__ */
 
 #if (!defined(__DISABLE_AES256_CIPHER__))
     { (sbyte *)"aes256-ctr",            10, 32, 16, &AESCTRSuite,       NULL },
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"aes256-cbc",            10, 32, 16, &AESSuite,          NULL },
     { (sbyte *)"rijndael256-cbc",       15, 32, 16, &AESSuite,          NULL },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif /* __DISABLE_AES256_CIPHER__ */
 
 #ifndef __DISABLE_AES192_CIPHER__
     { (sbyte *)"aes192-ctr",            10, 24, 16, &AESCTRSuite,       NULL },
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"aes192-cbc",            10, 24, 16, &AESSuite,          NULL },
     { (sbyte *)"rijndael192-cbc",       15, 24, 16, &AESSuite,          NULL },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
 #endif /* __DISABLE_AES_CIPHERS__ */
 
 #ifdef __ENABLE_BLOWFISH_CIPHERS__
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"blowfish-cbc",          12, 16,  8, &BlowfishSuite,     NULL },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
 
 #ifndef __DISABLE_3DES_CIPHERS__
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"3des-cbc",               8, 24,  8, &TripleDESSuite,    NULL },
+#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
 #endif
 #ifdef __ENABLE_MOCANA_SP800_135_ACVP__
 #include "../ssh/nist/ssh_nist_cs_list.inc"
@@ -694,7 +724,9 @@ static PATCH_CONST SSH_hmacSuiteInfo mHmacSuites[] =
 #endif
 
 #if defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"chacha20-poly1305@openssh.com", 29, 0, 16, NULL, &ChaChaPolyAeadSuite, FALSE },
+#endif
 #endif
 
 #ifndef __DISABLE_MOCANA_SHA256__
@@ -705,7 +737,7 @@ static PATCH_CONST SSH_hmacSuiteInfo mHmacSuites[] =
     { (sbyte *)"hmac-sha2-512",         13, SHA512_RESULT_SIZE, SHA512_RESULT_SIZE, HMAC_SHA512,    NULL, FALSE },
     { (sbyte *)"hmac-sha2-512-etm@openssh.com", 29, SHA512_RESULT_SIZE, SHA512_RESULT_SIZE, HMAC_SHA512,    NULL, TRUE },
 #endif
-#ifndef __DISABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     { (sbyte *)"hmac-sha1",              9, 20, 20, HMAC_SHA1,      NULL, FALSE },
     { (sbyte *)"hmac-sha1-etm@openssh.com", 25, 20, 20, HMAC_SHA1,      NULL, TRUE },
     { (sbyte *)"hmac-sha1-96",          12, 20, 12, HMAC_SHA1,      NULL, FALSE },
@@ -1174,7 +1206,6 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
     else
     {
         ubyte4              pubKeyType = 0;
-        ubyte4              supportedAlgoFlags = 0;
         const SizedBuffer*  pRetCertificates = NULL;
         ubyte4              numberCertificates = 0;
 
@@ -1401,7 +1432,6 @@ static MSTATUS
 SSH_TRANS_doAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data,
                    sbyte4 dataLength, sbyte4 encrypt, ubyte* iv)
 {
-    aesCTRCipherContext*    pCtx = (aesCTRCipherContext *)ctx;
     MSTATUS                 status;
 
 #ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
@@ -1427,6 +1457,7 @@ SSH_TRANS_doAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data,
 /*------------------------------------------------------------------*/
 
 #if (defined(__ENABLE_MOCANA_CHACHA20__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 /* IV is used as the nonce for chacha20, for SSH protocol, the nonce is the sequence number
  * of the packet */
 static MSTATUS
@@ -1461,7 +1492,7 @@ exit:
     return status;
 }
 #endif
-
+#endif
 
 /*------------------------------------------------------------------*/
 
@@ -2198,7 +2229,6 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
                 ubyte*      pOption = NULL;
                 ubyte4      optionLen;
                 ubyte4      stringIndex = 4;
-                intBoolean  inString    = FALSE;
 
                 /* extract option from custom list */
                 do
@@ -2495,7 +2525,6 @@ receiveClientKeyExchange(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMes
     ubyte4  bytesUsed;
     MSTATUS status;
     ubyte*  pE = NULL;
-    ubyte4  eLen = 0;
     ubyte*  pSharedSecret = NULL;
     ubyte4  sharedSecretLen = 0, offset;
     sshKeyExDescr*          pKeyEx = NULL;
@@ -2770,7 +2799,7 @@ receiveClientDHGKeyExchangeInit(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4
     MSTATUS status;
     ubyte*  pE = NULL;
     ubyte*  pSharedSecret = NULL;
-    ubyte4  sharedSecretLen = 0, i = 0;
+    ubyte4  sharedSecretLen = 0;
     diffieHellmanContext*   pCtx = NULL;
 
     /* will be used to move past leading 0x00 bytes in pSharedSecret */
@@ -3279,8 +3308,6 @@ SSH_TRANS_sendClientKexHybridReply(sshContext *pContextSSH)
     QS_CTX*         pQsCtx = NULL;
     ubyte*          pCombinedKey = NULL;
     ubyte4          combinedKeyLen;
-    ubyte*          pCombinedSharedSecret = NULL;
-    ubyte4          combinedSharedSecretLen;
     ubyte4          ephemeralEccKeyLen;
     ubyte*          pEccSharedSecret = NULL;
     sbyte4          eccSharedSecretLen;
@@ -3298,9 +3325,6 @@ SSH_TRANS_sendClientKexHybridReply(sshContext *pContextSSH)
     ubyte4          curveID;
     ubyte4          start;
     BulkCtx         ssHashCtx = NULL;
-
-    /* used to move past leading 0x00 bytes in sharedSecret */
-    ubyte4 offset = 0;
 
     sshKeyExDescr*          pKeyEx = NULL;
 
@@ -3874,7 +3898,6 @@ exit:
 static MSTATUS
 SSH_TRANS_buildRsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey)
 {
-    /*ubyte   dataToSign[SHA_HASH_RESULT_SIZE];*/
     ubyte*  dataToSign = NULL;
     MSTATUS status;
 
@@ -4526,6 +4549,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
     }
 
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH == INBOUND_CIPHER_TYPE(pContextSSH))
     {
         /* init inbound decipher key */
@@ -4557,6 +4581,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
         }
     }
     else
+#endif
 #endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
     {
         /* init inbound decipher key */
@@ -4611,6 +4636,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
     }
 
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
     {
         if (OK > (status = makeKeyFromByteString(pContextSSH, hashContext,
@@ -4640,6 +4666,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
         }
     }
     else
+#endif
 #endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
     {
         if (OK > (status = makeKeyFromByteString(pContextSSH, hashContext,
@@ -4716,7 +4743,6 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
     /* free outbound key data */
     if (NULL != OUTBOUND_KEY_DATA(pContextSSH))
     {
-        /*FREE(OUTBOUND_KEY_DATA(pContextSSH));*/
         CRYPTO_FREE( pContextSSH->hwAccelCookie, TRUE, &(OUTBOUND_KEY_DATA(pContextSSH)) ) ;
         OUTBOUND_KEY_DATA(pContextSSH) = NULL;
     }

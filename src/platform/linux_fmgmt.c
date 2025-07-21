@@ -307,40 +307,6 @@ extern MSTATUS LINUX_mkdir (const sbyte *pDirectoryName, ubyte4 mode)
              * existing directory or pDirectoryName is an empty string */
             status = ERR_DIR_INVALID_PATH;
             break;
-#if 0
-        case EACCES:
-            /* Search permission is denied on a component of the path prefix, or write
-             * permission is denied on the parent directory of the directory to be created. */
-            status = ERR_DIR_ACCESS_DENIED;
-            break;
-        case ELOOP:
-            /* A loop exists in symbolic links encountered during resolution of the
-             * pDirectoryName argument. */
-            status = ERR_DIR_SYMLINK_LOOP;
-            break;
-        case EMLINK:
-            /* The link count of the parent directory would exceed max number of symbolic links. */
-            status = ERR_DIR_MAX_SYMLINKS;
-            break;
-        case ENAMETOOLONG:
-            /* The length of the pDirectoryName argument exceeds maximum path length or path
-             * name component is longer than maximum path name length. */
-            status = ERR_DIR_PATH_NAME_TOO_LONG;
-            break;
-        case ENOSPC:
-            /* The file system does not contain enough space to hold the contents of the new
-             * directory or to extend the parent directory of the new directory. */
-            status = ERR_DIR_INSUFFICIENT_MEMORY;
-            break;
-        case ENOTDIR:
-            /* A component of the path prefix is not a directory. */
-            status = ERR_DIR_INVALID_PATH;
-            break;
-        case EROFS:
-            /* The parent directory resides on a read-only file system. */
-            status = ERR_DIR_ACCESS_DENIED;
-            break;
-#endif
         default:
             status = ERR_GENERAL;
     };

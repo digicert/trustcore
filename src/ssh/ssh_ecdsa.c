@@ -912,7 +912,6 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
 {
     ubyte*                   pSignature = NULL;
     ECCKey*                  pECCKey = NULL;
-    ubyte4                   rawSignatureLen = 0;
     ubyte4                   index;
     ubyte4                   sigLength;
     ubyte*                   pMpintR = NULL;
@@ -1203,14 +1202,12 @@ SSH_ECDSA_verifyEdDSASignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
     ubyte4              curveId = 0;
     ECCKey*             pECCKey = NULL;
     ubyte4              index      = 4;     /* skip past signature-string-length field */
-    ubyte4              index1, offset = 0;
     sbyte4              result;
     sshEcdsaCurveIdDescr*    pCurveDescr;
     sshStringBuffer*    ssh_ecdsa_signature = NULL;
     MSTATUS             status;
-    ubyte*              rsRawString = NULL;
     ubyte*              pSigBuffer = NULL;
-    ubyte4              rsRawLen = 0, sigBufferLen = 0;
+    ubyte4              sigBufferLen = 0;
 
     if (NULL == pIsGoodSignature)
     {
@@ -1352,7 +1349,6 @@ SSH_ECDSA_verifyRSValue(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,
                                vlong **ppVlongQueue)
 {
     ubyte4              index1;
-    sbyte4              result;
     MSTATUS             status;
     ubyte*              pR = NULL;
     ubyte4              rLen = 0;
@@ -1426,7 +1422,6 @@ SSH_ECDSA_verifyEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
     ubyte4              curveId = 0;
     ECCKey*             pECCKey = NULL;
     ubyte4              index      = 4;     /* skip past signature-string-length field */
-    ubyte4              index1;
     sbyte4              result;
     sshEcdsaCurveIdDescr*    pCurveDescr;
     sshStringBuffer*    ssh_ecdsa_signature = NULL;

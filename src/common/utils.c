@@ -58,6 +58,8 @@
 #include "../common/mfmgmt.h"
 #endif
 #if !defined (__FREERTOS_RTOS__)
+#include <fcntl.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #endif
 #if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
@@ -421,7 +423,19 @@ UTILS_writeFile(const char* pFilename,
     	fx_file_truncate(f, 0);
     }
 #else
-    f = fopen((const char* __restrict)pFPath, "wb");
+    int fd = open((const char* __restrict)pFPath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd >= 0)
+    {
+        f = fdopen(fd, "wb");
+        if (NULL == f)
+        {
+            close(fd);
+        }
+    }
+    else
+    {
+        f = NULL;
+    }
 #endif
 
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
@@ -525,7 +539,19 @@ UTILS_appendFile(const char* pFilename,
     	fx_file_seek(f, ~0UL); /* goto the end of the file */
     }
 #else
-    f = fopen((const char* __restrict)pFPath, "ab");
+    int fd = open((const char* __restrict)pFPath, O_CREAT| O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR);
+    if (fd >= 0)
+    {
+        f = fdopen(fd, "ab");
+        if (NULL == f)
+        {
+            close(fd);
+        }
+    }
+    else
+    {
+        f = NULL;
+    }
 #endif
 
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
@@ -693,7 +719,19 @@ UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLe
     status = fx_file_open(gp_fx_media0, &foutFile, (CHAR *) pDstPath, FX_OPEN_FOR_WRITE);
     if (FX_SUCCESS != status)
 #else
-    fout = fopen((const char* __restrict)pDstPath, "wb");
+    int fd = open((const char* __restrict)pDstPath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd >= 0)
+    {
+        fout = fdopen(fd, "wb");
+        if (NULL == fout)
+        {
+            close(fd);
+        }
+    }
+    else
+    {
+        fout = NULL;
+    }
 #ifndef __RTOS_WTOS__
     if (NULL == fout )
 #else
@@ -1009,7 +1047,19 @@ UTILS_initWriteFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
         fx_file_truncate(pFile, 0);
     }
 #else
-    pFile = fopen(pFilename, "wb");
+    int fd = open((const char* __restrict)pFilename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd >= 0)
+    {
+        pFile = fdopen(fd, "wb");
+        if (NULL == pFile)
+        {
+            close(fd);
+        }
+    }
+    else
+    {
+        pFile = NULL;
+    }
 #endif
 
 #ifndef __RTOS_WTOS__

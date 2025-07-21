@@ -144,7 +144,9 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
     ubyte4      numBytesWritten;
     MSTATUS     status;
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     ubyte       pSequenceNumOut[8];
+#endif
 #endif
 
     if ((NULL == pContextSSH) || (NULL == pPayload) ||
@@ -162,7 +164,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
 
 #ifdef __ENABLE_ALL_DEBUGGING__
     /*if (kSftpOpenState != SSH_SESSION_STATE(pContextSSH))*/
-        DUMP_MESG_sshMessage(pPayload, payloadLength, TRUE);
+        DUMP_MESG_sshMessage(pPayload, payloadLength, TRUE, pContextSSH->authContext.authMethod);
 #endif
 
 #ifdef SSH_OUT_CUSTOM_MUTEX
@@ -275,12 +277,14 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
     }
 
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
     {
         status = UTILS_ubyte8ToArray((ubyte8)OUTBOUND_SEQUENCE_NUM(pContextSSH), pSequenceNumOut);
         if (OK != status)
             goto exit;
     }
+#endif
 #endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
     OUTBOUND_INC_SEQUENCE_NUM(pContextSSH);
     u8_Incr32(&pContextSSH->bytesTransmitted, packetLen);
@@ -289,6 +293,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
     if (NULL != OUTBOUND_CIPHER_ALGORITHM(pContextSSH))
     {
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
         if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
         {
             status = (OUTBOUND_CIPHER_ALGORITHM(pContextSSH))(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT2(pContextSSH),
@@ -296,6 +301,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
                                                               4/* only encrypt length bytes */, 1, pSequenceNumOut);
         }
         else
+#endif
 #endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
         {
             status = (OUTBOUND_CIPHER_ALGORITHM(pContextSSH))(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT(pContextSSH),
@@ -311,6 +317,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
 
         /* cipher */
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
         if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
         {
             status = pAeadSuite->funcCipher(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT(pContextSSH),
@@ -320,6 +327,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
                                             pAeadSuite->authenticationTagLength, TRUE);
         }
         else
+#endif
 #endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
         {
             status = pAeadSuite->funcCipher(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT(pContextSSH),

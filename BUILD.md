@@ -6,14 +6,16 @@ This project includes client, server, and sample applications. You can build the
 
 ## ⚙️ Build Options
 
-| Option                        | Description                               | Default |
-|-------------------------------|-------------------------------------------|---------|
-| `DISABLE_SSH_SERVER`          | Disable building SSH server library       | `OFF`   |
-| `DISABLE_SSH_CLIENT`          | Disable building SSH client library       | `OFF`   |
-| `ENABLE_SSH_SERVER_CERT_AUTH` | Enable server certificate authentication  | `OFF`   |
-| `ENABLE_SSH_CLIENT_CERT_AUTH` | Enable client certificate authentication  | `OFF`   |
-| `WITH_LOGGING`                | Build with logging enabled                | `OFF`   |
-| `BUILD_SAMPLES`               | Build samples applications                | `OFF`   |
+| Option                            | Description                               | Default |
+|-----------------------------------|-------------------------------------------|---------|
+| `DISABLE_SSH_SERVER`              | Disable building SSH server library       | `OFF`   |
+| `DISABLE_SSH_CLIENT`              | Disable building SSH client library       | `OFF`   |
+| `ENABLE_SSH_SERVER_CERT_AUTH`     | Enable server certificate authentication  | `OFF`   |
+| `ENABLE_SSH_CLIENT_CERT_AUTH`     | Enable client certificate authentication  | `OFF`   |
+| `ENABLE_SSH_ASYNC_API_SUPPORT`    | Enable asynchronous SSH APIs              | `OFF`   |
+| `ENABLE_SSH_CLIENT_SHELL_EXAMPLE` | Build SSH client shell example            | `OFF`   |
+| `WITH_LOGGING`                    | Build with logging enabled                | `OFF`   |
+| `BUILD_SAMPLES`                   | Build samples applications                | `OFF`   |
 
 ## 🛠️ Build Steps
 

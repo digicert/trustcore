@@ -424,7 +424,6 @@ processOptions(int argc, char *argv[])
     int    c;
 
     extern char *optarg;
-    /*extern int optopt;*/
 
     while ((c = getopt(argc, argv, "w:o:t:a:")) != EOF) {
         switch (c) {
@@ -454,7 +453,6 @@ processOptions(int argc, char *argv[])
 #endif
 
         default:
-            /*fprintf(stderr, "Invalid option -%c\n", optopt);*/
             status = -1;
             break;
         }

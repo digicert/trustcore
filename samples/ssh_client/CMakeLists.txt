@@ -23,6 +23,7 @@ include_directories(${INCLUDE_DIR})
 
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sshc_example.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/sshc_shell_example.c
     ${SRC_DIR}/initialize/digicert_example.c
 )
 

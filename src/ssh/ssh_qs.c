@@ -102,7 +102,6 @@ static QsEntry* getQsEntryReference(ubyte4 qsIndex)
 static QsEntry*
 SSH_QS_getQsEntryByName(const sshStringBuffer* pQsEntryName)
 {
-    MSTATUS status = OK;
     QsEntry *pEntry;
     ubyte4 i = 0;
     sbyte4 cmpRes;
@@ -133,8 +132,6 @@ extern MSTATUS
 SSH_QS_getQsIdsByName(const sshStringBuffer* pQsEntryName, ubyte4 *pQsAlgoId)
 {
     MSTATUS status = OK;
-    ubyte4 eccIndex;
-    ubyte4 qsIndex;
     QsEntry *pEntry;
 
     if ((NULL == pQsEntryName) || (NULL == pQsAlgoId))
@@ -423,7 +420,6 @@ SSH_QS_buildQsKey(AsymmetricKey *pKey, intBoolean isCertificate,
                   intBoolean isServer, ubyte **ppPublicKeyBlob, ubyte4 *pPublicKeyBlobLen)
 {
     MSTATUS status;
-    ubyte4 curveId;
     ubyte4 qsAlgId;
     ubyte4 qsKeyLen;
     ubyte *pKeyBlob = NULL;

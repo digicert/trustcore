@@ -471,6 +471,7 @@ decryptFirstBlock(sshContext *pContextSSH)
     {
         /* see if we are using chacha20 with poly1305 cipher suite */
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
         if (CHACHA20_POLY1305_OPENSSH == INBOUND_CIPHER_TYPE(pContextSSH))
         {
             status = MOC_MEMCPY(pPacketLength, INBOUND_BUFFER(pContextSSH), 4);
@@ -490,6 +491,7 @@ decryptFirstBlock(sshContext *pContextSSH)
                 goto exit;
         }
         else
+#endif
 #endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
         {
             if (INBOUND_MAC_IS_ETM(pContextSSH))
@@ -531,12 +533,17 @@ decryptFirstBlock(sshContext *pContextSSH)
 
     /* translate packet length from network byte order */
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH != INBOUND_CIPHER_TYPE(pContextSSH))
 #endif
+#endif
     {
-        status = UTILS_arrayToUbyte4(INBOUND_BUFFER(pContextSSH), &(INBOUND_PACKET_LENGTH(pContextSSH)));
-        if (OK != status)
+        MSTATUS fstatus = UTILS_arrayToUbyte4(INBOUND_BUFFER(pContextSSH), &(INBOUND_PACKET_LENGTH(pContextSSH)));
+        if (OK != fstatus)
+        {
+            status = fstatus; /* ok to overwrite status */
             goto exit;
+        }
     }
 
     /* Check if we have more than ZERO bytes */
@@ -987,11 +994,13 @@ SSH_IN_MESG_processMessage(sshContext *pContextSSH,
 
             case kDecryptAeadBlocks:
 #if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
                 if (CHACHA20_POLY1305_OPENSSH == INBOUND_CIPHER_TYPE(pContextSSH))
                 {
                     status = decryptAeadBlocksEx(pContextSSH);
                 }
                 else
+#endif
 #endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
                 {
                     status = decryptAeadBlocks(pContextSSH);
@@ -1015,7 +1024,7 @@ SSH_IN_MESG_processMessage(sshContext *pContextSSH,
 
 #ifdef __ENABLE_ALL_DEBUGGING__
                 /*if (kSftpOpenState != SSH_SESSION_STATE(pContextSSH))*/
-                    DUMP_MESG_sshMessage(pNewMessage, newMessageLength, FALSE);
+                    DUMP_MESG_sshMessage(pNewMessage, newMessageLength, FALSE, pContextSSH->authContext.authMethod);
 #endif
 
                 /* do upper layer upcall */

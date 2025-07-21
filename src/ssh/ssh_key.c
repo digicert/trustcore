@@ -447,10 +447,6 @@ SSH_KEY_exportRSAKey(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
 
     p_rsaDescr = pKey->key.pRSA;
 
-  ubyte   *pE;
-  ubyte4   eLen;
-  ubyte   *pN;
-  ubyte4   nLen;
 #ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_RSA_getKeyParametersAllocAux(MOC_RSA(hwAccelCtx) p_rsaDescr, &template,
         MOC_GET_PUBLIC_KEY_DATA);
@@ -912,8 +908,6 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
     sshStringBuffer **ppAlgorithmName)
 {
     MSTATUS status;
-    sshStringBuffer *pTempSignature = NULL;
-    sshStringBuffer *pAlgorithmName = NULL;
     sshStringBuffer *pTemp = NULL;
     ubyte *pAlgoName;
     ubyte4 algoNameLen = 0;
@@ -1184,12 +1178,8 @@ SSH_KEY_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRet
     sshStringBuffer *pTemp = NULL;
     ubyte*          pRetMesg = NULL;
     ubyte4          retMesgLen;
-    ubyte4          publicKeyBlobLen;
-    ubyte4          fullSigLen;
     ubyte*          pFinalFile = NULL;
     ubyte*          pEncoded = NULL;
-    ubyte4          keyType;
-    ubyte4          curveId;
     ubyte4          extraBufLen;
     ubyte* pHeader = (ubyte *)"---- BEGIN SSH2 PUBLIC KEY ----\n";
     ubyte4 headerLen = MOC_STRLEN((sbyte *)pHeader);
@@ -1540,9 +1530,6 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
 #ifdef __ENABLE_MOCANA_ECC__
     ubyte4            curveId = 0;
     ubyte4            keyLength;
-    ubyte4            retrievedKeyLength;
-    ubyte4            retrievedIdentifierLength;
-    sbyte4            res;
 #endif
 #ifdef __ENABLE_MOCANA_PQC__
     QS_CTX            *pQsCtx = NULL;

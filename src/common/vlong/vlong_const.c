@@ -924,7 +924,7 @@ MOC_EXTERN MSTATUS VLONG_constTimeMontExp (
   tmpLen = MONTY_R(pMonty)->numUnitsUsed + pBase->numUnitsUsed;
 
   /* Allocate the entire table, extra temp space, and pTUnits in one-shot */
-  if (OK > (status = MOC_MALLOC((void **) &pG, (tableSize + 2) * modByteLen + (1 + tmpLen) * sizeof(vlong_unit))))
+  if (OK > (status = MOC_MALLOC((void **) &pG, (unsigned long)(tableSize + 2) * modByteLen + (1 + tmpLen) * sizeof(vlong_unit))))
   {
     goto cleanup;
   }
@@ -1021,7 +1021,7 @@ cleanup:
 
   if (NULL != pG)
   {
-    (void) MOC_MEMSET_FREE((ubyte **) &pG, (tableSize + 2) * modByteLen + (tmpLen + 1) * sizeof(vlong_unit));
+    (void) MOC_MEMSET_FREE((ubyte **) &pG, (unsigned long)(tableSize + 2) * modByteLen + (tmpLen + 1) * sizeof(vlong_unit));
   }
 
   return status;

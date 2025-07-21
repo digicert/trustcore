@@ -88,6 +88,8 @@ SSH_RADIUS_EXAMPLE_authPasswordFunction(int connectionInstance,
                                         const unsigned char *pPassword, unsigned int passwordLength);
 #endif
 
+/* WARNING: Hardcoded credentials used below are for illustrative purposes ONLY.
+   DO NOT use hardcoded credentials in production. */
 #define USERNAME    "admin"
 #define PASSWORD    "secure"
 
@@ -128,20 +130,24 @@ static void* reqKeyContext;
 extern memPartDescr *gMemPartDescr;
 #endif
 
-#define MAX_SSH_CONNECTIONS_ALLOWED     (4)
-static unsigned short  ssh_ServerPort    = SSH_DEFAULT_TCPIP_PORT;
-static char * 	       ssh_ServerCert    = NULL;
-static char * 	       ssh_ServerBlob    = NULL;
-static char * 	       ssh_CACert        = NULL;
-static char *          ocsp_ResponderUrl = NULL;
-static ubyte4          ocsp_Timeout      = 500000;
+#define MAX_SSH_CONNECTIONS_ALLOWED        (4)
+static unsigned short  ssh_ServerPort       = SSH_DEFAULT_TCPIP_PORT;
+static byteBoolean  ssh_disablePasswordExpiryTest  = FALSE;
+static char *          ssh_ServerCert       = NULL;
+static char *          ssh_ServerBlob       = NULL;
+static char *          ssh_CACert           = NULL;
+static char *          ocsp_ResponderUrl    = NULL;
+static ubyte4          ocsp_Timeout         = 500000;
+static char *          ssh_UserName         = NULL;
+static char *          ssh_Password         = NULL;
 
 /* for interactive-keyboard authentication */
 enum exampleAuthStates
 {
     EXAMPLE_PASSWORD = 0,
     EXAMPLE_CHANGE_PASSWORD = 1,
-    EXAMPLE_DONE = 2
+    EXAMPLE_PASSWORD_DONE = 2,
+    EXAMPLE_DONE = 3
 };
 
 static sbyte *
@@ -403,7 +409,6 @@ SSH_EXAMPLE_getTapContext(TAP_Context **ppTapContext,
             goto exit;
         }
 
-        /*ppTapContext    = g_pTapContext;*/
         *ppTapEntityCred = g_pTapEntityCred;
         *ppTapKeyCred    = g_pTapKeyCred;
     }
@@ -514,15 +519,7 @@ SSH_EXAMPLE_InitializeTapContext(ubyte *pTpm2ConfigFile, TAP_Context **ppTapCtx,
     *ppTapEntityCred = pEntityCredentials;
     *ppTapKeyCred    = pKeyCredentials;
 
-    /* Free module list */
-    /*if ((TRUE == gotModuleList) && (g_moduleList.pModuleList))
-    {
-        status = TAP_freeModuleList(&g_moduleList);
-        if (OK != status)
-            printf("TAP_freeModuleList : %d\n", status);
-    }*/
-
-        /* Free config info */
+    /* Free config info */
     if (NULL != configInfoList.pConfig)
     {
         status = TAP_UTILS_freeConfigInfoList(&configInfoList);
@@ -567,14 +564,14 @@ SSH_EXAMPLE_authPasswordFunction(sbyte4 connectionInstance,
         return 0;
 
     /* always check the lengths first, there may not be a username or password */
-    if (userLength != (sizeof(USERNAME) - 1))
+    if (userLength != MOC_STRLEN(ssh_UserName))
         return 0;
 
-    if (passwordLength != (sizeof(PASSWORD) - 1))
+    if (passwordLength != MOC_STRLEN(ssh_Password))
         return 0;
 
-    if ((0 != memcmp(pUser,     USERNAME, userLength)) ||
-        (0 != memcmp(pPassword, PASSWORD, passwordLength)))
+    if ((0 != memcmp(pUser,     ssh_UserName, userLength)) ||
+        (0 != memcmp(pPassword, ssh_Password, passwordLength)))
     {
         return 0;
     }
@@ -625,8 +622,15 @@ SSH_EXAMPLE_keyboardInteractiveAuth(sbyte4                  connectionInstance,
 
             if (1 == isAuth)
             {
-                /* fake password expiration simulation */
-                pAuthRequest->cookie = EXAMPLE_CHANGE_PASSWORD;
+                if (TRUE == ssh_disablePasswordExpiryTest)
+                {
+                    pAuthRequest->cookie = EXAMPLE_PASSWORD_DONE;
+                }
+                else
+                {
+                    /* fake password expiration simulation */
+                    pAuthRequest->cookie = EXAMPLE_CHANGE_PASSWORD;
+                }
             }
             else
             {
@@ -658,7 +662,7 @@ SSH_EXAMPLE_keyboardInteractiveAuth(sbyte4                  connectionInstance,
                 (pAuthResponse->responses[0]->responseLen == pAuthResponse->responses[1]->responseLen) &&
                 (0 == memcmp((sbyte *)pAuthResponse->responses[0]->pResponse,
                              (sbyte *)pAuthResponse->responses[1]->pResponse,
-                             pAuthResponse->responses[0]->responseLen)) )
+                             pAuthResponse->responses[0]->responseLen)))
             {
                 /* new passwords match, fake password change completed */
                 isPasswordChanged = 1;
@@ -711,6 +715,16 @@ SSH_EXAMPLE_keyboardInteractiveAuth(sbyte4                  connectionInstance,
             /* change was successful.  */
             pAuthRequest->cookie  = EXAMPLE_DONE;
         }
+    }
+    else if (EXAMPLE_PASSWORD_DONE == pAuthRequest->cookie)
+    {
+        /* build info request */
+        pAuthRequest->pName = NULL;
+        pAuthRequest->nameLen = 0;
+        pAuthRequest->pInstruction = NULL;
+        pAuthRequest->instructionLen = 0;
+        pAuthRequest->numPrompts = 0;
+        pAuthRequest->cookie = EXAMPLE_DONE;
     }
 
     if (EXAMPLE_DONE == prevState)
@@ -1192,10 +1206,10 @@ SSH_EXAMPLE_pubkeyNotify(sbyte4 connectionInstance,
         goto exit;
 
     /* always check the lengths first, there may not be a username or password */
-    if (userLength != (sizeof(USERNAME) - 1))
+    if (userLength != MOC_STRLEN(ssh_UserName))
         goto exit;
 
-    if (0 != memcmp(pUser, USERNAME, userLength))
+    if (0 != memcmp(pUser, ssh_UserName, userLength))
         goto exit;
 
     /* make sure the client provided pubkey matches a pub key on file */
@@ -2044,6 +2058,8 @@ SSH_EXAMPLE_displayHelp(char *prog)
 
     printf("  option:\n");
     printf("    -port <port>               sets listen port\n");
+    printf("    -username <username>       sets username for authentication\n");
+    printf("    -password <password>       sets password for authentication\n");
     printf("    -ssh_server_cert <cert>    sets the server cert path\n");
     printf("    -ssh_server_blob <key>     sets the server blob path\n");
     printf("    -ssh_ca_cert <ca_cert>     sets the CA certificate\n");
@@ -2067,7 +2083,7 @@ extern sbyte4
 SSH_EXAMPLE_getArgs(int argc, char *argv[])
 {
     sbyte4 status = 0;
-    int i = 0;
+    int i = 0, userSet = 0, pwdSet = 0;
     char *temp;
 #if (defined(__ENABLE_MOCANA_TAP__))
     int tapConfigFileSet = 0;
@@ -2093,6 +2109,24 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 			}
 			continue;
 		}
+        else if (MOC_STRCMP((sbyte *)argv[i], (sbyte *) "-username") == 0)
+        {
+            if (++i < argc)
+            {
+                userSet = 1; /*username should not be set to default*/
+                setParameter(&ssh_UserName, argv[i]);
+            }
+            continue;
+        }
+        else if (MOC_STRCMP((sbyte *) argv[i], (sbyte *) "-password") == 0)
+        {
+            if (++i < argc)
+            {
+                pwdSet = 1; /*password should not be set to default*/
+                setParameter(&ssh_Password, argv[i]);
+            }
+            continue;
+        }
         else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ssh_server_cert") == 0)
 		{
 			if (++i < argc)
@@ -2134,6 +2168,11 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 			}
 			continue;
 		}
+        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-disable_password_expiry") == 0)
+        {
+            ssh_disablePasswordExpiryTest = TRUE;
+            continue;
+        }
 #if (defined(__ENABLE_MOCANA_TAP__))
 #if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
         else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tap_server_name") == 0)
@@ -2167,6 +2206,17 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
         }
 #endif
     } /*for*/
+
+    if (!userSet)
+    {
+        setParameter(&ssh_UserName, USERNAME);
+    }
+
+    if (!pwdSet)
+    {
+        setParameter(&ssh_Password, PASSWORD);
+    }
+
 #if (defined(__ENABLE_MOCANA_TAP__))
 #if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
     if (!tapServerNameSet)
@@ -2568,6 +2618,13 @@ exit:
         MOC_FREE((void **)&tap_ConfigFile);
     }
 #endif
+
+    if (ssh_UserName)
+        FREE(ssh_UserName);
+
+    if (ssh_Password)
+        FREE(ssh_Password);
+
     if(ssh_CACert)
         FREE(ssh_CACert);
 
