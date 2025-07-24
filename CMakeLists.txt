@@ -36,6 +36,12 @@ if(CM_ENABLE_SERVER_CERT_AUTH OR CM_ENABLE_CLIENT_CERT_AUTH)
   set(CM_ENABLE_X509_CERTS ON CACHE BOOL "Enable X.509 certificates support" FORCE)
 endif()
 
+if (DEFINED SECURE_PATH)
+  message("\nSECURE_PATH = ${SECURE_PATH}")
+  add_definitions("-D__ENABLE_DIGICERT_SECURE_PATH__")
+  add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
+endif()
+
 set(CLIENT_HEADER "")
 set(CLIENT_FILE ${CMAKE_BINARY_DIR}/client_macros.h)
 if(NOT DISABLE_SSH_CLIENT)

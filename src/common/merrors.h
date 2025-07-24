@@ -361,6 +361,7 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_FILE_NAME_TOO_LONG,                            -7220)
     ERROR_DEF       (ERR_FILE_NOT_EXIST,                                -7221)
     ERROR_DEF       (ERR_FILE_INSUFFICIENT_MEMORY,                      -7222)
+    ERROR_DEF       (ERR_FILE_INSECURE_PATH,                            -7223)
 
     ERROR_DEF       (ERR_DIR_OPEN_FAILED,                               -7240)
     ERROR_DEF       (ERR_DIR_READ_FAILED,                               -7241)

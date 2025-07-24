@@ -65,6 +65,8 @@ add_compile_options(${WERROR})
 set(MOCANA_FLAGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/mocana_flags.txt")
 
 if(CM_ENABLE_DEBUG)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   set(MOCANA_DEBUG_FLAGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/mocana_debug_flags.txt")
   message("\nMOCANA_DEBUG_FLAGS_FILE = ${MOCANA_DEBUG_FLAGS_FILE}")
 endif()
@@ -111,6 +113,13 @@ if(CM_ENABLE_GLOBAL_MUTEX)
   set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_GLOBAL_MUTEX__)
 else()
   set(mocana_flags ${mocana_flags} -D__DISABLE_MOCANA_TPM_MUTEX__)
+endif()
+
+if (DEFINED SECURE_PATH)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SECURE_PATH__)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
+  message("\nSECURE_PATH = ${SECURE_PATH}")
+  add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
 endif()
 
 # Now load all flags into MOCANA_FLAGS
