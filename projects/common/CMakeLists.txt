@@ -250,6 +250,8 @@ endif()
 
 # Adding debug flags
 if(CM_ENABLE_DEBUG)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   file(STRINGS ${MOCANA_DEBUG_FLAGS_FILE} mocana_debug_flags)
   set(mocana_flags ${mocana_flags} ${mocana_debug_flags})
 endif()
@@ -344,6 +346,13 @@ endif()
 
 if(CM_ENABLE_MSG_LOG_TIMESTAMP)
   set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_MSG_LOG_TIMESTAMP__)
+endif()
+
+if (DEFINED SECURE_PATH)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SECURE_PATH__)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
+  message("\nSECURE_PATH = ${SECURE_PATH}")
+  add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
 endif()
 
 # Now load all flags into MOCANA_FLAGS

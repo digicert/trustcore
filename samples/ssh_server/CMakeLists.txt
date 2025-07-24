@@ -9,6 +9,16 @@ else()
     set(CRYPTO_LIB_ARCH_DIR "linux-x86_64")
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+
+if (DEFINED SECURE_PATH)
+  message("\nSECURE_PATH = ${SECURE_PATH}")
+  add_definitions("-D__ENABLE_DIGICERT_SECURE_PATH__")
+  add_definitions("-D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__")
+  add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
+endif()
+
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
 set(LIB_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
 set(CRYPTO_LIBS   "${CMAKE_CURRENT_SOURCE_DIR}/../../crypto_lib/${CRYPTO_LIB_ARCH_DIR}")

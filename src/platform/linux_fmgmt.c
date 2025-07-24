@@ -106,7 +106,11 @@ extern intBoolean LINUX_pathExists (const sbyte *pFilePath, FileDescriptorInfo *
     }
 #endif
 
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
+    if (0 != lstat((const char*)pFPath, &statFile))
+#else
     if (0 != stat((const char*)pFPath, &statFile))
+#endif
     {
         if (NULL != pFileInfo)
         {
@@ -134,8 +138,10 @@ extern intBoolean LINUX_pathExists (const sbyte *pFilePath, FileDescriptorInfo *
         pFileInfo->type = FTFile;
     else if (0 != S_ISDIR(statFile.st_mode))  /* Test for a directory. */
         pFileInfo->type = FTDirectory;
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
     else if (0 != S_ISLNK(statFile.st_mode))  /* Test for a symbolic link. */
-        pFileInfo->type = FTFile;
+        return FALSE; /* We do not support symbolic links */
+#endif
     else
         pFileInfo->type = FTUnknown;
 
@@ -564,7 +570,7 @@ extern MSTATUS LINUX_changeCWD (const sbyte *pNewCwd)
         if (FTDirectory == fileInfo.type)
         {
             newCwdLength = MOC_STRLEN ((const sbyte *) pNewCwd);
-            if ((1 > newCwdLength) || (WORKING_DIR_PATH_MAX_LEN <= (newCwdLength + 1)))
+            if ((1 > newCwdLength) || (WORKING_DIR_PATH_MAX_LEN < (newCwdLength + 1)))
             {
                 status = ERR_BUFFER_TOO_SMALL;
                 goto exit;
@@ -865,7 +871,17 @@ extern MSTATUS LINUX_fopen (const sbyte *pFileName, const sbyte *pMode, FileDesc
             return status;
         freePath = TRUE;
     }
-#endif
+
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
+    if (MOC_STRNCMP(pFPath, MANDATORY_BASE_PATH, MOC_STRLEN(MANDATORY_BASE_PATH)) != 0)
+    {
+        /* File path must start with the mandatory base path */
+        if (TRUE == freePath)
+            MOC_FREE ((void **) &pFPath);
+        return ERR_FILE_INSECURE_PATH;
+    }
+#endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
+#endif /* __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__ */
 
     pFile = fopen((const char* __restrict)pFPath, (const char* __restrict)pMode);
     if (NULL != pFile)

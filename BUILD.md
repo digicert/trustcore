@@ -15,6 +15,7 @@ This project includes client, server, and sample applications. You can build the
 | `ENABLE_SSH_ASYNC_API_SUPPORT`    | Enable asynchronous SSH APIs              | `OFF`   |
 | `ENABLE_SSH_CLIENT_SHELL_EXAMPLE` | Build SSH client shell example            | `OFF`   |
 | `WITH_LOGGING`                    | Build with logging enabled                | `OFF`   |
+| `SECURE_PATH`                     | Enable secure path restriction            |         |
 | `BUILD_SAMPLES`                   | Build samples applications                | `OFF`   |
 
 ## 🛠️ Build Steps
@@ -23,6 +24,10 @@ This project includes client, server, and sample applications. You can build the
 
 ```bash
 cmake -DBUILD_SAMPLES=ON -B build -S .
+```
+
+```bash
+cmake -DBUILD_SAMPLES=ON -DSECURE_PATH="/path/to/directory" -B build -S .
 ```
 
 ```bash

@@ -2470,6 +2470,11 @@ SSH_EXAMPLE_main(sbyte4 dummy)
     }
 #endif
 
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
+    if (OK > (status = FMGMT_changeCWD(MANDATORY_BASE_PATH)))
+        goto exit;
+#endif
+
 #if defined(__ENABLE_MOCANA_WIN_STUDIO_BUILD__) && !defined(__ENABLE_CMAKE_BUILD__)
 	if (OK > ( status = SSH_EXAMPLE_getArgs(argc, argv))) /* Initialize parameters to default values */
 		return status;
