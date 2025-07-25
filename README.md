@@ -1,10 +1,9 @@
 # TrustCore SDK
 
-**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices. We’ve open-sourced the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use.
+**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices. We’ve open-sourced the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use.
 
 > 📢 **Update:** NanoSSH is now open-source under the [AGPL license](LICENSE.md).  
 > All TrustCore SDK components are on track to be open-sourced progressively.
-
 
 ## TrustCore SDK Overview  
 
@@ -18,6 +17,8 @@ TrustCore SDK is a powerful suite of security tools hardend over 15 years of usa
 - **Trusted Platform Support** – Enables integration with TPMs and hardware security modules (HSMs).  
 - **EST & CMP Protocol Support** – Implements industry-standard protocols for certificate provisioning and management.
 - **Secure Device Communications** - Delivers MQTT (MQTTs) over TLS 1.3 for securing device communications.
+- **PQC-ready** - Utilize the latest post-quantum cryptographic algorithms including: ML-KEM, ML-DSA and SLH-DSA, ensuring your devices are quantum-safe.
+- **Modular and compact** - Each module is implemented in lightweight C code. Build only the required modules to minimize the device footprint.
 
 ### **Supported Protocols and How to Build**
 
