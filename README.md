@@ -13,12 +13,14 @@ TrustCore SDK is a powerful suite of security tools hardend over 15 years of usa
 
 - **Certificate Lifecycle Management** – Supports enrollment, renewal, revocation, and validation.  
 - **PKI Integration** – Seamless interaction with public key infrastructure for secure identity verification.  
-- **Secure Cryptographic Operations** – Provides efficient and compliant cryptographic functions.  
-- **Trusted Platform Support** – Enables integration with TPMs and hardware security modules (HSMs).  
+- **Broad Cryptographic Algorithm Support** – From message digests to symmetric and asymmetric algorithms, TrustCore [NanoCrypto](https://dev.digicert.com/en/trustcore-sdk/nanocrypto.html) has you covered.  
+- **Trusted Platform Integration** – Enables integration with TPMs and hardware security modules (HSMs).  
 - **EST & CMP Protocol Support** – Implements industry-standard protocols for certificate provisioning and management.
 - **Secure Device Communications** - Delivers MQTT (MQTTs) over TLS 1.3 for securing device communications.
 - **PQC-ready** - Utilize the latest post-quantum cryptographic algorithms including: ML-KEM, ML-DSA and SLH-DSA, ensuring your devices are quantum-safe.
 - **Modular and compact** - Each module is implemented in lightweight C code. Build only the required modules to minimize the device footprint.
+- **FIPS 140-3 ready** - Need FIPS 140-3 certification? No problem! Contact us to learn more how we can help you certify your product.
+- **OpenSSL Interop** - Provides a compatibility layer for applications using OpenSSL APIs, enabling seamless integration.
 
 ### **Supported Protocols and How to Build**
 
@@ -26,7 +28,7 @@ TrustCore SDK provides comprehensive support for various security and communicat
 
 - [NanoSSH](https://dev.digicert.com/en/trustcore-sdk/nanossh.html) – Secure Shell (SSH) implementation optimized for lightweight environments, learn to [compile here](https://dev.digicert.com/en/trustcore-sdk/nanossh/nanossh-client-user-guide/nanossh-client-overview.html#generate-nanossh-client-quick-build).
 
-- [NanoMQTT]() - Secure MQTT (Message Queuing Telemetry Transport) for IoT and cloud communications.
+- [NanoMQTT](https://dev.digicert.com/en/trustcore-sdk/nanomqtt.html) - Secure MQTT (Message Queuing Telemetry Transport) for IoT and cloud communications.
 
 - [NanoSSL](https://dev.digicert.com/en/trustcore-sdk/nanossl.html) - Implementation for SSL/TLS 1.3, providing secure transport layer encryption.
 
