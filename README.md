@@ -26,19 +26,21 @@ TrustCore SDK is a powerful suite of security tools hardend over 15 years of usa
 
 TrustCore SDK provides comprehensive support for various security and communication protocols, ensuring secure interactions across different applications and environments:
 
-- [NanoSSH](https://dev.digicert.com/en/trustcore-sdk/nanossh.html) – Secure Shell (SSH) implementation optimized for lightweight environments, learn to [compile here](https://dev.digicert.com/en/trustcore-sdk/nanossh/nanossh-client-user-guide/nanossh-client-overview.html#generate-nanossh-client-quick-build).
+- [NanoSSH](https://dev.digicert.com/en/trustcore-sdk/nanossh.html) – Secure Shell (SSH) client and server implementation optimized for lightweight environments, learn to [compile here](https://dev.digicert.com/en/trustcore-sdk/nanossh/nanossh-client-user-guide/nanossh-client-overview.html#generate-nanossh-client-quick-build).
 
-- [NanoMQTT](https://dev.digicert.com/en/trustcore-sdk/nanomqtt.html) - Secure MQTT (Message Queuing Telemetry Transport) for IoT and cloud communications.
+- [NanoMQTT](https://dev.digicert.com/en/trustcore-sdk/nanomqtt.html) - Secure MQTT (Message Queuing Telemetry Transport) client for IoT and cloud communications.
 
 - [NanoSSL](https://dev.digicert.com/en/trustcore-sdk/nanossl.html) - Implementation for SSL/TLS 1.3, providing secure transport layer encryption.
 
-- [NanoSec](https://dev.digicert.com/en/trustcore-sdk/nanosec.html) – Strong encryption and security for network layer communications.
+- [NanoSec](https://dev.digicert.com/en/trustcore-sdk/nanosec.html) – Strong encryption and security for network layer communications using IPSec/IKE..
 
-- [NanoEAP]() – Extensible Authentication Protocol (EAP) for secure network authentication.
+- [NanoEAP]() – Extensible Authentication Protocol (EAP) for secure network authentication and RADIUS support.
 
 - [NanoCert](https://dev.digicert.com/en/trustcore-sdk/nanocert.html) – EST and SCEP Protocols for automated certificate enrollment and management.
 
-For a more detailed overview and implementation guidance, visit [TrustCore SDK Documentation](https://dev.digicert.com/en/trustcore-sdk.html).  
+### **Documentation**
+
+All the TrustCore documentation is available at [TrustCore SDK documentation](https://dev.digicert.com/en/trustcore-sdk.html).  
 
 ## License
 
