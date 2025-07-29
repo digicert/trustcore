@@ -7,3 +7,5 @@ In order for the vulnerability reports to reach maintainers as soon as possible,
 This creates a private communication channel between the reporter and the maintainers.
 
 If you are absolutely unable to or have strong reasons not to use GitHub's vulnerability reporting workflow, please reach out to the DigiCert team at [support@digicert.com](mailto:support@digicert.com).
+
+A list of historical vulnerabilities and fixed versions is available [here](https://dev.digicert.com/en/trustcore-sdk/compliance-and-regulations/security-vulnerabilities.html).
