@@ -801,7 +801,7 @@ handleIncomingPubKeys(sshContext *pContextSSH, sshStringBuffer* pPublicKeyBlob, 
 
         goto exit;
     }
-#endif
+#endif /* __ENABLE_MOCANA_SSH_RSA_SUPPORT__ */
 
 #ifdef __ENABLE_MOCANA_ECC__
 
@@ -835,24 +835,37 @@ handleIncomingPubKeys(sshContext *pContextSSH, sshStringBuffer* pPublicKeyBlob, 
             goto exit;
         }
     }
+#endif /* __ENABLE_MOCANA_ECC__ */
 
 #ifdef __ENABLE_MOCANA_PQC__
 
+    /* handle qs key format */
+    status = SSH_QS_verifyAlgorithmName((const sshStringBuffer *) pKeyFormat, &result);
+    if (OK == status && 0 == result)
+    {
+        status = SSH_QS_extractQsKey(MOC_HASH(pContextSSH->hwAccelCookie) pPublicKeyBlob, pPublicKey, index, ppVlongQueue);
+        if (OK != status)
+            goto exit;
+
+        *pAcceptPubKeyType = TRUE;
+        goto exit;
+    }
+
+#ifdef __ENABLE_MOCANA_ECC__
+
     /* handle hybrid key format */
     status = SSH_HYBRID_verifyAlgorithmName((const sshStringBuffer *) pKeyFormat, &result);
-    if (OK != status)
-        goto exit;
-
-    if (0 == result)
+    if (OK == status && 0 == result)
     {
         status = SSH_HYBRID_extractHybridKey(MOC_ASYM(pContextSSH->hwAccelCookie) pPublicKeyBlob, pPublicKey, index, ppVlongQueue);
         if (OK != status)
             goto exit;
 
         *pAcceptPubKeyType = TRUE;
+        goto exit;
     }
-#endif
-#endif
+#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_MOCANA_PQC__ */
 
     /*!!!! add new method for certificate auth */
 
