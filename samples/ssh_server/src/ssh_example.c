@@ -67,6 +67,10 @@
 #include "data_protection/file_protect.h"
 #endif
 
+#ifdef __ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__
+#include "radius/radius.h"
+#endif
+
 #include <string.h>
 #include <stdio.h>
 
@@ -2003,6 +2007,10 @@ SSH_EXAMPLE_startServer(void)
     }
 
 exit:
+#if defined(__ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
+    RADIUS_shutdown();
+#endif
+
     TCP_CLOSE_SOCKET(listenSocket);
 
 nocleanup:

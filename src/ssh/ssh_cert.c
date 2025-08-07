@@ -439,6 +439,14 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
 
 exit:
     MOC_FREE((void**)&pMessage);
+    MOC_FREE((void**)&pOcspResponse);
+
+#ifdef __ENABLE_MOCANA_SSH_OCSP_SUPPORT__
+    if (pRoot)
+    {
+        TREE_DeleteTreeItem((TreeItem*) pRoot);
+    }
+#endif
 
     return status;
 
