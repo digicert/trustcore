@@ -374,8 +374,6 @@ extern sshStringBuffer* getPubKeyAuthAlgorithms()
         j += (mAuthPubKeyMethods[i].pName->stringLen - 4);
     }
 
-    pS[j] = '\0';
-
 exit:
 
     if (OK != status)

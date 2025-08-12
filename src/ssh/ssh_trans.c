@@ -3532,6 +3532,12 @@ exit:
         if (NULL != pContextSSH->sshKeyExCtx.pKeyExHash)
             pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pFreeFunc(MOC_HASH(pContextSSH->hwAccelCookie) &pContextSSH->sshKeyExCtx.pKeyExHash);
 
+        if (NULL != ssHashCtx)
+            pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pFreeFunc(MOC_HASH(pContextSSH->hwAccelCookie) &ssHashCtx);
+
+        if (NULL != pContextSSH->sshKeyExCtx.transientKey.pQsCtx)
+            CRYPTO_INTERFACE_QS_deleteCtx(&pContextSSH->sshKeyExCtx.transientKey.pQsCtx);
+
         if (NULL != pContextSSH->pHostBlob)
             CRYPTO_FREE((pContextSSH)->hwAccelCookie, TRUE, &pContextSSH->pHostBlob);
 

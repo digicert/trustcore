@@ -114,6 +114,7 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
     ubyte               isValid = 0;
     ubyte               i;
     MSTATUS             status = OK;
+    ubyte *pUri = NULL;
 
     /* Create a Client Context */
     if (OK > (status = OCSP_CLIENT_createContext(&pOcspContext)))
@@ -123,7 +124,6 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
     pOcspContext->pOcspSettings->certCount                  = 1;
 
     pOcspContext->pOcspSettings->hashAlgo                   = sha1_OID;
-    pOcspContext->pOcspSettings->pResponderUrl              = pResponderUrl;
     pOcspContext->pOcspSettings->shouldAddServiceLocator    = FALSE;
     pOcspContext->pOcspSettings->shouldAddNonce             = FALSE;
     pOcspContext->pOcspSettings->shouldSign                 = FALSE;
@@ -138,11 +138,16 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
     if (!pResponderUrl)
     {
         if (OK > (status = OCSP_CLIENT_getResponderIdfromCert(pCertificate, certLen,
-                                                              (ubyte** )&pOcspContext->pOcspSettings->pResponderUrl)))
+                                                              &pUri)) || (NULL == pUri))
         {
             status = ERR_OCSP_BAD_AIA;
             goto exit;
         }
+        pOcspContext->pOcspSettings->pResponderUrl = (sbyte *)pUri;
+    }
+    else
+    {
+        pOcspContext->pOcspSettings->pResponderUrl = (sbyte *)pResponderUrl;
     }
 
     /* END OF USER CONFIG                                          */
@@ -222,6 +227,21 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
 
     if (ocsp_successful == respStatus)
     {
+        /* Free allocated memory before calling SSH_OCSP_validateOcspResponse to avoid memory leaks.
+        * Both functions share the same static pOcspSettings, and validateOcspResponse will
+        * allocate new pCertInfo and pIssuerCertInfo arrays, overwriting these pointers. */
+        if (pOcspContext->pOcspSettings->pCertInfo)
+        {
+            FREE(pOcspContext->pOcspSettings->pCertInfo);
+            pOcspContext->pOcspSettings->pCertInfo = NULL;
+        }
+
+        if (pOcspContext->pOcspSettings->pIssuerCertInfo)
+        {
+            FREE(pOcspContext->pOcspSettings->pIssuerCertInfo);
+            pOcspContext->pOcspSettings->pIssuerCertInfo = NULL;
+        }
+
         status = SSH_OCSP_validateOcspResponse(pCertificate, certLen, pIssuerCert,issuerCertLen ,
                                     *ppResponse, *pRetResponseLen, &certOcspStatus, &isValid);
 
@@ -236,6 +256,16 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
         }
     }
 exit:
+
+    if(pRequest)
+        FREE(pRequest);
+
+    /* Free the URI if it was allocated */
+    if (pUri)
+    {
+        FREE(pUri);
+        pOcspContext->pOcspSettings->pResponderUrl = NULL;
+    }
 
     /* API to free the context and shutdown MOCANA OCSP CLIENT */
     OCSP_CLIENT_releaseContext(&pOcspContext);
@@ -540,9 +570,10 @@ exit:
         FREE(pCertId);
     }
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT__))
-    OCSP_CLIENT_releaseContext(&pOcspContext);
-#endif
+    if (pOcspContext)
+    {
+        OCSP_CLIENT_releaseContext(&pOcspContext);
+    }
 
     return status;
 }
