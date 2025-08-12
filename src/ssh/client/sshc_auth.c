@@ -724,11 +724,11 @@ SSHC_AUTH_generateHashOrMessage(sshClientContext *pContextSSH, BulkHashAlgo hash
     *ppOutput = NULL;
     *pOutputLen = 0;
 
-    /* For akt_ecc_ed or akt_qs the digest does not need to be taken since the sign API
+    /* For akt_ecc_ed, akt_qs, or akt_hybrid the digest does not need to be taken since the sign API
      * requires the full message to be provided.
      */
     if ((akt_dsa == (keyType & 0xff)) || (akt_rsa == (keyType & 0xff)) ||
-        (akt_ecc == (keyType & 0xff)) || (akt_hybrid == (keyType & 0xff)))
+        (akt_ecc == (keyType & 0xff)))
     {
         length[3] = (ubyte)pContextSSH->sessionIdLength;
 
@@ -766,7 +766,7 @@ SSHC_AUTH_generateHashOrMessage(sshClientContext *pContextSSH, BulkHashAlgo hash
         pOutput = NULL;
         (hashAlgo.freeFunc)(MOC_HASH(pContextSSH->hwAccelCookie) &pHashContext);
     }
-    else if (akt_ecc_ed == (keyType & 0xff) || akt_qs == (keyType & 0xff))
+    else if (akt_ecc_ed == (keyType & 0xff) || akt_qs == (keyType & 0xff) || akt_hybrid == (keyType & 0xff))
     {
         outputLen = 4 + (ubyte)pContextSSH->sessionIdLength + messageLen;
 
