@@ -1,3 +1,12 @@
 {
-   "signedContributors": []
+  "signedContributors": [
+    {
+      "name": "sumit-sen-dc",
+      "id": 132973541,
+      "comment_id": 3182476116,
+      "created_at": "2025-08-13T07:17:43Z",
+      "repoId": 1010981736,
+      "pullRequestNo": 12
+    }
+  ]
 }
