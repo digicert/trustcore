@@ -1,9 +1,9 @@
 # TrustCore SDK
 
-**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices. We’ve open-sourced the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use.
+**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices. 
 
-> 📢 **Update:** NanoSSH is now open-source under the [AGPL license](LICENSE.md).  
-> All TrustCore SDK components are on track to be open-sourced progressively.
+> [!NOTE]
+> DigiCert is in the process of completely open-sourcing the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use. Code will be open-sourced on a per-module basis and progress on which modules have been released can be tracked in the related [Github Project](https://github.com/orgs/digicert/projects/31). 
 
 ## TrustCore SDK Overview  
 
