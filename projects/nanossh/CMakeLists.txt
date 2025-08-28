@@ -30,7 +30,7 @@ option(CM_ENABLE_CHACHAPOLY                         "Enable ChaCha20 and Poly130
 option(CM_ENABLE_BLOWFISH                           "Enable Blowfish support" OFF)
 option(CM_ENABLE_DSA_SUPPORT                        "Enable DSA support in NanoSSH" OFF)
 option(CM_DISABLE_EDDSA_25519_SUPPORT               "Disable Ed25519 support in NanoSSH" OFF)
-option(CM_DISABLE_ECDH_25519_SUPPORT                "Disable ECDH with Curve25519 suppot in NanoSSH" OFF)
+option(CM_DISABLE_ECDH_25519_SUPPORT                "Disable ECDH with Curve25519 support in NanoSSH" OFF)
 option(CM_ENABLE_SERIAL_CHANNEL                     "Enable support for serial channels"  OFF)
 option(CM_BUILD_SHARED_LIBS                         "Build NanoSSH Shared Library"        OFF)
 option(CM_BUILD_SSH_CLIENT                          "Build NanoSSH client"                OFF)

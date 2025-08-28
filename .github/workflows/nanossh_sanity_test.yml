@@ -1,0 +1,23 @@
+name: "NanoSSH Sanity Tests"
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "main" ]
+
+jobs:
+  sanity-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake python3 xxd
+
+    - name: Run Sanity Tests
+      run: |
+        ./scripts/sanity_tests.sh

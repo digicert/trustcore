@@ -8,13 +8,20 @@ project(NanoSSH LANGUAGES C CXX)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 option(WITH_LOGGING "Build with logging enabled." OFF)
+# SSH build options
 option(DISABLE_SSH_CLIENT "Build SSH Client." OFF)
 option(DISABLE_SSH_SERVER "Build SSH Server." OFF)
 option(ENABLE_SSH_SERVER_CERT_AUTH "Enable SSH Server certificate authentication." OFF)
 option(ENABLE_SSH_CLIENT_CERT_AUTH "Enable SSH Client certificate authentication." OFF)
+option(ENABLE_SSH_CLIENT_AUTH "Enable SSH Client public key authentication." OFF)
 option(ENABLE_SSH_ASYNC_API_SUPPORT "Enable SSH Async API support." OFF)
 option(ENABLE_SSH_CLIENT_SHELL_EXAMPLE "Build SSH client shell example." OFF)
+# Global build options
 option(BUILD_SAMPLES "Build samples." OFF)
+option(DISABLE_SUITEB "Disable Suite B algorithms." OFF)
+option(DISABLE_PQC "Disable Quantum Safe algorithms." OFF)
+option(DISABLE_EDDSA_25519_SUPPORT "Disable Ed25519 support." OFF)
+option(DISABLE_ECDH_25519_SUPPORT "Disable ECDH with Curve25519 support." OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Compile commands for auto generated header" FORCE)
 set(CM_BUILD_SHARED_LIBS ON CACHE BOOL "Build NanoSSH Shared Library" FORCE)
@@ -31,6 +38,11 @@ add_subdirectory(projects/initialize)
 
 set(CM_ENABLE_SERVER_CERT_AUTH ${ENABLE_SSH_SERVER_CERT_AUTH} CACHE BOOL "Enable SSH server certificate authentication" FORCE)
 set(CM_ENABLE_CLIENT_CERT_AUTH ${ENABLE_SSH_CLIENT_CERT_AUTH} CACHE BOOL "Enable SSH client certificate authentication" FORCE)
+set(CM_ENABLE_CLIENT_AUTH ${ENABLE_SSH_CLIENT_AUTH} CACHE BOOL "Enable SSH Client public key authentication" FORCE)
+set(CM_DISABLE_SUITEB ${DISABLE_SUITEB} CACHE BOOL "Disable Suite B algorithms" FORCE)
+set(CM_DISABLE_PQC ${DISABLE_PQC} CACHE BOOL "Disable Quantum Safe algorithms" FORCE)
+set(CM_DISABLE_EDDSA_25519_SUPPORT ${DISABLE_EDDSA_25519_SUPPORT} CACHE BOOL "Disable Ed25519 support" FORCE)
+set(CM_DISABLE_ECDH_25519_SUPPORT ${DISABLE_ECDH_25519_SUPPORT} CACHE BOOL "Disable ECDH with Curve25519 support" FORCE)
 
 if(CM_ENABLE_SERVER_CERT_AUTH OR CM_ENABLE_CLIENT_CERT_AUTH)
   set(CM_ENABLE_X509_CERTS ON CACHE BOOL "Enable X.509 certificates support" FORCE)
