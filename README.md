@@ -53,6 +53,10 @@ This project is available under a **dual-license model**:
 - **Commercial License:**  
 If you wish to use TrustCore SDK in a **proprietary** or **commercial** product (e.g., embedded in closed-source firmware or commercial SaaS applications), a commercial license is available under DigiCert’s [Master Services Agreement](https://www.digicert.com/master-services-agreement/) (MSA).  Contact us at [sales@digicert.com](mailto:sales@digicert.com) for commercial licensing details.
 
+## Support
+
+If you have purchased a TrustCore SDK **Commercial License**, please contact [DigiCert Support](https://www.digicert.com/support/pki-support). Otherwise, please create a [GitHub issue](https://github.com/digicert/trustcore/issues).
+
 ## Contributing
 
 We welcome contributions that improve TrustCore SDK! Please follow these steps:
