@@ -588,46 +588,16 @@ MOC_EXTERN_DATA_DEF const ubyte cvc_ecdsaWithSha512_OID[] =
 
 #ifdef __ENABLE_MOCANA_PQC__
 
-/* TODO get rid of extra space, max macro is at 12 anyway */
-MOC_EXTERN_DATA_DEF ubyte mldsa_44_OID[] =
-{ 9, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x11, 0, 0, 0, 0, 0};        /* 2.16.840.1.101.3.4.3.17 */
-MOC_EXTERN_DATA_DEF ubyte mldsa_65_OID[] =
-{ 9, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x12, 0, 0, 0, 0, 0};        /* 2.16.840.1.101.3.4.3.18 */
-MOC_EXTERN_DATA_DEF ubyte mldsa_87_OID[] =
-{ 9, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x13, 0, 0, 0, 0, 0};        /* 2.16.840.1.101.3.4.3.19 */
-
-MOC_EXTERN_DATA_DEF ubyte fndsa_512_OID[] =
-{ 5, 0x2B, 0xCE, 0x0F, 0x03, 0x06, 0,0,0,0,0,0,0,0,0,0};                          /* 1.3.9999.3.6 */  
-MOC_EXTERN_DATA_DEF ubyte fndsa_1024_OID[] =
-{ 5, 0x2B, 0xCE, 0x0F, 0x03, 0x09, 0,0,0,0,0,0,0,0,0,0};                          /* 1.3.9999.3.9*/ 
-
-MOC_EXTERN_DATA_DEF ubyte slhdsa_sha2_128s_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x04, 0x10, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.4.16*/ 
-MOC_EXTERN_DATA_DEF ubyte slhdsa_sha2_128f_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x04, 0x0d, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.4.13*/ 
-MOC_EXTERN_DATA_DEF ubyte slhdsa_shake_128s_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x07, 0x10, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.7.16*/ 
-MOC_EXTERN_DATA_DEF ubyte slhdsa_shake_128f_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x07, 0x0d, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.7.13*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_sha2_192s_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x05, 0x0c, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.5.12*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_sha2_192f_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x05, 0x0a, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.5.10*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_shake_192s_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x08, 0x0c, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.8.12*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_shake_192f_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x08, 0x0a, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.8.10*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_sha2_256s_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x06, 0x0c, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.6.12*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_sha2_256f_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x06, 0x0a, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.6.10*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_shake_256s_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x09, 0x0c, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.9.12*/  
-MOC_EXTERN_DATA_DEF ubyte slhdsa_shake_256f_OID[] =
-{ 6, 0x2B, 0xCE, 0x0F, 0x06, 0x09, 0x0a, 0,0,0,0,0,0,0,0,0};                      /* 1.3.9999.6.9.10*/  
-
+MOC_EXTERN_DATA_DEF const ubyte pure_pqc_sig_OID[] =
+{ 8, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03};              /* 2.16.840.1.101.3.4.3.x      for x=17 to 31 */
 MOC_EXTERN_DATA_DEF const ubyte mldsa_composite_OID[] =
-{ 10, 0x60, 0x86, 0x48, 0x01, 0x86, 0xFA, 0x6B, 0x50, 0x08, 0x01};          /* 2.16.840.1.114027.80.8.1.x  for x=60 to 75 */
+{ 10, 0x60, 0x86, 0x48, 0x01, 0x86, 0xFA, 0x6B, 0x50, 0x08, 0x01}; /* 2.16.840.1.114027.80.8.1.x  for x=60 to 75 */
+
+MOC_EXTERN_DATA_DEF const ubyte fndsa_512_OID[] =
+{ 5, 0x2B, 0xCE, 0x0F, 0x03, 0x06};                                /* 1.3.9999.3.6 */  
+MOC_EXTERN_DATA_DEF const ubyte fndsa_1024_OID[] =
+{ 5, 0x2B, 0xCE, 0x0F, 0x03, 0x09};                                /* 1.3.9999.3.9*/  
+
 #endif
 
 #if (defined(__ENABLE_MOCANA_PKCS7__)||defined(__ENABLE_MOCANA_CMS__))

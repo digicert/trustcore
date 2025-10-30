@@ -15,7 +15,11 @@
 ## Setup pathing for different platforms
 set(LOCATE_LIB_SUFFIX_SHARED "so")
 set(LOCATE_LIB_SUFFIX_STATIC "a")
-set(LOCATE_LIB_SEARCH_PATH "bin")
+if(BUILD_FOR_OSI)
+  set(LOCATE_LIB_SEARCH_PATH "lib")
+else()
+  set(LOCATE_LIB_SEARCH_PATH "bin")
+endif()
 set(LIB_PREFIX "lib")
 
 if(NOT CMAKE_CROSSCOMPILING)

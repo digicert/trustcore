@@ -92,15 +92,13 @@
 #endif
 
 #ifdef __ENABLE_MOCANA_PQC__
-#include "../../ssh/ssh_hybrid.h"
 #include "../../ssh/ssh_qs.h"
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#include "../../ssh/ssh_hybrid.h"
 #endif
 
 /*------------------------------------------------------------------*/
-
-#if 0
-#define __DEBUG_SSH_AUTH__
-#endif
 
 #ifndef SSHC_NUM_AUTH_ATTEMPTS
 #define SSHC_NUM_AUTH_ATTEMPTS      (3)
@@ -810,7 +808,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 static MSTATUS
-SSHC_AUTH_publicKeyAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 nameLen, intBoolean generateSignature)
+SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pContextSSH, ubyte *pName, ubyte4 nameLen, intBoolean generateSignature)
 {
     sshStringBuffer*    pSignatureType  = NULL;     /* do not free: pointer to a statically allocated string. */
     AsymmetricKey       authKey;
@@ -1106,8 +1104,7 @@ SSHC_AUTH_publicKeyAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 name
             break;
         }
 #endif /* __ENABLE_MOCANA_PQC__ */
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
         case akt_hybrid:
         {
             ECCKey *pECCKey = authKey.key.pECC;
@@ -1131,6 +1128,12 @@ SSHC_AUTH_publicKeyAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 name
 #if (!defined(__DISABLE_MOCANA_SHA512__))
                 case cid_EC_P521:
                     hashAlgo       = SHA512Suite;
+                    break;
+#endif
+#if defined (__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__)
+                case cid_EC_Ed25519:
+                case cid_EC_Ed448:
+                    hashAlgo       = NoSuite;
                     break;
 #endif
                 default:
@@ -1157,7 +1160,8 @@ SSHC_AUTH_publicKeyAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 name
 
             break;
         }
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
+#if (defined(__ENABLE_MOCANA_ECC__))
          case akt_ecc_ed:
          case akt_ecc:
          {
@@ -1444,8 +1448,7 @@ SSHC_AUTH_publicKeyAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 name
                 break;
             }
 #endif
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
             case akt_hybrid:
             {
                 status = SSH_HYBRID_buildHybridSignature(MOC_ASYM(pContextSSH->hwAccelCookie) &authKey, isCertificate,
@@ -1454,6 +1457,7 @@ SSHC_AUTH_publicKeyAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 name
                 break;
             }
 #endif
+#if (defined(__ENABLE_MOCANA_ECC__))
             case akt_ecc_ed:
             case akt_ecc:
             {
@@ -1463,7 +1467,6 @@ SSHC_AUTH_publicKeyAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 name
                 break;
             }
 #endif
-
             default:
             {
                 status = ERR_BAD_KEY_TYPE;
@@ -1811,18 +1814,8 @@ SSHC_AUTH_deallocStructures(sshClientContext *pContextSSH)
         AUTH_FAILURE_BUFFER(pContextSSH) = NULL;
 
         SSH_STR_freeStringBuffer(&AUTH_KEYINT_CONTEXT(pContextSSH).user);
-#if 0
-        if ((NULL != SSHC_sshClientSettings()->funcPtrReleaseKeyIntReq) &&
-            (NULL != AUTH_KEYINT_CONTEXT(pContextSSH).pInfoRequest))
-#else
         if (NULL != AUTH_KEYINT_CONTEXT(pContextSSH).pInfoRequest)
-#endif
         {
-#if 0   /*!!!!*/
-            status = (SSHC_sshClientSettings()->funcPtrReleaseKeyIntReq)
-                      (CONNECTION_INSTANCE(pContextSSH),
-                       AUTH_KEYINT_CONTEXT(pContextSSH).pInfoRequest);
-#endif
             FREE(AUTH_KEYINT_CONTEXT(pContextSSH).pInfoRequest);
             AUTH_KEYINT_CONTEXT(pContextSSH).pInfoRequest = NULL;
         }

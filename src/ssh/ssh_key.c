@@ -685,6 +685,7 @@ exit:
 
     return status;
 }
+#endif
 
 /*------------------------------------------------------------------*/
 
@@ -694,6 +695,7 @@ exit:
  *  4   bytes for Composite public key length
  *  m   bytes for Composite public key
  **/
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 static MSTATUS
 SSH_KEY_exportHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey, ubyte **ppRetKeyBlob, ubyte4 *pRetKeyBlobLength, ubyte4 *pCurveId, ubyte4 *pQsAlgId)
 {
@@ -859,7 +861,7 @@ SSH_KEY_extractPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx) const ubyte *pKeyBlob
     }
     else if (akt_hybrid == key.type)
     {
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
         status = SSH_KEY_exportHybridKey(MOC_ASYM(hwAccelCtx) &key, ppRetPublicKeyBlob, pRetPublicKeyBlobLength, pCurveId, pQsAlgId);
 #else
         MOC_UNUSED(pQsAlgId);
@@ -912,7 +914,7 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
     ubyte *pAlgoName;
     ubyte4 algoNameLen = 0;
 #ifdef __ENABLE_MOCANA_PQC__
-    ubyte pAlgoBuffer[64] = {0}; /* buffer for hybrid composite names */
+    ubyte pAlgoBuffer[64] = {0}; /* buffer for pqc and composite names */
 #endif
     ubyte4 index = 0;
 
@@ -1021,7 +1023,7 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
         }
         case akt_hybrid:
         {
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 
             (void) MOC_MEMCPY(pAlgoBuffer, (ubyte *) "ssh-", 4);
 
@@ -1187,6 +1189,12 @@ SSH_KEY_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRet
     ubyte4 footerLen = MOC_STRLEN((sbyte *)pFooter);
     hwAccelDescr    hwAccelCtx;
     MSTATUS         status = OK;
+
+    if (NULL == pKeyBlob)
+    {
+        status = ERR_NULL_POINTER;
+        goto nocleanup;
+    }
 
     *ppRetHostFile   = NULL;
     *pRetHostFileLen = 0;
@@ -1507,6 +1515,8 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
         (ubyte *) "ssh-mldsa44",
         (ubyte *) "ssh-mldsa65",
         (ubyte *) "ssh-mldsa87",
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
         (ubyte *) "ssh-mldsa44-es256",
         (ubyte *) "ssh-mldsa65-es256",
         (ubyte *) "ssh-mldsa87-es384",
@@ -1542,10 +1552,10 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
 #endif
     hwAccelDescr    hwAccelCtx;
 
-    if (NULL == p_keyDescr)
+    if (NULL == p_keyDescr || NULL == pKeyBlob)
     {
         status = ERR_NULL_POINTER;
-        goto exit;
+        goto nocleanup;
     }
 
     if (OK > (status = (MSTATUS)HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSH, &hwAccelCtx)))
@@ -1649,7 +1659,9 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
         case 12:
             keyType = akt_qs;
             qsAlgId = cid_PQC_MLDSA_87;
-            break;            
+            break;
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
         case 13:
             keyType = akt_hybrid;
             curveId = cid_EC_P256;
@@ -1859,7 +1871,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
     }
     else if(akt_hybrid == keyType)
     {
-#if defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_MOCANA_PQC_COMPOSITE__)
         ubyte4 compositeLen = 0;
         ubyte4 expPubLen = 0;
 
@@ -1957,10 +1969,10 @@ SSH_KEY_sshParseAuthPublicKeyFile(sbyte* pKeyFile, ubyte4 fileSize,
     ubyte4            decodedKeyLength;
     MSTATUS           status;
 
-    if (NULL == p_keyDescr)
+    if (NULL == p_keyDescr  || NULL == pKeyFile)
     {
         status = ERR_NULL_POINTER;
-        goto exit;
+        goto nocleanup;
     }
 
     status = CRYPTO_uninitAsymmetricKey(p_keyDescr, NULL);
@@ -1995,6 +2007,7 @@ exit:
         CRYPTO_uninitAsymmetricKey(p_keyDescr, NULL);
     }
 
+nocleanup:
     return status;
 
 } /* SSH_KEY_sshParseAuthPublicKeyFile */

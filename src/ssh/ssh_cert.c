@@ -65,9 +65,12 @@
 #endif
 
 #if (defined(__ENABLE_MOCANA_PQC__))
-#include "../ssh/ssh_hybrid.h"
 #include "../ssh/ssh_qs.h"
 #endif
+#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
+#include "../ssh/ssh_hybrid.h"
+#endif
+
 #include "../ssh/ssh_dss.h"
 #include "../ssh/ssh_rsa.h"
 #include "../ssh/ssh_ecdsa.h"
@@ -108,7 +111,7 @@ SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySi
     }
 #endif
     else if ((CERT_STORE_AUTH_TYPE_ECDSA == authType)
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
         || (CERT_STORE_AUTH_TYPE_HYBRID == authType)
 #endif 
             )
@@ -142,7 +145,7 @@ SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySi
             CERT_STORE_ALGO_ID_SET_KEYTYPE(pAlgoIdList[0], akt_ecc);
             *pRetPubKeyType = akt_ecc;
         }
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
         else
         {
             CERT_STORE_ALGO_ID_SET_KEYTYPE(pAlgoIdList[0], akt_hybrid);
@@ -527,7 +530,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_MOCANA_PQC_COMPOSITE__)
 MOC_EXTERN MSTATUS
 SSH_CERT_buildCertHybrid(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates)
 {
@@ -569,7 +572,7 @@ exit:
         SSH_STR_freeStringBuffer(&pAlgoName);
     return status;
 }
-#endif /* ECC and PQC */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 #endif /* __ENABLE_MOCANA_PRE_DRAFT_PQC__ */
 
 #if (defined(__ENABLE_MOCANA_ECC__))

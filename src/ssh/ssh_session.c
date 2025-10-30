@@ -56,6 +56,9 @@
 #include "../ssh/ssh_server.h"
 #include "../ssh/ssh_ftp.h"
 #include "../ssh/ssh.h"
+#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#include "../crypto_interface/crypto_interface_dh.h"
+#endif
 
 
 extern sbyte4 SSH_INTERNAL_API_setOpenState(sbyte4 connectionInstance);
@@ -2217,16 +2220,45 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern void
-SSH_SESSION_sendClose(sshContext *pContextSSH)
+SSH_SESSION_sendClose(sshContext *pContextSSH, MSTATUS errorCode)
 {
     MSTATUS status;
+    intBoolean wasAlreadyClosed = (SESSION_CLOSED == pContextSSH->sessionState.channelState);
 
     status = SSH_SESSION_sendCloseChannel(pContextSSH);
     /* so we know that the session is really closed */
     pContextSSH->sessionState.channelState = SESSION_CLOSED;
 
-    if (OK <= status)
-        SSH_TRANS_sendDisconnectMesg(pContextSSH, SSH_DISCONNECT_BY_APPLICATION);
+    if (OK == status)
+    {
+        /* Don't send disconnect message if client already closed the channel,
+         * or for client-initiated EOF and timeouts to prevent TCP RST */
+        if ((TRUE == wasAlreadyClosed)
+              || (TRUE == pContextSSH->sessionState.isEof)
+#ifdef __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__
+              || (ERR_SSH_MAX_SESSION_TIME_LIMIT_EXCEEDED == pContextSSH->errorCode)
+#endif
+        )
+        {
+            /* Client initiated the close or timeout - skip disconnect to avoid TCP RST */
+            MOC_MEMSET(pContextSSH->sshKeyExCtx.pBytesSharedSecret, 0x00, pContextSSH->sshKeyExCtx.bytesSharedSecretLen);
+            MOC_FREE((void**)&(pContextSSH->sshKeyExCtx.pBytesSharedSecret));
+            pContextSSH->sshKeyExCtx.bytesSharedSecretLen = 0;
+#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+            CRYPTO_INTERFACE_DH_freeDhContext(&(pContextSSH->sshKeyExCtx.p_dhContext), NULL);
+#else
+            DH_freeDhContext(&(pContextSSH->sshKeyExCtx.p_dhContext), NULL);
+#endif
+        }
+        else
+        {
+            if (OK != errorCode)
+            {
+                /* Send disconnect for server-initiated closes */
+                SSH_TRANS_sendDisconnectMesg(pContextSSH, SSH_DISCONNECT_BY_APPLICATION);
+            }
+        }
+    }
 }
 
 #endif /* __ENABLE_MOCANA_SSH_SERVER__ */

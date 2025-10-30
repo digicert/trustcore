@@ -220,8 +220,10 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #endif
 
 #define RTOS_lockFileCreate         LINUX_lockFileCreate
+#if !defined(__RTOS_ZEPHYR__)
 #define RTOS_lockFileAcquire        LINUX_lockFileAcquire
 #define RTOS_lockFileRelease        LINUX_lockFileRelease
+#endif
 #define RTOS_lockFileFree           LINUX_lockFileFree
 
 #define RTOS_condCreate             LINUX_condCreate
@@ -231,7 +233,9 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_condFree               LINUX_condFree
 #define RTOS_getUpTimeInMS          LINUX_getUpTimeInMS
 
+#if !defined(__RTOS_ZEPHYR__)
 #define RTOS_processExecute         LINUX_processExecute
+#endif
 #if defined(__MOC_PLATFORM_MODULE__)
 #define RTOS_deltaMS                MOC_deltaMS
 #else
@@ -265,11 +269,12 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 
 #define RTOS_semCreate              LINUX_semCreate
 #define RTOS_semWait                LINUX_semWait
+#define RTOS_semTimedWait           LINUX_semTimedWait
 #define RTOS_semTryWait             LINUX_semTryWait
 #define RTOS_semSignal              LINUX_semSignal
 #define RTOS_semFree                LINUX_semFree
 
-#if defined (__LINUX_RTOS__)
+#if defined(__LINUX_RTOS__) && !defined(__RTOS_ZEPHYR__)
 #define RTOS_getHwAddr              LINUX_getHwAddr
 #define RTOS_getHwAddrByIfname      LINUX_getHwAddrByIfname
 #endif
@@ -972,6 +977,7 @@ MOC_EXTERN MSTATUS      RTOS_mutexWaitEx            (RTOS_MUTEX mutex, ubyte4 ti
 
 MOC_EXTERN MSTATUS      RTOS_semCreate              (RTOS_SEM *sem, sbyte4 initialValue);
 MOC_EXTERN MSTATUS      RTOS_semWait                (RTOS_SEM sem);
+MOC_EXTERN MSTATUS      RTOS_semTimedWait           (RTOS_SEM sem, ubyte4 timeoutMS, byteBoolean *pTimeout);
 MOC_EXTERN MSTATUS      RTOS_semTryWait             (RTOS_SEM sem);
 MOC_EXTERN MSTATUS      RTOS_semSignal              (RTOS_SEM sem);
 MOC_EXTERN MSTATUS      RTOS_semFree                (RTOS_SEM *pSem);
@@ -1116,7 +1122,13 @@ MOC_EXTERN void  dbg_free(void *pBlockToFree, ubyte *pFile, ubyte4 lineNum);
 #define MC_MALLOC                   RTOS_malloc
 #else
 #define MALLOC                      CONVERT_MALLOC
+#if defined(__ENABLE_DIGICERT_CUSTOM_MALLOC__) && defined(__RTOS_ZEPHYR__)
+#define MC_MALLOC                   MOCANA_customMalloc
+#elif defined(__ENABLE_DIGICERT_K_MALLOC__) && defined(__RTOS_ZEPHYR__)
+#define MC_MALLOC                   k_malloc
+#else
 #define MC_MALLOC                   malloc
+#endif /* __ENABLE_DIGICERT_K_MALLOC__ */
 #endif
 #endif
 
@@ -1126,7 +1138,13 @@ MOC_EXTERN void  dbg_free(void *pBlockToFree, ubyte *pFile, ubyte4 lineNum);
 #define MC_FREE                     RTOS_free
 #else
 #define FREE                        CONVERT_FREE
+#if defined(__ENABLE_DIGICERT_CUSTOM_MALLOC__) && defined(__RTOS_ZEPHYR__)
+#define MC_FREE                     MOCANA_customFree
+#elif defined(__ENABLE_DIGICERT_K_MALLOC__) && defined(__RTOS_ZEPHYR__)
+#define MC_FREE                     k_free
+#else
 #define MC_FREE                     free
+#endif /* __ENABLE_DIGICERT_K_MALLOC__ */
 #endif
 #endif
 

@@ -28,7 +28,7 @@
 #define MOC_UNUSED(X)
 #endif
 
-#define CR                              '\x0d'
+#define MOC_CR                          '\x0d'
 #define LF                              '\x0a'
 #define CRLF                            "\x0d\x0a"
 #define TAB                             '\x09'

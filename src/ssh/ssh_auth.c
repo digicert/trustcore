@@ -87,8 +87,10 @@ be included in the API documentation.
 #include "../asn1/parsecert.h"
 
 #ifdef __ENABLE_MOCANA_PQC__
-#include "../ssh/ssh_hybrid.h"
 #include "../ssh/ssh_qs.h"
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#include "../ssh/ssh_hybrid.h"
 #endif
 
 #ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
@@ -109,6 +111,7 @@ extern sbyte *SSH_AUTH_authList(ubyte4 index, ubyte4 *pRetStringLength, ubyte4 c
 
 /*------------------------------------------------------------------*/
 
+/* enable for further debugging */
 #if 0
 #define __DEBUG_SSH_AUTH__
 #endif
@@ -200,9 +203,10 @@ static authPubKeyDescr mAuthPubKeyMethods[] =
     { (sbyte *)"x509v3-mldsa44",               &ssh_cert_mldsa44_signature, &ssh_cert_mldsa44_signature, CERT_STORE_AUTH_TYPE_QS, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3 },
     { (sbyte *)"x509v3-mldsa65",               &ssh_cert_mldsa65_signature, &ssh_cert_mldsa65_signature, CERT_STORE_AUTH_TYPE_QS, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3 },
     { (sbyte *)"x509v3-mldsa87",               &ssh_cert_mldsa87_signature, &ssh_cert_mldsa87_signature, CERT_STORE_AUTH_TYPE_QS, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3 },
-    
+#endif
+
     /* COMPOSITE */
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
 #if (!defined(__DISABLE_MOCANA_ECC_P256__) && !defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"x509v3-mldsa44-es256",         &ssh_cert_mldsa44_p256_signature, &ssh_cert_mldsa44_p256_signature, CERT_STORE_AUTH_TYPE_HYBRID, SHA256_RESULT_SIZE, SSH_ECDSA_P256_SIZE, SSH_ECDSA_P256_SIZE, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3 },
     { (sbyte *)"x509v3-mldsa65-es256",         &ssh_cert_mldsa65_p256_signature, &ssh_cert_mldsa65_p256_signature, CERT_STORE_AUTH_TYPE_HYBRID, SHA256_RESULT_SIZE, SSH_ECDSA_P256_SIZE, SSH_ECDSA_P256_SIZE, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3 },      
@@ -217,8 +221,7 @@ static authPubKeyDescr mAuthPubKeyMethods[] =
 #if (defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
     { (sbyte *)"x509v3-mldsa87-ed448",         &ssh_cert_mldsa87_ed448_signature, &ssh_cert_mldsa87_ed448_signature, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3 },
 #endif
-#endif /* __ENABLE_MOCANA_ECC__ */
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 #endif /* __ENABLE_MOCANA_PRE_DRAFT_PQC__ */
 
     /* ECC */
@@ -258,9 +261,10 @@ static authPubKeyDescr mAuthPubKeyMethods[] =
     { (sbyte *)"ssh-mldsa44",               &ssh_mldsa44_signature, &ssh_mldsa44_signature, CERT_STORE_AUTH_TYPE_QS, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED },
     { (sbyte *)"ssh-mldsa65",               &ssh_mldsa65_signature, &ssh_mldsa65_signature, CERT_STORE_AUTH_TYPE_QS, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED },
     { (sbyte *)"ssh-mldsa87",               &ssh_mldsa87_signature, &ssh_mldsa87_signature, CERT_STORE_AUTH_TYPE_QS, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED },
-     
+#endif /* __ENABLE_MOCANA_PQC__ */ 
+
     /* COMPOSITE */
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
 #if (!defined(__DISABLE_MOCANA_ECC_P256__) && !defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"ssh-mldsa44-es256",         &ssh_mldsa44_p256_signature, &ssh_mldsa44_p256_signature, CERT_STORE_AUTH_TYPE_HYBRID, SHA256_RESULT_SIZE, SSH_ECDSA_P256_SIZE, SSH_ECDSA_P256_SIZE, CERT_STORE_IDENTITY_TYPE_NAKED },
     { (sbyte *)"ssh-mldsa65-es256",         &ssh_mldsa65_p256_signature, &ssh_mldsa65_p256_signature, CERT_STORE_AUTH_TYPE_HYBRID, SHA256_RESULT_SIZE, SSH_ECDSA_P256_SIZE, SSH_ECDSA_P256_SIZE, CERT_STORE_IDENTITY_TYPE_NAKED },
@@ -275,8 +279,7 @@ static authPubKeyDescr mAuthPubKeyMethods[] =
 #if (defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
     { (sbyte *)"ssh-mldsa87-ed448",         &ssh_mldsa87_ed448_signature,   &ssh_mldsa87_ed448_signature,   CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED },
 #endif
-#endif /* __ENABLE_MOCANA_ECC__ */
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 
     /* ECC */
 #if (defined(__ENABLE_MOCANA_ECC__))
@@ -848,8 +851,9 @@ handleIncomingPubKeys(sshContext *pContextSSH, sshStringBuffer* pPublicKeyBlob, 
         *pAcceptPubKeyType = TRUE;
         goto exit;
     }
+#endif
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 
     /* handle hybrid key format */
     status = SSH_HYBRID_verifyAlgorithmName((const sshStringBuffer *) pKeyFormat, &result);
@@ -862,8 +866,7 @@ handleIncomingPubKeys(sshContext *pContextSSH, sshStringBuffer* pPublicKeyBlob, 
         *pAcceptPubKeyType = TRUE;
         goto exit;
     }
-#endif /* __ENABLE_MOCANA_ECC__ */
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif
 
     /*!!!! add new method for certificate auth */
 
@@ -1124,7 +1127,7 @@ SSH_AUTH_verifySignature(sshContext *pContextSSH, sshAuthCommonArgs *pAuthCommon
         }
 #endif /* __ENABLE_MOCANA_PQC__ */
 
-#if defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__)
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
         case akt_hybrid:
         {
             *pIsGoodKeyType = TRUE;
@@ -1139,8 +1142,6 @@ SSH_AUTH_verifySignature(sshContext *pContextSSH, sshAuthCommonArgs *pAuthCommon
             status = SSH_HYBRID_verifyHybridSignature(MOC_ASYM(pContextSSH->hwAccelCookie) pPublicKey, TRUE, pShaOutput, hashSize,
                                                       pSignature, pIsGoodSignature, ppVlongQueue);
             break;
-
-            *pIsGoodKeyType = TRUE;
         }
 #endif
 
@@ -1148,9 +1149,9 @@ SSH_AUTH_verifySignature(sshContext *pContextSSH, sshAuthCommonArgs *pAuthCommon
         case akt_ecc_ed:
         case akt_ecc:
         {
-            *pIsGoodKeyType = TRUE;
             ECCKey *pECCKey = pPublicKey->key.pECC;
             ubyte4 curveId = 0;
+            *pIsGoodKeyType = TRUE;
 
 #ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
             status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveId);

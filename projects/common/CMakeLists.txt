@@ -2,11 +2,23 @@
 # CMake build script for DigiCert Common Library
 #
 
-cmake_minimum_required(VERSION 3.16)
+if(BUILD_FOR_OSI)
+  cmake_minimum_required(VERSION 3.16)
+else()
+  cmake_minimum_required(VERSION 3.5)
+endif()
 
-option(CM_ENABLE_DEBUG "Enable Debug logs." OFF)
+if(BUILD_FOR_OSI)
+  option(CM_ENABLE_DEBUG "Enable Debug logs." ON)
+else()
+  option(CM_ENABLE_DEBUG "Enable Debug logs." OFF)
+endif()
 option(CM_ENABLE_FIPS "Build with FIPS enabled." OFF)
-option(CM_ENABLE_URI "Enable URI ." OFF)
+if(BUILD_FOR_OSI)
+  option(CM_ENABLE_URI "Enable URI ." ON)
+else()
+  option(CM_ENABLE_URI "Enable URI ." OFF)
+endif()
 option(CM_ENABLE_MPART "Enable MEM PART ." OFF)
 option(CM_ENABLE_MPART_TPLA "Enable MEM PART configured for TPLA." OFF)
 option(CM_ENABLE_MEM_PROFILE "Enable Memory Profiling." OFF)
@@ -24,10 +36,21 @@ option(CM_ENABLE_ARG_PARSER "Argument parser." OFF)
 option(CM_ENABLE_MSG_LOG "Message logger." OFF)
 option(CM_ENABLE_MSG_LOG_TIMESTAMP "Enable message logger timestamp." OFF)
 option(CM_ENABLE_PROTOBUF "Protobuf APIs." OFF)
+option(CM_ENABLE_MIME_PARSER "Mime parser APIs." OFF)
 option(CM_ENABLE_COMMON_UTILS "Common utility." OFF)
 option(CM_ENABLE_VLONG_CONST "Enable vlong const time ops." OFF)
 option(CM_BUILD_X32    "Build for 32Bit Machine." OFF)
 option(CM_BUILD_X64    "Build for 64Bit Machine." OFF)
+if (DEFINED SECURE_PATH)
+option(CM_ENABLE_ABSOLUTE_PATH    "Enable absolute path support." ON)
+else()
+option(CM_ENABLE_ABSOLUTE_PATH    "Enable absolute path support." OFF)
+endif()
+if(BUILD_FOR_OSI)
+  option(CM_ENABLE_POSIX_SUPPORT    "Enable posix support." ON)
+else()
+  option(CM_ENABLE_POSIX_SUPPORT    "Enable posix support." OFF)
+endif()
 if (WIN32)
     option(CM_WIN_FORCE_LINKAGE "Force linkage for shared library." OFF)
 endif()
@@ -46,7 +69,9 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-set(LIB_DIR "${MSS_DIR}/lib")
+if(BUILD_FOR_OSI)
+  set(LIB_DIR "${MSS_DIR}/lib")
+endif()
 
 set(LIB_TYPE "SHARED" CACHE STRING "Type of library to build. (SHARED or STATIC)")
 message("LIB_TYPE           = ${LIB_TYPE}")
@@ -111,6 +136,11 @@ string(TIMESTAMP TP_BUILD_DATE "%Y-%m-%d %H:%M")
 
 # copyright year
 string(TIMESTAMP CURR_YEAR "%Y")
+if(NOT BUILD_FOR_OSI)
+  configure_file(${MSS_SRC_DIR}/common/tp_version.h.in
+                 ${MSS_SRC_DIR}/common/tp_version.h
+                 @ONLY)
+endif()
 
 ## END - Building tp_version.h
 
@@ -220,6 +250,11 @@ if(CM_ENABLE_PROTOBUF)
   message("\nMOCANA_PROTOBUF_FLAGS_FILE = ${MOCANA_PROTOBUF_FLAGS_FILE}")
 endif()
 
+if(CM_ENABLE_MIME_PARSER)
+  set(MOCANA_MIME_PARSER_FLAGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/mime_parser/mocana_flags.txt")
+  message("\nMOCANA_MIME_PARSER_FLAGS_FILE = ${MOCANA_MIME_PARSER_FLAGS_FILE}")
+endif()
+
 if(CM_ENABLE_COMMON_UTILS)
   set(MOCANA_COMMON_UTILS_FLAGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/common_utils/mocana_flags.txt")
   message("\nMOCANA_COMMON_UTILS_FLAGS_FILE = ${MOCANA_COMMON_UTILS_FLAGS_FILE}")
@@ -250,8 +285,6 @@ endif()
 
 # Adding debug flags
 if(CM_ENABLE_DEBUG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   file(STRINGS ${MOCANA_DEBUG_FLAGS_FILE} mocana_debug_flags)
   set(mocana_flags ${mocana_flags} ${mocana_debug_flags})
 endif()
@@ -326,6 +359,11 @@ if(CM_ENABLE_PROTOBUF)
   set(mocana_flags ${mocana_flags} ${mocana_protobuf_flags})
 endif()
 
+if(CM_ENABLE_MIME_PARSER)
+  file(STRINGS ${MOCANA_MIME_PARSER_FLAGS_FILE} mocana_mime_parser_flags)
+  set(mocana_flags ${mocana_flags} ${mocana_mime_parser_flags})
+endif()
+
 if(CM_ENABLE_COMMON_UTILS)
   file(STRINGS ${MOCANA_COMMON_UTILS_FLAGS_FILE} mocana_common_utils_flags)
   set(mocana_flags ${mocana_flags} ${mocana_common_utils_flags})
@@ -348,11 +386,18 @@ if(CM_ENABLE_MSG_LOG_TIMESTAMP)
   set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_MSG_LOG_TIMESTAMP__)
 endif()
 
+if(CM_ENABLE_POSIX_SUPPORT)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_POSIX_SUPPORT__)
+endif()
+
+if(CM_ENABLE_ABSOLUTE_PATH)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
+endif()
+
 if (DEFINED SECURE_PATH)
   set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SECURE_PATH__)
-  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
   message("\nSECURE_PATH = ${SECURE_PATH}")
-  add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
+  add_definitions("-DMANDATORY_BASE_PATH=\"\"${SECURE_PATH}\"\"")
 endif()
 
 # Now load all flags into MOCANA_FLAGS
@@ -393,8 +438,18 @@ endforeach()
 ########################################################################
 
 # Add file sources from mss_sources.txt
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_sources.txt" MSS_SOURCES)
+if(BUILD_FOR_OSI)
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_osi_sources.txt" MSS_SOURCES)
+else()
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_sources.txt" MSS_SOURCES)
+endif()
+
 string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MSS_SOURCES "${MSS_SOURCES}")
+if(BUILD_FOR_OSI)
+  string(REGEX REPLACE "PARSE_PEM_DIR/" "common/" MSS_SOURCES "${MSS_SOURCES}")
+else()
+  string(REGEX REPLACE "PARSE_PEM_DIR/" "crypto/" MSS_SOURCES "${MSS_SOURCES}")
+endif()
 
 if(WIN32)
   file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_win_sources.txt" MSS_WIN_SOURCES)
@@ -444,6 +499,12 @@ if(CM_ENABLE_PROTOBUF)
   set(MSS_SOURCES ${MSS_SOURCES} ${PROTOBUF_SOURCES})
 endif()
 
+if(CM_ENABLE_MIME_PARSER)
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mime_parser/mss_sources.txt" MIME_PARSER_SOURCES)
+  string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MIME_PARSER_SOURCES "${MIME_PARSER_SOURCES}")
+  set(MSS_SOURCES ${MSS_SOURCES} ${MIME_PARSER_SOURCES})
+endif()
+
 if(CM_ENABLE_COMMON_UTILS)
   file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/common_utils/mss_sources.txt" COMMON_UTILS_SOURCES)
   string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" COMMON_UTILS_SOURCES "${COMMON_UTILS_SOURCES}")
@@ -484,13 +545,18 @@ endif()
 if("SHARED" STREQUAL "${LIB_TYPE}")
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:${PROJECT_NAME}>
-        "${LIB_DIR}")
-  set(PLATFORM_LIB "${LIB_DIR}/libplatform.so")
+  if(BUILD_FOR_OSI)
+    add_custom_command(
+      TARGET ${PROJECT_NAME}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+          $<TARGET_FILE:${PROJECT_NAME}>
+          "${LIB_DIR}")
+    set(PLATFORM_LIB "${LIB_DIR}/libplatform.so")
+  else()
+    locate_lib(PLATFORM_LIB platform)
+  endif()
+
   if(CM_ENABLE_FIPS)
     if(WIN32)
       locate_lib(FIPS_LIB libmss)

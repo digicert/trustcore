@@ -85,6 +85,8 @@ static MSTATUS UTILS_arrayToUbyte4(const ubyte *in, ubyte4 *out)
 
 /*------------------------------------------------------------------*/
 
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 {
     if (NULL == out)
@@ -103,7 +105,8 @@ static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 
     return OK;
 }
-
+#endif
+#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
 
 /*------------------------------------------------------------------*/
 
@@ -205,6 +208,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS
 getPacketLength(sshClientContext *pContextSSH, ubyte *pPacketLength)
 {
@@ -234,7 +239,8 @@ getPacketLength(sshClientContext *pContextSSH, ubyte *pPacketLength)
 exit:
     return status;
 }
-
+#endif
+#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
 
 /*------------------------------------------------------------------*/
 
@@ -408,6 +414,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS
 decryptAeadBlocksEx(sshClientContext *pContextSSH)
 {
@@ -453,7 +461,8 @@ exit:
     INBOUND_INC_SEQUENCE_NUM(pContextSSH);
     return status;
 }
-
+#endif
+#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
 
 /*------------------------------------------------------------------*/
 
@@ -594,11 +603,11 @@ receiveMAC(sshClientContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPack
 
             if (OK <= status)
             {
-                sbyte4 result;
+                intBoolean result;
 
                 /* verify the MAC sent is correct */
-                if (OK == (status = MOC_MEMCMP(tempMac, INBOUND_MAC_BUFFER(pContextSSH),
-                                               INBOUND_MAC_SIZE(pContextSSH), &result)))
+                if (OK == (status = MOC_CTIME_MATCH(tempMac, INBOUND_MAC_BUFFER(pContextSSH),
+                                                    INBOUND_MAC_SIZE(pContextSSH), &result)))
                 {
                     if (0 != result)
                     {
@@ -737,7 +746,7 @@ clientSaveRxdVersionString(sshClientContext *pContextSSH)
     SERVER_HELLO_COMMENT_LEN(pContextSSH) = 0;
 
     /* copy out client hello string */
-    while ((CR != (INBOUND_BUFFER(pContextSSH))[SERVER_HELLO_COMMENT_LEN(pContextSSH)]) &&
+    while ((MOC_CR != (INBOUND_BUFFER(pContextSSH))[SERVER_HELLO_COMMENT_LEN(pContextSSH)]) &&
            (LF != (INBOUND_BUFFER(pContextSSH))[SERVER_HELLO_COMMENT_LEN(pContextSSH)]))
     {
         (SERVER_HELLO_COMMENT(pContextSSH))[SERVER_HELLO_COMMENT_LEN(pContextSSH)] =

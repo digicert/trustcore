@@ -294,7 +294,7 @@ DEBUG_CONSOLE_printNewLine(sbyte4 errorClass, sbyte *pPrintString)
 
     if (NULL != pPrintString)
     {
-        DB_PRINT((char *)pPrintString);
+        DB_PRINT("%s", (char *)pPrintString);
     }
     DB_PRINT((char *)CRLF);
 }
@@ -649,6 +649,7 @@ DEBUG_CONSOLE_start(ubyte2 listenPort)
 #endif
     }
 #else
+    MOC_UNUSED(listenPort);
 #ifdef __ENABLE_ALL_DEBUGGING__
     DB_PRINT("%s: Should not spawn debug thread\n", __FUNCTION__);
 #endif
@@ -700,7 +701,6 @@ DEBUG_CONSOLE_setOutput(char *filename)
 #if !defined(__RTOS_ANDROID__) && !defined(__UCOS_DIRECT_RTOS__)
     FILE   *fod;
     MSTATUS status  = OK;
-    int fd = -1;
 
     DB_PRINT("Switching output stream\n");
     if (dboutput)
@@ -708,19 +708,24 @@ DEBUG_CONSOLE_setOutput(char *filename)
         (void) fclose(dboutput);
         dboutput = NULL;
     }
-    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+#if defined(__ENABLE_DIGICERT_POSIX_SUPPORT__)
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (fd >= 0)
     {
         fod = fdopen(fd, "w");
         if (NULL == fod)
         {
             close(fd);
-            ERROR_PRINT(("Failed to open %s for writing", filename));
-            status = ERR_DEBUG_CONSOLE_CHANNEL;
-            goto exit;
         }
     }
     else
+    {
+        fod = NULL;
+    }
+#else
+    fod = fopen(filename, "w");
+#endif
+    if (NULL == fod)
     {
         ERROR_PRINT(("Failed to open %s for writing", filename));
         status = ERR_DEBUG_CONSOLE_CHANNEL;
@@ -1048,17 +1053,15 @@ DEBUG_CONSOLE_printf(const char *format, ...)
 
 }
 #else
-extern void
-DEBUG_CONSOLE_printf(const char *format, ...)
+
+extern void DEBUG_CONSOLE_printfVarList(const char *format, moc_va_list valist)
 {
-    moc_va_list valist;
 #ifdef __ENABLE_MOCANA_PRINTF__
     sbyte printString[LOG_BUFSZ + 1] = { 0 };
 #endif
 #ifdef __ENABLE_MOCANA_DEBUG_FORWARD__
     sbyte dbgFwdMsgString[LOG_BUFSZ + 1] = { 0 };
 #endif
-    MOC_VA_START(valist, format);
 
 #ifdef __ENABLE_MOCANA_PRINTF__
     MOC_VSNPRINTF(printString, LOG_BUFSZ, (const ubyte *)format, &valist);
@@ -1098,6 +1101,22 @@ DEBUG_CONSOLE_printf(const char *format, ...)
 #endif
 }
 
+extern void
+DEBUG_CONSOLE_printf(const char *format, ...)
+{
+    moc_va_list valist;
+#ifdef __ENABLE_MOCANA_PRINTF__
+    sbyte printString[LOG_BUFSZ + 1] = { 0 };
+#endif
+#ifdef __ENABLE_MOCANA_DEBUG_FORWARD__
+    sbyte dbgFwdMsgString[LOG_BUFSZ + 1] = { 0 };
+#endif
+    MOC_VA_START(valist, format);
+
+    DEBUG_CONSOLE_printfVarList(format, valist);
+
+    MOC_VA_END(valist);
+}
 #endif
 
 #endif /* __ENABLE_MOCANA_DEBUG_CONSOLE__ */

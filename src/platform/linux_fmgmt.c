@@ -10,7 +10,7 @@
  * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
  *   or https://www.digicert.com/master-services-agreement/
  * 
- * For commercial licensing, contact DigiCert at sales@digicert.com.*
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -79,6 +79,11 @@ exit:
 extern intBoolean LINUX_needFullPath ()
 {
     return ((0 < mountPathLen) || (0 < workingDirPathLen));
+}
+#else
+extern signed int TP_setMountPoint (unsigned char *pNewMountPath)
+{
+    return ERR_NOT_IMPLEMENTED;
 }
 #endif
 
@@ -164,17 +169,6 @@ extern intBoolean LINUX_pathExists (const sbyte *pFilePath, FileDescriptorInfo *
         pFileInfo->isRead = FALSE;
     else
         pFileInfo->isRead = TRUE;
-
-#if 0
-    else if (0 != S_ISBLK(statFile.st_mode))  /* Test for a block special file. */
-        *pType = isBlockFile;
-    else if (0 != S_ISCHR(statFile.st_mode))  /* Test for a character special file. */
-        *pType = isCharFile;
-    else if (0 != S_ISFIFO(statFile.st_mode)) /* Test for a pipe of FIFO special file. */
-        *pType = isFifo;
-    else if (0 != S_ISSOCK(statFile.st_mode)) /* Test for a socket. */
-        *pType = isSocket;
-#endif
 
     return TRUE;
 }
@@ -570,7 +564,7 @@ extern MSTATUS LINUX_changeCWD (const sbyte *pNewCwd)
         if (FTDirectory == fileInfo.type)
         {
             newCwdLength = MOC_STRLEN ((const sbyte *) pNewCwd);
-            if ((1 > newCwdLength) || (WORKING_DIR_PATH_MAX_LEN < (newCwdLength + 1)))
+            if ((1 > newCwdLength) || (WORKING_DIR_PATH_MAX_LEN <= (newCwdLength + 1)))
             {
                 status = ERR_BUFFER_TOO_SMALL;
                 goto exit;
@@ -683,7 +677,7 @@ extern MSTATUS LINUX_getNextFile (DirectoryDescriptor pDirCtx, DirectoryEntry *p
      * if NULL is returned. */
     errno = 0;
 
-    pDirEntry = readdir (pDir);
+    pDirEntry = readdir(pDir);
     if (NULL == pDirEntry)
     {
         pFileCtx->pCtx = NULL;

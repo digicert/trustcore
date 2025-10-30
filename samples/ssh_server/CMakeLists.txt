@@ -1,6 +1,8 @@
 
 cmake_minimum_required(VERSION 3.16)
 
+option(CM_ENABLE_TAP                                "Enable TAP"                          ON)
+
 project(SSHServer LANGUAGES C CXX)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
@@ -27,7 +29,7 @@ set(SAMPLE_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../samples/bin")
 set(SAMPLE_FILE_PATH "${SAMPLE_BIN_DIR}/ssh_server")
 
 set(INCLUDE_DIR
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/ssh"
     )
 include_directories(${INCLUDE_DIR})
 
@@ -41,12 +43,12 @@ set(SOURCE_FILES
 
 add_executable(ssh_server ${SOURCE_FILES})
 
-
 set(ASN1_LIB          "${LIB_DIR}/libasn1.so")
 set(COMMON_LIB        "${LIB_DIR}/libcommon.so")
 set(INITIALIZE_LIB    "${LIB_DIR}/libinitialize.so")
 set(PLATFORM_LIB      "${LIB_DIR}/libplatform.so")
 set(NANOSSHS_LIB      "${LIB_DIR}/libnanosshs.so")
+
 add_library(nanocap SHARED IMPORTED)
   set_target_properties(nanocap PROPERTIES
   IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocap.so")
@@ -63,17 +65,59 @@ add_library(cryptointerface SHARED IMPORTED)
   set_target_properties(cryptointerface PROPERTIES
   IMPORTED_LOCATION "${CRYPTO_LIBS}/libcryptointerface.so")
 
-target_link_libraries(ssh_server PRIVATE
-    ${PLATFORM_LIB}
-    ${ASN1_LIB}
-    ${COMMON_LIB}
-    ${INITIALIZE_LIB}
-    ${NANOSSHS_LIB}
-    nanocap
-    nanocert
-    nanocrypto
-    cryptointerface
-    )
+if(CM_ENABLE_TAP)
+  add_library(nanotap2_common SHARED IMPORTED)
+    set_target_properties(nanotap2_common PROPERTIES
+    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2_common.so")
+
+  add_library(libnanotap2_configparser SHARED IMPORTED)
+    set_target_properties(libnanotap2_configparser PROPERTIES
+    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2_configparser.so")
+
+  add_library(libnanotap2 SHARED IMPORTED)
+    set_target_properties(libnanotap2 PROPERTIES
+    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2.so")
+
+  add_library(libsmptpm2 SHARED IMPORTED)
+    set_target_properties(libsmptpm2 PROPERTIES
+    IMPORTED_LOCATION "${CRYPTO_LIBS}/libsmptpm2.so")
+
+  add_library(libtpm2 SHARED IMPORTED)
+    set_target_properties(libtpm2 PROPERTIES
+    IMPORTED_LOCATION "${CRYPTO_LIBS}/libtpm2.so")
+
+  target_link_libraries(ssh_server PRIVATE
+      ${PLATFORM_LIB}
+      ${ASN1_LIB}
+      ${COMMON_LIB}
+      ${INITIALIZE_LIB}
+      ${NANOSSHS_LIB}
+      nanocap
+      nanocert
+      nanocrypto
+      cryptointerface
+      nanotap2_common
+      libnanotap2_configparser
+      libnanotap2
+      libsmptpm2
+      libtpm2
+      )
+
+else()
+
+  target_link_libraries(ssh_server PRIVATE
+      ${PLATFORM_LIB}
+      ${ASN1_LIB}
+      ${COMMON_LIB}
+      ${INITIALIZE_LIB}
+      ${NANOSSHS_LIB}
+      nanocap
+      nanocert
+      nanocrypto
+      cryptointerface
+      )
+
+endif()
 
 add_custom_command(
   TARGET ssh_server

@@ -129,6 +129,7 @@ MOC_EXTERN MSTATUS DER_SetItemData(DER_ITEMPTR pItem, ubyte4 length, const ubyte
 /* reusable functions */
 /* add a sequence consisting of OID followed by NULL */
 MOC_EXTERN MSTATUS DER_StoreAlgoOID(DER_ITEMPTR pRoot, const ubyte* oid, intBoolean addNullParam);
+MOC_EXTERN MSTATUS DER_StoreAlgoOIDownData(DER_ITEMPTR pRoot, ubyte4 oidLen, ubyte **ppOid, intBoolean addNullTag);
 
 /* copy an ASN1 Item to the parent */
 MOC_EXTERN MSTATUS DER_AddASN1Item(DER_ITEMPTR pParent, ASN1_ITEMPTR pItem, CStream cs,
@@ -143,7 +144,7 @@ MOC_EXTERN MSTATUS DER_Free(DER_ITEMPTR pRoot);
     DER_AddItem( pParent, (CONSTRUCTED|SEQUENCE), 0, 0, ppNewDERItem)
 
 #define DER_AddSet( pParent, ppNewDERItem) \
-    DER_AddItem( pParent, (CONSTRUCTED|SET), 0, 0, ppNewDERItem)
+    DER_AddItem( pParent, (CONSTRUCTED|MOC_SET), 0, 0, ppNewDERItem)
 
 #define DER_AddTag( pParent, tagValue, ppNewDERItem) \
     DER_AddItem( pParent, (CONSTRUCTED|CONTEXT|tagValue), 0, 0, ppNewDERItem)
@@ -156,7 +157,7 @@ MOC_EXTERN MSTATUS DER_Free(DER_ITEMPTR pRoot);
     DER_AddBERItem( pParent, (CONSTRUCTED|SEQUENCE), ppNewDERItem)
 
 #define DER_AddBERSet( pParent, ppNewDERItem) \
-    DER_AddBERItem( pParent, (CONSTRUCTED|SET), ppNewDERItem)
+    DER_AddBERItem( pParent, (CONSTRUCTED|MOC_SET), ppNewDERItem)
 
 #define DER_AddBERTag( pParent, tagValue, ppNewDERItem) \
     DER_AddBERItem( pParent, (CONSTRUCTED|CONTEXT|tagValue), ppNewDERItem)

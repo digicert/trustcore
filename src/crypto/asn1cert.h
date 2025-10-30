@@ -259,6 +259,25 @@ MOC_EXTERN MSTATUS ASN1CERT_Sign(MOC_ASYM(hwAccelDescr hwAccelCtx)
 MOC_EXTERN MSTATUS ASN1CERT_AddExtensions(DER_ITEMPTR pExtensionTag, const certExtensions* pExtensions,
                                       DER_ITEMPTR *ppExtsItem);
 
+/**
+ * @brief   Converts a raw ecdsa signature (R,S) into asn1 format.
+ *
+ * @details Converts a raw ecdsa signature (R,S) into asn1 format.
+ *
+ * @param pR       Buffer holding a big endian R value.
+ * @param rLen     The length of \c pR in bytes.
+ * @param pS       Buffer holding a big endian S value.
+ * @param sLen     The length of \c pS in bytes.
+ * @param ppSer    Location that will receive the newly generated ans1 format serialization.
+ * @param pSerLen  Contents will be set to the length of the serialization in bytes.
+ *
+ * @return  \c OK (0) if successful, otherwise a negative number
+ *          error code from merrors.h.
+ */
+MOC_EXTERN MSTATUS ASN1CERT_encodeRS( ubyte *pR, ubyte4 rLen,
+                                      ubyte *pS, ubyte4 sLen,
+                                      ubyte **ppSer, ubyte4 *pSerLen);
+
 #if (defined(__ENABLE_MOCANA_ECC__))
 /**
  * @brief   Writes ECC public key information to a certificate in the process of being generated.

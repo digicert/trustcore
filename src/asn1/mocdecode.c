@@ -103,5 +103,9 @@ MSTATUS IndefiniteLengthDataReturnError (
   MAsn1Element *pElement
   )
 {
+  MOC_UNUSED(pCallbackInfo);
+  MOC_UNUSED(pData);
+  MOC_UNUSED(dataLen);
+  MOC_UNUSED(pElement);
   return (ERR_ASN_INDEFINITE_LEN_NOT_ALLOWED);
 }

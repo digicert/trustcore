@@ -84,7 +84,7 @@ MOC_EXTERN MSTATUS SSH_HYBRID_getHybridIdsByName(const sshStringBuffer* pHybridE
  *          English text error identifier corresponding to the function's
  *          returned error status, use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS SSH_HYBRID_extractHybridKey(MOC_ECC(hwAccelDescr hwAccelCtx) sshStringBuffer* pPublicKeyBlob, AsymmetricKey *pPublicKey, ubyte4 index, vlong **ppVlongQueue);
+MOC_EXTERN MSTATUS SSH_HYBRID_extractHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) sshStringBuffer* pPublicKeyBlob, AsymmetricKey *pPublicKey, ubyte4 index, vlong **ppVlongQueue);
 
 /**
  * Builds an SSH hybrid public key blob from a hybrid AsymmetricKey.
@@ -100,8 +100,8 @@ MOC_EXTERN MSTATUS SSH_HYBRID_extractHybridKey(MOC_ECC(hwAccelDescr hwAccelCtx) 
  *          English text error identifier corresponding to the function's
  *          returned error status, use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS SSH_HYBRID_buildHybridKey(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pPublicKey, intBoolean isCertificate,
-                                intBoolean isServer, ubyte **ppPublicKeyBlob, ubyte4 *pPublicKeyBlobLen);
+MOC_EXTERN MSTATUS SSH_HYBRID_buildHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pPublicKey, intBoolean isCertificate,
+                                             intBoolean isServer, ubyte **ppPublicKeyBlob, ubyte4 *pPublicKeyBlobLen);
 /**
  * Calculates the maximum possible length of a hybrid SSH signature.
  *
@@ -114,7 +114,7 @@ MOC_EXTERN MSTATUS SSH_HYBRID_buildHybridKey(MOC_ECC(hwAccelDescr hwAccelCtx) As
  *          English text error identifier corresponding to the function's
  *          returned error status, use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS SSH_HYBRID_calcHybridSignatureLength(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, intBoolean isCertificate, ubyte4 *pSignatureLength);
+MOC_EXTERN MSTATUS SSH_HYBRID_calcHybridSignatureLength(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, intBoolean isCertificate, ubyte4 *pSignatureLength);
 
 /**
  * Builds a hybrid (ECC + post-quantum) SSH signature in wire format.
@@ -132,9 +132,9 @@ MOC_EXTERN MSTATUS SSH_HYBRID_calcHybridSignatureLength(MOC_ECC(hwAccelDescr hwA
  *          English text error identifier corresponding to the function's
  *          returned error status, use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS SSH_HYBRID_buildHybridSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, intBoolean isCertificate,
-                              intBoolean isServer, const ubyte* hash,
-                              ubyte4 hashLen, ubyte **ppSignature, ubyte4 *pSignatureLength);
+MOC_EXTERN MSTATUS SSH_HYBRID_buildHybridSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, intBoolean isCertificate,
+                                                   intBoolean isServer, const ubyte* hash,
+                                                   ubyte4 hashLen, ubyte **ppSignature, ubyte4 *pSignatureLength);
 
 /**
  * Verifies a hybrid (ECC + post-quantum) SSH signature.
@@ -152,7 +152,7 @@ MOC_EXTERN MSTATUS SSH_HYBRID_buildHybridSignature(MOC_ECC(hwAccelDescr hwAccelC
  *          English text error identifier corresponding to the function's
  *          returned error status, use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS SSH_HYBRID_verifyHybridSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pPublicKey, intBoolean isServer, const ubyte* hash, ubyte4 hashLen, sshStringBuffer* pSignature, intBoolean *pIsGoodSignature, vlong **ppVlongQueue);
+MOC_EXTERN MSTATUS SSH_HYBRID_verifyHybridSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pPublicKey, intBoolean isServer, const ubyte* hash, ubyte4 hashLen, sshStringBuffer* pSignature, intBoolean *pIsGoodSignature, vlong **ppVlongQueue);
 
 #endif /* __SSH_HYBRID_HEADER__ */
 

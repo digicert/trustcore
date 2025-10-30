@@ -20,6 +20,8 @@ elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ARM")
 
 elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ARM64")
 
+elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "posix")
+
 endif()
 
 ########################################################################
@@ -90,6 +92,10 @@ if(NOT DEFINED MX3264_GCC_FLAG)
                 endif()
             elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64-oe")
                 set(CM_BUILD_X64 ON)
+            elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "posix")
+                set(MX3264_GCC_FLAG "")
+            elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "xtensa")
+                set(MX3264_GCC_FLAG "")
             else()
                 message(FATAL_ERROR "(2) Unexpected compiler '${CMAKE_C_COMPILER}' and processor '${CMAKE_SYSTEM_PROCESSOR}'\n")
             endif()
@@ -180,6 +186,9 @@ else()
     else()
     # we assume generic Linux
         set(RTOS_FLAG_MOCANA "-D__RTOS_LINUX__")
+        if (CM_ENABLE_ZEPHYR_OS)
+            set(RTOS_FLAG_MOCANA "${RTOS_FLAG_MOCANA} -D__RTOS_ZEPHYR__")
+        endif()
     # Adding Android RTOS flag too for android specific checks
         if (ANDROID)
             set(RTOS_FLAG_MOCANA "${RTOS_FLAG_MOCANA} -D__RTOS_ANDROID__")
@@ -344,6 +353,13 @@ endif()
         set(WERROR -Werror)
     endif()
  endif()
+
+if (CM_ENABLE_PG)
+   add_compile_options(-pg)
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pg")
+   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+   set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -pg")
+endif()
 
 #set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -O3")
 #set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -funroll-all-loops")

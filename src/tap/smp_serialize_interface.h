@@ -1,0 +1,240 @@
+/**
+ * @file smp_serialize_interface.h
+ *
+ * @brief Shadow structures for SMP interface types and structures.
+ * @details This file contains shadow structure definitions and functions for
+ * Mocana SMP interface definitions.
+ *
+ * @flags
+ * This file requires that the following flags be defined:
+ *    + \c \__ENABLE_MOCANA_SMP__
+ *
+ * Copyright (c) Mocana Corp 2018. All Rights Reserved.
+ * Proprietary and Confidential Material.
+ *
+ */
+
+
+/*------------------------------------------------------------------*/
+
+#ifndef __SMP_SERIALIZE_INTERFACE_HEADER__
+#define __SMP_SERIALIZE_INTERFACE_HEADER__
+
+#include "../common/mtypes.h"
+#include "../common/merrors.h"
+#include "tap_serialize_smp.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*! @cond */
+
+#ifdef __ENABLE_MOCANA_SMP__
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleListCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleListRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_freeModuleListCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleInfoCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleInfoRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleSlotsCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleSlotsRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getTokenListCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getTokenListRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getTokenInfoCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getTokenInfoRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getObjectListCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getObjectListRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getObjectInfoCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getObjectInfoRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_provisionModuleCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_resetModuleCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_provisionTokenCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_provisionTokenRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_resetTokenCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_deleteTokenCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_initModuleCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_initModuleRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_uninitModuleCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_associateModuleCredentialsCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_initTokenCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_initTokenRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_uninitTokenCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_associateTokenCredentialsCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_initObjectCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_initObjectRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_importObjectCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_importObjectRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_uninitObjectCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_associateObjectCredentialsCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_verifyCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_verifyRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_verifyInitCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_verifyInitRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_verifyUpdateCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_verifyFinalCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_verifyFinalRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signDigestCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signDigestRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signBufferCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signBufferRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signInitCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signInitRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signUpdateCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signFinalCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_signFinalRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_freeSignatureBufferCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptInitCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptInitRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptUpdateCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptUpdateRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptFinalCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_encryptFinalRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptInitCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptInitRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptUpdateCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptUpdateRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptFinalCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_decryptFinalRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_digestCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_digestRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_digestInitCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_digestInitRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_digestUpdateCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_digestFinalCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_digestFinalRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_ecdhGenerateSharedSecretCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_ecdhGenerateSharedSecretRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getRandomCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getRandomRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_stirRandomCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getTrustedDataCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getTrustedDataRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_updateTrustedDataCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_updateTrustedDataRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_sealWithTrustedDataCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_sealWithTrustedDataRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_unsealWithTrustedDataCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_unsealWithTrustedDataRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_setPolicyStorageCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getPolicyStorageCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getPolicyStorageRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getCertificateRequestValidationAttrsCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getCertificateRequestValidationAttrsRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_unWrapKeyValidatedSecretCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_unWrapKeyValidatedSecretRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getQuoteCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getQuoteRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_createAsymmetricKeyCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_createAsymmetricKeyRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getPublicKeyCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getPublicKeyRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_freePublicKeyCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_createSymmetricKeyCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_createSymmetricKeyRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_exportObjectCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_exportObjectRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_serializeObjectCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_serializeObjectRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_createObjectCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_createObjectRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_deleteObjectCmdParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getRootOfTrustCertificateCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getRootOfTrustCertificateRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getRootOfTrustKeyHandleCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getRootOfTrustKeyHandleRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getLastErrorCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getLastErrorRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_selfTestCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_selfTestRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_selfTestPollCmdParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_selfTestRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleCapRspParams;
+
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_CmdReqParams;
+extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_CmdRspParams;
+
+MOC_EXTERN_DATA_DECL const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_CmdReq;
+MOC_EXTERN_DATA_DECL const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_CmdRsp;
+
+#endif /* __ENABLE_MOCANA_SMP__ */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __SMP_SERIALIZE_INTERFACE_HEADER__ */

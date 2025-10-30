@@ -4,18 +4,18 @@
  * SSH Developer API
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
 /**
-@file       ssh.c 
+@file       ssh.c
 @brief      NanoSSH Server developer API.
 @details    This file contains NanoSSH Server API functions.
 
@@ -529,6 +529,7 @@ doProtocol(sshContext *pContextSSH, sbyte4 index, intBoolean useTimeout, ubyte4 
             if (RTOS_deltaMS(&SSH_TIMER_START_TIME(pContextSSH), NULL) >= pContextSSH->maxSessionTimeLimit)
             {
                 status = ERR_SSH_MAX_SESSION_TIME_LIMIT_EXCEEDED;
+                SSH_setErrorCode(pContextSSH->connectionInstance, status);
                 goto exit;
             }
 
@@ -594,7 +595,10 @@ exit:
     {
         /* did we reach time limit? */
         if (RTOS_deltaMS(&pContextSSH->sessionStartTime, NULL) > pContextSSH->maxSessionTimeLimit)
+        {
             status = ERR_SSH_MAX_SESSION_TIME_LIMIT_EXCEEDED;   /* change error code */
+            SSH_setErrorCode(pContextSSH->connectionInstance, status);
+        }
     }
 #endif /* __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__ */
 
@@ -1333,7 +1337,7 @@ exit:
 
 #ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
 extern sbyte4
-SSH_closeConnection(sbyte4 connectionInstance)
+SSH_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
 {
     /* for multi-concurrent sessions, a thread should be spawned for this call */
     sbyte4     index;
@@ -1347,7 +1351,22 @@ SSH_closeConnection(sbyte4 connectionInstance)
 
             if (NULL != g_connectTable[index].pContextSSH)
             {
-                SSH_SESSION_sendClose(g_connectTable[index].pContextSSH);
+                SSH_SESSION_sendClose(g_connectTable[index].pContextSSH, errorCode);
+
+#ifdef __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__
+                /* Before closing socket on server side let's drain pending messages from the client */
+                if (TCP_IS_SOCKET_VALID(g_connectTable[index].socket))
+                {
+                    static ubyte drainBuf[256];
+                    ubyte4 drained;
+                    do
+                    {
+                         drained = 0;
+                        (void)TCP_READ_AVL(g_connectTable[index].socket, (sbyte*)drainBuf, sizeof(drainBuf), &drained, 100);
+                    } while(0 != drained);
+                }
+#endif /* __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__ */
+
                 SSH_CONTEXT_deallocStructures(&(g_connectTable[index].pContextSSH));
             }
 
@@ -1649,13 +1668,15 @@ SSH_compareAuthKeys(const ubyte *pPubKey,  ubyte4 pubKeyLength,
         if (OK != status)
             goto exit;
     }
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
     else if (akt_hybrid == p_keyDescr.type)
     {
         /* NOTE: if hybrid with RSA is ever allowed this will need an RSA branch */
         status = CRYPTO_INTERFACE_EC_equalKeyAux(MOC_ECC(hwAccelCtx) p_keyDescr.key.pECC, p_keyFileContext.key.pECC, (byteBoolean*)pRetIsMatch);
         if (OK != status)
             goto exit;
-        
+
         if (FALSE == *pRetIsMatch)
         {
             goto exit;
@@ -2047,6 +2068,7 @@ SSH_ASYNC_recvMessage(sbyte4 connectionInstance,
                 if (RTOS_deltaMS(&pContextSSH->sessionStartTime, NULL) > pContextSSH->maxSessionTimeLimit)
                 {
                     status = ERR_SSH_MAX_SESSION_TIME_LIMIT_EXCEEDED;
+                    SSH_setErrorCode(pContextSSH->connectionInstance, status);
                     goto exit;
                 }
             }
@@ -2360,7 +2382,7 @@ SSH_ASYNC_sendMessagePending(sbyte4 connectionInstance, ubyte4 *pRetNumBytesPend
 
 #ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
 extern sbyte4
-SSH_ASYNC_closeConnection(sbyte4 connectionInstance)
+SSH_ASYNC_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
 {
     sbyte4     index;
     MSTATUS status = ERR_SSH_BAD_ID;
@@ -2373,7 +2395,22 @@ SSH_ASYNC_closeConnection(sbyte4 connectionInstance)
 
             if (NULL != g_connectTable[index].pContextSSH)
             {
-                SSH_SESSION_sendClose(g_connectTable[index].pContextSSH);
+                SSH_SESSION_sendClose(g_connectTable[index].pContextSSH, errorCode);
+
+#ifdef __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__
+                /* Before closing socket on server side let's drain pending messages from the client */
+                if (TCP_IS_SOCKET_VALID(g_connectTable[index].socket))
+                {
+                    static ubyte drainBuf[256];
+                    ubyte4 drained;
+                    do
+                    {
+                         drained = 0;
+                        (void)TCP_READ_AVL(g_connectTable[index].socket, (sbyte*)drainBuf, sizeof(drainBuf), &drained, 100);
+                    } while(0 != drained);
+                }
+#endif /* __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__ */
+
                 SSH_CONTEXT_deallocStructures(&(g_connectTable[index].pContextSSH));
             }
 

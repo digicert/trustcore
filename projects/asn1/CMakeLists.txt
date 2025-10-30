@@ -2,7 +2,11 @@
 # CMake build script for DigiCert ASN1 Library
 #
 
-cmake_minimum_required(VERSION 3.16)
+if(BUILD_FOR_OSI)
+  cmake_minimum_required(VERSION 3.16)
+else()
+  cmake_minimum_required(VERSION 3.5)
+endif()
 
 option(CM_ENABLE_DEBUG "Enable Debug logs." OFF)
 option(CM_ENABLE_CMS "Enable CMS." OFF)
@@ -29,7 +33,9 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-set(LIB_DIR "${MSS_DIR}/lib")
+if(BUILD_FOR_OSI)
+  set(LIB_DIR "${MSS_DIR}/lib")
+endif()
 
 include(locate_lib)
 
@@ -202,24 +208,34 @@ if(WIN32)
     set(MSS_BIN_DIR ${MSS_SRC_DIR}/../bin_win32)
   endif()
 else()
-  set(MSS_BIN_DIR ${MSS_SRC_DIR}/../lib)
+  if(BUILD_FOR_OSI)
+    set(MSS_BIN_DIR ${MSS_SRC_DIR}/../lib)
+  else()
+    set(MSS_BIN_DIR ${MSS_SRC_DIR}/../bin)
+  endif()
 endif()
 link_directories(${MSS_BIN_DIR})
 
 if("SHARED" STREQUAL "${LIB_TYPE}")
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:${PROJECT_NAME}>
-        "${LIB_DIR}")
+  if(BUILD_FOR_OSI)
+    add_custom_command(
+      TARGET ${PROJECT_NAME}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+          $<TARGET_FILE:${PROJECT_NAME}>
+          "${LIB_DIR}")
+  endif()
   if(CM_ENABLE_FIPS)
     locate_lib(LIBMSS_LIB libmss)
     target_link_libraries(${PROJECT_NAME} ${LIBMSS_LIB})
   endif()
-  set(COMMON_LIB "${LIB_DIR}/libcommon.so")
+  if(BUILD_FOR_OSI)
+    set(COMMON_LIB "${LIB_DIR}/libcommon.so")
+  else()
+    locate_lib(COMMON_LIB common)
+  endif()
   target_link_libraries(${PROJECT_NAME} ${COMMON_LIB})
 
 else()

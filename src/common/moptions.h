@@ -89,9 +89,14 @@
 #define __LINUX_RTOS__
 #define __LINUX_TCP__
 #define __LINUX_UDP__
-#define __LINUX_FMGMT__
 #undef MOC_UNUSED
 #define MOC_UNUSED(param) ((void)param)
+#if defined( __RTOS_ZEPHYR__ )
+#define __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#define __ZEPHYR_FMGMT__
+#else
+#define __LINUX_FMGMT__
+#endif
 #elif defined( __RTOS_WIN32__ )
 #define __WIN32_RTOS__
 #define __WIN32_TCP__

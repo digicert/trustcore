@@ -44,6 +44,8 @@
 #ifndef __MOCANA_HEADER__
 #define __MOCANA_HEADER__
 
+#include "merrors.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -622,7 +624,7 @@ MOC_EXTERN sbyte4 MOCANA_checkFile(
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation (regardless of product).
  */
-MOC_EXTERN sbyte4 MOCANA_opendir(void **pDirInfo, const char *pPath);
+MOC_EXTERN MSTATUS MOCANA_opendir(void **pDirInfo, const char *pPath);
 
 /**
  * @private
@@ -631,7 +633,7 @@ MOC_EXTERN sbyte4 MOCANA_opendir(void **pDirInfo, const char *pPath);
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation (regardless of product).
  */
-MOC_EXTERN sbyte4 MOCANA_readdir(void *pDir, void **pFileInfo);
+MOC_EXTERN MSTATUS MOCANA_readdir(void *pDir, void **pFileInfo);
 
 /**
  * @private
@@ -640,7 +642,7 @@ MOC_EXTERN sbyte4 MOCANA_readdir(void *pDir, void **pFileInfo);
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation (regardless of product).
  */
-MOC_EXTERN sbyte4 MOCANA_closedir(void *pDir);
+MOC_EXTERN MSTATUS MOCANA_closedir(void *pDir);
 
 /**
  * @endcond

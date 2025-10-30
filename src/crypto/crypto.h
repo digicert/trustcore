@@ -245,7 +245,7 @@ MOC_EXTERN MSTATUS CRYPTO_getECCHashAlgo( ubyte eccAlgoId, BulkHashAlgo **ppBulk
 MOC_EXTERN MSTATUS CRYPTO_computeBufferHash(MOC_HASH(hwAccelDescr hwAccelCtx)
                                             const ubyte* buffer,
                                             ubyte4 bytesToHash,
-                                            ubyte hash[/*CERT_MAXDIGESTSIZE*/],
+                                            ubyte hash[CERT_MAXDIGESTSIZE],
                                             sbyte4 *hashSize,
                                             ubyte4 rsaAlgoId);
 

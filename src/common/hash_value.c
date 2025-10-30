@@ -435,7 +435,7 @@ HASH_VALUE_hashGen(const void *pHashKeyData, ubyte4 hashKeyDataLength, ubyte4 in
     /* Set up the internal state */
     a = b = c = 0xdeadbeef + ((ubyte4)hashKeyDataLength) + initialHashValue;
 
-    if (0 == (((ubyte4)(pHashKeyData)) & 0x03))
+    if (0 == (((uintptr)(pHashKeyData)) & 0x03))
     {
         /* read 32-bit chunks */
         const ubyte4 *pHashKey = pHashKeyData;

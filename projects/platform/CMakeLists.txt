@@ -1,7 +1,12 @@
 ########################################################################
 # CMake build script for DigiCert Platform Library
 #
-cmake_minimum_required(VERSION 3.16)
+
+if(BUILD_FOR_OSI)
+  cmake_minimum_required(VERSION 3.16)
+else()
+  cmake_minimum_required(VERSION 3.5)
+endif()
 
 option(CM_ENABLE_DEBUG "Enable Debug logs." OFF)
 option(CM_ENABLE_GLOBAL_MUTEX "Enabling Global Mutex." ON)
@@ -12,6 +17,11 @@ option(CM_ENABLE_MPART "Enable memory partition flags." OFF)
 option(CM_ENABLE_TPM2  "Enable TPM2"        OFF)
 option(CM_BUILD_X32    "Build for 32Bit Machine." OFF)
 option(CM_BUILD_X64    "Build for 64Bit Machine." OFF)
+if (DEFINED SECURE_PATH)
+option(CM_ENABLE_ABSOLUTE_PATH    "Enable absolute path support." ON)
+else()
+option(CM_ENABLE_ABSOLUTE_PATH    "Enable absolute path support." OFF)
+endif()
 if (WIN32)
     option(CM_WIN_FORCE_LINKAGE "Force linkage for shared library." OFF)
 endif()
@@ -28,6 +38,9 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
+if(BUILD_FOR_OSI)
+  set(LIB_DIR "${MSS_DIR}/lib")
+endif()
 
 set(LIB_TYPE "SHARED" CACHE STRING "Type of library to build. (SHARED or STATIC)")
 message("LIB_TYPE           = ${LIB_TYPE}")
@@ -65,8 +78,6 @@ add_compile_options(${WERROR})
 set(MOCANA_FLAGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/mocana_flags.txt")
 
 if(CM_ENABLE_DEBUG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
   set(MOCANA_DEBUG_FLAGS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/mocana_debug_flags.txt")
   message("\nMOCANA_DEBUG_FLAGS_FILE = ${MOCANA_DEBUG_FLAGS_FILE}")
 endif()
@@ -100,6 +111,16 @@ if(CM_ENABLE_IPV6)
   set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_IPV6__)
 endif()
 
+if(CM_ENABLE_ABSOLUTE_PATH)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
+endif()
+
+if (DEFINED SECURE_PATH)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SECURE_PATH__)
+  message("\nSECURE_PATH = ${SECURE_PATH}")
+  add_definitions("-DMANDATORY_BASE_PATH=\"\"${SECURE_PATH}\"\"")
+endif()
+
 if(CM_ENABLE_PROCESS)
   set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_RTOS_PROCESS__)
 endif()
@@ -113,13 +134,6 @@ if(CM_ENABLE_GLOBAL_MUTEX)
   set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_GLOBAL_MUTEX__)
 else()
   set(mocana_flags ${mocana_flags} -D__DISABLE_MOCANA_TPM_MUTEX__)
-endif()
-
-if (DEFINED SECURE_PATH)
-  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SECURE_PATH__)
-  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
-  message("\nSECURE_PATH = ${SECURE_PATH}")
-  add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
 endif()
 
 # Now load all flags into MOCANA_FLAGS
@@ -160,7 +174,11 @@ endforeach()
 ########################################################################
 
 # Add file sources from mss_sources.txt
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_sources.txt" MSS_SOURCES)
+if(BUILD_FOR_OSI)
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_osi_sources.txt" MSS_SOURCES)
+else()
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_sources.txt" MSS_SOURCES)
+endif()
 
 if(CM_ENABLE_PROCESS)
   file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_process_sources.txt" PROCESS_SOURCES)
@@ -197,12 +215,15 @@ endif()
 if("SHARED" STREQUAL "${LIB_TYPE}")
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:${PROJECT_NAME}>
-        "${MSS_DIR}/lib")
+  if(BUILD_FOR_OSI)
+    add_custom_command(
+      TARGET ${PROJECT_NAME}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+          $<TARGET_FILE:${PROJECT_NAME}>
+          "${LIB_DIR}")
+  endif()
+
   if(WIN32)
     # Dependent libraries for platform lib
     locate_lib(COMMON_LIB common)

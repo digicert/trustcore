@@ -10,7 +10,7 @@
  * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
  *   or https://www.digicert.com/master-services-agreement/
  * 
- * For commercial licensing, contact DigiCert at sales@digicert.com.*
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -32,13 +32,21 @@
 
 #include <errno.h>
 #include <sys/types.h>
+#if defined(__RTOS_ZEPHYR__)
+#include <zephyr/net/socket.h>
+#include <zephyr/posix/unistd.h>
+#include <zephyr/posix/sys/ioctl.h>
+#include <zephyr/posix/sys/select.h>
+#else
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <signal.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <arpa/inet.h>
 #include <netdb.h>
+#endif
+
+#include <signal.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <unistd.h>
 

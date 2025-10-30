@@ -88,7 +88,49 @@ typedef struct DirectoryEntry
 
 #define MOC_EOF     -1
 
-#if defined(__LINUX_FMGMT__)
+#if defined(__ZEPHYR_FMGMT__)
+#define FMGMT_mkdir                             ZEPHYR_mkdir
+#define FMGMT_remove                            ZEPHYR_remove
+#define FMGMT_rename                            ZEPHYR_rename
+#define FMGMT_pathExists                        ZEPHYR_pathExists
+
+#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#define FMGMT_fopenEx                           ZEPHYR_fopenEx
+#define FMGMT_fcloseEx                          ZEPHYR_fcloseEx
+#endif
+#define FMGMT_fopen                             ZEPHYR_fopen
+#define FMGMT_fclose                            ZEPHYR_fclose
+#define FMGMT_fread                             ZEPHYR_fread
+#define FMGMT_fwrite                            ZEPHYR_fwrite
+#define FMGMT_fseek                             ZEPHYR_fseek
+#define FMGMT_fflush                            ZEPHYR_fflush
+#define FMGMT_fprintf                           ZEPHYR_fprintf
+#define FMGMT_ftell                             ZEPHYR_ftell
+#define FMGMT_fgets                             ZEPHYR_fgets
+#define FMGMT_fgetc                             ZEPHYR_fgetc
+#define FMGMT_fputs                             ZEPHYR_fputs
+
+#define FMGMT_getFirstFile                      ZEPHYR_getFirstFile
+#define FMGMT_closeDir                          ZEPHYR_closeDir
+#define FMGMT_getNextFile                       ZEPHYR_getNextFile
+
+#define FMGMT_getFullPath                       ZEPHYR_getFullPath
+#define FMGMT_getFullPathAlloc                  ZEPHYR_getFullPathAlloc
+#define FMGMT_getFullPathAllocAux               ZEPHYR_getFullPathAllocAux
+
+#define FMGMT_getDirectoryPath                  ZEPHYR_getDirectoryPath
+#define FMGMT_getDirectoryPathAlloc             ZEPHYR_getDirectoryPathAlloc
+#define FMGMT_changeCWD                         ZEPHYR_changeCWD
+#define FMGMT_getCWD                            ZEPHYR_getCWD
+
+#define FMGMT_getEnvironmentVariableValue       ZEPHYR_getEnvironmentVariableValue
+#define FMGMT_getEnvironmentVariableValueAlloc  ZEPHYR_getEnvironmentVariableValueAlloc
+
+#define FMGMT_setMountPoint                     TP_setMountPoint
+#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#define FMGMT_needFullPath                      ZEPHYR_needFullPath
+#endif
+#elif defined(__LINUX_FMGMT__)
 #define FMGMT_mkdir                             LINUX_mkdir
 #define FMGMT_remove                            LINUX_remove
 #define FMGMT_rename                            LINUX_rename
@@ -121,11 +163,12 @@ typedef struct DirectoryEntry
 
 #define FMGMT_getEnvironmentVariableValue       LINUX_getEnvironmentVariableValue
 #define FMGMT_getEnvironmentVariableValueAlloc  LINUX_getEnvironmentVariableValueAlloc
+
 #define FMGMT_getProcessPath                    LINUX_getProcessPath
 #define FMGMT_getProcessPathAlloc               LINUX_getProcessPathAlloc
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
 #define FMGMT_setMountPoint                     TP_setMountPoint
+#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
 #define FMGMT_needFullPath                      LINUX_needFullPath
 #endif
 
@@ -458,6 +501,31 @@ MOC_EXTERN MSTATUS FMGMT_getFirstFile (const sbyte *pDirPath, DirectoryDescripto
  *                 code from merrors.h
  */
 MOC_EXTERN MSTATUS FMGMT_closeDir (DirectoryDescriptor *ppDirCtx);
+
+#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+/**
+ * This function opens a file desciptor to the specified file.
+ *
+ * @param pFileName     Directory context to free.
+ * @param pMode         Mode to open file in.
+ * @param pFileCtx      Pointer to  file descriptor to initialize.
+ *
+ * @return         \c OK (0) if successful, otherwise a negative number error
+ *                 code from merrors.h
+ */
+MOC_EXTERN MSTATUS FMGMT_fopenEx(const sbyte *pFileName, const sbyte *pMode, FileDescriptor pFileCtx);
+
+/**
+ * This function closes a file desciptor.
+ *
+ * @param pFileCtx The file descriptor to close.
+ *
+ * @return         \c OK (0) if successful, otherwise a negative number error
+ *                 code from merrors.h
+ */
+MOC_EXTERN MSTATUS FMGMT_fcloseEx(FileDescriptor pFileCtx);
+#endif
+
 /**
  * This function opens a file desciptor to the specified file.
  *
@@ -707,8 +775,7 @@ MOC_EXTERN MSTATUS FMGMT_getEnvironmentVariableValueAlloc (const sbyte *pVariabl
  *                 code from merrors.h
  */
 MOC_EXTERN MSTATUS FMGMT_getProcessPath (sbyte *pProcessPath, ubyte4 processPathLen, ubyte4 *pBytesRead);
-/**
- * This function retrieves the full path of the current process being executed,
+/**                                                                          * This function retrieves the full path of the current process being executed,
  * including the process name and stores it to the location specified by
  * ppProcessPath. The buffer is allocated and must be freed using
  * MOC_FREE. Use MOC_STRLEN to retrieve the length of the path.
@@ -721,8 +788,6 @@ MOC_EXTERN MSTATUS FMGMT_getProcessPath (sbyte *pProcessPath, ubyte4 processPath
  */
 MOC_EXTERN MSTATUS FMGMT_getProcessPathAlloc (sbyte **ppProcessPath);
 
-
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
 /**
  * This function sets the mount point using mount path and starting
  * directory path.
@@ -735,6 +800,8 @@ MOC_EXTERN MSTATUS FMGMT_getProcessPathAlloc (sbyte **ppProcessPath);
  *                 code from merrors.h
  */
 MOC_EXTERN signed int FMGMT_setMountPoint (unsigned char *pNewMountPath);
+
+#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
 /**
  * This function frees memory used by mount point.
  *

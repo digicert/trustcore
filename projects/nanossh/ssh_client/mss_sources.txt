@@ -1,3 +1,8 @@
+MSS_SRC_DIR/examples/mocana_example.c
+MSS_SRC_DIR/examples/sshc_example.c
+MSS_SRC_DIR/examples/sshc_shell_example.c
+MSS_SRC_DIR/examples/sshc_pf_example.c
+MSS_SRC_DIR/examples/sshc_rpf_example.c
 MSS_SRC_DIR/ssh/dump_mesg.c
 MSS_SRC_DIR/ssh/ssh_ocsp.c
 MSS_SRC_DIR/ssh/ssh_str.c

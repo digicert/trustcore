@@ -4,12 +4,12 @@
  * DigiCert Example Initialization
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
@@ -424,6 +424,7 @@ processOptions(int argc, char *argv[])
     int    c;
 
     extern char *optarg;
+    /*extern int optopt;*/
 
     while ((c = getopt(argc, argv, "w:o:t:a:")) != EOF) {
         switch (c) {
@@ -453,6 +454,7 @@ processOptions(int argc, char *argv[])
 #endif
 
         default:
+            /*fprintf(stderr, "Invalid option -%c\n", optopt);*/
             status = -1;
             break;
         }

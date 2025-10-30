@@ -55,6 +55,13 @@ MOC_EXTERN sshStringBuffer ssh_ecdsa_curve_p521;
 MOC_EXTERN sshStringBuffer ssh_mldsa44_signature;
 MOC_EXTERN sshStringBuffer ssh_mldsa65_signature;
 MOC_EXTERN sshStringBuffer ssh_mldsa87_signature;
+#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+MOC_EXTERN sshStringBuffer ssh_cert_mldsa44_signature;
+MOC_EXTERN sshStringBuffer ssh_cert_mldsa65_signature;
+MOC_EXTERN sshStringBuffer ssh_cert_mldsa87_signature;
+#endif
+#endif /* __ENABLE_MOCANA_PQC__ */
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 MOC_EXTERN sshStringBuffer ssh_mldsa44_p256_signature;
 MOC_EXTERN sshStringBuffer ssh_mldsa65_p256_signature;
 MOC_EXTERN sshStringBuffer ssh_mldsa87_p384_signature;
@@ -62,9 +69,6 @@ MOC_EXTERN sshStringBuffer ssh_mldsa44_ed25519_signature;
 MOC_EXTERN sshStringBuffer ssh_mldsa65_ed25519_signature;
 MOC_EXTERN sshStringBuffer ssh_mldsa87_ed448_signature;
 #ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
-MOC_EXTERN sshStringBuffer ssh_cert_mldsa44_signature;
-MOC_EXTERN sshStringBuffer ssh_cert_mldsa65_signature;
-MOC_EXTERN sshStringBuffer ssh_cert_mldsa87_signature;
 MOC_EXTERN sshStringBuffer ssh_cert_mldsa44_p256_signature;
 MOC_EXTERN sshStringBuffer ssh_cert_mldsa65_p256_signature;
 MOC_EXTERN sshStringBuffer ssh_cert_mldsa87_p384_signature;
@@ -72,7 +76,7 @@ MOC_EXTERN sshStringBuffer ssh_cert_mldsa44_ed25519_signature;
 MOC_EXTERN sshStringBuffer ssh_cert_mldsa65_ed25519_signature;
 MOC_EXTERN sshStringBuffer ssh_cert_mldsa87_ed448_signature;
 #endif
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 MOC_EXTERN sshStringBuffer ssh_rsa_sha1_signature;
 MOC_EXTERN sshStringBuffer ssh_rsa_cert_sign_signature;
 MOC_EXTERN sshStringBuffer ssh_rsa2048_cert_sign_signature;

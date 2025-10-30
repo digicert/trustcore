@@ -170,16 +170,11 @@ DER_SetItemData( DER_ITEMPTR pItem, ubyte4 length, const ubyte* value)
 
 extern MSTATUS
 DER_AddItemCopyData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
-                                  const ubyte* pValue,
+                                  const ubyte pValue[MAX_DER_STORAGE],
                                   DER_ITEMPTR* ppNewDERItem)
 {
     MSTATUS status;
     DER_ITEMPTR pLocal; /* use a local since ppNewDERItem can be NULL */
-
-    if (!pValue)
-    {
-        return ERR_NULL_POINTER;
-    }
 
     if (length > MAX_DER_STORAGE)
     {
@@ -206,7 +201,7 @@ DER_AddItemCopyData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
         pLocal->value = pLocal->valueCopy;
     }
 
-    MOC_MEMCPY((ubyte*)pLocal->value, pValue, length);
+    MOC_MEMCPY((ubyte*)pLocal->value, (ubyte *) pValue, length);
 
     /* return ppNewDERItem if necessary */
     if (ppNewDERItem)
@@ -1318,8 +1313,26 @@ DER_StoreAlgoOID( DER_ITEMPTR pRoot, const ubyte* oid,
     return OK;
 }
 
-#endif
+/*------------------------------------------------------------------*/
 
+extern MSTATUS
+DER_StoreAlgoOIDownData(DER_ITEMPTR pRoot, ubyte4 oidLen, ubyte **ppOid, intBoolean addNullTag)
+{
+    DER_ITEMPTR pSequence;
+    MSTATUS status;
+
+    if ( OK > ( status = DER_AddSequence( pRoot, &pSequence)))
+        return status;
+
+    if ( OK > ( status = DER_AddItemOwnData( pSequence, OID, oidLen, ppOid, NULL)))
+        return status;
+
+    if  (addNullTag && OK > ( status = DER_AddItem( pSequence, NULLTAG, 0, NULL, NULL)))
+        return status;
+
+    return OK;
+}
+#endif
 
 /*------------------------------------------------------------------*/
 

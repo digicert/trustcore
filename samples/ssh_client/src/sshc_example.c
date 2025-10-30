@@ -14,51 +14,55 @@
  *
  */
 
-#include "common/moptions.h"
+#if defined(__ENABLE_MOCANA_WIN_STUDIO_BUILD__)
+#include <windows.h>
+#endif
+
+#include "../common/moptions.h"
 
 #if (defined(__ENABLE_MOCANA_SSH_CLIENT_EXAMPLE__) && defined(__ENABLE_MOCANA_SSH_FTP_CLIENT__) && (defined(__ENABLE_MOCANA_EXAMPLES__) || defined(__ENABLE_MOCANA_BIN_EXAMPLES__))) && (!defined(__ENABLE_MOCANA_SSH_REMOTE_PORT_FORWARDING__) && !defined(__ENABLE_MOCANA_SSH_PORT_FORWARDING__))
 
-#include "common/mtypes.h"
-#include "common/mdefs.h"
-#include "common/mocana.h"
-#include "crypto/hw_accel.h"
-#include "common/merrors.h"
-#include "common/mrtos.h"
-#include "common/mtcp.h"
-#include "common/mstdlib.h"
-#include "common/debug_console.h"
-#include "common/sizedbuffer.h"
-#include "common/mfmgmt.h"
-#include "crypto/pubcrypto.h"
-#include "crypto/ca_mgmt.h"
-#include "crypto/cert_store.h"
-#include "crypto/cert_chain.h"
-#include "ssh/client/sshc.h"
-#include "ssh/client/sshc_filesys.h"
-#include "ssh/ssh_defs.h"
+#include "../common/mtypes.h"
+#include "../common/mdefs.h"
+#include "../common/mocana.h"
+#include "../crypto/hw_accel.h"
+#include "../common/merrors.h"
+#include "../common/mrtos.h"
+#include "../common/mtcp.h"
+#include "../common/mstdlib.h"
+#include "../common/debug_console.h"
+#include "../common/sizedbuffer.h"
+#include "../common/mfmgmt.h"
+#include "../crypto/pubcrypto.h"
+#include "../crypto/ca_mgmt.h"
+#include "../crypto/cert_store.h"
+#include "../crypto/cert_chain.h"
+#include "../ssh/client/sshc.h"
+#include "../ssh/client/sshc_filesys.h"
+#include "../ssh/ssh_defs.h"
 #ifdef __ENABLE_MOCANA_TPM__
-#include "crypto/secmod/moctap.h"
+#include "../crypto/secmod/moctap.h"
 #endif
 #ifdef __ENABLE_MOCANA_TAP__
-#include "smp/smp_cc.h"
-#include "tap/tap_api.h"
-#include "tap/tap_utils.h"
-#include "tap/tap_smp.h"
-#include "crypto/mocasym.h"
-#include "crypto/mocasymkeys/tap/rsatap.h"
-#include "crypto/mocasymkeys/tap/ecctap.h"
-#include "crypto_interface/cryptointerface.h"
+#include "../smp/smp_cc.h"
+#include "../tap/tap_api.h"
+#include "../tap/tap_utils.h"
+#include "../tap/tap_smp.h"
+#include "../crypto/mocasym.h"
+#include "../crypto/mocasymkeys/tap/rsatap.h"
+#include "../crypto/mocasymkeys/tap/ecctap.h"
+#include "../crypto_interface/cryptointerface.h"
 #endif
 
 #ifdef __ENABLE_MOCANA_OCSP_CERT_VERIFY__
-#include "common/memfile.h"
-#include "ocsp/ocsp.h"
-#include "ocsp/ocsp_context.h"
-#include "ocsp/client/ocsp_client.h"
+#include "../common/memfile.h"
+#include "../ocsp/ocsp.h"
+#include "../ocsp/ocsp_context.h"
+#include "../ocsp/client/ocsp_client.h"
 #endif
 
 #ifdef __ENABLE_MOCANA_DATA_PROTECTION__
-#include "data_protection/file_protect.h"
+#include "../data_protection/file_protect.h"
 #endif
 
 #include <stdio.h>
@@ -1257,7 +1261,7 @@ SSHC_EXAMPLE_computeAuthKeys(void)
         DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, (sbyte *) "SSHC_EXAMPLE_computeAuthKeys: host key does not exist, computing new key...");
 
         /* if not, compute new host keys */
-#if defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_MOCANA_PQC_COMPOSITE__)
         if (0 > (status = CA_MGMT_generateNakedKeyPQC(akt_hybrid, cid_EC_P256, cid_PQC_MLDSA_44, &pKeyBlob, &keyBlobLen)))
             goto exit;
 #elif defined(__ENABLE_MOCANA_PQC__)

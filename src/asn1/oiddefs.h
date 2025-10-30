@@ -382,30 +382,11 @@ MOC_EXTERN const ubyte id_on_hardwareModuleName_OID[]; /* 1.3.6.1.5.5.7.8.4 */
 /* Mocana Proprietary NetworkLinker Host/Port Extension */
 MOC_EXTERN const ubyte mocana_networkLinker_OID[];  /* 1.3.6.1.4.1.14421.3 */
 
-/* the following QS OIDs are non-const and may be modified as per config files */
-#define MOCANA_MUTABLE_OID_MAX_LEN 15
+MOC_EXTERN const ubyte pure_pqc_sig_OID[];    /* 2.16.840.1.101.3.4.3.x      for x=17 to 31 */
+MOC_EXTERN const ubyte mldsa_composite_OID[]; /* 2.16.840.1.114027.80.8.1.x  for x=60 to 75 */
 
-MOC_EXTERN ubyte mldsa_44_OID[];              /* 2.16.840.1.101.3.4.3.17 */
-MOC_EXTERN ubyte mldsa_65_OID[];              /* 2.16.840.1.101.3.4.3.18 */
-MOC_EXTERN ubyte mldsa_87_OID[];              /* 2.16.840.1.101.3.4.3.19 */
-
-MOC_EXTERN ubyte fndsa_512_OID[];               /* 1.3.9999.3.6 */               
-MOC_EXTERN ubyte fndsa_1024_OID[];              /* 1.3.9999.3.9 */   
-
-MOC_EXTERN ubyte slhdsa_sha2_128s_OID[];  /* 1.3.9999.6.4.16*/
-MOC_EXTERN ubyte slhdsa_sha2_128f_OID[];
-MOC_EXTERN ubyte slhdsa_shake_128s_OID[];
-MOC_EXTERN ubyte slhdsa_shake_128f_OID[];
-MOC_EXTERN ubyte slhdsa_sha2_192s_OID[];
-MOC_EXTERN ubyte slhdsa_sha2_192f_OID[];
-MOC_EXTERN ubyte slhdsa_shake_192s_OID[];
-MOC_EXTERN ubyte slhdsa_shake_192f_OID[];
-MOC_EXTERN ubyte slhdsa_sha2_256s_OID[];
-MOC_EXTERN ubyte slhdsa_sha2_256f_OID[];
-MOC_EXTERN ubyte slhdsa_shake_256s_OID[];
-MOC_EXTERN ubyte slhdsa_shake_256f_OID[];
-
-MOC_EXTERN const ubyte mldsa_composite_OID[]; /* 2.16.840.1.114027.80.8.1.x  for x = 60 to 75 */
+MOC_EXTERN const ubyte fndsa_512_OID[];       /* 1.3.9999.3.6 */               
+MOC_EXTERN const ubyte fndsa_1024_OID[];      /* 1.3.9999.3.9 */   
 
 MOC_EXTERN const ubyte cct_pkiData_oid[]; /* 1.3.6.1.5.5.7.12.2 */
 MOC_EXTERN const ubyte cct_PKIResponse_OID[]; /* 1.3.6.1.5.5.7.12.3 */

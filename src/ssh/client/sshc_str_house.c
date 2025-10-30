@@ -77,6 +77,14 @@ sshStringBuffer sshc_ecdsa_curve_p521;
 sshStringBuffer sshc_mldsa44_signature;
 sshStringBuffer sshc_mldsa65_signature;
 sshStringBuffer sshc_mldsa87_signature;
+#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+sshStringBuffer sshc_cert_mldsa44_signature;
+sshStringBuffer sshc_cert_mldsa65_signature;
+sshStringBuffer sshc_cert_mldsa87_signature;
+#endif
+#endif /* __ENABLE_MOCANA_PQC__ */
+
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 sshStringBuffer sshc_mldsa44_p256_signature;
 sshStringBuffer sshc_mldsa65_p256_signature;
 sshStringBuffer sshc_mldsa87_p384_signature;
@@ -84,9 +92,6 @@ sshStringBuffer sshc_mldsa44_ed25519_signature;
 sshStringBuffer sshc_mldsa65_ed25519_signature;
 sshStringBuffer sshc_mldsa87_ed448_signature;
 #ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
-sshStringBuffer sshc_cert_mldsa44_signature;
-sshStringBuffer sshc_cert_mldsa65_signature;
-sshStringBuffer sshc_cert_mldsa87_signature;
 sshStringBuffer sshc_cert_mldsa44_p256_signature;
 sshStringBuffer sshc_cert_mldsa65_p256_signature;
 sshStringBuffer sshc_cert_mldsa87_p384_signature;
@@ -94,7 +99,7 @@ sshStringBuffer sshc_cert_mldsa44_ed25519_signature;
 sshStringBuffer sshc_cert_mldsa65_ed25519_signature;
 sshStringBuffer sshc_cert_mldsa87_ed448_signature;
 #endif
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 
 sshStringBuffer sshc_cert_sign_signature;
 sshStringBuffer sshc_rsa2048_cert_sign_signature;
@@ -269,6 +274,14 @@ SSHC_STR_HOUSE_initStringBuffers(void)
     INIT_SSH_STRING_BUFFER(&sshc_mldsa44_signature, (sbyte *)"ssh-mldsa44");
     INIT_SSH_STRING_BUFFER(&sshc_mldsa65_signature, (sbyte *)"ssh-mldsa65");
     INIT_SSH_STRING_BUFFER(&sshc_mldsa87_signature, (sbyte *)"ssh-mldsa87");
+#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+    INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa44_signature, (sbyte *)"x509v3-mldsa44");
+    INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa65_signature, (sbyte *)"x509v3-mldsa65");
+    INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa87_signature, (sbyte *)"x509v3-mldsa87");
+#endif
+#endif /* __ENABLE_MOCANA_PQC__ */
+
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
     INIT_SSH_STRING_BUFFER(&sshc_mldsa44_p256_signature, (sbyte *)"ssh-mldsa44-es256");
     INIT_SSH_STRING_BUFFER(&sshc_mldsa65_p256_signature, (sbyte *)"ssh-mldsa65-es256");
     INIT_SSH_STRING_BUFFER(&sshc_mldsa87_p384_signature, (sbyte *)"ssh-mldsa87-es384");
@@ -276,9 +289,6 @@ SSHC_STR_HOUSE_initStringBuffers(void)
     INIT_SSH_STRING_BUFFER(&sshc_mldsa65_ed25519_signature, (sbyte *)"ssh-mldsa65-ed25519");
     INIT_SSH_STRING_BUFFER(&sshc_mldsa87_ed448_signature, (sbyte *)"ssh-mldsa87-ed448");
 #ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
-    INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa44_signature, (sbyte *)"x509v3-mldsa44");
-    INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa65_signature, (sbyte *)"x509v3-mldsa65");
-    INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa87_signature, (sbyte *)"x509v3-mldsa87");
     INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa44_p256_signature, (sbyte *)"x509v3-mldsa44-es256");
     INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa65_p256_signature, (sbyte *)"x509v3-mldsa65-es256");
     INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa87_p384_signature, (sbyte *)"x509v3-mldsa87-es384");
@@ -286,7 +296,7 @@ SSHC_STR_HOUSE_initStringBuffers(void)
     INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa65_ed25519_signature, (sbyte *)"x509v3-mldsa65-ed25519");
     INIT_SSH_STRING_BUFFER(&sshc_cert_mldsa87_ed448_signature, (sbyte *)"x509v3-mldsa87-ed448");
 #endif
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 
 #ifdef __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__
     INIT_SSH_STRING_BUFFER(&sshc_cert_sign_signature, (sbyte *)"x509v3-ssh-rsa");
@@ -381,6 +391,14 @@ SSHC_STR_HOUSE_freeStringBuffers(void)
     FREE_SSH_STRING_BUFFER(sshc_mldsa44_signature);
     FREE_SSH_STRING_BUFFER(sshc_mldsa65_signature);
     FREE_SSH_STRING_BUFFER(sshc_mldsa87_signature);
+#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+    FREE_SSH_STRING_BUFFER(sshc_cert_mldsa44_signature);
+    FREE_SSH_STRING_BUFFER(sshc_cert_mldsa65_signature);
+    FREE_SSH_STRING_BUFFER(sshc_cert_mldsa87_signature);
+#endif
+#endif /* __ENABLE_MOCANA_PQC__ */
+
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
     FREE_SSH_STRING_BUFFER(sshc_mldsa44_p256_signature);
     FREE_SSH_STRING_BUFFER(sshc_mldsa65_p256_signature);
     FREE_SSH_STRING_BUFFER(sshc_mldsa87_p384_signature);
@@ -388,9 +406,6 @@ SSHC_STR_HOUSE_freeStringBuffers(void)
     FREE_SSH_STRING_BUFFER(sshc_mldsa65_ed25519_signature);
     FREE_SSH_STRING_BUFFER(sshc_mldsa87_ed448_signature);
 #ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
-    FREE_SSH_STRING_BUFFER(sshc_cert_mldsa44_signature);
-    FREE_SSH_STRING_BUFFER(sshc_cert_mldsa65_signature);
-    FREE_SSH_STRING_BUFFER(sshc_cert_mldsa87_signature);
     FREE_SSH_STRING_BUFFER(sshc_cert_mldsa44_p256_signature);
     FREE_SSH_STRING_BUFFER(sshc_cert_mldsa65_p256_signature);
     FREE_SSH_STRING_BUFFER(sshc_cert_mldsa87_p384_signature);
@@ -398,7 +413,7 @@ SSHC_STR_HOUSE_freeStringBuffers(void)
     FREE_SSH_STRING_BUFFER(sshc_cert_mldsa65_ed25519_signature);
     FREE_SSH_STRING_BUFFER(sshc_cert_mldsa87_ed448_signature);
 #endif
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 
     FREE_SSH_STRING_BUFFER(sshc_ecdsasha256_signature);
     FREE_SSH_STRING_BUFFER(sshc_ecdsasha384_signature);

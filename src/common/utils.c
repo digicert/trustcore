@@ -58,11 +58,11 @@
 #include "../common/mfmgmt.h"
 #endif
 #if !defined (__FREERTOS_RTOS__)
-#include <fcntl.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #endif
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__RTOS_ZEPHYR__)
+#include <zephyr/fs/fs.h>
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
 #include "ff.h"
 #ifndef f_size
 #define f_size file_size
@@ -94,6 +94,11 @@
 extern FX_MEDIA *gp_fx_media0;
 #endif
 
+#ifdef __ENABLE_DIGICERT_POSIX_SUPPORT__
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
 #ifndef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
 #error "__ENABLE_DIGICERT_SECURE_PATH__ requires __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__ to be defined"
@@ -108,7 +113,11 @@ extern FX_MEDIA *gp_fx_media0;
 extern MSTATUS
 UTILS_readFileRaw(const ubyte* pFileObj, ubyte **ppRetBuffer, ubyte4 *pRetBufLength)
 {
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__RTOS_ZEPHYR__)
+    int ret;
+    struct fs_file_t *f = (struct fs_file_t *) pFileObj;
+    ubyte4 bytesRead = 0;
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     FIL *f = (FIL*) pFileObj;
     FRESULT error = 0;
     ubyte4 bytesRead = 0;
@@ -134,7 +143,16 @@ UTILS_readFileRaw(const ubyte* pFileObj, ubyte **ppRetBuffer, ubyte4 *pRetBufLen
     *ppRetBuffer   = NULL;
     *pRetBufLength = 0;
 
-#if defined (__ENABLE_MOCANA_RTOS_FILEX__)
+#if defined (__RTOS_ZEPHYR__)
+    ret = fs_seek(f, 0, MSEEK_END);
+    if (ret < 0)
+    {
+        status = ERR_FILE_SEEK_FAILED;
+        goto exit;
+    }
+
+    fileSize = (sbyte4)fs_tell(f);
+#elif defined (__ENABLE_MOCANA_RTOS_FILEX__)
     fileSize = f->fx_file_current_file_size ;
 #elif defined (__FREERTOS_RTOS__)&& !defined(__ENABLE_MOCANA_NANOPNAC__)
     fileSize = f_size(f) ;
@@ -162,7 +180,13 @@ UTILS_readFileRaw(const ubyte* pFileObj, ubyte **ppRetBuffer, ubyte4 *pRetBufLen
     }
 
     pFileBuffer[fileSize] = 0;
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__RTOS_ZEPHYR__)
+    if (OK > fs_seek(f, 0L, MSEEK_SET))
+    {
+        status = ERR_FILE_SEEK_FAILED;
+        goto exit;
+    }
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     f_rewind(f) ;
 #elif defined (__ENABLE_MOCANA_RTOS_FILEX__)
     if(FX_SUCCESS != fx_file_seek(f, 0UL))
@@ -181,7 +205,14 @@ UTILS_readFileRaw(const ubyte* pFileObj, ubyte **ppRetBuffer, ubyte4 *pRetBufLen
     }
 #endif
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__RTOS_ZEPHYR__)
+    bytesRead = fs_read(f, pFileBuffer, fileSize);
+    if (bytesRead < (ubyte4)fileSize)
+    {
+        status = ERR_FILE_READ_FAILED;
+        goto exit;
+    }
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     error = f_read(f, pFileBuffer, fileSize, &bytesRead);
     if ((error) || (bytesRead != fileSize))
     {
@@ -222,6 +253,9 @@ extern MSTATUS
 UTILS_mkdir(const char* directory)
 {
     int  status;
+#if defined (__RTOS_ZEPHYR__)
+    int ret;
+#endif
     ubyte *pDPath = (ubyte *)directory;
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
@@ -236,7 +270,17 @@ UTILS_mkdir(const char* directory)
     }
 #endif
 
-#if defined _MSC_VER
+#if defined (__RTOS_ZEPHYR__)
+    ret = fs_mkdir(pDPath);
+    if (ret == 0)
+    {
+        status = OK;
+    }
+    else
+    {
+        status = ERR_FILE;
+    }
+#elif defined _MSC_VER
         status = _mkdir(pDPath);
 #elif defined(__RTOS_VXWORKS__)
     #if defined(__VX7_SR640__)
@@ -391,7 +435,11 @@ extern MSTATUS
 UTILS_readFile(const char* pFilename,
                ubyte **ppRetBuffer, ubyte4 *pRetBufLength)
 {
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__RTOS_ZEPHYR__)
+    struct fs_file_t fs_file;
+    struct fs_file_t *f = NULL;
+    int ret = 0;
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     FIL file ;
     FIL *f = &file;
     FRESULT error = 0;
@@ -402,7 +450,7 @@ UTILS_readFile(const char* pFilename,
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
     struct stat st = { 0 };
 #endif
-    FILE*  f = NULL;
+    FILE*   f;
 #else
     int     f;
 #endif
@@ -424,7 +472,7 @@ UTILS_readFile(const char* pFilename,
 
     pFPath = (ubyte *) pFilename;
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
-    if (TRUE == FMGMT_needFullPath())
+    if (TRUE == FMGMT_needFullPath ())
     {
         status = FMGMT_getFullPathAllocAux (pFilename, (sbyte **) &pFPath, TRUE);
         if (OK > status)
@@ -443,7 +491,15 @@ UTILS_readFile(const char* pFilename,
 #endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
 #endif
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__RTOS_ZEPHYR__)
+    fs_file_t_init(&fs_file);
+
+    ret = fs_open(&fs_file, pFPath, (fs_mode_t)FS_O_READ);
+    if (ret != 0)
+        f = NULL;
+    else
+        f = &fs_file;
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     error = f_open(f, pFPath, (FA_READ | FA_OPEN_EXISTING)) ;
     if(error)
         f = NULL ;
@@ -474,8 +530,6 @@ UTILS_readFile(const char* pFilename,
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
         MOC_FREE ((void **) &pFPath);
-
-    freePath = FALSE; /* Reset freePath to avoid double free */
 #endif
 
 #ifndef __RTOS_WTOS__
@@ -491,7 +545,9 @@ UTILS_readFile(const char* pFilename,
     /* Read the Raw File */
     status = UTILS_readFileRaw((ubyte*)f, ppRetBuffer, pRetBufLength);
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__RTOS_ZEPHYR__)
+    (void) fs_close(f);
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
         (void) f_close(f);
 #elif defined (__ENABLE_MOCANA_RTOS_FILEX__)
     fx_file_close(f);
@@ -531,7 +587,12 @@ extern MSTATUS
 UTILS_writeFile(const char* pFilename,
                 const ubyte *pBuffer, ubyte4 bufLength)
 {
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    struct fs_file_t fs_file;
+    struct fs_file_t *f = NULL;
+    int ret = 0;
+    sbyte4 bytesWritten = 0;
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
         FIL file ;
         FIL *f = &file;
         FRESULT error = 0;
@@ -540,7 +601,7 @@ UTILS_writeFile(const char* pFilename,
 	FX_FILE new_file = {0};
 	FX_FILE *f = &new_file;
 #elif !defined(__RTOS_WTOS__)
-    FILE*   f = NULL;
+    FILE*   f;
 #else
     int     f;
 #endif
@@ -579,7 +640,15 @@ UTILS_writeFile(const char* pFilename,
 #endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
 #endif
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    fs_file_t_init(&fs_file);
+
+    ret = fs_open(&fs_file, pFPath, (fs_mode_t)FS_O_WRITE|FS_O_CREATE);
+    if (ret != 0)
+        f = NULL;
+    else
+        f = &fs_file;
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     error = f_open(f, pFPath, (FA_WRITE | FA_CREATE_ALWAYS)) ;
     if(error)
         f = NULL ;
@@ -626,7 +695,13 @@ UTILS_writeFile(const char* pFilename,
         goto nocleanup;
     }
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    bytesWritten = fs_write(f, pBuffer, bufLength);
+    if (bytesWritten < 0)
+    {
+        status = ERR_FILE_WRITE_FAILED;
+    }
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     error = f_write(f, pBuffer, bufLength, &bytesWritten);
     if ((error) || (bytesWritten != bufLength))
     {
@@ -641,7 +716,9 @@ UTILS_writeFile(const char* pFilename,
         status = ERR_FILE_WRITE_FAILED;
 #endif
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    (void) fs_close(f);
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     (void) f_close(f);
 #elif defined (__ENABLE_MOCANA_RTOS_FILEX__)
     fx_file_close(f);
@@ -655,6 +732,7 @@ nocleanup:
 }
 
 /*------------------------------------------------------------------*/
+
 #ifdef __ENABLE_DIGICERT_POSIX_SUPPORT__
 extern MSTATUS
 UTILS_appendFile(const char* pFilename,
@@ -775,7 +853,11 @@ extern MSTATUS
 UTILS_appendFile(const char* pFilename,
                 const ubyte *pBuffer, ubyte4 bufLength)
 {
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    struct fs_file_t fs_file;
+    struct fs_file_t *f = NULL;
+    int ret = 0;
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
             FIL file ;
             FIL *f = &file;
             FRESULT error = 0;
@@ -787,7 +869,7 @@ UTILS_appendFile(const char* pFilename,
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
     struct stat st = { 0 };
 #endif
-    FILE*   f = NULL;
+    FILE*   f;
 #else
     int     f;
 #endif
@@ -824,7 +906,15 @@ UTILS_appendFile(const char* pFilename,
 #endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
 #endif
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    fs_file_t_init(&fs_file);
+
+    ret = fs_open(&fs_file, pFPath, (fs_mode_t)FS_O_APPEND|FS_O_CREATE);
+    if (ret != 0)
+        f = NULL;
+    else
+        f = &fs_file;
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     error = f_open(f, pFPath, (FA_WRITE | FA_OPEN_ALWAYS)) ;
     if(error)
         f = NULL ;
@@ -856,13 +946,6 @@ UTILS_appendFile(const char* pFilename,
     f = fopen((const char* __restrict)pFPath, "ab");
 #endif
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
-    if (TRUE == freePath)
-        MOC_FREE ((void **) &pFPath);
-
-    freePath = FALSE; /* Reset freePath to avoid double free */
-#endif
-
 #ifndef __RTOS_WTOS__
     if (!f)
 #else
@@ -873,7 +956,13 @@ UTILS_appendFile(const char* pFilename,
         goto exit;
     }
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    ret = fs_write(f, pBuffer, bufLength);
+    if (ret < 0)
+    {
+        status = ERR_FILE_WRITE_FAILED;
+    }
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
     error = f_lseek(f, f_size(f));
     error = f_write(f, pBuffer, bufLength, &bytesWritten);
     if ((error) || (bytesWritten != bufLength))
@@ -888,7 +977,9 @@ UTILS_appendFile(const char* pFilename,
         status = ERR_FILE_WRITE_FAILED;
 #endif
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined(__RTOS_ZEPHYR__)
+    (void) fs_close(f);
+#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
         (void) f_close(f);
 #elif defined (__ENABLE_MOCANA_RTOS_FILEX__)
     fx_file_close(f);
@@ -907,6 +998,7 @@ exit:
 #endif /* __ENABLE_DIGICERT_POSIX_SUPPORT__ */
 
 /*------------------------------------------------------------------*/
+
 #ifdef __ENABLE_DIGICERT_POSIX_SUPPORT__
 extern MSTATUS
 UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLength)
@@ -1105,7 +1197,7 @@ exit:
 #endif
     return status;
 }
-#elif defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#elif (defined(__RTOS_ZEPHYR__) || (defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)))
 extern MSTATUS
 UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 dataLength)
 {
@@ -1158,7 +1250,7 @@ UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLe
     char *myBuf = NULL;
 #if defined(__ENABLE_MOCANA_RTOS_FILEX__)
     ULONG nread = 0;
-#elif defined(__QNX_RTOS__)
+#elif defined(__QNX_RTOS__) || defined(__RTOS_ZEPHYR__)
     sbyte4 nread = 0;
 #else
     ssize_t nread = 0;
@@ -1277,7 +1369,7 @@ UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLe
     fx_file_truncate(fout, 0);
 #endif
 
-    status = MOC_MALLOC((void **)&myBuf, bufLength);
+    status = MOC_MALLOC((void **)&myBuf,bufLength);
     if (OK != status)
     {
         goto exit;
@@ -1290,7 +1382,7 @@ UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLe
 #endif
     {
         char *out_ptr = myBuf;
-#ifdef __QNX_RTOS__
+#if defined(__QNX_RTOS__) || defined(__RTOS_ZEPHYR__)
         sbyte4 nwritten;
 #else
         ssize_t nwritten;
@@ -1403,7 +1495,7 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_DIGICERT_POSIX_SUPPORT__ */
+#endif
 
 /*------------------------------------------------------------------*/
 
@@ -1545,7 +1637,7 @@ exit:
     if (TRUE == freePath)
         MOC_FREE ((void **) &pFPath);
 #endif
-    
+
     if (NULL != pFile)
     {
 #if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
@@ -1574,7 +1666,7 @@ UTILS_initWriteFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
     FX_FILE new_file = {0};
     FX_FILE *pFile = &new_file;
 #elif !defined(__RTOS_WTOS__)
-    FILE*   pFile = NULL;
+    FILE*   pFile;
 #else
     int     pFile;
 #endif
@@ -1582,7 +1674,6 @@ UTILS_initWriteFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
-
     MSTATUS status = OK;
 
     if (NULL == pCtx || NULL == pFilename)
@@ -1615,11 +1706,11 @@ UTILS_initWriteFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
 #endif
 
 #if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
-    error = f_open(pFile, pFPath, (FA_WRITE | FA_CREATE_ALWAYS));
+    error = f_open(pFile,  pFPath, (FA_WRITE | FA_CREATE_ALWAYS));
     if(error)
         pFile = NULL ;
 #elif defined (__ENABLE_MOCANA_RTOS_FILEX__)
-    fx_file_create(gp_fx_media0, pFPath);
+    fx_file_create(gp_fx_media0, pFilename);
     if(FX_SUCCESS != fx_file_open(gp_fx_media0, pFile, pFPath, (FX_OPEN_FOR_WRITE)))
     {
         pFile = NULL ;
@@ -1875,6 +1966,13 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+#if defined(__RTOS_ZEPHYR__)
+extern MSTATUS
+UTILS_deleteFile(const char *pFilename)
+{
+    return FMGMT_remove(pFilename, TRUE);
+}
+#else
 extern MSTATUS
 UTILS_deleteFile(const char *pFilename)
 {
@@ -1917,12 +2015,66 @@ UTILS_deleteFile(const char *pFilename)
     if (TRUE == freePath)
         MOC_FREE ((void **) &pFPath);
 #endif
-
     return status;
 }
+#endif
 
 /*------------------------------------------------------------------*/
 #ifndef __ENABLE_MOCANA_NANOPNAC__	/* NanoPNAC doesn;t requires File system build*/
+#if defined(__RTOS_ZEPHYR__)
+extern MSTATUS
+UTILS_checkFile(const char *pFileName, const char *pExt, intBoolean *pFileExist)
+{
+    MSTATUS status = OK;
+    sbyte *pFileNameExt = NULL;
+    ubyte *pFPath = NULL;
+
+    if ( (NULL == pFileName) || (NULL == pFileExist) )
+    {
+        status =  ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    pFPath = (ubyte *) pFileName;
+    if (NULL != pExt)
+    {
+        status = MOC_CALLOC(
+            (void **) &pFileNameExt, 1, MOC_STRLEN((const sbyte *) pFileName) + MOC_STRLEN((const sbyte *) pExt) + 1);
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        status = MOC_MEMCPY(pFileNameExt, pFileName, MOC_STRLEN((const sbyte *) pFileName));
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        status = MOC_MEMCPY(
+            pFileNameExt + MOC_STRLEN((const sbyte *) pFileName), pExt, MOC_STRLEN((const sbyte *) pExt));
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        pFPath = (ubyte *) pFileNameExt;
+    }
+
+    *pFileExist = FALSE;
+    if (TRUE == FMGMT_pathExists(pFileNameExt, NULL))
+    {
+        *pFileExist = TRUE;
+    }
+exit:
+    if (NULL != pFileNameExt)
+    {
+        MOC_FREE((void **) &pFileNameExt);
+    }
+
+    return status;
+}
+#else
 extern MSTATUS
 UTILS_checkFile(const char *pFileName, const char *pExt, intBoolean *pFileExist)
 {
@@ -1946,7 +2098,7 @@ UTILS_checkFile(const char *pFileName, const char *pExt, intBoolean *pFileExist)
     {
         status = FMGMT_getFullPathAllocAux (pFileName, (sbyte **) &pFPath, TRUE);
         if (OK > status)
-            goto exit;;
+            goto exit;
 
         freePath = TRUE;
     }
@@ -2034,5 +2186,6 @@ exit:
 
     return status;
 }
+#endif /* __RTOS_ZEPHYR__ */
 #endif
 #endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */

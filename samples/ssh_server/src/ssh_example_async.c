@@ -15,28 +15,28 @@
  */
 
 
-#include "common/moptions.h"
+#include "../common/moptions.h"
 
 #ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
 
-#include "common/mtypes.h"
-#include "common/mdefs.h"
-#include "common/merrors.h"
-#include "common/mstdlib.h"
-#include "common/mrtos.h"
-#include "common/mtcp.h"
-#include "common/sizedbuffer.h"
-#include "crypto/hw_accel.h"
-#include "crypto/cert_store.h"
-#include "common/mocana.h"
-#include "common/debug_console.h"
-#include "crypto/ca_mgmt.h"
-#include "crypto/cert_store.h"
-#include "ssh/ssh_filesys.h"
-#include "ssh/sftp.h"
-#include "ssh/ssh.h"
+#include "../common/mtypes.h"
+#include "../common/mdefs.h"
+#include "../common/merrors.h"
+#include "../common/mstdlib.h"
+#include "../common/mrtos.h"
+#include "../common/mtcp.h"
+#include "../common/sizedbuffer.h"
+#include "../crypto/hw_accel.h"
+#include "../crypto/cert_store.h"
+#include "../common/mocana.h"
+#include "../common/debug_console.h"
+#include "../crypto/ca_mgmt.h"
+#include "../crypto/cert_store.h"
+#include "../ssh/ssh_filesys.h"
+#include "../ssh/sftp.h"
+#include "../ssh/ssh.h"
 #ifdef __ENABLE_MOCANA_MEM_PART__
-#include "common/mem_part.h"
+#include "../common/mem_part.h"
 #endif
 
 #include <string.h>

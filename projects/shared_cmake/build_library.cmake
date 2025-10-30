@@ -71,6 +71,16 @@ function(buildLibrary libType targetName includeLists sourcesList mssSrcDir buil
                           COMMAND echo "Copied lib${targetName}.${SHARED_LIB_EXT} to ${mssBinDir}/")
             endif()
         endif()
+    elseif(CM_ENABLE_ZEPHYR_OS)
+        # add source files
+        target_sources(app PRIVATE ${MSS_SOURCES})
+
+        # set the build target to a static library
+        set_target_properties(app PROPERTIES OUTPUT_NAME ${targetName})
+        set_target_properties(app PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
+        # suppress application entry point to build as a library
+        unset(CONF_FILE CACHE)
     else()
         add_library(${targetName} STATIC ${MSS_SOURCES})
         if (NOT WIN32)

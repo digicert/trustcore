@@ -35,6 +35,9 @@
 #include <memLib.h>
 #endif
 #endif
+#if defined(__RTOS_ZEPHYR__)
+#include <zephyr/kernel.h>
+#endif
 #ifdef __ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__
 #if (defined(__KERNEL__) && (defined(__LINUX_RTOS__) || defined(__ANDROID_RTOS__)))
 #include <linux/types.h>
@@ -770,6 +773,24 @@ MOC_EXTERN MSTATUS MOC_debugMemPart(char *pOutFileName)
 
 #if NEED_MALLOC_ALIGN!=0
 
+#ifdef __RTOS_ZEPHYR__
+/* Zephyr defines posix_memalign as part of pico libc module
+ * which includes definitions for aligned_alloc, malloc, and free
+ * that are not compatible with lib c equivalent defined by
+ * CONFIG_COMMON_LIBC_MALLOC. To avoid duplicate definitions
+ * we implement posix_memalign here. */
+static int posix_memalign_ex(void **memptr, size_t align, size_t size)
+{
+    void *mem = aligned_alloc(align, size);
+
+    if (!mem)
+        return ENOMEM;
+
+    *memptr = mem;
+    return 0;
+}
+#endif /* __RTOS_ZEPHYR__ */
+
 extern MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_ALIGN) (
   void **ppPtr,
   ubyte4 bufSize,
@@ -820,6 +841,8 @@ extern MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_ALIGN) (
 #if (defined(__RTOS_CYGWIN__) || defined(__RTOS_SOLARIS__) || defined(__RTOS_ANDROID__) || defined(__RTOS_VXWORKS__))
   retVal = memalign (16, (size_t)bufSize);
   if (NULL == retVal)
+#elif defined(__RTOS_ZEPHYR__)
+  if (0 != posix_memalign_ex (&retVal, 16, bufSize))
 #else
   if (0 != posix_memalign (&retVal, 16, bufSize))
 #endif
@@ -870,6 +893,31 @@ extern void * MEM_PROFILE_ADD_SUFFIX(CONVERT_CALLOC) (ubyte4 typeSize, ubyte4 bu
 
   return ((void *)0);
 }
+
+#if defined(__ENABLE_DIGICERT_CUSTOM_MALLOC__) && defined(__RTOS_ZEPHYR__)
+static struct k_heap custom_heap;
+MOC_EXTERN MSTATUS MOCANA_initCustomHeap(void *pHeap, size_t heapSize)
+{
+    if (NULL == pHeap || 0 == heapSize)
+        return ERR_INVALID_ARG;
+
+    k_heap_init(&custom_heap, pHeap, heapSize);
+    return OK;
+}
+
+MOC_EXTERN void *MOCANA_customMalloc(size_t size)
+{
+    return k_heap_alloc(&custom_heap, size, K_NO_WAIT);
+}
+
+MOC_EXTERN void MOCANA_customFree(void *memptr)
+{
+    if (memptr != NULL)
+    {
+        k_heap_free(&custom_heap, memptr);
+    }
+}
+#endif
 
 MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (
   void **ppPtr,
@@ -1542,6 +1590,5 @@ MOC_EXTERN MSTATUS MOC_removeDuplicateSlashes (char *pPath)
     pPath[len] = '\0';
     return OK;
 }
-
 #endif
 
