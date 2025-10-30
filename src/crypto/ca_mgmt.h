@@ -99,26 +99,27 @@ enum
 
 #endif
 
-/* Identifiers for quantum safe sig algs, SIG values match the OID suffix for each algorithm */ 
+/* Identifiers for quantum safe sig algs, they match the OID suffix for mldsa and slhdsa */
 enum
 {
-    cid_PQC_MLDSA_44 = 0x04,
-    cid_PQC_MLDSA_65 = 0x05,
-    cid_PQC_MLDSA_87 = 0x07,
-    cid_PQC_FNDSA_512 = 0x10,
-    cid_PQC_FNDSA_1024 = 0x11,
-    cid_PQC_SLHDSA_SHA2_128S = 0x50,
-    cid_PQC_SLHDSA_SHA2_128F = 0x51,
-    cid_PQC_SLHDSA_SHAKE_128S = 0x52,
-    cid_PQC_SLHDSA_SHAKE_128F = 0x53,
-    cid_PQC_SLHDSA_SHA2_192S = 0x54,
-    cid_PQC_SLHDSA_SHA2_192F = 0x55,
-    cid_PQC_SLHDSA_SHAKE_192S = 0x56,
-    cid_PQC_SLHDSA_SHAKE_192F = 0x57,
-    cid_PQC_SLHDSA_SHA2_256S = 0x58,
-    cid_PQC_SLHDSA_SHA2_256F = 0x59,
-    cid_PQC_SLHDSA_SHAKE_256S = 0x5a,
-    cid_PQC_SLHDSA_SHAKE_256F = 0x5b,
+    cid_PQC_MLDSA_44 = 0x11,
+    cid_PQC_MLDSA_65 = 0x12,
+    cid_PQC_MLDSA_87 = 0x13,
+    cid_PQC_SLHDSA_SHA2_128S = 0x14,
+    cid_PQC_SLHDSA_SHA2_128F = 0x15,
+    cid_PQC_SLHDSA_SHA2_192S = 0x16,
+    cid_PQC_SLHDSA_SHA2_192F = 0x17,
+    cid_PQC_SLHDSA_SHA2_256S = 0x18,
+    cid_PQC_SLHDSA_SHA2_256F = 0x19,
+    cid_PQC_SLHDSA_SHAKE_128S = 0x1a,
+    cid_PQC_SLHDSA_SHAKE_128F = 0x1b,
+    cid_PQC_SLHDSA_SHAKE_192S = 0x1c,
+    cid_PQC_SLHDSA_SHAKE_192F = 0x1d,
+    cid_PQC_SLHDSA_SHAKE_256S = 0x1e,
+    cid_PQC_SLHDSA_SHAKE_256F = 0x1f,
+
+    cid_PQC_FNDSA_512 = 0x40,
+    cid_PQC_FNDSA_1024 = 0x41,
 
     cid_PQC_MLKEM_512 = 0x110,
     cid_PQC_MLKEM_768 = 0x111,

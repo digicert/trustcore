@@ -14,9 +14,9 @@
  *
  */
 
-#include "common/moptions.h"
-#include "common/mtypes.h"
-#include "ssh/ssh_filesys.h"
+#include "../common/moptions.h"
+#include "../common/mtypes.h"
+#include "../ssh/ssh_filesys.h"
 
 /* if you want to have group accesses (bit masks), define some groups here */
 #define SFTP_GROUP_EVERYONE      0

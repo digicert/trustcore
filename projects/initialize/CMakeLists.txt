@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 option(CM_ENABLE_DEBUG "Enable Debug logs." OFF)
-option(CM_ENABLE_CUSTOM_ENTROP "Enable Custom Entropy." OFF)
+option(CM_ENABLE_CUSTOM_ENTROPY "Enable Custom Entropy." OFF)
 option(CM_ENABLE_IPV6 "Enable IPV6." OFF)
 option(CM_DISABLE_CI "Disable crypto interface" OFF)
 option(CM_ENABLE_DATA_PROTECT "Enable Data Protect." OFF)
@@ -31,7 +31,9 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-set(LIB_DIR "${MSS_DIR}/lib")
+if(BUILD_FOR_OSI)
+  set(LIB_DIR "${MSS_DIR}/lib")
+endif()
 
 set(LIB_TYPE "SHARED" CACHE STRING "Type of library to build. (SHARED or STATIC)")
 message("LIB_TYPE           = ${LIB_TYPE}")
@@ -206,11 +208,19 @@ endforeach()
 # Add file sources from mss_sources.txt
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_sources.txt" MSS_SOURCES)
 string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MSS_SOURCES "${MSS_SOURCES}")
+if(BUILD_FOR_OSI)
+  string(REGEX REPLACE "EXTERNAL_RAND_THREAD_DIR/" "initialize/" MSS_SOURCES "${MSS_SOURCES}")
+else()
+  string(REGEX REPLACE "EXTERNAL_RAND_THREAD_DIR/" "examples/" MSS_SOURCES "${MSS_SOURCES}")
+endif()
 
 # Set Windows file properties
 if(WIN32)
   build_rc_file("TrustPoint Shared Library")
   set(MSS_SOURCES ${MSS_SOURCES} ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.rc)
+endif()
+if (CM_ENABLE_CUSTOM_ENTROPY)
+  set(MSS_SOURCES ${MSS_SOURCES} ${MSS_SRC_DIR}/examples/custom_entropy.c)
 endif()
 
 message("\nmss sources")
@@ -225,13 +235,19 @@ else()
   link_directories(${MSS_SRC_DIR}/../bin)
 endif()
 
-set(PLATFORM_LIB        "${LIB_DIR}/libplatform.so")
-set(COMMON_LIB          "${LIB_DIR}/libcommon.so")
+if(BUILD_FOR_OSI)
+  set(PLATFORM_LIB        "${LIB_DIR}/libplatform.so")
+  set(COMMON_LIB          "${LIB_DIR}/libcommon.so")
 
-set(LIB_LINK_ORDER
-  ${PLATFORM_LIB}
-  ${COMMON_LIB}
-)
+  set(LIB_LINK_ORDER
+    ${PLATFORM_LIB}
+    ${COMMON_LIB}
+  )
+else()
+  locate_lib(COMMON_LIB common)
+  locate_lib(PLATFORM_LIB platform)
+  set(LIB_LINK_ORDER ${COMMON_LIB} ${PLATFORM_LIB})
+endif()
 if("SHARED" STREQUAL "${LIB_TYPE}")
   # Locate any needed libraries to link against
 
@@ -255,21 +271,30 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:${PROJECT_NAME}>
-        "${LIB_DIR}")
+  if(BUILD_FOR_OSI)
+    add_custom_command(
+      TARGET ${PROJECT_NAME}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+          $<TARGET_FILE:${PROJECT_NAME}>
+          "${LIB_DIR}")
+  endif()
+
   target_link_libraries(${PROJECT_NAME} ${LIB_LINK_ORDER})
 
   if(WIN32)
-      target_link_libraries(${PROJECT_NAME} ${PLATFORM_LIB} ${NANOCRYPTO_LIB}
+      locate_lib(NANOCRYPTO_LIB nanocrypto)
+      locate_lib(CRYPTO_MW_LIB cryptomw)
+      locate_lib(CRYPTOINTERFACE_LIB cryptointerface)
+      target_link_libraries(${PROJECT_NAME} ${PLATFORM_LIB} ${NANOCRYPTO_LIB} ${CRYPTO_MW_LIB}
                          ${CRYPTOINTERFACE_LIB} Shlwapi.lib Ws2_32.lib tbs.lib)
   endif()
 
   if(ANDROID)
-      target_link_libraries(${PROJECT_NAME} ${PLATFORM_LIB} ${NANOCRYPTO_LIB}
+      locate_lib(NANOCRYPTO_LIB nanocrypto)
+      locate_lib(CRYPTO_MW_LIB cryptomw)
+      locate_lib(CRYPTOINTERFACE_LIB cryptointerface)
+      target_link_libraries(${PROJECT_NAME} ${PLATFORM_LIB} ${NANOCRYPTO_LIB} ${CRYPTO_MW_LIB}
                          ${CRYPTOINTERFACE_LIB})
   endif()
 

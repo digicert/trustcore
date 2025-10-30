@@ -208,6 +208,11 @@ SSH_publicKeyFingerPrints(ubyte *pKeyBlob, ubyte4 keyBlobLength,
             pTempSignature = &ssh_ecdsa_signature;
             break;
         }
+        case akt_ecc_ed:
+        {
+            pTempSignature = &ssh_ecdsa_signature_ed25519;
+            break;
+        }
         default:
             status = ERR_BAD_KEY_TYPE;
             goto exit;

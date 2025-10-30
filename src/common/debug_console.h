@@ -156,7 +156,12 @@ MOC_EXTERN sbyte4     m_errorClass;
 #else /* __ENABLE_MOCANA_DEBUG_CONSOLE__ 2 is defined */
 
   #ifndef __ENABLE_CUSTOM_DEBUG_CONSOLE_DEFS__
-#ifdef __RTOS_FREERTOS__
+
+#if defined(__RTOS_ZEPHYR__)
+#include <stdio.h>
+    #define DB_PRINT  printf
+
+#elif defined(__RTOS_FREERTOS__)
 
 #ifdef STM32_NUCLEO
   #define DB_PRINT(...)  LoggingPrintf(__VA_ARGS__)

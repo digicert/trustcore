@@ -54,7 +54,7 @@ MOC_EXTERN MSTATUS SSH_SESSION_sendCloseChannel(sshContext *pContextSSH);
  * @dont_show
  * @internal
  */
-MOC_EXTERN void    SSH_SESSION_sendClose(sshContext *pContextSSH);
+MOC_EXTERN void    SSH_SESSION_sendClose(sshContext *pContextSSH, MSTATUS errorCode);
 
 #ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
 /**

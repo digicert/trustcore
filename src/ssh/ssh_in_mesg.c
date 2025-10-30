@@ -80,6 +80,8 @@ static MSTATUS UTILS_arrayToUbyte4(const ubyte *in, ubyte4 *out)
 
 /*------------------------------------------------------------------*/
 
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 {
     if (NULL == out)
@@ -98,6 +100,8 @@ static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 
     return OK;
 }
+#endif
+#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -205,7 +209,7 @@ receiveVersionString(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *p
         CLIENT_HELLO_COMMENT_LEN(pContextSSH) = 0;
 
         /* copy out client hello string */
-        while ((CR != (INBOUND_BUFFER(pContextSSH))[CLIENT_HELLO_COMMENT_LEN(pContextSSH)]) &&
+        while ((MOC_CR != (INBOUND_BUFFER(pContextSSH))[CLIENT_HELLO_COMMENT_LEN(pContextSSH)]) &&
                (LF != (INBOUND_BUFFER(pContextSSH))[CLIENT_HELLO_COMMENT_LEN(pContextSSH)]))
         {
             (CLIENT_HELLO_COMMENT(pContextSSH))[CLIENT_HELLO_COMMENT_LEN(pContextSSH)] =
@@ -255,7 +259,7 @@ verifyMAC(sshContext *pContextSSH)
     ubyte*  tempMac = NULL;
     ubyte*  sequenceBuf = NULL;
     ubyte4  sequenceNum = 0;
-    sbyte4 result = -1;
+    intBoolean result = -1;
 
     if (OK > (status = MEM_POOL_getPoolObject(&pContextSSH->mediumPool, (void **)&(tempMac))))
         goto exit;
@@ -277,9 +281,9 @@ verifyMAC(sshContext *pContextSSH)
 
     if (OK <= status)
     {
-        if (OK == (status = MOC_MEMCMP(tempMac,
-                                        INBOUND_BUFFER(pContextSSH) + INBOUND_PACKET_LENGTH(pContextSSH) + 4,
-                                        INBOUND_MAC_SIZE(pContextSSH), &result)))
+        if (OK == (status = MOC_CTIME_MATCH(tempMac, 
+                                            INBOUND_BUFFER(pContextSSH) + INBOUND_PACKET_LENGTH(pContextSSH) + 4,
+                                            INBOUND_MAC_SIZE(pContextSSH), &result)))
         {
             if (0 != result)
             {
@@ -426,6 +430,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS
 getPacketLength(sshContext *pContextSSH, ubyte *pPacketLength)
 {
@@ -455,7 +461,8 @@ getPacketLength(sshContext *pContextSSH, ubyte *pPacketLength)
 exit:
     return status;
 }
-
+#endif
+#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
 
 /*------------------------------------------------------------------*/
 
@@ -464,7 +471,11 @@ decryptFirstBlock(sshContext *pContextSSH)
 {
     sshAeadAlgo*    pAeadSuite;
     MSTATUS         status = OK;
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
     ubyte           pPacketLength[4];
+#endif
+#endif
     ubyte4          length;
 
     if (NULL != INBOUND_CIPHER_ALGORITHM(pContextSSH))
@@ -681,6 +692,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS decryptAeadBlocksEx(sshContext *pContextSSH)
 {
     sshAeadAlgo*    pAeadSuite;
@@ -725,6 +738,8 @@ exit:
     INBOUND_INC_SEQUENCE_NUM(pContextSSH);
     return status;
 }
+#endif
+#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -872,11 +887,11 @@ receiveMAC(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPacketLeng
 
             if (OK <= status)
             {
-                sbyte4 result;
+                intBoolean result = -1;
 
                 /* verify the MAC sent is correct */
-                if (OK == (status = MOC_MEMCMP(tempMac, INBOUND_MAC_BUFFER(pContextSSH),
-                                               INBOUND_MAC_SIZE(pContextSSH), &result)))
+                if (OK == (status = MOC_CTIME_MATCH(tempMac, INBOUND_MAC_BUFFER(pContextSSH),
+                                                    INBOUND_MAC_SIZE(pContextSSH), &result)))
                 {
                     if (0 != result)
                     {

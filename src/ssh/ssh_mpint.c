@@ -25,12 +25,10 @@ MOC_EXTERN MSTATUS SSH_mpintByteStringFromByteString (
   sbyte4* pRetLen
   )
 {
-  ubyte4 length = valueLen;
-  ubyte4 leadingByte = 0; /* 1 if we need a lead zero or 0xFF byte, 0 otherwise */
+  ubyte4 extraByte = 0;
   ubyte *pDest = NULL; /* buffer used to store output */
-  ubyte4 bitLen = 0;
+  ubyte4 destLen = 0;
   MSTATUS status = OK;
-  ubyte4 lastWord = 0; /* here we store the value of the last 4 bytes */ 
 
   if ((NULL == pValue) || (NULL == ppDest) || (NULL == pRetLen))
   {
@@ -41,97 +39,97 @@ MOC_EXTERN MSTATUS SSH_mpintByteStringFromByteString (
   *ppDest = NULL;
   *pRetLen = 0;
 
-  /* get size of buffer in bits, if len is a multiple of 8, we need a 00 byte of ff
-   * otherwise we can ignore*/
-
-  /* convert the last 4 bytes of buffer into a ubyte4  */
-  if(0 < valueLen)
+  /* ignore any zero bytes at the beginning of pValue, ok to move passed by value ptr */
+  while (valueLen > 0 && 0x00 == pValue[0])
   {
-    if (valueLen >= 4)
-    {
-      lastWord = (lastWord | pValue[0]);
-      lastWord = (lastWord << 8);
-      lastWord = (lastWord | pValue[1]);
-      lastWord = (lastWord << 8);
-      lastWord = (lastWord | pValue[2]);
-      lastWord = (lastWord << 8);
-      lastWord = (lastWord | pValue[3]);
-    } else if (valueLen >= 3)
-    {
-      lastWord = (lastWord | pValue[0]);
-      lastWord = (lastWord << 8);
-      lastWord = (lastWord | pValue[1]);
-      lastWord = (lastWord << 8);
-      lastWord = (lastWord | pValue[2]);
+    pValue++;
+    valueLen--;
+  }
 
-    } else if (valueLen >= 2)
+  if (valueLen > 0)
+  {
+    /* for positive integers, if first bit is set we'll need to pad with an extra 0x00 byte */
+    if (0 == sign && (pValue[0] & 0x80) )
     {
-      lastWord = (lastWord | pValue[0]);
-      lastWord = (lastWord << 8);
-      lastWord = (lastWord | pValue[1]);
-
-    } else if (valueLen >= 1)
-    {
-      lastWord = (lastWord | pValue[0]);
+      extraByte = 1;
     }
+    /* for negative integers we need to pad with an extra byte if the value is greater than 0x8000.... to the proper length  */
+    else if (0 != sign)
+    {
+      if (pValue[0] > 0x80)
+      {
+        extraByte = 1;
+      }
+      else if (pValue[0] == 0x80)
+      {
+        ubyte *pTemp = (ubyte *) pValue + 1;
+        ubyte4 tempLen = valueLen - 1;
 
-    bitLen = MOC_BITLENGTH(lastWord);
-    leadingByte = (0 == bitLen % 8) ? 1 : 0;
+        /* check if all bytes after the 0x80 are 0x00 */
+        while (tempLen > 0 && 0x00 == pTemp[0])
+        {
+          pTemp++;
+          tempLen--;
+        }
+        if (tempLen)
+        {
+          extraByte = 1;
+        }
+      }
+    }
   }
 
-  /* get length of buffer */
-  pDest = (ubyte *)MALLOC(length + 4 + leadingByte);
-  if (!pDest)
-  {
-    status = ERR_MEM_ALLOC_FAIL;
-    goto exit;
-  }
+  /* 4 byte length plus potential extra byte plus raw value length */
+  destLen = 4 + extraByte + valueLen;
+
+  status = MOC_MALLOC((void **) &pDest, destLen);
+  if (OK != status)
+      goto exit;
 
   /* length */
-  BIGEND32(pDest, length + leadingByte);
+  BIGEND32(pDest, extraByte + valueLen);
 
-  if (1 == leadingByte)
+  /* extra byte */
+  if (1 == extraByte)
   {
     pDest[4] = (sign) ? 0xFF : 0x00;
   }
 
-  /* copy buffer into output buffer */
-  status = MOC_MEMCPY(pDest + 4 + leadingByte, pValue, valueLen);
-  if (OK != status)
-      goto exit;
-
-  *pRetLen = length + 4 + leadingByte;
-
-  /* convert to 2 complement if negative */
-  if (sign)
+  if (valueLen > 0)
   {
-    ubyte4 i;
-    /* flip all the bytes */
-    for (i = 4 + leadingByte; i < (ubyte4)*pRetLen; ++i)
+    /* raw value*/
+    (void) MOC_MEMCPY(pDest + 4 + extraByte, pValue, valueLen);
+
+    /* convert to 2s complement if negative */
+    if (sign)
     {
-      pDest[i] ^= 0xFF;
-    }
-    /* add 1 */
-    for (i = *pRetLen - 1; i >= 4 + leadingByte; --i)
-    {
-      if (0xFF == pDest[i])
+      ubyte4 i;
+
+      /* flip all the bytes */      
+      for (i = 4 + extraByte; i < destLen; ++i)
       {
-        pDest[i] = 0;
+        pDest[i] ^= 0xFF;
       }
-      else
+
+      /* add 1, start at the end */
+      for (i = destLen - 1; i >= 4 + extraByte; --i)
       {
         pDest[i]++;
-        break;
+        if (pDest[i])
+           break;
       }
+      /* ignore any overflow carry */
     }
   }
 
-  *ppDest = pDest;
-  pDest = NULL;
+  *ppDest = pDest; pDest = NULL;
+  *pRetLen = (sbyte4) destLen;
+
 exit:
+
+  /* no goto exit after MOC_MALLOC, no cleanup needed */
   return status;
 }
-
 #endif /* defined(__ENABLE_MOCANA_PEM_CONVERSION__) || !defined(__DISABLE_MOCANA_KEY_GENERATION__) */
 
 /*----------------------------------------------------------------------------*/

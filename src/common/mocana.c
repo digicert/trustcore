@@ -43,12 +43,16 @@
 #ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
 #include <unistd.h>
 #ifndef __RTOS_THREADX__
+#if defined(__RTOS_ZEPHYR__)
+#include <zephyr/fs/fs.h>
+#else
 #include <dirent.h>
+#endif
 #include <sys/time.h>
 #endif
-#if !defined(__RTOS_VXWORKS__) && !defined(__RTOS_THREADX__)
+#if !defined(__RTOS_VXWORKS__) && !defined(__RTOS_THREADX__) && !defined(__RTOS_ZEPHYR__)
 #include <termios.h>
-#endif /* !__RTOS_VXWORKS__ */
+#endif /* !__RTOS_VXWORKS__ && !__RTOS_THREADX__ && !__RTOS_ZEPHYR__ */
 #endif /* !__DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
 #endif /* !__RTOS_WIN32__ && !__RTOS_FREERTOS__ */
 
@@ -136,7 +140,7 @@
 logFn            g_logFn          = NULL;
  MOC_EXTERN_DATA_DEF volatile sbyte4 gMocanaAppsRunning = 0;
 
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#if !defined(__DISABLE_MOCANA_ADD_ENTROPY__) && !defined(__DISABLE_MOCANA_NIST_CTR_DRBG__)
 static ubyte entropyDepot[MOC_ENTROPY_DEPOT_SIZE + SHA1_RESULT_SIZE];
 static ubyte4 entropyIndex = 0;
 #endif
@@ -202,6 +206,7 @@ MOCANA_freeMocana(void)
 
 #ifndef __DISABLE_MOCANA_ADD_ENTROPY__
 
+#ifndef __DISABLE_MOCANA_NIST_CTR_DRBG__
 static void MOCANA_SEED_addEntropyBit(ubyte entropyBit)
 {
     ubyte4 bitPos;
@@ -220,7 +225,6 @@ static void MOCANA_SEED_addEntropyBit(ubyte entropyBit)
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_NIST_CTR_DRBG__
 static sbyte4 MOCANA_addEntropyBitDRBGCTR(randomContext *pRandomContext, ubyte entropyBit)
 {
     MSTATUS status = OK;
@@ -403,7 +407,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 #ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
-#ifndef __ENABLE_MOCANA_NANOPNAC__
+#if !defined(__ENABLE_MOCANA_NANOPNAC__) && !defined(__RTOS_ZEPHYR__)
 MSTATUS MOCANA_opendir(void **pDirInfo, const char *pPath)
 {
     MSTATUS status = OK;

@@ -1,3 +1,3 @@
 MSS_SRC_DIR/common/initmocana.c
 MSS_SRC_DIR/common/mocana.c
-MSS_SRC_DIR/initialize/external_rand_thread.c
+MSS_SRC_DIR/EXTERNAL_RAND_THREAD_DIR/external_rand_thread.c

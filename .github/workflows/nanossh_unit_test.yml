@@ -1,0 +1,34 @@
+name: NanoSSH unit test
+run-name: Running NanoSSH unit tests 🚀
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  Run-NanoSSH-Unit-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake libcmocka-dev
+          cmake --version
+
+      - name: Build SSH
+        run: |
+          cmake -DENABLE_SSH_UNITTEST=ON -B build -S .
+          cmake --build build
+
+      - name: Run Unit Tests
+        run: |
+          ./projects/nanossh_testunit/run.sh
+
+      - name: Show Job Status
+        run: echo "🍏 This job's status is ${{ job.status }}."

@@ -60,6 +60,8 @@
 
 /*------------------------------------------------------------------*/
 
+#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
+#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
 static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 {
     if (NULL == out)
@@ -78,6 +80,8 @@ static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 
     return OK;
 }
+#endif
+#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
 
 
 /*------------------------------------------------------------------*/

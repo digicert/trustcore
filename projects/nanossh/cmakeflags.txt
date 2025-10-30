@@ -1,4 +1,8 @@
-cmake_minimum_required (VERSION 3.2)
+if(BUILD_FOR_OSI)
+  cmake_minimum_required(VERSION 3.16)
+else()
+  cmake_minimum_required (VERSION 3.2)
+endif()
 
 function(init_flags)
   # initializing flags
@@ -110,9 +114,24 @@ function(buildflags targetdir extraFlags mocana_flags)
     string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDSA_25519__" "" mocana_flags "${mocana_flags}")
   endif()
 
+  # Removing Ed448 support flags in NanoSSH
+  if (CM_DISABLE_EDDSA_448_SUPPORT)
+    string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDSA_448__" "" mocana_flags "${mocana_flags}")
+  endif()
+
   # Removing ECDH with Curve25519 flags in NanoSSH
   if (CM_DISABLE_ECDH_25519_SUPPORT)
     string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDH_25519__" "" mocana_flags "${mocana_flags}")
+  endif()
+
+  # Building server or client example with gracefully shutdown
+  if (CM_ENABLE_MOCANA_SSH_EXAMPLE_GRACEFUL_SHUTDOWN)
+    string(APPEND mocana_flags " -D__ENABLE_MOCANA_SSH_EXAMPLE_GRACEFUL_SHUTDOWN__")
+  endif()
+
+  # Building server or client example with weak ciphers disabled
+  if (CM_ENABLE_WEAK_CIPHERS)
+    string(APPEND mocana_flags " -D__ENABLE_MOCANA_SSH_WEAK_CIPHERS__")
   endif()
 
   # Adding debug flags

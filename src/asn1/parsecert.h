@@ -83,7 +83,7 @@ MOC_EXTERN MSTATUS
 X509_decryptRSASignatureBuffer(MOC_RSA(hwAccelDescr hwAccelCtx)
                                struct RSAKey* pRSAKey,
                                const ubyte* pSignature, ubyte4 signatureLen,
-                               ubyte hash[/*CERT_MAXDIGESTSIZE*/], sbyte4 *pHashLen,
+                               ubyte hash[64 /*CERT_MAXDIGESTSIZE*/], sbyte4 *pHashLen,
                                ubyte4* rsaAlgoIdSubType);
 
 #if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
@@ -91,7 +91,7 @@ MOC_EXTERN MSTATUS
 X509_decryptRSASignatureBufferEx(MOC_RSA(hwAccelDescr hwAccelCtx)
                                struct RSAKey* pRSAKey,
                                const ubyte* pSignature, ubyte4 signatureLen,
-                               ubyte hash[/*CERT_MAXDIGESTSIZE*/], sbyte4 *pHashLen,
+                               ubyte hash[64 /*CERT_MAXDIGESTSIZE*/], sbyte4 *pHashLen,
                                ubyte4* rsaAlgoIdSubType, ubyte4 keyType);
 #endif
 
@@ -187,7 +187,7 @@ X509_verifyValidityTime(struct ASN1_ITEM* pCertificate, CStream s, const TimeDat
 MOC_EXTERN MSTATUS
 X509_computeBufferHash(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte* buffer,
                        ubyte4 bytesToHash,
-                       ubyte hash[/*CERT_MAXDIGESTSIZE*/], sbyte4* hashSize,
+                       ubyte hash[64 /*CERT_MAXDIGESTSIZE*/], sbyte4* hashSize,
                        ubyte4 hashType);
 
 MOC_EXTERN MSTATUS
@@ -502,6 +502,9 @@ X509_convertTime(TimeDate *pTime, ubyte *pOutputTime);
 
 MOC_EXTERN MSTATUS 
 X509_printCertificateOrCsr(ubyte *pCertOrCsr, ubyte4 certOrCsrLen);
+
+MOC_EXTERN MSTATUS
+X509_decodeRS(ubyte *pSer, ubyte4 serLen, ubyte *pR, ubyte *pS, ubyte4 elemLen);
 
 #ifdef __ENABLE_MOCANA_CV_CERT__
 MOC_EXTERN MSTATUS

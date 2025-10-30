@@ -62,7 +62,7 @@ MOC_EXTERN MSTATUS PKCS_GetCBCParams( ASN1_ITEM* pAlgoOID, CStream s,
 MOC_EXTERN MSTATUS PKCS_GetRC2CBCParams( ASN1_ITEM* pAlgoOID,
                                CStream s,
                                sbyte4* pEffectiveKeyBits,
-                               ubyte iv[/*RC2_BLOCK_SIZE*/]);
+                               ubyte iv[8]); /*RC2_BLOCK_SIZE*/
 
 #endif
 

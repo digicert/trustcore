@@ -335,8 +335,10 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
 #elif defined(__RTOS_LINUX__)
 
+#if !defined(__RTOS_ZEPHYR__)
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
 
 #ifdef __ENABLE_MOCANA_IPV6__
 

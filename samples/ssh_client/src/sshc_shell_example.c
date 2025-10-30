@@ -1,5 +1,5 @@
 /*
- * sshc_example.c
+ * sshc_shell_example.c
  *
  * SSHC Shell Example Code
  *
@@ -15,23 +15,23 @@
  */
 
 
-#include "common/moptions.h"
+#include "../common/moptions.h"
 
 #if (defined(__ENABLE_MOCANA_SSH_CLIENT_EXAMPLE__) && !defined(__ENABLE_MOCANA_SSH_PORT_FORWARDING__) && !defined(__ENABLE_MOCANA_SSH_FTP_CLIENT__) && (defined(__ENABLE_MOCANA_EXAMPLES__) || defined(__ENABLE_MOCANA_BIN_EXAMPLES__)))
 
-#include "common/mtypes.h"
-#include "common/mdefs.h"
-#include "common/mocana.h"
-#include "common/merrors.h"
-#include "common/mrtos.h"
-#include "common/mtcp.h"
-#include "common/mstdlib.h"
-#include "common/debug_console.h"
-#include "crypto/hw_accel.h"
-#include "crypto/ca_mgmt.h"
-#include "ssh/client/sshc.h"
-#include "ssh/client/sshc_filesys.h"
-#include "ssh/ssh_defs.h"
+#include "../common/mtypes.h"
+#include "../common/mdefs.h"
+#include "../common/mocana.h"
+#include "../common/mdefs.h"
+#include "../common/merrors.h"
+#include "../common/mrtos.h"
+#include "../common/mtcp.h"
+#include "../common/mstdlib.h"
+#include "../common/debug_console.h"
+#include "../crypto/ca_mgmt.h"
+#include "../ssh/client/sshc.h"
+#include "../ssh/client/sshc_filesys.h"
+#include "../ssh/ssh_defs.h"
 
 #include <string.h>
 #include <stdio.h>

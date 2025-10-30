@@ -2629,6 +2629,8 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_TRUSTEDGE_AGENT_BAD_POLICY_ID,                 -22744)
     ERROR_DEF       (ERR_TRUSTEDGE_AGENT_UNEXPECTED_CERT_RENEW,         -22745)
     ERROR_DEF       (ERR_TRUSTEDGE_AGENT_BACKEND_ERROR_RESPONSE,        -22746)
+    ERROR_DEF       (ERR_TRUSTEDGE_AGENT_NO_BOOTSTRAP_SIG,              -22747)
+    ERROR_DEF       (ERR_TRUSTEDGE_AGENT_JWT_MALFORMED,                 -22748)
 
     /* TrustEdge Certificate Error Codes */
     ERROR_DEF       (ERR_TRUSTEDGE_CERTIFICATE,                         -22750)
@@ -2660,6 +2662,15 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_PROTOBUF_UNEXPECTED_FIELD,                     -23012)
     ERROR_DEF       (ERR_PROTOBUF_VARINT_BOOL,                          -23013)
     ERROR_DEF       (ERR_PROTOBUF_LEN_NEGATIVE,                         -23014)
+
+    /* Mime Error Codes */
+    ERROR_DEF       (ERR_MIME,                                          -24000)
+    ERROR_DEF       (ERR_MIME_CONTENT_TYPE_NOT_SUPPORTED,               -24001)
+    ERROR_DEF       (ERR_MIME_CONTENT_TRANSFER_ENCODING_NOT_SUPPORTED,  -24002)
+    ERROR_DEF       (ERR_MIME_INCOMPLETE_HEADER,                        -24003)
+    ERROR_DEF       (ERR_MIME_MISSING_LENGTH,                           -24004)
+    ERROR_DEF       (ERR_MIME_FORMAT_INVALID,                           -24005)
+    ERROR_DEF       (ERR_MIME_CONTENT_LENGTH_MISMATCH,                  -24006)
 
     /* Mocana Application error code */
     ERROR_DEF       (ERR_APP,                                           -50000)
@@ -2829,6 +2840,7 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_TAP_SCRIPT_KEYWORD_ERROR,                      -52665)
     ERROR_DEF       (ERR_TAP_UNSUPPORTED_HASH_ID,                       -52666)
     ERROR_DEF       (ERR_TAP_OBJECT_INDEX_UNAVAILABLE,                  -52667)
+    ERROR_DEF       (ERR_TAP_SIGN_INPUT_TOO_LARGE,                      -52668)
 
     /* NanoTAP error codes for windows service */
     ERROR_DEF       (ERR_TAP_EVTLOG_WRITE_FAILED,                       -52701)

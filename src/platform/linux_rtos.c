@@ -31,19 +31,31 @@
 
 #if defined(__LINUX_RTOS__)
 #include <sys/types.h>
+#if defined(__RTOS_ZEPHYR__)
+#include <zephyr/net/socket.h>
+#include <zephyr/sys/fdtable.h>
+#include <zephyr/posix/sys/ioctl.h>
+#include <zephyr/posix/semaphore.h>
+#else
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <linux/if.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <ifaddrs.h>
 #include <linux/sockios.h>
-#include <string.h>
+#include <semaphore.h>
+
+#ifndef __WR_LINUX__
+#include <asm/param.h>
 #endif
+#endif /* __RTOS_ZEPHYR__ */
+
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#endif /* __LINUX_RTOS__ */
 
 #include <unistd.h>
 #include <fcntl.h>
-#include <semaphore.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -52,9 +64,6 @@
 #include <errno.h>
 #include <time.h>
 
-#ifndef __WR_LINUX__
-#include <asm/param.h>
-#endif
 #define NANOS 1000000000
 
 #ifndef _REENTRANT
@@ -302,19 +311,33 @@ exit:
 extern ubyte4
 LINUX_getUpTimeInMS(void)
 {
+    ubyte4     ms;
+#if !defined(__RTOS_ZEPHYR__)
     struct tms tstruct;
     clock_t    uptime;
-    ubyte4     ms;
 
-    uptime=times(&tstruct);
+    uptime = times(&tstruct);
 
-    if (uptime==-1)
+    if (uptime == ((clock_t)-1))
     {
         DEBUG_PRINTNL(DEBUG_PLATFORM, (sbyte *)"ERROR: Could not get time values.");
         return -1;
     }
 
     ms = (uptime*1000)/sysconf(_SC_CLK_TCK);
+#else
+/*
+    The kernel tracks a system uptime count on behalf of the application.
+    This is available at all times via k_uptime_get(), which provides an uptime
+    value in milliseconds since system boot. This is expected to be the utility
+    used by most portable application code.
+
+    The internal tracking, however, is as a 64 bit integer count of ticks. Apps
+    with precise timing requirements (that are willing to do their own conversions
+    to portable real time units) may access this with k_uptime_ticks().
+*/
+    ms = k_uptime_get();
+#endif
 
     return ms;
 }
@@ -498,7 +521,7 @@ LINUX_createThread(void (*threadEntry)(void*), void* context, ubyte4 threadType,
         goto exit;
     }
 
-    *pRetTid = (RTOS_THREAD)tid;
+    *pRetTid = (RTOS_THREAD)((uintptr) tid);
 
 exit:
     return status;
@@ -510,7 +533,7 @@ exit:
 extern void
 LINUX_destroyThread(RTOS_THREAD tid)
 {
-    (void) pthread_detach((pthread_t) tid); /* mark the thread for deletion */
+    (void) pthread_detach((pthread_t)((uintptr) tid)); /* mark the thread for deletion */
 }
 
 /*------------------------------------------------------------------*/
@@ -526,7 +549,7 @@ LINUX_exitThread(void *pRetVal)
 extern MSTATUS
 LINUX_joinThread(RTOS_THREAD tid, void **ppRetVal)
 {
-    if (0 == pthread_join((pthread_t) tid, ppRetVal))
+    if (0 == pthread_join((pthread_t)((uintptr) tid), ppRetVal))
         return OK;
     else
         return ERR_RTOS_THREAD_JOIN;
@@ -537,7 +560,7 @@ LINUX_joinThread(RTOS_THREAD tid, void **ppRetVal)
 extern RTOS_THREAD
 LINUX_currentThreadId(void)
 {
-    return (RTOS_THREAD) pthread_self();
+    return ((RTOS_THREAD)((uintptr)pthread_self()));
 }
 
 
@@ -546,7 +569,7 @@ LINUX_currentThreadId(void)
 extern intBoolean
 LINUX_sameThreadId(RTOS_THREAD tid1, RTOS_THREAD tid2)
 {
-    return (pthread_equal((pthread_t)tid1, (pthread_t)tid2) ? TRUE : FALSE);
+    return (pthread_equal((pthread_t)((uintptr)tid1), ((pthread_t)(uintptr)tid2)) ? TRUE : FALSE);
 }
 
 
@@ -1019,7 +1042,7 @@ exit:
 }
 
 #if defined(__LINUX_RTOS__)
-#ifdef __RTOS_LINUX__
+#if defined(__RTOS_LINUX__) && !defined(__RTOS_ZEPHYR__)
 extern MSTATUS
 LINUX_getHwAddrByIfname(const sbyte *ifname, sbyte *adapter_name, ubyte *macAddr, ubyte4 len)
 {
@@ -1070,7 +1093,7 @@ exit:
 #endif
 
 /*------------------------------------------------------------------*/
-
+#if !defined(__RTOS_ZEPHYR__)
 extern MSTATUS
 LINUX_getHwAddr(ubyte *macAddr, ubyte4 len)
 {
@@ -1137,6 +1160,7 @@ exit:
 
     return status;
 }
+#endif
 
 /*------------------------------------------------------------------*/
 
@@ -1192,6 +1216,52 @@ LINUX_semWait(RTOS_SEM sem)
             status = ERR_RTOS_SEM_CALL_INTR;
         else
             status = ERR_RTOS_SEM_WAIT;
+    }
+exit:
+
+    return status;
+}
+
+extern MSTATUS
+LINUX_semTimedWait(RTOS_SEM sem, ubyte4 timeoutMS, byteBoolean *pTimeout)
+{
+    MSTATUS status = OK;
+    struct timespec timeToWait = { 0 };
+    struct timespec now = { 0 };
+
+    if (NULL == sem || NULL == pTimeout)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    *pTimeout = FALSE;
+
+    clock_gettime(CLOCK_REALTIME, &now);
+    timeToWait.tv_sec = now.tv_sec + (timeoutMS / 1000);
+
+    timeToWait.tv_nsec = now.tv_nsec + ((timeoutMS % 1000) * 1000000);
+    if (timeToWait.tv_nsec >= NANOS)
+    {
+        timeToWait.tv_sec += 1;
+        timeToWait.tv_nsec -= NANOS;
+    }
+
+    if (sem_timedwait(sem, &timeToWait) < 0)
+    {
+        if (ETIMEDOUT == errno)
+        {
+            status = OK;
+            *pTimeout = TRUE;
+        }
+        else if (EINTR == errno)
+        {
+            status = ERR_RTOS_SEM_CALL_INTR;
+        }
+        else
+        {
+            status = ERR_RTOS_SEM_WAIT;
+        }
     }
 exit:
 
@@ -1307,6 +1377,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+#if !defined(__RTOS_ZEPHYR__)
 extern MSTATUS LINUX_lockFileAcquire(RTOS_LOCK pLock)
 {
     MSTATUS status;
@@ -1354,6 +1425,7 @@ exit:
 
     return status;
 }
+#endif /* __RTOS_ZEPHYR__ */
 
 /*------------------------------------------------------------------*/
 

@@ -55,8 +55,10 @@ extern "C" {
 #define EMBEDDED_PDV    0x0B    /* 11: Embedded Presentation Data Value */
 #define UTF8STRING      0x0C    /* 12: UTF8 string */
 #define SEQUENCE        0x10    /* 16: Sequence/sequence of */
-#undef  SET
-#define SET             0x11    /* 17: Set/set of */
+#ifdef MOC_SET
+#undef  MOC_SET
+#endif
+#define MOC_SET         0x11    /* 17: Set/set of */
 #define NUMERICSTRING   0x12    /* 18: Numeric string */
 #define PRINTABLESTRING 0x13    /* 19: Printable string (ASCII subset) */
 #define T61STRING       0x14    /* 20: T61/Teletex string */

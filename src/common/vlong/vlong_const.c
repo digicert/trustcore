@@ -2,8 +2,14 @@
  * @file  vlong_const.c
  * @brief Very Long Integer Library Header Constant Time arithmetic
  *
- * Copyright Digicert 2023. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * For commercial licensing, contact DigiCert at sales@digicert.com.*
  */
 
 #if defined(__RTOS_THREADX__) && !defined(__RTOS_AZURE__)
@@ -561,7 +567,7 @@ static ubyte4 VLONG_leftAlign(vlong_unit *pIn, ubyte4 inLen)
 static void VLONG_constTimeRightShift(vlong_unit *pRes, vlong_unit *pA, ubyte4 aLen, ubyte4 shift)
 {
     ubyte4 i, lshift;
-    vlong_unit temp, borrow, lmask;
+    vlong_unit temp, borrow = 0, lmask;
 
     lshift = BPU - shift;
     lshift %= BPU; /* in case shift = 0 */

@@ -2,7 +2,11 @@
 # CMake build script for DigiCert NanoSSH SHARED LIBRARY
 #
 
-cmake_minimum_required(VERSION 3.16)
+if(BUILD_FOR_OSI)
+    cmake_minimum_required(VERSION 3.16)
+else()
+    cmake_minimum_required(VERSION 3.2)
+endif()
 
 option(CM_ENABLE_DEBUG                              "Enable Debug logs."                  OFF)
 option(CM_DISABLE_SUITEB                            "Disable Mocana Suite B algorithms"   OFF)
@@ -22,20 +26,34 @@ option(CM_ENABLE_SCP_EXAMPLE                        "Enable SCP example"        
 option(CM_ENABLE_EMULATOR                           "Enable Emulator"                     OFF)
 option(CM_ENABLE_EXPORT_ED                          "Enable Export Edition"               OFF)
 option(CM_DISABLE_PQC                               "Disable Quantum Safe algorithms"     OFF)
+option(CM_ENABLE_PQC_COMPOSITE                      "Enable PQC Composite."               OFF)
 option(CM_ENABLE_KEYBOARD_INTERACTIVE               "Enable keyboard-interactive protocol" OFF)
 option(CM_ENABLE_MOCANA_NO_PUBKEY_NAME              "Enable no public key name verification" OFF)
 option(CM_ENABLE_FIPS                               "Enable FIPS"                         OFF)
 option(CM_ENABLE_DATA_PROTECTION                    "Enable Data Protection"              OFF)
+if(BUILD_FOR_OSI)
 option(CM_ENABLE_CHACHAPOLY                         "Enable ChaCha20 and Poly1305 support" ON)
+else()
+option(CM_ENABLE_CHACHAPOLY                         "Enable ChaCha20 and Poly1305 support" OFF)
+endif()
 option(CM_ENABLE_BLOWFISH                           "Enable Blowfish support" OFF)
 option(CM_ENABLE_DSA_SUPPORT                        "Enable DSA support in NanoSSH" OFF)
+option(CM_ENABLE_SSH_UNITTEST                       "Build unittest"                      OFF)
 option(CM_DISABLE_EDDSA_25519_SUPPORT               "Disable Ed25519 support in NanoSSH" OFF)
+option(CM_DISABLE_EDDSA_448_SUPPORT                 "Disable Ed448 support in NanoSSH" OFF)
 option(CM_DISABLE_ECDH_25519_SUPPORT                "Disable ECDH with Curve25519 support in NanoSSH" OFF)
+option(CM_ENABLE_MOCANA_SSH_EXAMPLE_GRACEFUL_SHUTDOWN "Build with server or client example shutdown gracefully." OFF)
+option(CM_ENABLE_WEAK_CIPHERS                       "Build with weak ciphers enabled."   OFF)
 option(CM_ENABLE_SERIAL_CHANNEL                     "Enable support for serial channels"  OFF)
 option(CM_BUILD_SHARED_LIBS                         "Build NanoSSH Shared Library"        OFF)
 option(CM_BUILD_SSH_CLIENT                          "Build NanoSSH client"                OFF)
 option(CM_BUILD_SSH_SERVER                          "Build NanoSSH server"                OFF)
 option(CM_BUILD_SSH_SERVER_SP800_135                "Build NanoSSH server for testing SP800-135"                OFF)
+if (DEFINED SECURE_PATH)
+option(CM_ENABLE_ABSOLUTE_PATH                      "Enable absolute path support." ON)
+else()
+option(CM_ENABLE_ABSOLUTE_PATH                      "Enable absolute path support." OFF)
+endif()
 
 
 option(CM_BUILD_X32                                 "Build for 32Bit Machine." OFF)
@@ -58,12 +76,20 @@ include(build_executable)
 include(build_library)
 include(locate_lib)
 
+if(WIN32)
+    set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32")
+else()
+    set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
+endif()
+
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
-set(LIB_DIR  "${MSS_DIR}/lib")
 set(CMAKE_INSTALL_RPATH "${MSS_BIN_DIR}")
 
-set(MSS_BIN_DIR "${LIB_DIR}")
+if(BUILD_FOR_OSI)
+    set(LIB_DIR  "${MSS_DIR}/lib")
+    set(MSS_BIN_DIR "${LIB_DIR}")
+endif()
 
 set(LIB_TYPE "SHARED" CACHE STRING "Which lib type to build: SHARED (default) or STATIC")
 message("LIB_TYPE           = ${LIB_TYPE}")
@@ -96,11 +122,6 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
 else()
     set(CRYPTO_LIB_ARCH_DIR "linux-x86_64")
 endif()
-
-if(CM_ENABLE_DEBUG)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-endif()
 # Get the full path to our base libraries
 # Note: If library is not found, variable will be empty.
 locate_lib(ASN1_LIB asn1)
@@ -129,6 +150,20 @@ if(CM_ENABLE_FIPS)
     locate_lib(FIPS_LIB mss)
 endif()
 
+if(CM_ENABLE_ABSOLUTE_PATH)
+  set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__")
+endif()
+
+if (DEFINED SECURE_PATH)
+  set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_DIGICERT_SECURE_PATH__")
+  message("\nSECURE_PATH = ${SECURE_PATH}")
+  add_definitions("-DMANDATORY_BASE_PATH=\"\"${SECURE_PATH}\"\"")
+endif()
+
+if(CM_ENABLE_PQC_COMPOSITE)
+  add_definitions(" -D__ENABLE_MOCANA_PQC_COMPOSITE__ ")
+endif()
+
 ########################################################################
 # Mocana ssh client  building
 ########################################################################
@@ -137,8 +172,10 @@ if (CM_BUILD_SSH_CLIENT)
     set(TARGET_NAME ssh_client)
     set(MOCANA_FLAGS "")
 
-    if ((NOT CM_ENABLE_MOCANA_PORT_FORWARD) AND (NOT CM_ENABLE_MOCANA_REMOTE_PORT_FORWARD) AND (NOT ENABLE_SSH_CLIENT_SHELL_EXAMPLE))
-      set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_FTP_CLIENT__")
+    if ((NOT CM_ENABLE_MOCANA_PORT_FORWARD) AND (NOT CM_ENABLE_MOCANA_REMOTE_PORT_FORWARD))
+      if(NOT BUILD_FOR_OSI OR (BUILD_FOR_OSI AND NOT ENABLE_SSH_CLIENT_SHELL_EXAMPLE))
+        set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_FTP_CLIENT__")
+      endif()
     endif()
 
     buildflags(${TARGET_DIR} ${EXTRA_DEFINITIONS} MOCANA_FLAGS)
@@ -147,7 +184,11 @@ if (CM_BUILD_SSH_CLIENT)
     message("MOCANA_FLAGS = ${MOCANA_FLAGS}")
 
     set(includelist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_client/mss_includes.txt")
-    set(srclist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_client/mss_sources.txt")
+    if(BUILD_FOR_OSI)
+        set(srclist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_client/mss_osi_sources.txt")
+    else()
+        set(srclist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_client/mss_sources.txt")
+    endif()
 
     if (NOT CM_DISABLE_PQC)
       set(srclist ${srclist} "${CMAKE_CURRENT_SOURCE_DIR}/pqc/mss_sources.txt")
@@ -179,42 +220,46 @@ if (CM_BUILD_SSH_CLIENT)
 	if(NOT CM_BUILD_SHARED_LIBS)
         buildexecutable(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
                         ${NSSH_BUILD_DIR} "ssh_client" ${MSS_BIN_DIR} ${libraryLists})
-        target_link_libraries(${TARGET_NAME} nanocert)
-        target_link_libraries(${TARGET_NAME} cryptointerface)
-        target_link_libraries(${TARGET_NAME} nanocap)
-        target_link_libraries(${TARGET_NAME} nanocrypto)
+        if(BUILD_FOR_OSI)
+            target_link_libraries(${TARGET_NAME} nanocert)
+            target_link_libraries(${TARGET_NAME} cryptointerface)
+            target_link_libraries(${TARGET_NAME} nanocap)
+            target_link_libraries(${TARGET_NAME} nanocrypto)
+        endif()
     else()
         set(TARGET_NAME "nanosshc")
 
-        set(ASN1_LIB            "${LIB_DIR}/libasn1.so")
-        set(COMMON_LIB          "${LIB_DIR}/libcommon.so")
-        set(INITIALIZE_LIB      "${LIB_DIR}/libinitialize.so")
+        if(BUILD_FOR_OSI)
+            set(ASN1_LIB            "${LIB_DIR}/libasn1.so")
+            set(COMMON_LIB          "${LIB_DIR}/libcommon.so")
+            set(INITIALIZE_LIB      "${LIB_DIR}/libinitialize.so")
 
-        add_library(nanocap SHARED IMPORTED)
-        set_target_properties(nanocap PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocap.so")
+            add_library(nanocap SHARED IMPORTED)
+            set_target_properties(nanocap PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocap.so")
 
-        add_library(nanocert SHARED IMPORTED)
-        set_target_properties(nanocert PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocert.so")
+            add_library(nanocert SHARED IMPORTED)
+            set_target_properties(nanocert PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocert.so")
 
-        add_library(nanocrypto SHARED IMPORTED)
-        set_target_properties(nanocrypto PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocrypto.so")
+            add_library(nanocrypto SHARED IMPORTED)
+            set_target_properties(nanocrypto PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocrypto.so")
 
-        add_library(cryptointerface SHARED IMPORTED)
-        set_target_properties(cryptointerface PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libcryptointerface.so")
+            add_library(cryptointerface SHARED IMPORTED)
+            set_target_properties(cryptointerface PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libcryptointerface.so")
 
-        set(libraryLists
-            ${ASN1_LIB}
-            ${COMMON_LIB}
-            ${INITIALIZE_LIB}
-            nanocap
-            nanocert
-            nanocrypto
-            cryptointerface
-            )
+            set(libraryLists
+                ${ASN1_LIB}
+                ${COMMON_LIB}
+                ${INITIALIZE_LIB}
+                nanocap
+                nanocert
+                nanocrypto
+                cryptointerface
+                )
+        endif()
         buildLibrary(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
                         ${NSSH_BUILD_DIR} ${MSS_BIN_DIR} ${libraryLists})
     endif()
@@ -233,14 +278,26 @@ if (CM_BUILD_SSH_SERVER)
     set(TARGET_NAME ssh_server)
 
     set(includelist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_server/mss_includes.txt")
-    set(srclist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_server/mss_sources.txt")
+    if(BUILD_FOR_OSI)
+        set(srclist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_server/mss_osi_sources.txt")
+    else()
+        set(srclist "${CMAKE_CURRENT_SOURCE_DIR}/ssh_server/mss_sources.txt")
+    endif()
 
     if(CM_ENABLE_MOCANA_NO_PUBKEY_NAME)
         set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_NO_PUBKEY_NAME__")
     endif()
 
-    if(ENABLE_SSH_ASYNC_API_SUPPORT)
-        set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__")
+    if(BUILD_FOR_OSI)
+        if(ENABLE_SSH_ASYNC_API_SUPPORT)
+            set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__")
+        endif()
+
+        if (NOT CM_ENABLE_SSH_UNITTEST)
+            set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_FTP_SERVER__")
+        endif()
+    else()
+        set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_FTP_SERVER__")
     endif()
 
     set(MOCANA_FLAGS "")
@@ -279,42 +336,47 @@ if (CM_BUILD_SSH_SERVER)
     if(NOT CM_BUILD_SHARED_LIBS)
         buildexecutable(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
                          ${NSSH_BUILD_DIR} "ssh_server" ${MSS_BIN_DIR} ${libraryLists})
-        target_link_libraries(${TARGET_NAME} nanocert)
-        target_link_libraries(${TARGET_NAME} cryptointerface)
-        target_link_libraries(${TARGET_NAME} nanocap)
-        target_link_libraries(${TARGET_NAME} nanocrypto)
+
+        if(BUILD_FOR_OSI)
+            target_link_libraries(${TARGET_NAME} nanocert)
+            target_link_libraries(${TARGET_NAME} cryptointerface)
+            target_link_libraries(${TARGET_NAME} nanocap)
+            target_link_libraries(${TARGET_NAME} nanocrypto)
+        endif()
     else()
         set(TARGET_NAME "nanosshs")
 
-        set(ASN1_LIB            "${LIB_DIR}/libasn1.so")
-        set(COMMON_LIB          "${LIB_DIR}/libcommon.so")
-        set(INITIALIZE_LIB      "${LIB_DIR}/libinitialize.so")
+        if(BUILD_FOR_OSI)
+            set(ASN1_LIB            "${LIB_DIR}/libasn1.so")
+            set(COMMON_LIB          "${LIB_DIR}/libcommon.so")
+            set(INITIALIZE_LIB      "${LIB_DIR}/libinitialize.so")
 
-        add_library(nanocap SHARED IMPORTED)
-        set_target_properties(nanocap PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocap.so")
+            add_library(nanocap SHARED IMPORTED)
+            set_target_properties(nanocap PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocap.so")
 
-        add_library(nanocert SHARED IMPORTED)
-        set_target_properties(nanocert PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocert.so")
+            add_library(nanocert SHARED IMPORTED)
+            set_target_properties(nanocert PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocert.so")
 
-        add_library(nanocrypto SHARED IMPORTED)
-        set_target_properties(nanocrypto PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocrypto.so")
+            add_library(nanocrypto SHARED IMPORTED)
+            set_target_properties(nanocrypto PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libnanocrypto.so")
 
-        add_library(cryptointerface SHARED IMPORTED)
-        set_target_properties(cryptointerface PROPERTIES
-            IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libcryptointerface.so")
+            add_library(cryptointerface SHARED IMPORTED)
+            set_target_properties(cryptointerface PROPERTIES
+                IMPORTED_LOCATION "${MSS_DIR}/crypto_lib/${CRYPTO_LIB_ARCH_DIR}/libcryptointerface.so")
 
-        set(libraryLists
-            ${ASN1_LIB}
-            ${COMMON_LIB}
-            ${INITIALIZE_LIB}
-            nanocap
-            nanocert
-            nanocrypto
-            cryptointerface
-            )
+            set(libraryLists
+                ${ASN1_LIB}
+                ${COMMON_LIB}
+                ${INITIALIZE_LIB}
+                nanocap
+                nanocert
+                nanocrypto
+                cryptointerface
+                )
+        endif()
         buildLibrary(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
                         ${NSSH_BUILD_DIR} ${MSS_BIN_DIR} ${libraryLists})
     endif()
@@ -334,6 +396,8 @@ if (CM_BUILD_SSH_SERVER_SP800_135)
     if(CM_ENABLE_MOCANA_NO_PUBKEY_NAME)
         set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_NO_PUBKEY_NAME__")
     endif()
+
+    set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_SSH_FTP_SERVER__")
 
     set(MOCANA_FLAGS "-D__ENABLE_MOCANA_SP800_135_ACVP__")
     buildflags(${TARGET_DIR} ${EXTRA_DEFINITIONS} MOCANA_FLAGS)

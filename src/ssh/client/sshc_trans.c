@@ -99,10 +99,12 @@
 #include "../../ssh/ssh_mpint.h"
 
 #ifdef __ENABLE_MOCANA_PQC__
-#include "../../ssh/ssh_hybrid.h"
 #include "../../ssh/ssh_qs.h"
 #include "../../crypto_interface/crypto_interface_qs.h"
 #include "../../crypto_interface/crypto_interface_qs_kem.h"
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#include "../../ssh/ssh_hybrid.h"
 #endif
 
 #ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
@@ -163,17 +165,19 @@ static MSTATUS SSHC_TRANS_freeRSA(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_sendKexRsaSecret(sshClientContext *pContextSSH);
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_PQC__))
+/* there are no pure pqc keyEx algs so these are always defined as
+   long as PQC and ECC are defined */
+#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
 static MSTATUS SSHC_TRANS_allocHybrid(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_freeHybrid(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_sendKexHybridInit(struct sshClientContext *pContextSSH);
 #endif
+
+#if (defined(__ENABLE_MOCANA_ECC__))
 static MSTATUS SSHC_TRANS_allocECDH(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_freeECDH(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_sendKexEcdhInit(struct sshClientContext *pContextSSH);
 #endif
-
 
 /*------------------------------------------------------------------*/
 
@@ -188,13 +192,13 @@ static MSTATUS SSHC_TRANS_verifyRsaSignature(struct sshClientContext *pContextSS
 #endif
 
 #if (defined(__ENABLE_MOCANA_ECC__))
-/* TODO: proper guard */
-static MSTATUS SSHC_TRANS_parseRawHybridKeyBlob(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertificate, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
 static MSTATUS SSHC_TRANS_parseRawEcdsaCert(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertificate, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
-
-/* TODO: proper guard */
-static MSTATUS SSHC_TRANS_verifyHybridSignature(struct sshClientContext *pContextSSH, AsymmetricKey *pPublicKey, sshStringBuffer *pSignature, ubyte *pDigestData, ubyte4 digestLen, intBoolean *pIsGoodSignature, vlong **ppVlongQueue);
 static MSTATUS SSHC_TRANS_verifyEcdsaSignature(struct sshClientContext *pContextSSH, AsymmetricKey *pPublicKey, sshStringBuffer *pSignature, ubyte *pDigestData, ubyte4 digestLen, intBoolean *pIsGoodSignature, vlong **ppVlongQueue);
+#endif
+
+#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
+static MSTATUS SSHC_TRANS_parseRawHybridKeyBlob(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertificate, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
+static MSTATUS SSHC_TRANS_verifyHybridSignature(struct sshClientContext *pContextSSH, AsymmetricKey *pPublicKey, sshStringBuffer *pSignature, ubyte *pDigestData, ubyte4 digestLen, intBoolean *pIsGoodSignature, vlong **ppVlongQueue);
 #endif
 
 #if (defined(__ENABLE_MOCANA_PQC__))
@@ -204,8 +208,10 @@ static MSTATUS SSHC_TRANS_verifyQsSignature(struct sshClientContext *pContextSSH
 
 #if (defined(__ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__))
 #if (defined(__ENABLE_MOCANA_PQC__))
-extern MSTATUS SSHC_TRANS_parseCertHybrid(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertMessage, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
 extern MSTATUS SSHC_TRANS_parseCertQs(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertMessage, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
+#endif
+#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
+extern MSTATUS SSHC_TRANS_parseCertHybrid(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertMessage, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
 #endif
 extern MSTATUS SSHC_TRANS_parseCertRSA(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertificate, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
 extern MSTATUS SSHC_TRANS_parseCertECDSA(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertMessage, AsymmetricKey *pPublicKey, vlong **ppVlongQueue);
@@ -273,12 +279,12 @@ static sshcKeyExMethods rsaMethods       = { SSHC_TRANS_allocRSA,       SSHC_TRA
 #endif
 
 #if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_PQC__))
-static sshcKeyExMethods hybridMethods    = { SSHC_TRANS_allocHybrid,    SSHC_TRANS_freeHybrid,  SSHC_TRANS_sendKexHybridInit };
-#endif
 static sshcKeyExMethods ecdhMethods      = { SSHC_TRANS_allocECDH,      SSHC_TRANS_freeECDH,    SSHC_TRANS_sendKexEcdhInit   };
 #endif
 
+#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
+static sshcKeyExMethods hybridMethods    = { SSHC_TRANS_allocHybrid,    SSHC_TRANS_freeHybrid,  SSHC_TRANS_sendKexHybridInit };
+#endif
 
 /*------------------------------------------------------------------*/
 
@@ -300,15 +306,15 @@ static sshcHashHandshake sshHandshakeSHA512 = { SHA512_allocDigest, SHA512_freeD
 
 static PATCH_CONST SSHC_keyExSuiteInfo mKeyExSuites[] =
 {   /* debugString keyExName keyExNameLength hintForKeyExAlgo kexExCtx hashAlgo ec_oid nextState rekeyNextState */
-#if defined(__ENABLE_MOCANA_ECC__)
-#if defined(__ENABLE_MOCANA_PQC__)
+#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
     { (sbyte *)"mlkem768nistp256-sha256",         (sbyte *)"mlkem768nistp256-sha256",         23,
         cid_EC_P256,   cid_PQC_MLKEM_768,        &hybridMethods, &sshHandshakeSHA256, NULL, kTransReceiveHybrid, kReduxTransReceiveHybrid },
     { (sbyte *)"mlkem1024nistp384-sha384",        (sbyte *)"mlkem1024nistp384-sha384",        24,
         cid_EC_P384,   cid_PQC_MLKEM_1024,       &hybridMethods, &sshHandshakeSHA384, NULL, kTransReceiveHybrid, kReduxTransReceiveHybrid },
     { (sbyte *)"mlkem768x25519-sha256",           (sbyte *)"mlkem768x25519-sha256",           21,
         cid_EC_X25519, cid_PQC_MLKEM_768,        &hybridMethods, &sshHandshakeSHA256, NULL, kTransReceiveHybrid, kReduxTransReceiveHybrid },
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif
+#if (defined(__ENABLE_MOCANA_ECC__))
 #if (defined(__ENABLE_MOCANA_ECC_EDDH_25519__) && !defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"curve25519-sha256", (sbyte *)"curve25519-sha256",                      17, cid_EC_X25519,
         0, &ecdhMethods,      &sshHandshakeSHA256, ecdh25519_OID, kTransReceiveECDH,                 kReduxTransReceiveECDH },
@@ -400,7 +406,8 @@ static SSHC_hostKeySuiteInfo mHostKeySuites[] =
     { (sbyte *)"x509v3-mldsa44",             14, (sbyte *)"x509v3-mldsa44",             14, CERT_STORE_AUTH_TYPE_QS,     0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, SSHC_TRANS_parseCertQs,     SSHC_TRANS_verifyQsSignature },
     { (sbyte *)"x509v3-mldsa65",             14, (sbyte *)"x509v3-mldsa65",             14, CERT_STORE_AUTH_TYPE_QS,     0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, SSHC_TRANS_parseCertQs,     SSHC_TRANS_verifyQsSignature },
     { (sbyte *)"x509v3-mldsa87",             14, (sbyte *)"x509v3-mldsa87",             14, CERT_STORE_AUTH_TYPE_QS,     0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, SSHC_TRANS_parseCertQs,     SSHC_TRANS_verifyQsSignature },
-#ifdef __ENABLE_MOCANA_ECC__
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 #if (!defined(__DISABLE_MOCANA_ECC_P256__) && !defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"x509v3-mldsa44-es256",       20, (sbyte *)"x509v3-mldsa44-es256",       20, CERT_STORE_AUTH_TYPE_HYBRID, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, SSHC_TRANS_parseCertHybrid, SSHC_TRANS_verifyHybridSignature },
     { (sbyte *)"x509v3-mldsa65-es256",       20, (sbyte *)"x509v3-mldsa65-es256",       20, CERT_STORE_AUTH_TYPE_HYBRID, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, SSHC_TRANS_parseCertHybrid, SSHC_TRANS_verifyHybridSignature },     
@@ -415,8 +422,7 @@ static SSHC_hostKeySuiteInfo mHostKeySuites[] =
 #if (defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
     { (sbyte *)"x509v3-mldsa87-ed448",       20, (sbyte *)"x509v3-mldsa87-ed448",       20, CERT_STORE_AUTH_TYPE_HYBRID, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, SSHC_TRANS_parseCertHybrid, SSHC_TRANS_verifyHybridSignature },
 #endif
-#endif /* __ENABLE_MOCANA_ECC__ */
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 #endif /* __ENABLE_MOCANA_PRE_DRAFT_PQC__ */
 
 #if (defined(__ENABLE_MOCANA_ECC__))
@@ -442,7 +448,8 @@ static SSHC_hostKeySuiteInfo mHostKeySuites[] =
     { (sbyte *)"ssh-mldsa44",                11, (sbyte *)"ssh-mldsa44",                11, CERT_STORE_AUTH_TYPE_QS,     0, CERT_STORE_IDENTITY_TYPE_NAKED, SSHC_TRANS_parseRawQsKeyBlob,     SSHC_TRANS_verifyQsSignature },
     { (sbyte *)"ssh-mldsa65",                11, (sbyte *)"ssh-mldsa65",                11, CERT_STORE_AUTH_TYPE_QS,     0, CERT_STORE_IDENTITY_TYPE_NAKED, SSHC_TRANS_parseRawQsKeyBlob,     SSHC_TRANS_verifyQsSignature },
     { (sbyte *)"ssh-mldsa87",                11, (sbyte *)"ssh-mldsa87",                11, CERT_STORE_AUTH_TYPE_QS,     0, CERT_STORE_IDENTITY_TYPE_NAKED, SSHC_TRANS_parseRawQsKeyBlob,     SSHC_TRANS_verifyQsSignature },
-#ifdef __ENABLE_MOCANA_ECC__
+#endif
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 #if (!defined(__DISABLE_MOCANA_ECC_P256__) && !defined(__DISABLE_MOCANA_SHA256__))
     { (sbyte *)"ssh-mldsa44-es256",          17, (sbyte *)"ssh-mldsa44-es256",          17, CERT_STORE_AUTH_TYPE_HYBRID, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSHC_TRANS_parseRawHybridKeyBlob, SSHC_TRANS_verifyHybridSignature },
     { (sbyte *)"ssh-mldsa65-es256",          17, (sbyte *)"ssh-mldsa65-es256",          17, CERT_STORE_AUTH_TYPE_HYBRID, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSHC_TRANS_parseRawHybridKeyBlob, SSHC_TRANS_verifyHybridSignature },     
@@ -457,8 +464,7 @@ static SSHC_hostKeySuiteInfo mHostKeySuites[] =
 #if (defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
     { (sbyte *)"ssh-mldsa87-ed448",          17, (sbyte *)"ssh-mldsa87-ed448",          17, CERT_STORE_AUTH_TYPE_HYBRID, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSHC_TRANS_parseRawHybridKeyBlob, SSHC_TRANS_verifyHybridSignature },
 #endif
-#endif /* __ENABLE_MOCANA_ECC__ */
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 #if (defined(__ENABLE_MOCANA_ECC__))
 #if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__))
     { (sbyte *)"ssh-ed25519",                11, (sbyte *)"ssh-ed25519",                11, CERT_STORE_AUTH_TYPE_EDDSA, SHA256_RESULT_SIZE, CERT_STORE_IDENTITY_TYPE_NAKED,        SSHC_TRANS_parseRawEcdsaCert, SSHC_TRANS_verifyEcdsaSignature },
@@ -974,12 +980,9 @@ SSHC_TRANS_freeRSA(struct sshClientContext *pContextSSH)
 }
 #endif
 
-
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
 static MSTATUS
 SSHC_TRANS_allocHybrid(struct sshClientContext *pContextSSH)
 {
@@ -1037,11 +1040,99 @@ exit:
         MOC_FREE((void **) &pKeys);
 
     return status;
+}
 
-} /* SSH_TRANS_allocHybrid */
-#endif
+/*------------------------------------------------------------------*/
 
+static MSTATUS
+SSHC_TRANS_freeHybrid(struct sshClientContext *pContextSSH)
+{
+    return CRYPTO_uninitAsymmetricKey(&pContextSSH->sshKeyExCtx.transientKey, NULL);
+}
 
+/*------------------------------------------------------------------*/
+
+static MSTATUS
+SSHC_TRANS_sendKexHybridInit(struct sshClientContext *pContextSSH)
+{
+    MSTATUS status;
+    ECCKey *pECCKey = NULL;
+    QS_CTX *pQsCtx = NULL;
+    ubyte*              pPayload = NULL;
+    ubyte4              payloadLength;
+    ubyte4              ephemeralEccKeyLen;
+    ubyte4              ephemeralQsKeyLen;
+    ubyte4              numBytesWritten;
+    ubyte4              index;
+
+    if (NULL == pContextSSH)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    pECCKey = pContextSSH->sshKeyExCtx.transientKey.key.pECC;;
+    pQsCtx  = pContextSSH->sshKeyExCtx.transientKey.pQsCtx;
+
+    status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &ephemeralEccKeyLen);
+    if (OK != status)
+        goto exit;
+
+    status = CRYPTO_INTERFACE_QS_getPublicKeyLen(pQsCtx, &ephemeralQsKeyLen);
+    if (OK != status)
+        goto exit;
+
+    /* form SSH_MSG_KEX_HYBRID_INIT */
+    payloadLength = 1 + 4 + ephemeralEccKeyLen + ephemeralQsKeyLen;
+
+    status = MOC_MALLOC((void **) &pPayload, payloadLength);
+    if (OK != status)
+        goto exit;
+
+    DEBUG_RELABEL_MEMORY(pPayload);
+
+    pPayload[0] = SSH_MSG_KEX_HYBRID_INIT;
+    pPayload[1] = (((ephemeralEccKeyLen + ephemeralQsKeyLen) >> 24) & 0xff);
+    pPayload[2] = (((ephemeralEccKeyLen + ephemeralQsKeyLen) >> 16) & 0xff);
+    pPayload[3] = (((ephemeralEccKeyLen + ephemeralQsKeyLen) >> 8)  & 0xff);
+    pPayload[4] = ( (ephemeralEccKeyLen + ephemeralQsKeyLen)        & 0xff);
+
+    index = 5;
+    /* QS public key first */
+    status = CRYPTO_INTERFACE_QS_getPublicKey(pQsCtx, pPayload + index, ephemeralQsKeyLen);
+    if (OK != status)
+        goto exit;
+
+    index += ephemeralQsKeyLen;
+    status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pPayload + index, ephemeralEccKeyLen);
+    if (OK != status)
+        goto exit;
+
+    /* save C_INIT = C_PK2 || C_PK1 for later consumption, we save with the 4 byte length prefix */
+    pContextSSH->sshKeyExCtx.tempBufferLen = 4 + ephemeralEccKeyLen + ephemeralQsKeyLen;
+    status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, pContextSSH->sshKeyExCtx.tempBufferLen, TRUE, &(pContextSSH->sshKeyExCtx.pTempBuffer));
+    if (OK != status)
+        goto exit;
+
+    DEBUG_RELABEL_MEMORY(pContextSSH->sshKeyExCtx.pTempBuffer);
+
+    status = MOC_MEMCPY(pContextSSH->sshKeyExCtx.pTempBuffer, 1 + pPayload, pContextSSH->sshKeyExCtx.tempBufferLen);
+    if (OK != status)
+        goto exit;
+
+    status = SSHC_OUT_MESG_sendMessage(pContextSSH, pPayload, payloadLength, &numBytesWritten);
+    
+exit:
+    if (NULL != pPayload)
+        MOC_FREE((void **) &pPayload);
+
+    return status;
+}
+#endif /* #if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__)) */
+
+/*------------------------------------------------------------------*/
+
+#ifdef __ENABLE_MOCANA_ECC__
 static MSTATUS
 SSHC_TRANS_allocECDH(struct sshClientContext *pContextSSH)
 {
@@ -1072,34 +1163,90 @@ SSHC_TRANS_allocECDH(struct sshClientContext *pContextSSH)
 
 exit:
     return status;
-
-} /* SSH_TRANS_allocECDH */
-
-#endif /* (defined(__ENABLE_MOCANA_ECC__)) */
-
+}
 
 /*------------------------------------------------------------------*/
-
-#if (defined(__ENABLE_MOCANA_ECC__))
-
-#if (defined(__ENABLE_MOCANA_PQC__))
-static MSTATUS
-SSHC_TRANS_freeHybrid(struct sshClientContext *pContextSSH)
-{
-    return CRYPTO_uninitAsymmetricKey(&pContextSSH->sshKeyExCtx.transientKey, NULL);
-}
-#endif
 
 static MSTATUS
 SSHC_TRANS_freeECDH(struct sshClientContext *pContextSSH)
 {
     return CRYPTO_uninitAsymmetricKey(&pContextSSH->sshKeyExCtx.transientKey, NULL);
 }
-#endif
-
 
 /*------------------------------------------------------------------*/
 
+static MSTATUS
+SSHC_TRANS_sendKexEcdhInit(struct sshClientContext *pContextSSH)
+{
+    ECCKey*             pECCKey = NULL;
+    ubyte*              pPayload = NULL;
+    ubyte4              payloadLength;
+    ubyte4              ephemeralKeyLen;
+    ubyte4              numBytesWritten;
+    MSTATUS             status;
+
+    /* set short cut */
+    pECCKey = pContextSSH->sshKeyExCtx.transientKey.key.pECC;;
+
+#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+    status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &ephemeralKeyLen);
+    if (OK != status)
+        goto exit;
+#else
+    status = EC_getPointByteStringLenEx(pECCKey, &ephemeralKeyLen);
+    if (OK != status)
+        goto exit;
+#endif
+
+    /* form SSH_MSG_KEX_ECDH_INIT */
+    payloadLength = 1 + 4 + ephemeralKeyLen;
+
+    if (NULL == (pPayload = MALLOC(payloadLength)))
+    {
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
+    }
+
+    DEBUG_RELABEL_MEMORY(pPayload);
+
+    pPayload[0] = SSH_MSG_KEX_ECDH_INIT;
+    pPayload[1] = ((ephemeralKeyLen >> 24) & 0xff);
+    pPayload[2] = ((ephemeralKeyLen >> 16) & 0xff);
+    pPayload[3] = ((ephemeralKeyLen >> 8)  & 0xff);
+    pPayload[4] = ((ephemeralKeyLen)       & 0xff);
+
+#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+    status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pPayload + 5, ephemeralKeyLen);
+    if (OK != status)
+        goto exit;
+#else
+    status = EC_writePublicKeyToBuffer(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pPayload + 5, ephemeralKeyLen); 
+    if (OK != status)
+        goto exit;
+#endif
+
+    /* save ephemeral point for later consumption */
+    if (OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, ephemeralKeyLen, TRUE, &pContextSSH->sshKeyExCtx.pTempBuffer)))
+        goto exit;
+
+    pContextSSH->sshKeyExCtx.tempBufferLen = ephemeralKeyLen;
+
+    DEBUG_RELABEL_MEMORY(pContextSSH->sshKeyExCtx.pTempBuffer);
+
+    MOC_MEMCPY(pContextSSH->sshKeyExCtx.pTempBuffer, 5 + pPayload, ephemeralKeyLen);
+
+    if (OK > (status = SSHC_OUT_MESG_sendMessage(pContextSSH, pPayload, payloadLength, &numBytesWritten)))
+        goto exit;
+
+exit:
+    if (NULL != pPayload)
+        FREE(pPayload);
+
+    return status;
+}
+#endif /* __ENABLE_MOCANA_ECC__*/
+
+/*------------------------------------------------------------------*/
 
 static BulkCtx
 SSHC_TRANS_createAESCTRCtx(MOC_SYM(hwAccelDescr hwAccelCtx) const ubyte* keyMaterial,
@@ -2151,11 +2298,10 @@ exit:
     return status;
 }
 
-
 /*------------------------------------------------------------------*/
 
 #ifdef __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 extern MSTATUS
 SSHC_TRANS_parseCertHybrid(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertMessage, AsymmetricKey *pPublicKey, vlong **ppVlongQueue)
 {
@@ -2400,9 +2546,11 @@ exit:
 
     return status;
 }
+#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
 
 /*------------------------------------------------------------------*/
 
+#ifdef __ENABLE_MOCANA_PQC__
 extern MSTATUS
 SSHC_TRANS_parseCertQs(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertMessage, AsymmetricKey *pPublicKey, vlong **ppVlongQueue)
 {
@@ -2961,7 +3109,7 @@ SSHC_TRANS_parseCertRSA(struct sshClientContext *pContextSSH, const sshStringBuf
         uint32  ocsp-response-count
         string  ocsp-response[0..ocsp-response-count]
     */
-
+    
     if (NULL == pCertMessage)
     {
         status = ERR_NULL_POINTER;
@@ -3322,7 +3470,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_ECC__) && defined(__ENABLE_MOCANA_PQC__))
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 static MSTATUS
 SSHC_TRANS_parseRawHybridKeyBlob(struct sshClientContext *pContextSSH, const sshStringBuffer *pCertificate, AsymmetricKey *pPublicKey, vlong **ppVlongQueue)
 {
@@ -3386,7 +3534,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_ECC__) && defined(__ENABLE_MOCANA_PQC__)
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
 static MSTATUS
 SSHC_TRANS_verifyHybridSignature(struct sshClientContext *pContextSSH, AsymmetricKey *pPublicKey, sshStringBuffer *pSignature,
                                 ubyte *pDigestData, ubyte4 digestLen, intBoolean *pIsGoodSignature, vlong **ppVlongQueue)
@@ -3629,13 +3777,10 @@ receiveServerKeyExchange(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 
 
     DEBUG_RELABEL_MEMORY(pSignature);
 
-#if 1
-/*!!!!! this needs to be changed for RFC 6187 */
+    /*!!!!! this needs to be changed for RFC 6187 */
     /* SSHC_TRANS_parseRawDsaCert, SSHC_TRANS_parseRawRsaCert */
     if (OK > (status = pContextSSH->pHostKeySuites->pFuncParseCert((struct sshClientContext *)pContextSSH, pCertificate, &publicKey, &pVlongQueue)))
         goto exit;
-
-#endif
 
     offset = 0;
     while ((offset < serverPubKeyLen) && (0x00 == pServerPubKey[offset])) offset++;
@@ -3705,8 +3850,7 @@ receiveServerKeyExchange(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 
         goto exit;
     }
 
-#if 1
-/*!!!!! this needs to be changed for RFC 6187 */
+    /*!!!!! this needs to be changed for RFC 6187 */
     /* do not call funcPtrServerPubKeyAuth for x509v3 identity types */
     if (CERT_STORE_IDENTITY_TYPE_CERT_X509_V3 != pContextSSH->pHostKeySuites->identityType)
     {
@@ -3718,12 +3862,7 @@ receiveServerKeyExchange(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 
                                                                          pCertificate->pString + 4, pCertificate->stringLen - 4);
             isGoodSignature = (TRUE == isAuth);
         }
-    }
-    else
-    {
-        /*!!!! look up certificate */
-    }
-#endif
+    } /* else look up certificate */
 
     if (!isGoodSignature)
         status = ERR_SSH_DISCONNECT_HOST_KEY_NOT_VERIFIABLE;
@@ -4623,167 +4762,9 @@ exit:
 
 #endif /* (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__)) */
 
-
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-
-#if (defined(__ENABLE_MOCANA_PQC__))
-static MSTATUS
-SSHC_TRANS_sendKexHybridInit(struct sshClientContext *pContextSSH)
-{
-    MSTATUS status;
-    ECCKey *pECCKey = NULL;
-    QS_CTX *pQsCtx = NULL;
-    ubyte*              pPayload = NULL;
-    ubyte4              payloadLength;
-    ubyte4              ephemeralEccKeyLen;
-    ubyte4              ephemeralQsKeyLen;
-    ubyte4              numBytesWritten;
-    ubyte4              index;
-
-    if (NULL == pContextSSH)
-    {
-        status = ERR_NULL_POINTER;
-        goto exit;
-    }
-
-    pECCKey = pContextSSH->sshKeyExCtx.transientKey.key.pECC;;
-    pQsCtx  = pContextSSH->sshKeyExCtx.transientKey.pQsCtx;
-
-    status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &ephemeralEccKeyLen);
-    if (OK != status)
-        goto exit;
-
-    status = CRYPTO_INTERFACE_QS_getPublicKeyLen(pQsCtx, &ephemeralQsKeyLen);
-    if (OK != status)
-        goto exit;
-
-    /* form SSH_MSG_KEX_HYBRID_INIT */
-    payloadLength = 1 + 4 + ephemeralEccKeyLen + ephemeralQsKeyLen;
-
-    status = MOC_MALLOC((void **) &pPayload, payloadLength);
-    if (OK != status)
-        goto exit;
-
-    DEBUG_RELABEL_MEMORY(pPayload);
-
-    pPayload[0] = SSH_MSG_KEX_HYBRID_INIT;
-    pPayload[1] = (((ephemeralEccKeyLen + ephemeralQsKeyLen) >> 24) & 0xff);
-    pPayload[2] = (((ephemeralEccKeyLen + ephemeralQsKeyLen) >> 16) & 0xff);
-    pPayload[3] = (((ephemeralEccKeyLen + ephemeralQsKeyLen) >> 8)  & 0xff);
-    pPayload[4] = ( (ephemeralEccKeyLen + ephemeralQsKeyLen)        & 0xff);
-
-    index = 5;
-    /* QS public key first */
-    status = CRYPTO_INTERFACE_QS_getPublicKey(pQsCtx, pPayload + index, ephemeralQsKeyLen);
-    if (OK != status)
-        goto exit;
-
-    index += ephemeralQsKeyLen;
-    status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pPayload + index, ephemeralEccKeyLen);
-    if (OK != status)
-        goto exit;
-
-    /* save C_INIT = C_PK2 || C_PK1 for later consumption, we save with the 4 byte length prefix */
-    pContextSSH->sshKeyExCtx.tempBufferLen = 4 + ephemeralEccKeyLen + ephemeralQsKeyLen;
-    status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, pContextSSH->sshKeyExCtx.tempBufferLen, TRUE, &(pContextSSH->sshKeyExCtx.pTempBuffer));
-    if (OK != status)
-        goto exit;
-
-    DEBUG_RELABEL_MEMORY(pContextSSH->sshKeyExCtx.pTempBuffer);
-
-    status = MOC_MEMCPY(pContextSSH->sshKeyExCtx.pTempBuffer, 1 + pPayload, pContextSSH->sshKeyExCtx.tempBufferLen);
-    if (OK != status)
-        goto exit;
-
-    status = SSHC_OUT_MESG_sendMessage(pContextSSH, pPayload, payloadLength, &numBytesWritten);
-    
-exit:
-    if (NULL != pPayload)
-        MOC_FREE((void **) &pPayload);
-
-    return status;
-}
-#endif /* __ENABLE_MOCANA_PQC__ */
-
-
-/*------------------------------------------------------------------*/
-
-static MSTATUS
-SSHC_TRANS_sendKexEcdhInit(struct sshClientContext *pContextSSH)
-{
-    ECCKey*             pECCKey = NULL;
-    ubyte*              pPayload = NULL;
-    ubyte4              payloadLength;
-    ubyte4              ephemeralKeyLen;
-    ubyte4              numBytesWritten;
-    MSTATUS             status;
-
-    /* set short cut */
-    pECCKey = pContextSSH->sshKeyExCtx.transientKey.key.pECC;;
-
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
-    status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &ephemeralKeyLen);
-    if (OK != status)
-        goto exit;
-#else
-    status = EC_getPointByteStringLenEx(pECCKey, &ephemeralKeyLen);
-    if (OK != status)
-        goto exit;
-#endif
-
-    /* form SSH_MSG_KEX_ECDH_INIT */
-    payloadLength = 1 + 4 + ephemeralKeyLen;
-
-    if (NULL == (pPayload = MALLOC(payloadLength)))
-    {
-        status = ERR_MEM_ALLOC_FAIL;
-        goto exit;
-    }
-
-    DEBUG_RELABEL_MEMORY(pPayload);
-
-    pPayload[0] = SSH_MSG_KEX_ECDH_INIT;
-    pPayload[1] = ((ephemeralKeyLen >> 24) & 0xff);
-    pPayload[2] = ((ephemeralKeyLen >> 16) & 0xff);
-    pPayload[3] = ((ephemeralKeyLen >> 8)  & 0xff);
-    pPayload[4] = ((ephemeralKeyLen)       & 0xff);
-
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
-    status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pPayload + 5, ephemeralKeyLen);
-    if (OK != status)
-        goto exit;
-#else
-    status = EC_writePublicKeyToBuffer(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pPayload + 5, ephemeralKeyLen); 
-    if (OK != status)
-        goto exit;
-#endif
-
-    /* save ephemeral point for later consumption */
-    if (OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, ephemeralKeyLen, TRUE, &pContextSSH->sshKeyExCtx.pTempBuffer)))
-        goto exit;
-
-    pContextSSH->sshKeyExCtx.tempBufferLen = ephemeralKeyLen;
-
-    DEBUG_RELABEL_MEMORY(pContextSSH->sshKeyExCtx.pTempBuffer);
-
-    MOC_MEMCPY(pContextSSH->sshKeyExCtx.pTempBuffer, 5 + pPayload, ephemeralKeyLen);
-
-    if (OK > (status = SSHC_OUT_MESG_sendMessage(pContextSSH, pPayload, payloadLength, &numBytesWritten)))
-        goto exit;
-
-exit:
-    if (NULL != pPayload)
-        FREE(pPayload);
-
-    return status;
-}
-
-
-/*------------------------------------------------------------------*/
-
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
 static MSTATUS
 SSHC_TRANS_receiveServerHybridReply(sshClientContext *pContextSSH,
                                   ubyte *pNewMesg, ubyte4 newMesgLen)
@@ -5049,11 +5030,11 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_PQC__ */
-
+#endif /* #if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__)) */
 
 /*------------------------------------------------------------------*/
 
+#ifdef __ENABLE_MOCANA_ECC__
 static MSTATUS
 SSHC_TRANS_receiveServerEcdhReply(sshClientContext *pContextSSH,
                                   ubyte *pNewMesg, ubyte4 newMesgLen)
@@ -5297,9 +5278,7 @@ exit:
 
     return status;
 }
-
 #endif /* __ENABLE_MOCANA_ECC__ */
-
 
 /*------------------------------------------------------------------*/
 
@@ -5823,8 +5802,7 @@ SSHC_TRANS_doProtocol(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 new
         }
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
         case kTransReceiveHybrid:
         case kReduxTransReceiveHybrid:
         {
@@ -5843,7 +5821,8 @@ SSHC_TRANS_doProtocol(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 new
             status = SSHC_TRANS_setMessageTimer(pContextSSH, SSHC_sshClientSettings()->sshTimeOutNewKeys);
             break;
         }
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif
+#ifdef __ENABLE_MOCANA_ECC__
         case kTransReceiveECDH:
         case kReduxTransReceiveECDH:
         {

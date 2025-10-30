@@ -1,3 +1,11 @@
+MSS_SRC_DIR/examples/mocana_example.c
+MSS_SRC_DIR/examples/sftp_example.c
+MSS_SRC_DIR/examples/sftp_example_filesys.c
+MSS_SRC_DIR/examples/ssh_example.c
+MSS_SRC_DIR/examples/ssh_example_pf.c
+MSS_SRC_DIR/examples/ssh_example_async.c
+MSS_SRC_DIR/examples/ssh_radius_example.c
+MSS_SRC_DIR/examples/radius_example_udp.c
 MSS_SRC_DIR/ssh/dump_mesg.c
 MSS_SRC_DIR/ssh/ssh_ocsp.c
 MSS_SRC_DIR/ssh/sftp.c

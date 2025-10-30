@@ -10,7 +10,7 @@
  * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
  *   or https://www.digicert.com/master-services-agreement/
  * 
- * For commercial licensing, contact DigiCert at sales@digicert.com.*
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -44,18 +44,22 @@
 
 #include <errno.h>
 #include <sys/types.h>
+#if defined(__RTOS_ZEPHYR__)
+#include <zephyr/net/socket.h>
+#else
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <linux/net.h>
+#endif
 #include <sys/select.h>
 #include <signal.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
-#include <linux/net.h>
 #include <fcntl.h>
 
 /*------------------------------------------------------------------*/
@@ -63,6 +67,7 @@
 extern MSTATUS
 LINUX_TCP_init()
 {
+#if !defined(__RTOS_ZEPHYR__)
 #ifndef __RTOS_ANDROID__
 #if ((2 == __GLIBC__) && (32 <= __GLIBC_MINOR__) || \
      (3 <= __GLIBC__))
@@ -80,6 +85,7 @@ LINUX_TCP_init()
     sigignore(SIGINT);
     sigignore(SIGPIPE);
     sigignore(SIGALRM);
+#endif
 #endif
 #endif
     return OK;
@@ -226,6 +232,8 @@ LINUX_TCP_listenSocketLocal(TCP_SOCKET *pListenSocket, ubyte2 portNumber)
 #ifdef __ENABLE_MOCANA_IPV6__
     /* AHW: ZERO_OUT is only implemented for IPv4! Stick to this and fix for IPv6, when we know how */
     ZERO_OUT(saServer) /* NO OP */
+#elif defined(__RTOS_ZEPHYR__)
+    saServer.sin_addr.s_addr = ntohl(0x7F000001);
 #else
     saServer.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);
 #endif
@@ -1030,7 +1038,9 @@ exit:
 extern MSTATUS
 LINUX_TCP_getPeerName(TCP_SOCKET socket, ubyte2 *pRetPortNo, MOC_IP_ADDRESS_S *pRetAddr)
 {
+#ifdef __ENABLE_MOCANA_IPV6__
     struct sockaddr_in6 myAddress6 = { 0 };
+#endif
     struct sockaddr_in  myAddress = { 0 };
     socklen_t           addrLen;
     struct sockaddr     sa;

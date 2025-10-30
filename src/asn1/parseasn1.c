@@ -62,6 +62,7 @@
 #include "../common/random.h"
 #include "../common/dynarray.h"
 #include "../common/memory_debug.h"
+#include "../common/utf8.h"
 #include "../crypto/rsa.h"
 #include "../crypto/md5.h"
 #include "../crypto/sha1.h"
@@ -483,9 +484,9 @@ zeroLengthOK(const ASN1_ITEM *item)
 #ifdef __DISABLE_MOCANA_ASN1_ZERO_LENGTH_ALLOWED__
         return(FALSE);
 #else
-    /* SEQUENCE and SET can be zero if there are absent optional/default
+    /* SEQUENCE and MOC_SET can be zero if there are absent optional/default
        components */
-    return (item->tag == SEQUENCE || item->tag == SET);
+    return (item->tag == SEQUENCE || item->tag == MOC_SET);
 #endif
 }
 
@@ -1220,6 +1221,7 @@ ASN1_IsItemComplete( const ASN1_ParseState* pState, const ASN1_ITEM *item,
     otherwise they would not be in the tree; the implementation below
     works for all types of item */
 
+    MOC_UNUSED(s);
     if (!pState || !item || !complete)
         return ERR_NULL_POINTER;
 
@@ -1990,6 +1992,15 @@ extern MSTATUS ASN1_validateEncoding(
             {
                 goto exit;
             }
+        }
+    }
+    else if (UTF8STRING == type)
+    {
+        /* Validate UTF-8 encoding */
+        status = UTF8_validateEncoding(pEncoding, encodingLen, &isValid);
+        if (OK != status || FALSE == isValid)
+        {
+            goto exit;
         }
     }
     else

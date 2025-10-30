@@ -15,22 +15,22 @@
  */
 
 /* Add to your makefile */
-#include "common/moptions.h"
+#include "../common/moptions.h"
 
 #if ((defined(__ENABLE_MOCANA_SSH_SERVER_EXAMPLE__) || defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_MOCANA_SSH_FTP_SERVER__))
-#include "common/mtypes.h"
-#include "common/mocana.h"
-#include "crypto/hw_accel.h"
+#include "../common/mtypes.h"
+#include "../common/mocana.h"
+#include "../crypto/hw_accel.h"
 
-#include "common/mdefs.h"
-#include "common/merrors.h"
-#include "common/mstdlib.h"
-#include "common/mrtos.h"
-#include "common/vlong.h"
-#include "common/mfmgmt.h"
+#include "../common/mdefs.h"
+#include "../common/merrors.h"
+#include "../common/mstdlib.h"
+#include "../common/mrtos.h"
+#include "../common/vlong.h"
+#include "../common/mfmgmt.h"
 
-#include "ssh/ssh_filesys.h"
-#include "ssh/sftp.h"
+#include "../ssh/ssh_filesys.h"
+#include "../ssh/sftp.h"
 
 
 #ifdef __RTOS_WIN32__
@@ -668,7 +668,7 @@ SFTP_EXAMPLE_handleReadDynamicDirectory(sbyte4 connectionInstance, sbyte *pLongD
         if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cFileName)))
         {
             /* if source is equal to or greater than specified limit, no null terminator is appended */
-            p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH] = '\0';
+            p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH - 1] = '\0';
             p_sftpFileDescr->fileNameLength = SFTP_MAX_FILENAME_LENGTH - 1;
         }
     }
@@ -678,7 +678,7 @@ SFTP_EXAMPLE_handleReadDynamicDirectory(sbyte4 connectionInstance, sbyte *pLongD
         if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cAlternateFileName)))
         {
             /* if source is equal to or greater than specified limit, no null terminator is appended */
-            p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH] = '\0';
+            p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH - 1] = '\0';
             p_sftpFileDescr->fileNameLength = SFTP_MAX_FILENAME_LENGTH - 1;
         }
     }

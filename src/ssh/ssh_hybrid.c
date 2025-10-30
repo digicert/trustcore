@@ -19,7 +19,7 @@
 
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)) && (defined(__ENABLE_MOCANA_PQC__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)))
+#if ((defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)) && (defined(__ENABLE_MOCANA_PQC_COMPOSITE__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -54,13 +54,11 @@
 #include "../ssh/ssh_hybrid.h"
 #include "../ssh/ssh_mpint.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
 #include "../crypto_interface/cryptointerface.h"
 #include "../crypto_interface/crypto_interface_ecc.h"
 #include "../crypto_interface/crypto_interface_qs.h"
 #include "../crypto_interface/crypto_interface_qs_sig.h"
 #include "../crypto_interface/crypto_interface_qs_composite.h"
-#endif
 
 typedef struct HybridEntry
 {
@@ -793,4 +791,4 @@ exit:
     return status;
 } /* SSH_HYBRID_verifyHybridSignature */
 
-#endif /* ((defined(__ENABLE_MOCANA_PQC__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))) */
+#endif /* ((defined(__ENABLE_MOCANA_PQC_COMPOSITE__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))) */

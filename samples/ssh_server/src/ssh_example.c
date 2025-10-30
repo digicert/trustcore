@@ -18,57 +18,57 @@
 #include <windows.h>
 #endif
 
-#include "common/moptions.h"
+#include "../common/moptions.h"
 #if (defined( __ENABLE_MOCANA_SSH_SERVER_EXAMPLE__ ) && !defined( __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ ) && !defined(__ENABLE_MOCANA_SSH_PORT_FORWARDING__))
 
 /* see ssh_example_async.c for asynchronous API */
-#include "common/mtypes.h"
-#include "common/mocana.h"
-#include "crypto/hw_accel.h"
-#include "common/debug_console.h"
-#include "common/mdefs.h"
-#include "common/merrors.h"
-#include "common/mrtos.h"
-#include "common/mstdlib.h"
-#include "common/mfmgmt.h"
-#include "common/mtcp.h"
-#include "common/int64.h"
-#include "crypto/pubcrypto.h"
-#include "crypto/ca_mgmt.h"
-#include "common/sizedbuffer.h"
-#include "crypto/cert_store.h"
-#include "crypto/cert_chain.h"
-#include "ssh/ssh_filesys.h"
-#include "ssh/sftp.h"
-#include "ssh/ssh.h"
-#include "ssh/ssh_utils.h"
+#include "../common/mtypes.h"
+#include "../common/mocana.h"
+#include "../crypto/hw_accel.h"
+#include "../common/debug_console.h"
+#include "../common/mdefs.h"
+#include "../common/merrors.h"
+#include "../common/mrtos.h"
+#include "../common/mstdlib.h"
+#include "../common/mfmgmt.h"
+#include "../common/mtcp.h"
+#include "../common/int64.h"
+#include "../crypto/pubcrypto.h"
+#include "../crypto/ca_mgmt.h"
+#include "../common/sizedbuffer.h"
+#include "../crypto/cert_store.h"
+#include "../crypto/cert_chain.h"
+#include "../ssh/ssh_filesys.h"
+#include "../ssh/sftp.h"
+#include "../ssh/ssh.h"
+#include "../ssh/ssh_utils.h"
 #ifdef __ENABLE_MOCANA_TPM__
-#include "crypto/secmod/moctap.h"
+#include "../crypto/secmod/moctap.h"
 #endif
 #ifdef __ENABLE_MOCANA_TAP__
-#include "smp/smp_cc.h"
-#include "tap/tap_api.h"
-#include "tap/tap_utils.h"
-#include "tap/tap_smp.h"
-#include "crypto/mocasym.h"
-#include "crypto/mocasymkeys/tap/rsatap.h"
-#include "crypto/mocasymkeys/tap/ecctap.h"
-#include "crypto_interface/cryptointerface.h"
+#include "../smp/smp_cc.h"
+#include "../tap/tap_api.h"
+#include "../tap/tap_utils.h"
+#include "../tap/tap_smp.h"
+#include "../crypto/mocasym.h"
+#include "../crypto/mocasymkeys/tap/rsatap.h"
+#include "../crypto/mocasymkeys/tap/ecctap.h"
+#include "../crypto_interface/cryptointerface.h"
 #endif
 
 #ifdef __ENABLE_MOCANA_OCSP_CERT_VERIFY__
-#include "common/memfile.h"
-#include "ocsp/ocsp.h"
-#include "ocsp/ocsp_context.h"
-#include "ocsp/client/ocsp_client.h"
+#include "../common/memfile.h"
+#include "../ocsp/ocsp.h"
+#include "../ocsp/ocsp_context.h"
+#include "../ocsp/client/ocsp_client.h"
 #endif
 
 #ifdef __ENABLE_MOCANA_DATA_PROTECTION__
-#include "data_protection/file_protect.h"
+#include "../data_protection/file_protect.h"
 #endif
 
 #ifdef __ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__
-#include "radius/radius.h"
+#include "../radius/radius.h"
 #endif
 
 #include <string.h>
@@ -568,10 +568,10 @@ SSH_EXAMPLE_authPasswordFunction(sbyte4 connectionInstance,
         return 0;
 
     /* always check the lengths first, there may not be a username or password */
-    if (userLength != MOC_STRLEN(ssh_UserName))
+    if (userLength != (MOC_STRLEN(ssh_UserName)))
         return 0;
 
-    if (passwordLength != MOC_STRLEN(ssh_Password))
+    if (passwordLength != (MOC_STRLEN(ssh_Password)))
         return 0;
 
     if ((0 != memcmp(pUser,     ssh_UserName, userLength)) ||
@@ -870,6 +870,7 @@ exit:
 typedef struct sshExamplekeyFilesDescr
 {
     ubyte*      pFilename;
+    ubyte*      pPubFilename;
     ubyte4      keyType;
     ubyte4      keySize;
 #ifdef __ENABLE_MOCANA_PQC__
@@ -884,28 +885,28 @@ typedef struct sshExamplekeyFilesDescr
 static sshExamplekeyFilesDescr mNakedKeyFiles[] =
 { /* HostKeys used by the example - Please ensure the keys match the negotiated algorithms and Key sizes */
 #ifdef __ENABLE_MOCANA_SSH_DSA_SUPPORT__
-    { (ubyte *)"ssh_dss.key", akt_dsa, 1024
+    { (ubyte *)"ssh_dss.key", (ubyte *)"ssh_dss.pub", akt_dsa, 1024
 #ifdef __ENABLE_MOCANA_PQC__
         , 0
 #endif
      },
 #endif
 #ifdef __ENABLE_MOCANA_SSH_RSA_SUPPORT__
-    { (ubyte *)"ssh_rsa.key", akt_rsa, 2048
+    { (ubyte *)"ssh_rsa.key", (ubyte *)"ssh_rsa.pub", akt_rsa, 2048
 #ifdef __ENABLE_MOCANA_PQC__
         , 0
 #endif
     },
 #endif
 #ifdef __ENABLE_MOCANA_ECC__
-    { (ubyte *)"ssh_ecdsa.key", akt_ecc, 256
+    { (ubyte *)"ssh_ecdsa.key", (ubyte *)"ssh_ecdsa.pub", akt_ecc, 256
 #ifdef __ENABLE_MOCANA_PQC__
         , 0
 #endif
      },
 #endif
 #ifdef __ENABLE_MOCANA_ECC_EDDSA_25519__
-    { (ubyte *)"ssh_ed25519.key", akt_ecc_ed, 255
+    { (ubyte *)"ssh_ed25519.key", (ubyte *)"ssh_ed25519.pub", akt_ecc_ed, 255
 #ifdef __ENABLE_MOCANA_PQC__
         , 0
 #endif
@@ -913,15 +914,19 @@ static sshExamplekeyFilesDescr mNakedKeyFiles[] =
 #endif
 #ifdef __ENABLE_MOCANA_PQC__
      {
-        (ubyte *)"ssh_mldsa44.key", akt_qs, 0, cid_PQC_MLDSA_44
+        (ubyte *)"ssh_mldsa44.key", NULL, akt_qs, 0, cid_PQC_MLDSA_44
      },
 #endif
-#if (defined(__ENABLE_MOCANA_ECC__) && defined(__ENABLE_MOCANA_PQC__))
+#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
      {
-        (ubyte *)"ssh_mldsa44_p256.key", akt_hybrid, cid_EC_P256, cid_PQC_MLDSA_44
+        (ubyte *)"ssh_mldsa44_p256.key", NULL, akt_hybrid, cid_EC_P256, cid_PQC_MLDSA_44
      },
 #endif
-    { NULL, akt_undefined, 0 }
+    { NULL, NULL, akt_undefined, 0
+#ifdef __ENABLE_MOCANA_PQC__
+        , 0
+#endif
+    }
 };
 
 #define SSH_EXAMPLE_NUM_KEY_FILES   ((sizeof(mNakedKeyFiles) / sizeof(sshExamplekeyFilesDescr)) - 1)
@@ -945,6 +950,8 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
     ubyte4      tempCertLen;
 #endif
 #endif
+    ubyte*      pEncodedKey = NULL;
+    ubyte4      encodedKeyLen = 0;
     certDescriptor certDesc = {0};
     AsymmetricKey asymKey = {0};
     hwAccelDescr    hwAccelCtx;
@@ -989,6 +996,15 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
             if (0 > (status = MOCANA_writeFile((const char *)mNakedKeyFiles[index].pFilename, pKeyBlob, keyBlobLength)))
                 goto exit;
 
+            if (mNakedKeyFiles[index].pPubFilename != NULL)
+            {
+                /* Generate and write the public key file */
+                if (0 > (status = SSH_UTILS_generateServerAuthKeyFile(pKeyBlob, keyBlobLength, &pEncodedKey, &encodedKeyLen)))
+                    goto exit;
+
+                if (0 > (status = MOCANA_writeFile((const char *)mNakedKeyFiles[index].pPubFilename, pEncodedKey, encodedKeyLen)))
+                    goto exit;
+            }
             DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, (sbyte *)"SSH_EXAMPLE_sshCertStoreInit: host key computation completed.");
 
             if (OK > (status = CERT_STORE_addIdentityNakedKey(*ppNewStore, pKeyBlob, keyBlobLength)))
@@ -1029,7 +1045,7 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
             {
                 MOC_FREE((void **)&pKeyBlob);
             }
-
+            MOC_FREE((void **)&pEncodedKey);
             MOC_FREE((void **)&certDesc.pKeyBlob);
         }
     }
@@ -1302,7 +1318,7 @@ SSH_EXAMPLE_postAccept(sbyte4 connectionInstance, sbyte4 clientSocket)
     {
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_startServer: SSH_assignCertificateStore() failed, error = ", status);
         TCP_CLOSE_SOCKET(clientSocket);
-        SSH_closeConnection(connectionInstance);
+        SSH_closeConnection(connectionInstance, status);
     }
 #endif
     /* alternatively, this code may malloc'd a structure, */
@@ -1463,8 +1479,6 @@ SSH_EXAMPLE_simpleCLI(sbyte4 connInstance, sbyte4 mesgType,
                             goto exit;
                         else if (('!' == pInBuffer[i]) && (3 == state))
                         {
-                            SSH_closeConnection(connInstance);
-                            connInstance = -1;
 #ifdef __USE_MOCANA_SSH_SERVER__
                             SSH_stopServer();
                             SSH_disconnectAllClients();
@@ -1816,7 +1830,7 @@ exit:
 
     /* free up any data stored in the cookie */
     if (0 < connInstance)
-        SSH_closeConnection(connInstance);
+        SSH_closeConnection(connInstance, status);
 
     if (0 > status)
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_simpleSerialChannelDemo: status = ", status);
@@ -1908,7 +1922,7 @@ exit:
 
     /* free up any data stored in the cookie */
     if (0 < connInstance)
-        SSH_closeConnection(connInstance);
+        SSH_closeConnection(connInstance, status);
 
     if (0 > status)
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_simpleDemo: status = ", status);
@@ -1990,7 +2004,7 @@ SSH_EXAMPLE_startServer(void)
         {
             DEBUG_ERROR(DEBUG_SSH_EXAMPLE, (sbyte *)"SSH_EXAMPLE_startServer: SSH_assignCertificateStore() failed, error = ", status);
             TCP_CLOSE_SOCKET(socketClient);
-            SSH_closeConnection(ci);
+            SSH_closeConnection(ci, status);
             continue;
         }
 

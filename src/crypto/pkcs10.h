@@ -334,6 +334,65 @@ MOC_EXTERN MSTATUS PKCS10_GenerateCertReqFromDNEx (
   ubyte4* pCertReqLength
   );
 
+/**
+ * @brief This is the same as PKCS10_GenerateCertReqFromDNEx, except that the
+ * signing key is optional.
+ *
+ * @details If the signing key is NULL, then the public key and signature is not
+ * included in the certificate request.
+ * @warning    The buffer containing the returned certificate request is allocated
+ * by the \c MALLOC() function/macro; you must free it using the \c FREE()
+ * function/macro.
+ *
+ * @ingroup    pkcs_functions
+ *
+ * @since 6.4
+ * @version 6.4 and later
+ *
+ * @flags
+ * To enable this function, the following flag must be defined in moptions.h:
+ * + \c \__ENABLE_MOCANA_PKCS10__
+ *
+ * @inc_file   pkcs10.h
+ *
+ * @param  pKey        Pointer to key (RSA or ECC) to use in the certificate
+ * request. The public part of the key is placed in the
+ * certificate request; the private part of the key is used
+ * to sign the certificate request.
+ * @param  signAlgo    Hash function used to generate the signature. The values
+ * are defined in crypto/crypto.h as enums with the prefix
+ * "ht_" (for HashType). Recommended values as of this
+ * writing (2016) are:
+ * + ht_sha256
+ * + ht_sha384
+ * + ht_sha512
+ * @param  pCertInfo   Pointer to a @ref certDistinguishedName structure that
+ * identifies the subject to associate with the public key.
+ * @param  pReqAttrs   NULL pointer or pointer to a populated \c
+ * requestAttributesEx structure containing a challenge password, requested X.509
+ * version 3 certificate extensions for the new certificate, and optional other
+ * attributes.
+ * @param  ppCertReq       On successful return, pointer to buffer containing the
+ * ASN.1 DER-encoded certificate request.
+ * @param  pCertReqLength  On successful return, pointer to length of new
+ * certificate request, \p ppCertReq.
+ *
+ * @return     \c OK (0) if successful; otherwise a negative number error code
+ * definition from merrors.h. To retrieve a string containing an
+ * English text error identifier corresponding to the function's
+ * returned error status, use the \c DISPLAY_ERROR macro.
+ *
+ * @funcdoc pkcs10.h
+ */
+MOC_EXTERN MSTATUS PKCS10_GenerateCertReqFromDNEx2 (
+  AsymmetricKey* pKey, /* can be null */
+  ubyte signAlgo,
+  const certDistinguishedName *pCertInfo,
+  const requestAttributesEx *pReqAttrs, /* can be null */
+  ubyte** ppCertReq,
+  ubyte4* pCertReqLength
+  );
+
 #endif /* __ENABLE_MOCANA_PKCS10__ */
 
 #ifdef __cplusplus

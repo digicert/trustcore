@@ -10,7 +10,7 @@
  * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
  *   or https://www.digicert.com/master-services-agreement/
  * 
- * For commercial licensing, contact DigiCert at sales@digicert.com.*
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -33,19 +33,27 @@
 #define _REENTRANT
 #endif
 
-#include <errno.h>
-#include <sys/types.h>
+#if defined(__RTOS_ZEPHYR__)
+#include <zephyr/posix/signal.h>
+#include <zephyr/net/socket.h>
+#include <zephyr/posix/sys/ioctl.h>
+#include <zephyr/posix/sys/select.h>
+#else
 #include <sys/socket.h>
-#include <signal.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <netdb.h>
+#include <linux/net.h>
+#endif
+
+#include <errno.h>
+#include <sys/types.h>
+#include <signal.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
-#include <netdb.h>
 #include <string.h>
-#include <linux/net.h>
 
 /*------------------------------------------------------------------*/
 
@@ -202,6 +210,7 @@ compareSockets(const void *pRedBlackCookie,
 {
     tcpAsyncConnection* a = (tcpAsyncConnection *)pSearchKey;
     tcpAsyncConnection* b = (tcpAsyncConnection *)pNodeKey;
+    MOC_UNUSED(pRedBlackCookie);
 
     if (a->socket < b->socket)
         *pRetResult = -1;
@@ -440,6 +449,7 @@ LINUX_TCP_ASYNC_selectInternal(TCP_SOCKET_LIST *pSocketList, ubyte4 msTimeout,
     struct              timeval timeout;
     int                 result;
     MSTATUS             status = ERR_TCP_SELECT_ERROR;
+    MOC_UNUSED(pSelectFunc);
 
     if (0 == msTimeout)
     {

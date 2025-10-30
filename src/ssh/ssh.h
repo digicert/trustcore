@@ -1907,7 +1907,9 @@ Additionally, the following flag must \b not be defined:
 + \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance     Connection instance returned from SSH_acceptConnection().
-
+@param errorCode              Error code to identify the error status of the
+                              connection. If the connection is closed normally,
+                              this parameter should be set to \c OK (0).
 @inc_file ssh.h
 
 @return     \c OK (0) if successful; otherwise a negative number error code
@@ -1920,12 +1922,12 @@ Additionally, the following flag must \b not be defined:
 @code
 sbyte4 status = 0;sbyte4 connectionInstance;
 
-status = SSH_closeConnection(connectionInstance);
+status = SSH_closeConnection(connectionInstance, errorCode);
 @endcode
 
 @funcdoc ssh.h
 */
-MOC_EXTERN sbyte4 SSH_closeConnection(sbyte4 connectionInstance);
+MOC_EXTERN sbyte4 SSH_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode);
 
 #ifdef __ENABLE_MOCANA_SSH_PING__
 /**
@@ -3325,6 +3327,9 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @param connectionInstance   Connection instance returned from
                               SSH_ASYNC_acceptConnection().
+@param errorCode            Error code to identify the error status of the
+                            connection. If the connection is closed normally,
+                            this parameter should be set to \c OK (0).
 
 @inc_file ssh.h
 
@@ -3338,12 +3343,12 @@ To enable this function, the following flag must be defined in moptions.h:
 @code
 sbyte4 status = 0;sbyte4 connectionInstance;
 
-status = SSH_closeConnection(connectionInstance);
+status = SSH_closeConnection(connectionInstance, errorCode);
 @endcode
 
 @funcdoc ssh.h
 */
-MOC_EXTERN sbyte4 SSH_ASYNC_closeConnection(sbyte4 connectionInstance);
+MOC_EXTERN sbyte4 SSH_ASYNC_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode);
 #endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
 
 #ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__

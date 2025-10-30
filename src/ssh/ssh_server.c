@@ -125,7 +125,7 @@ threadEntryPoint(void* hconnectionInstance)
             g_connectTable[index].isSocketClosed = TRUE;
         }
 
-        SSH_closeConnection(connectionInstance);
+        SSH_closeConnection(connectionInstance, OK);
 
         RTOS_mutexRelease(sshServerMutex);
     }
@@ -153,7 +153,7 @@ SSH_SERVER_disconnectClients(void)
             {
                 TCP_CLOSE_SOCKET(g_connectTable[index].socket);
                 g_connectTable[index].isSocketClosed = TRUE;
-                SSH_closeConnection(g_connectTable[index].instance);
+                SSH_closeConnection(g_connectTable[index].instance, OK);
 
                 RTOS_mutexRelease(sshServerMutex);
             }
@@ -276,3 +276,6 @@ SSH_SERVER_stop(void)
 
 #endif /* (!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__) && defined(__USE_MOCANA_SSH_SERVER__)) */
 #endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+
+
+

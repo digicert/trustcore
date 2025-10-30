@@ -108,15 +108,11 @@ MOC_EXTERN MSTATUS SSH_CERT_buildRawRsaCert(sshContext *pContextSSH, ubyte *pCer
  *         returned error status, use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS SSH_CERT_buildCertQs(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates);
-#if (defined(__ENABLE_MOCANA_ECC__))
-MOC_EXTERN MSTATUS SSH_CERT_buildCertHybrid(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates);
-#endif
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if defined(__ENABLE_MOCANA_PQC_COMPOSITE__)
 /**
- *  @brief Builds a hybrid ECDSA-PQC X.509v3 certificate.
+ *  @brief Builds a hybrid X.509v3 certificate.
  * 
  *  @param pContextSSH       Pointer to the SSH context
  *  @param pCertificates     Certificate chain
@@ -127,9 +123,10 @@ MOC_EXTERN MSTATUS SSH_CERT_buildCertHybrid(sshContext *pContextSSH, SizedBuffer
  *         English text error identifier corresponding to the function's
  *         returned error status, use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS SSH_CERT_buildCertECDSAHybrid(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates);
+MOC_EXTERN MSTATUS SSH_CERT_buildCertHybrid(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates);
 #endif
 
+#if (defined(__ENABLE_MOCANA_ECC__))
 /**
  *  @brief Builds a raw ECDSA certificate.
  * 
