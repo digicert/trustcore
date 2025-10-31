@@ -101,7 +101,6 @@ jobs:
           -DWITH_LOGGING=ON \
           -DENABLE_SSH_SERVER_CERT_AUTH=ON \
           -DENABLE_SSH_CLIENT_CERT_AUTH=ON \
-          -DENABLE_MQTT_STREAMING=ON \
           -DBUILD_SAMPLES=ON \
           -B build -S . && cmake --build build
 
