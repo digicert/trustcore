@@ -1,0 +1,6 @@
+MSS_SRC_DIR/asn1
+MSS_SRC_DIR/common
+MSS_SRC_DIR/cap
+MSS_SRC_DIR/crypto
+MSS_SRC_DIR/crypto_interface
+MSS_SRC_DIR/mqtt

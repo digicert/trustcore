@@ -1,0 +1,117 @@
+{
+    "serverSettings": {
+        "serverAddress": "127.0.0.1",
+        "serverPort": 1883,
+        "mode": "extended"
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000,
+        "cleanStart" : true
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-1",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "expectOutbound",
+        "clientid": "my-client-id",
+        "expectOut": [
+            {
+                "packetId": 1,
+                "packetType": "publish"
+            }
+        ]
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "expectOutbound",
+        "clientid": "my-client-id",
+        "expectOut": [
+            {
+                "packetId": 1,
+                "packetType": "pubrel"
+            }
+        ]
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-2",
+        "qos": 1
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-3",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-5",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "expectOutbound",
+        "clientid": "my-client-id",
+        "expectOut": [
+            {
+                "packetId": 1,
+                "packetType": "pubrel"
+            },
+            {
+                "packetId": 2,
+                "packetType": "publish"
+            },
+            {
+                "packetId": 3,
+                "packetType": "publish"
+            },
+            {
+                "packetId": 4,
+                "packetType": "publish"
+            }
+        ]
+    },
+    "operation": {
+        "optype": "resetnetwork",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-id",
+        "loopms": 2000 
+    },
+    "operation": {
+        "optype": "verifyOutEmpty",
+        "clientid": "my-client-id" 
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-id"
+    }
+}

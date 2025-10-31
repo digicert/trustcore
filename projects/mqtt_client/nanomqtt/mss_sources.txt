@@ -1,0 +1,5 @@
+MSS_SRC_DIR/mqtt/mqtt_client.c
+MSS_SRC_DIR/mqtt/mqtt_core.c
+MSS_SRC_DIR/mqtt/mqtt_msg.c
+MSS_SRC_DIR/mqtt/mqtt_transport.c
+MSS_SRC_DIR/mqtt/mqtt_util.c

@@ -1,0 +1,1 @@
+MSS_SRC_DIR/examples/mqtt_client_example.c

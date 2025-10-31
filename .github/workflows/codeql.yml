@@ -97,7 +97,13 @@ jobs:
 
     - name: CMake
       run: |
-        cmake -DWITH_LOGGING=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DBUILD_SAMPLES=ON -B build -S . && cmake --build build
+        cmake \
+          -DWITH_LOGGING=ON \
+          -DENABLE_SSH_SERVER_CERT_AUTH=ON \
+          -DENABLE_SSH_CLIENT_CERT_AUTH=ON \
+          -DENABLE_MQTT_STREAMING=ON \
+          -DBUILD_SAMPLES=ON \
+          -B build -S . && cmake --build build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
