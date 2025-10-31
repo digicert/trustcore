@@ -1,0 +1,109 @@
+{
+    "serverSettings": {
+        "serverAddress": "127.0.0.1",
+        "serverPort": 1883,
+        "mode": "extended"
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000,
+        "cleanStart" : true,
+        "recvMax": 10
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-1",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-2",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-3",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-4",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-5",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-6",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-7",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-8",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-9",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-10",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-11",
+        "qos": 2,
+        "expectedStatus": -22526
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-id",
+        "loopms": 3000 
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-id"
+    }
+}

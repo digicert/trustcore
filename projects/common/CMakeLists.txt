@@ -397,7 +397,7 @@ endif()
 if (DEFINED SECURE_PATH)
   set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SECURE_PATH__)
   message("\nSECURE_PATH = ${SECURE_PATH}")
-  add_definitions("-DMANDATORY_BASE_PATH=\"\"${SECURE_PATH}\"\"")
+  add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
 endif()
 
 # Now load all flags into MOCANA_FLAGS

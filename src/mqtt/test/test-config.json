@@ -1,0 +1,37 @@
+{
+    "serverSettings": {
+        "serverAddress": "127.0.0.1",
+        "serverPort": 1883
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-sub-topic-1",
+        "publishData": "test-payload-1",
+        "qos": 1
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-sub-topic-2",
+        "publishData": "test-payload-2",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-id"
+    }
+}
