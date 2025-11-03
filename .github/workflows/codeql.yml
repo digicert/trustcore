@@ -13,9 +13,9 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "TCOREC-1973-nanomqtt" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "TCOREC-1973-nanomqtt" ]
+    branches: [ "main" ]
   schedule:
     - cron: '0 13 * * *'
 
