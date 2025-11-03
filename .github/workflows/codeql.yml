@@ -13,9 +13,9 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "TCOREC-1973-nanomqtt" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "TCOREC-1973-nanomqtt" ]
   schedule:
     - cron: '0 13 * * *'
 
@@ -103,6 +103,7 @@ jobs:
           -DENABLE_SSH_CLIENT_CERT_AUTH=ON \
           -DENABLE_MQTT_STREAMING=ON \
           -DBUILD_SAMPLES=ON \
+          -DSECURE_PATH="$(pwd)" \
           -B build -S . && cmake --build build
 
     - name: Perform CodeQL Analysis

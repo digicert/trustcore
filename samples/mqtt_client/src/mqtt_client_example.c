@@ -24,6 +24,7 @@
 #include "../common/mrtos.h"
 #include "../common/mocana.h"
 #include "../common/mstdlib.h"
+#include "../common/mfmgmt.h"
 #include "../common/mtcp.h"
 #include "../common/mtcp_async.h"
 #if defined(__ENABLE_MOCANA_HTTP_PROXY__)
@@ -2779,6 +2780,14 @@ int main(int argc, char *ppArgv[])
         goto exit;
     }
 #endif /* __ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__ */
+
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
+    if (OK > (status = FMGMT_changeCWD(MANDATORY_BASE_PATH)))
+    {
+        printf("FMGMT_changeCWD failed with status = %d on line %d\n", status, __LINE__);
+        goto exit;
+    }
+#endif
 
     status = MQTT_EXAMPLE_contextCreate(&pCtx);
     if (OK != status)
