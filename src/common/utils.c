@@ -320,8 +320,7 @@ UTILS_readFile(const char* pFilename,
 {
     char *pResolvedPath = NULL;
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    struct stat orig_st = { 0 };
-    struct stat open_st = { 0 };
+    struct stat st = { 0 };
 #endif
     FILE*   f = NULL;
     int     fd = -1;
@@ -371,20 +370,6 @@ UTILS_readFile(const char* pFilename,
 #endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
 #endif
 
-#ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if (lstat(pResolvedPath, &orig_st) != 0)
-    {
-        status = ERR_FILE_NOT_EXIST;
-        goto exit;
-    }
-
-    if (!S_ISREG(orig_st.st_mode))
-    {
-        status = ERR_FILE_BAD_TYPE;
-        goto exit;
-    }
-#endif
-
     fd = open((const char* __restrict)pResolvedPath, O_RDONLY | O_NOFOLLOW);
     if (fd >= 0)
     {
@@ -411,18 +396,15 @@ UTILS_readFile(const char* pFilename,
 #endif
 
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if(fstat(fd, &open_st) != 0)
+    if(fstat(fd, &st) != 0)
     {
         status = ERR_FILE_OPEN_FAILED;
         goto exit;
     }
 
-    /* tamper check */
-    if ((orig_st.st_mode != open_st.st_mode) ||
-        (orig_st.st_ino  != open_st.st_ino) ||
-        (orig_st.st_dev  != open_st.st_dev))
+    if (!S_ISREG(st.st_mode))
     {
-        status = ERR_FILE_OPEN_FAILED;
+        status = ERR_FILE_BAD_TYPE;
         goto exit;
     }
 #endif
@@ -752,8 +734,7 @@ UTILS_appendFile(const char* pFilename,
     char *pResolvedPath = NULL;
     char *pTempPath = NULL;
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    struct stat orig_st = { 0 };
-    struct stat open_st = { 0 };
+    struct stat st = { 0 };
     byteBoolean fileExists = FALSE;
 #endif
     FILE*   f = NULL;
@@ -815,23 +796,6 @@ UTILS_appendFile(const char* pFilename,
 #endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
 #endif /* __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__ */
 
-#ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if (TRUE == fileExists)
-    {
-        if (lstat(pTempPath, &orig_st) != 0)
-        {
-            status = ERR_FILE_NOT_EXIST;
-            goto exit;
-        }
-
-        if (!S_ISREG(orig_st.st_mode))
-        {
-            status = ERR_FILE_BAD_TYPE;
-            goto exit;
-        }
-    }
-#endif
-
     fd = open((const char* __restrict)pTempPath, O_WRONLY | O_APPEND | O_CREAT | O_NOFOLLOW, S_IRUSR | S_IWUSR);
     if (fd >= 0)
     {
@@ -860,18 +824,15 @@ UTILS_appendFile(const char* pFilename,
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
     if (fileExists)
     {
-        if(fstat(fd, &open_st) != 0)
+        if(fstat(fd, &st) != 0)
         {
             status = ERR_FILE_OPEN_FAILED;
             goto exit;
         }
 
-        /* tamper check */
-        if ((orig_st.st_mode != open_st.st_mode) ||
-            (orig_st.st_ino  != open_st.st_ino) ||
-            (orig_st.st_dev  != open_st.st_dev))
+        if (!S_ISREG(st.st_mode))
         {
-            status = ERR_FILE_OPEN_FAILED;
+            status = ERR_FILE_BAD_TYPE;
             goto exit;
         }
     }
@@ -1053,8 +1014,7 @@ UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLe
     char *pResolvedDestPath = NULL;
     char *pTempPath = NULL;
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    struct stat orig_st = { 0 };
-    struct stat open_st = { 0 };
+    struct stat st = { 0 };
 #endif
     FILE*   fin = NULL;
     int     fdin = -1;
@@ -1106,20 +1066,6 @@ UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLe
 #endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
 #endif
 
-#ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if (lstat(pResolvedSrcPath, &orig_st) != 0)
-    {
-        status = ERR_FILE_NOT_EXIST;
-        goto exit;
-    }
-
-    if (!S_ISREG(orig_st.st_mode))
-    {
-        status = ERR_FILE_BAD_TYPE;
-        goto exit;
-    }
-#endif
-
     fdin = open((const char* __restrict)pResolvedSrcPath, O_RDONLY | O_NOFOLLOW);
     if (fdin < 0)
     {
@@ -1128,18 +1074,15 @@ UTILS_copyFile(const char* pSrcFilename, const char* pDestFilename, ubyte4 bufLe
     }
 
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if(fstat(fdin, &open_st) != 0)
+    if(fstat(fdin, &st) != 0)
     {
         status = ERR_FILE_OPEN_FAILED;
         goto exit;
     }
 
-    /* tamper check */
-    if ((orig_st.st_mode != open_st.st_mode) ||
-        (orig_st.st_ino  != open_st.st_ino) ||
-        (orig_st.st_dev  != open_st.st_dev))
+    if (!S_ISREG(st.st_mode))
     {
-        status = ERR_FILE_OPEN_FAILED;
+        status = ERR_FILE_BAD_TYPE;
         goto exit;
     }
 #endif
