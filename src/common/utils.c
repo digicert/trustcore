@@ -371,19 +371,32 @@ UTILS_readFile(const char* pFilename,
 #endif
 
     fd = open((const char* __restrict)pResolvedPath, O_RDONLY | O_NOFOLLOW);
-    if (fd >= 0)
+    if (fd < 0)
     {
-        f = fdopen(fd, "rb");
-        if (NULL == f)
-        {
-            close(fd);
-            status = ERR_FILE_OPEN_FAILED;
-            goto exit;
-        }
+        status = ERR_FILE_OPEN_FAILED;
+        goto exit;
     }
-    else
+
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
+    if(fstat(fd, &st) != 0)
     {
-        f = NULL;
+        close(fd);
+        status = ERR_FILE_OPEN_FAILED;
+        goto exit;
+    }
+
+    if (!S_ISREG(st.st_mode))
+    {
+        close(fd);
+        status = ERR_FILE_BAD_TYPE;
+        goto exit;
+    }
+#endif
+
+    f = fdopen(fd, "rb");
+    if (f == NULL)
+    {
+        close(fd);
         status = ERR_FILE_OPEN_FAILED;
         goto exit;
     }
@@ -393,20 +406,6 @@ UTILS_readFile(const char* pFilename,
         MOC_FREE ((void **) &pFPath);
 
     freePath = FALSE; /* Reset freePath to avoid double free */
-#endif
-
-#ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if(fstat(fd, &st) != 0)
-    {
-        status = ERR_FILE_OPEN_FAILED;
-        goto exit;
-    }
-
-    if (!S_ISREG(st.st_mode))
-    {
-        status = ERR_FILE_BAD_TYPE;
-        goto exit;
-    }
 #endif
 
     /* Read the Raw File */
@@ -797,19 +796,35 @@ UTILS_appendFile(const char* pFilename,
 #endif /* __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__ */
 
     fd = open((const char* __restrict)pTempPath, O_WRONLY | O_APPEND | O_CREAT | O_NOFOLLOW, S_IRUSR | S_IWUSR);
-    if (fd >= 0)
+    if (fd < 0)
     {
-        f = fdopen(fd, "ab");
-        if (NULL == f)
+        status = ERR_FILE_OPEN_FAILED;
+        goto exit;
+    }
+
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
+    if (fileExists)
+    {
+        if(fstat(fd, &st) != 0)
         {
             close(fd);
             status = ERR_FILE_OPEN_FAILED;
             goto exit;
         }
+
+        if (!S_ISREG(st.st_mode))
+        {
+            close(fd);
+            status = ERR_FILE_BAD_TYPE;
+            goto exit;
+        }
     }
-    else
+#endif
+
+    f = fdopen(fd, "ab");
+    if (f == NULL)
     {
-        f = NULL;
+        close(fd);
         status = ERR_FILE_OPEN_FAILED;
         goto exit;
     }
@@ -819,23 +834,6 @@ UTILS_appendFile(const char* pFilename,
         MOC_FREE ((void **) &pFPath);
 
     freePath = FALSE; /* Reset freePath to avoid double free */
-#endif
-
-#ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if (fileExists)
-    {
-        if(fstat(fd, &st) != 0)
-        {
-            status = ERR_FILE_OPEN_FAILED;
-            goto exit;
-        }
-
-        if (!S_ISREG(st.st_mode))
-        {
-            status = ERR_FILE_BAD_TYPE;
-            goto exit;
-        }
-    }
 #endif
 
     /* Append to the Raw File */
@@ -1542,8 +1540,13 @@ UTILS_initReadFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
     int     pFile;
 #endif
     ubyte *pFPath = NULL;
+    ubyte *pTempPath = NULL;
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
+#endif
+#ifdef __ENABLE_DIGICERT_POSIX_SUPPORT__
+    char *pResolvedPath = NULL;
+    int fd = -1;
 #endif
     MSTATUS status = OK;
     sbyte4  fileSize = 0;
@@ -1566,9 +1569,23 @@ UTILS_initReadFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
 
         freePath = TRUE;
     }
+#endif
 
+#ifdef __ENABLE_DIGICERT_POSIX_SUPPORT__
+    pResolvedPath = realpath((const char *)pFPath, NULL);
+    if (NULL == pResolvedPath)
+    {
+        status = ERR_FILE_NOT_EXIST;
+        goto exit;
+    }
+    pTempPath = (ubyte *)pResolvedPath;
+#else
+    pTempPath = pFPath;
+#endif
+
+#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if (MOC_STRNCMP(pFPath, MANDATORY_BASE_PATH, MOC_STRLEN(MANDATORY_BASE_PATH)) != 0)
+    if (MOC_STRNCMP(pTempPath, MANDATORY_BASE_PATH, MOC_STRLEN(MANDATORY_BASE_PATH)) != 0)
     {
         /* File path must start with the mandatory base path */
         status = ERR_FILE_INSECURE_PATH;
@@ -1578,31 +1595,46 @@ UTILS_initReadFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
 #endif
 
 #if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
-    error = f_open(pFile, pFPath, (FA_READ | FA_OPEN_EXISTING));
+    error = f_open(pFile, pTempPath, (FA_READ | FA_OPEN_EXISTING));
     if(error)
         pFile = NULL ;
 #elif defined (__ENABLE_MOCANA_RTOS_FILEX__)
-    status = fx_file_open(gp_fx_media0, pFile, pFPath, (FX_OPEN_FOR_READ));
+    status = fx_file_open(gp_fx_media0, pFile, pTempPath, (FX_OPEN_FOR_READ));
     if(FX_SUCCESS != status)
     {
         pFile = NULL ;
     }
-#else
-#ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if (lstat(pFPath, &st) != 0)
+#elif defined (__ENABLE_DIGICERT_POSIX_SUPPORT__)
+    fd = open((const char* __restrict)pTempPath, O_RDONLY | O_NOFOLLOW);
+    if (fd < 0)
     {
-        status = ERR_FILE_NOT_EXIST;
+        status = ERR_FILE_OPEN_FAILED;
+        goto exit;
+    }
+
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
+    if(fstat(fd, &st) != 0)
+    {
+        close(fd);
+        status = ERR_FILE_OPEN_FAILED;
         goto exit;
     }
 
     if (!S_ISREG(st.st_mode))
     {
+        close(fd);
         status = ERR_FILE_BAD_TYPE;
         goto exit;
     }
-#endif
+#endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
 
-    pFile = fopen((const char* __restrict)pFPath, "rb");
+    pFile = fdopen(fd, "rb");
+    if (NULL == pFile)
+    {
+        close(fd);
+    }
+#else
+    pFile = fopen((const char* __restrict)pTempPath, "rb");
 #endif
 
 #ifndef __RTOS_WTOS__
@@ -1657,6 +1689,9 @@ UTILS_initReadFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
     pFile = NULL;
 
 exit:
+#ifdef __ENABLE_DIGICERT_POSIX_SUPPORT__
+    free(pResolvedPath);
+#endif
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
         MOC_FREE ((void **) &pFPath);
@@ -1697,6 +1732,9 @@ UTILS_initWriteFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
     ubyte *pFPath = NULL;
 #ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
+#endif
+#if defined (__ENABLE_DIGICERT_POSIX_SUPPORT__)
+    int fd = -1;
 #endif
     MSTATUS status = OK;
 
@@ -1744,7 +1782,7 @@ UTILS_initWriteFile(UTILS_FILE_STREAM_CTX *pCtx, const char *pFilename)
         fx_file_truncate(pFile, 0);
     }
 #elif defined (__ENABLE_DIGICERT_POSIX_SUPPORT__)
-    int fd = open((const char* __restrict)pFPath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    fd = open((const char* __restrict)pFPath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (fd >= 0)
     {
         pFile = fdopen(fd, "wb");
