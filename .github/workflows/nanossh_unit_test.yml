@@ -23,7 +23,7 @@ jobs:
 
       - name: Build SSH
         run: |
-          cmake -DENABLE_SSH_UNITTEST=ON -B build -S .
+          cmake -DDISABLE_MQTT_CLIENT=ON -DENABLE_SSH_UNITTEST=ON -B build -S .
           cmake --build build
 
       - name: Run Unit Tests

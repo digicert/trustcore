@@ -1,0 +1,87 @@
+{
+    "serverSettings": {
+        "serverAddress": "127.0.0.1",
+        "serverPort": 1883,
+        "mode": "extended"
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000,
+        "cleanStart" : true
+    },
+    "operation": {
+        "optype": "setpublishtimeout",
+        "clientid": "my-client-id",
+        "storedPublishTimeoutSeconds" : 5
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-1",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-2",
+        "qos": 1
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-3",
+        "qos": 1
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-4",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-topic-1",
+        "publishData": "test-payload-5",
+        "qos": 2
+    },
+    "operation": {
+        "optype": "sleep",
+        "sleepms": 10000
+    },
+    "operation": {
+        "optype": "resetnetwork",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-id",
+        "loopms": 3000 
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-id"
+    }
+}

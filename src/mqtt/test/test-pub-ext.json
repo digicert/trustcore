@@ -1,0 +1,121 @@
+{
+    "serverSettings": {
+        "serverAddress": "127.0.0.1",
+        "serverPort": 1883
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-sub-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-sub-id",
+        "sessionExpiry" : 2000,
+        "cleanStart" : true
+    },
+    "operation": {
+        "optype": "subscribe",
+        "clientid": "my-client-sub-id",
+        "topics": [
+            {
+                "topic": "test-sub-topic-1",
+                "maxQos": 1
+            },
+            {
+                "topic": "test-sub-topic-2",
+                "maxQos": 2
+            }
+        ]
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000,
+        "cleanStart" : true
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-sub-id",
+        "loopms": 100
+    },
+    "operation": {
+        "optype": "expect",
+        "clientid": "my-client-sub-id",
+        "timeout": 10000,
+        "blocking": 0,
+        "expects": [
+            {
+                "expectedTopic": "test-sub-topic-1",
+                "expectedValue": "test-payload-1",
+                "expectedQos": 1,
+                "expectedPayloadFormat": 1,
+                "expectedMessageExpiry": 100,
+                "expectedCorrelationData": "test-corr-data-1",
+                "expectedContentType": "test-content-type-1",
+                "expectedResponseTopic": "test-resp-topic-1"
+            },
+            {
+                "expectedTopic": "test-sub-topic-2",
+                "expectedValue": "test-payload-2",
+                "expectedQos": 2,
+                "expectedPayloadFormat": 1,
+                "expectedMessageExpiry": 101,
+                "expectedCorrelationData": "test-corr-data-2",
+                "expectedContentType": "test-content-type-2",
+                "expectedResponseTopic": "test-resp-topic-2"
+            }
+        ]
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-sub-topic-1",
+        "publishData": "test-payload-1",
+        "qos": 1,
+        "payloadFormat": 1,
+        "messageExpiry": 100,
+        "correlationData": "test-corr-data-1",
+        "contentType": "test-content-type-1",
+        "responseTopic": "test-resp-topic-1"
+    },
+    "operation": {
+        "optype": "publish",
+        "clientid": "my-client-id",
+        "topic": "test-sub-topic-2",
+        "publishData": "test-payload-2",
+        "qos": 2,
+        "payloadFormat": 1,
+        "messageExpiry": 101,
+        "correlationData": "test-corr-data-2",
+        "contentType": "test-content-type-2",
+        "responseTopic": "test-resp-topic-2"
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-id",
+        "loopms": 200
+    },
+    "operation": {
+        "optype": "syncexpects"
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-sub-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-sub-id"
+    }
+}

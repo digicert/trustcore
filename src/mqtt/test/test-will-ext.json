@@ -1,0 +1,97 @@
+{
+    "serverSettings": {
+        "serverAddress": "127.0.0.1",
+        "serverPort": 1883
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-sub-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-sub-id",
+        "sessionExpiry" : 2000,
+        "cleanStart" : true
+    },
+    "operation": {
+        "optype": "subscribe",
+        "clientid": "my-client-sub-id",
+        "topics": [
+            {
+                "topic": "test-will-topic",
+                "maxQos": 2
+            }
+        ]
+    },
+    "operation": {
+        "optype": "create",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "connect",
+        "clientid": "my-client-id",
+        "sessionExpiry" : 2000,
+        "cleanStart" : true,
+        "willTopic": "test-will-topic",
+        "willPayload": "test-will-payload",
+        "willQos": 2,
+        "willPayloadFormat": 1,
+        "willMsgExpiryInterval": 100,
+        "willRetain": true,
+        "willCorrelationData": "test-will-corr-data",
+        "willContentType": "test-will-content-type",
+        "willResponseTopic": "test-will-resp-topic"
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-sub-id",
+        "loopms": 100
+    },
+    "operation": {
+        "optype": "expect",
+        "clientid": "my-client-sub-id",
+        "timeout": 10000,
+        "blocking": 0,
+        "expects": [
+            {
+                "expectedTopic": "test-will-topic",
+                "expectedValue": "test-will-payload",
+                "expectedQos": 2,
+                "expectedPayloadFormat": 1,
+                "expectedMessageExpiry": 100,
+                "expectedCorrelationData": "test-will-corr-data",
+                "expectedContentType": "test-will-content-type",
+                "expectedResponseTopic": "test-will-resp-topic"
+
+            }
+        ]
+    },
+    "operation": {
+        "optype": "recv",
+        "clientid": "my-client-id",
+        "loopms": 100
+    },
+    "operation": {
+        "optype": "resetnetwork",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "syncexpects"
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-id"
+    },
+    "operation": {
+        "optype": "disconnect",
+        "clientid": "my-client-sub-id"
+    },
+    "operation": {
+        "optype": "destroy",
+        "clientid": "my-client-sub-id"
+    }
+}

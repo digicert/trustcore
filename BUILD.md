@@ -14,6 +14,7 @@ This project includes client, server, and sample applications. You can build the
 | `ENABLE_SSH_CLIENT_CERT_AUTH`     | Enable client certificate authentication  | `OFF`   |
 | `ENABLE_SSH_ASYNC_API_SUPPORT`    | Enable asynchronous SSH APIs              | `OFF`   |
 | `ENABLE_SSH_CLIENT_SHELL_EXAMPLE` | Build SSH client shell example            | `OFF`   |
+| `DISABLE_MQTT_CLIENT`             | Disable building MQTT client library      | `OFF`   |
 | `WITH_LOGGING`                    | Build with logging enabled                | `OFF`   |
 | `SECURE_PATH`                     | Enable secure path restriction            |         |
 | `BUILD_SAMPLES`                   | Build samples applications                | `OFF`   |
