@@ -1409,9 +1409,6 @@ exit:
     if (NULL != pPayload)
         FREE(pPayload);
 
-    if (NULL != pRpfSession)
-        FREE(pRpfSession);
-
     SSH_STR_freeStringBuffer(&pDstLocation);
     SSH_STR_freeStringBuffer(&pSrcLocation);
 
