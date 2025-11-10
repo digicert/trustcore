@@ -1,0 +1,91 @@
+name: "NanoMQTT Functional Tests"
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "main" ]
+
+jobs:
+  mqtt-functional-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      emqx:
+        image: emqx/emqx:5.8.8
+        ports:
+          - 1883:1883
+          - 8883:8883
+        options: >-
+          --health-cmd "emqx_ctl status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake
+        cmake --version
+
+    - name: Build NanoMQTT for Functional Tests
+      run: |
+        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_MQTT_TEST=ON -B build -S .
+        cmake --build build
+
+    - name: Run NanoMQTT Functional Tests
+      run: |
+        export LD_LIBRARY_PATH=lib/:crypto_lib/linux-x86_64/:$LD_LIBRARY_PATH
+
+        set +e
+
+        tests=(
+          "Basic Config:src/mqtt/test/test-config.json"
+          "Async Config:src/mqtt/test/test-config-async.json"
+          "SSL Config:src/mqtt/test/test-config-ssl.json"
+          "Publish Extended Properties:src/mqtt/test/test-pub-ext.json"
+          "Publish Timeout:src/mqtt/test/test-pub-timeout.json"
+          "Publish Timeout Persist Mode:src/mqtt/test/test-pub-timeout-persist.json"
+          "Receive Maximum Test:src/mqtt/test/test-recv-max.json"
+          "Retry Test:src/mqtt/test/test-retry.json"
+          "Will Test:src/mqtt/test/test-will.json"
+          "Will Test QoS2:src/mqtt/test/test-will-qos2.json"
+          "Will Test Extended:src/mqtt/test/test-will-ext.json"
+        )
+
+        failed=0
+
+        for test in "${tests[@]}"; do
+          name="${test%%:*}"
+          config="${test##*:}"
+
+          echo "================================================"
+          echo "Running Test: $name"
+          echo "================================================"
+
+          if ./samples/bin/mqtt_client_test --mqtt_config "$config"; then
+            echo ""
+            echo "PASSED ✅"
+            echo ""
+          else
+            echo ""
+            echo "FAILED ❌"
+            echo ""
+            ((failed++))
+          fi
+        done
+
+        echo "================================================"
+        if [ $failed -gt 0 ]; then
+          echo "Some tests FAILED ❌ ($failed out of ${#tests[@]})"
+          exit 1
+        else
+          echo "All tests PASSED ✅"
+        fi
+        echo "================================================"
+
+    - name: Show Job Status
+      run: echo "🍏 This job's status is ${{ job.status }}."
