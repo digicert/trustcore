@@ -1,0 +1,47 @@
+name: "NanoMQTT Unit Tests"
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "main" ]
+
+jobs:
+  mqtt-unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake libcmocka-dev
+        cmake --version
+
+    - name: Build NanoMQTT with Unit Tests
+      run: |
+        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -B build -S .
+        cmake --build build
+
+    - name: Run NanoMQTT Unit Tests
+      run: |
+        ./projects/mqtt_testunit/run.sh
+
+    - name: Clean Non-Streaming Binaries
+      run: |
+        echo "🧹 Cleaning stale binaries..."
+        find src/mqtt/testunit/ -name 'test_mqtt_*' -type f -executable ! -name '*.c' -delete -print
+        echo "✅ Cleanup complete"
+
+    - name: Build NanoMQTT Unit Tests with Streaming Enabled
+      run: |
+        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -DENABLE_MQTT_STREAMING=ON -B build_streaming -S .
+        cmake --build build_streaming
+
+    - name: Run NanoMQTT Unit Tests with Streaming Enabled
+      run: |
+        ./projects/mqtt_testunit/run.sh --streaming
+
+    - name: Show Job Status
+      run: echo "🍏 This job's status is ${{ job.status }}."

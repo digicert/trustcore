@@ -67,6 +67,13 @@
 
 # MQTT Build and Test Instructions for TrustCore Repo
 
+### Option 1: Install CMocka from System Package Manager (Recommended for Ubuntu/Debian)
+
+        sudo apt update
+        sudo apt install -y libcmocka-dev
+
+### Option 2: Build CMocka from Source (Alternative)
+
 1. Extract cmocka
 
         cd trustcore
@@ -85,16 +92,18 @@
         cp ./src/libcmocka.* ../../lib
         cd ../..
 
-3. Build MQTT client
+## Build and Test
 
-        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -DENABLE_MQTT_ASYNC=ON -DENABLE_MQTT_PERSIST=ON -B build -S .
+1. Build MQTT client
+
+        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -B build -S .
         cmake --build build 
 
-4. Run MQTT unit tests
+2. Run MQTT unit tests
 
         ./projects/mqtt_testunit/run.sh
 
-5. Build and run MQTT streaming tests
+3. Build and run MQTT streaming tests
 
 ## Build with streaming enabled
 

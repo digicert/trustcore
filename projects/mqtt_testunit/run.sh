@@ -24,15 +24,49 @@ for arg in "$@"; do
 done
 
 if [ "$STREAMING_MODE" == "true" ]; then
-    echo "> Executing test_mqtt_msg_streaming"
-    ./test_mqtt_msg_streaming
-    if [ $? -ne 0 ]; then
-        echo "test_mqtt_msg_streaming failed"
-        TEST_FAILED=true
-    fi 
-else
+    if [ -f "./test_mqtt_msg_streaming" ]; then
+        if [ -n "$(find . -maxdepth 1 -type f -executable | grep -v streaming)" ]; then
+            echo "WARNING: Both streaming and non-streaming binaries exist"
+            echo "         If you recently switched build modes, consider cleaning"
+            echo ""
+        fi
+
+        echo "> Executing test_mqtt_msg_streaming"
+        ./test_mqtt_msg_streaming
+        if [ $? -ne 0 ]; then
+            echo "test_mqtt_msg_streaming failed"
+            TEST_FAILED=true
+        fi
+    else
+        echo "INFO: --streaming flag specified but test_mqtt_msg_streaming binary not found"
+        echo "      Ignoring --streaming flag"
+        echo ""
+        STREAMING_MODE=false
+    fi
+fi
+
+if [ "$STREAMING_MODE" == "false" ]; then
     if [ $# -eq 0 ]; then
         tests=$(find . -maxdepth 1 -type f -executable | grep -v streaming)
+
+        if [ -z "$tests" ]; then
+            if [ -f "./test_mqtt_msg_streaming" ]; then
+                echo "INFO: Streaming binary detected"
+                echo "      To run streaming tests, use: ./run.sh --streaming"
+                popd
+                exit 0
+            else
+                echo "ERROR: No test binaries found"
+                popd
+                exit 1
+            fi
+        fi
+
+        if [ -f "./test_mqtt_msg_streaming" ] && [ -n "$tests" ]; then
+            echo "WARNING: Both streaming and non-streaming binaries exist"
+            echo "         If you recently switched build modes, consider cleaning"
+            echo ""
+        fi
 
         while IFS= read -r cur_test; do
             echo ""
@@ -62,4 +96,6 @@ if [ "$TEST_FAILED" == true ]; then
     exit 1
 fi
 
-
+echo ""
+echo "All tests passed!"
+exit 0
