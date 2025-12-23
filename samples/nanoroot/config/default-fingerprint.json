@@ -1,0 +1,68 @@
+{
+  "attributes": [
+      {
+          "attribute_name": "INTERNATIONAL MOBILE IDENTITY",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "INTERNATIONAL_MOBILE_IDENTITY" 
+          }
+      },
+      {
+          "attribute_name": "MOBILE EQUIPMENT IDENTIFIER",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "MOBILE_EQUIPMENT_IDENTIFIER"
+          }
+      },
+      {
+          "attribute_name": "ELECTRONIC SERIAL NUMBER",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "ELECTRONIC_SERIAL_NUMBER"
+          }
+      },
+      {
+          "attribute_name": "INTERNATIONAL MOBILE SUBSCRIBER IDENTITY",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "INTERNATIONAL_MOBILE_SUBSCRIBER_IDENTITY"
+          }
+      },
+      {
+          "attribute_name": "MAC ADDRESS",
+          "attribute_value": {
+              "type": "program",
+              "path": "./samples/nanoroot/config/get_mac_address.sh",
+              "argument": "eno1"
+          }
+      },
+      {
+          "attribute_name": "SERIAL NUMBER",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "SERIAL_NUMBER"
+          }
+      },
+      {
+          "attribute_name": "SECURE ANDROID ID",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "SECURE_ANDROID_ID"
+          }
+      },
+      {
+          "attribute_name": "UUID",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "UUID"
+          }
+      },
+      {
+          "attribute_name": "CPUID",
+          "attribute_value": {
+              "type": "program",
+              "path": "./samples/nanoroot/config/get_cpuid.sh"
+          }
+      }
+  ]
+}
