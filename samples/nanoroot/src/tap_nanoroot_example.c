@@ -110,6 +110,9 @@ typedef struct {
     byteBoolean outputFileSpecified;
     char outputFile[FILE_NAME_LEN];
     ubyte4 outputFileLen;
+    byteBoolean signatureFileSpecified;
+    char signatureFile[FILE_NAME_LEN];
+    ubyte4 signatureFileLen;
     byteBoolean sealOp;
     byteBoolean unsealOp;
     byteBoolean signBufferOp;
@@ -149,9 +152,11 @@ MOC_STATIC void printHelp()
     LOG_MESSAGE("                          - Unseal:      Reads encrypted data");
     LOG_MESSAGE("                          - Sign/Verify: Reads data to be signed or verified");
 
-    LOG_MESSAGE("  --outfile               Full path to the output or signature file");
+    LOG_MESSAGE("  --outfile               Full path to the output file (seal/unseal only)");
     LOG_MESSAGE("                          - Seal:        Saves encrypted data");
     LOG_MESSAGE("                          - Unseal:      Saves decrypted data");
+
+    LOG_MESSAGE("  --sigfile               Full path to the signature file (sign/verify only)");
     LOG_MESSAGE("                          - Sign:        Saves generated signature");
     LOG_MESSAGE("                          - Verify:      Reads signature for verification");
 
@@ -215,10 +220,18 @@ MOC_STATIC int validateCmdLineOpts(cmdLineOpts *pOpts)
         goto exit;
     }
 
-    if (pOpts->outputFileSpecified == FALSE)
+    if (pOpts->sealOp || pOpts->unsealOp)
     {
-        PRINT_ERR(status, "Missing required option: specify the output file using \"--outfile\".");
-        goto exit;
+        if (pOpts->outputFileSpecified == FALSE)
+        {
+            PRINT_ERR(status, "Missing required option: specify the output file using \"--outfile\" for seal/unseal operations.");
+            goto exit;
+        }
+        if (pOpts->signatureFileSpecified == TRUE)
+        {
+            PRINT_ERR(status, "Invalid option: --sigfile cannot be used with seal/unseal operations.");
+            goto exit;
+        }
     }
 
     if ((pOpts->sealOp + pOpts->unsealOp + pOpts->signBufferOp +
@@ -230,6 +243,16 @@ MOC_STATIC int validateCmdLineOpts(cmdLineOpts *pOpts)
 
     if (pOpts->signBufferOp || pOpts->signDigestOp || pOpts->verifyOp)
     {
+        if (pOpts->signatureFileSpecified == FALSE)
+        {
+            PRINT_ERR(status, "Missing required option: specify the signature file using \"--sigfile\" for sign/verify operations.");
+            goto exit;
+        }
+        if (pOpts->outputFileSpecified == TRUE)
+        {
+            PRINT_ERR(status, "Invalid option: --outfile cannot be used with sign/verify operations.");
+            goto exit;
+        }
         if (pOpts->keyIdSpecified == FALSE)
         {
             PRINT_ERR(status, "Missing required option: specify key ID using \"--keyId\" for sign or verify operations.");
@@ -291,21 +314,22 @@ MOC_STATIC MSTATUS parseCmdLineOpts(cmdLineOpts *pOpts, int argc, char *argv[])
     int options_index = 0;
     const char *optstring = "";
     size_t len = 0;
-    const struct option options[] = {
-            {"help", no_argument, NULL, 1},
-            {"config", required_argument, NULL, 2},
-            {"infile", required_argument, NULL, 3},
-            {"outfile", required_argument, NULL, 4},
-            {"seal", no_argument, NULL, 5},
-            {"unseal", no_argument, NULL, 6},
-            {"signBuffer", no_argument, NULL, 7},
-            {"signDigest", no_argument, NULL, 8},
-            {"verify", no_argument, NULL, 9},
-            {"pubKey", required_argument, NULL, 10},
-            {"keyId", required_argument, NULL, 11},
-            {"passphrase", required_argument, NULL, 12},
-            {"hashType", required_argument, NULL, 13},
-            {NULL, 0, NULL, 0},
+    static struct option long_options[] = {
+        {"help", no_argument, NULL, 1},
+        {"config", required_argument, NULL, 2},
+        {"infile", required_argument, NULL, 3},
+        {"outfile", required_argument, NULL, 4},
+        {"seal", no_argument, NULL, 5},
+        {"unseal", no_argument, NULL, 6},
+        {"signBuffer", no_argument, NULL, 7},
+        {"signDigest", no_argument, NULL, 8},
+        {"verify", no_argument, NULL, 9},
+        {"pubKey", required_argument, NULL, 10},
+        {"keyId", required_argument, NULL, 11},
+        {"passphrase", required_argument, NULL, 12},
+        {"hashType", required_argument, NULL, 13},
+        {"sigfile", required_argument, NULL, 14},
+        {NULL, 0, NULL, 0}
     };
 
     if (!pOpts || !argv || (0 == argc))
@@ -316,12 +340,12 @@ MOC_STATIC MSTATUS parseCmdLineOpts(cmdLineOpts *pOpts, int argc, char *argv[])
 
     while (TRUE)
     {
-        c = getopt_long(argc, argv, optstring, options, &options_index);
+        c = getopt_long(argc, argv, optstring, long_options, &options_index);
         if ((-1 == c))
             break;
 
         /* Add validation for optarg before using it */
-        if ((c >= 2 && c <= 4) || (c >= 10 && c <= 13))
+        if ((c >= 2 && c <= 4) || (c >= 10 && c <= 14))
         {
             if (!optarg)
             {
@@ -341,7 +365,7 @@ MOC_STATIC MSTATUS parseCmdLineOpts(cmdLineOpts *pOpts, int argc, char *argv[])
             {
                 len = strnlen(optarg, 16);  /* Reasonable limit for numeric string */
             }
-            else  /* config, infile, outfile, pubKey - file paths */
+            else  /* config, infile, outfile, pubKey, sigfile - file paths */
             {
                 len = strnlen(optarg, FILE_NAME_LEN);
             }
@@ -528,6 +552,27 @@ MOC_STATIC MSTATUS parseCmdLineOpts(cmdLineOpts *pOpts, int argc, char *argv[])
                 pOpts->hashTypeSpecified = TRUE;
                 pOpts->hashType = (ubyte4)strtoul(optarg, NULL, 10);
                 LOG_MESSAGE("hashType : %d", pOpts->hashType);
+            }
+            break;
+
+        case 14:
+            {
+                len = strnlen(optarg, FILE_NAME_LEN);
+                if (len >= FILE_NAME_LEN)
+                {
+                    LOG_ERROR("Signature file name too long. Max size: %d bytes", FILE_NAME_LEN - 1);
+                    goto exit;
+                }
+                if (len == 0 || optarg[0] == '-')
+                {
+                    LOG_ERROR("--sigfile Signature file name not specified");
+                    goto exit;
+                }
+                pOpts->signatureFileSpecified = TRUE;
+                strncpy(pOpts->signatureFile, optarg, FILE_NAME_LEN - 1);
+                pOpts->signatureFile[FILE_NAME_LEN - 1] = '\0';
+                pOpts->signatureFileLen = len;
+                LOG_MESSAGE("Signature file name: %s", pOpts->signatureFile);
             }
             break;
 
@@ -2227,7 +2272,7 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
 
         case NanoROOT_VERIFY:
             {
-                status = verifyData(&inputData, pOpts->outputFile, pOpts->pubKeyFile, pOpts->hashType, &keyId, &isValidSign);
+                status = verifyData(&inputData, pOpts->signatureFile, pOpts->pubKeyFile, pOpts->hashType, &keyId, &isValidSign);
                 if (OK != status)
                 {
                     PRINT_ERR(status, "verifyData failed");
@@ -2249,12 +2294,21 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
             goto exit;
     }
 
-    if(pOpts->opType == NanoROOT_SEAL || pOpts->opType == NanoROOT_UNSEAL || pOpts->opType == NanoROOT_SIGN)
+    if(pOpts->opType == NanoROOT_SEAL || pOpts->opType == NanoROOT_UNSEAL)
     {
         status = MOCANA_writeFile(pOpts->outputFile, outputData.pBuffer, outputData.bufferLen);
         if (OK != status)
         {
             LOG_ERROR("Failed to write output file : %s, status : %d", pOpts->outputFile, status);
+            goto exit;
+        }
+    }
+    else if(pOpts->opType == NanoROOT_SIGN)
+    {
+        status = MOCANA_writeFile(pOpts->signatureFile, outputData.pBuffer, outputData.bufferLen);
+        if (OK != status)
+        {
+            LOG_ERROR("Failed to write signature file : %s, status : %d", pOpts->signatureFile, status);
             goto exit;
         }
     }
@@ -2361,16 +2415,20 @@ int main(int argc, char **argv)
     }
 
 exit:
-    MOC_FREE((void **)&pOpts);
-    uninitTapModuleCtx(&pTapContext);
-    EXAMPLE_uninit((gApplicationState & APP_STATE_TAP_INIT) ? TRUE : FALSE);
-    gApplicationState &= ~APP_STATE_TAP_INIT;
+
+    if(NULL != pOpts && FALSE == pOpts->exitAfterParse)
+    {
+        uninitTapModuleCtx(&pTapContext);
+        EXAMPLE_uninit((gApplicationState & APP_STATE_TAP_INIT) ? TRUE : FALSE);
+        gApplicationState &= ~APP_STATE_TAP_INIT;
+    }
 
     if (NULL != pModuleList)
     {
         TAP_freeModuleList(pModuleList);  
         MOC_FREE((void**)&pModuleList);
     }
+    MOC_FREE((void**)&pOpts);
 
     return status;
 }

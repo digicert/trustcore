@@ -410,14 +410,14 @@ test_rsa_signatures() {
         # Sign operation
         run_test "RSA-${key_size} sign operation" \
             "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-            --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+            --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
             --pubKey "${pub_key}" --keyId "${key_id}" \
             --hashType "${hash_type}" --signBuffer
         
         # Verify operation
         run_test "RSA-${key_size} verify operation" \
             "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-            --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+            --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
             --pubKey "${pub_key}" --keyId "${key_id}" \
             --hashType "${hash_type}" --verify
         
@@ -448,14 +448,14 @@ test_rsa8k_signatures() {
     # Sign operation
     run_test "RSA-${key_size} sign operation" \
         "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-        --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+        --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
         --pubKey "${pub_key}" --keyId "${key_id}" \
         --hashType "${hash_type}" --signBuffer
     
     # Verify operation
     run_test "RSA-${key_size} verify operation" \
         "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-        --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+        --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
         --pubKey "${pub_key}" --keyId "${key_id}" \
         --hashType "${hash_type}" --verify
     
@@ -488,14 +488,14 @@ test_mldsa_signatures() {
         # Sign operation (hashType 0 for MLDSA)
         run_test "MLDSA-${variant} sign operation" \
             "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-            --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+            --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
             --pubKey "${pub_key}" --keyId "${key_id}" \
             --hashType 0 --signBuffer
         
         # Verify operation
         run_test "MLDSA-${variant} verify operation" \
             "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-            --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+            --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
             --pubKey "${pub_key}" --keyId "${key_id}" \
             --hashType 0 --verify
     done
@@ -521,14 +521,14 @@ test_ecc_signatures() {
         # Sign operation using signDigest
         run_test "P-${curve} sign operation" \
             "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-            --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+            --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
             --pubKey "${pub_key}" --keyId "${key_id}" \
             --hashType "${hash_type}" --signDigest
         
         # Verify operation
         run_test "P-${curve} verify operation" \
             "${TAP_EXECUTABLE}" --config "${CONFIG_FILE}" \
-            --infile "${TEST_DATA_FILE}" --outfile "${sig_file}" \
+            --infile "${TEST_DATA_FILE}" --sigfile "${sig_file}" \
             --pubKey "${pub_key}" --keyId "${key_id}" \
             --hashType "${hash_type}" --verify
         

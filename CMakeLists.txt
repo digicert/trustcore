@@ -23,6 +23,10 @@ option(DISABLE_MQTT_CLIENT "Build MQTT Client." OFF)
 option(ENABLE_MQTT_TEST "Enable MQTT Client Test" OFF)
 option(ENABLE_MQTT_UNITTEST "Enable MQTT Client Unit Test" OFF)
 option(ENABLE_MQTT_STREAMING "Enable Streaming Support" OFF)
+
+# NanoROOT build option
+option(ENABLE_NANOROOT "Enable NanoROOT support" OFF)
+
 # Global build options
 option(BUILD_SAMPLES "Build samples." OFF)
 option(DISABLE_SUITEB "Disable Suite B algorithms." OFF)
@@ -43,6 +47,11 @@ set(COMPILE_COMMANDS_JSON ${CMAKE_BINARY_DIR}/compile_commands.json)
 set(MOPTIONS_CUSTOM_SSH_SERVER_FILE ${CMAKE_SOURCE_DIR}/src/common/moptions_custom_ssh_server.h)
 set(MOPTIONS_CUSTOM_SSH_CLIENT_FILE ${CMAKE_SOURCE_DIR}/src/common/moptions_custom_ssh_client.h)
 set(MOPTIONS_CUSTOM_MQTT_CLIENT_FILE ${CMAKE_SOURCE_DIR}/src/common/moptions_custom_mqtt_client.h)
+
+if(ENABLE_NANOROOT)
+  set(ENABLE_TAP ON CACHE BOOL "Enable TAP" FORCE)
+  set(CM_ENABLE_SMP_NANOROOT ON CACHE BOOL "Enable NANOROOT SMP." FORCE)
+endif()
 
 add_subdirectory(projects/platform)
 
@@ -164,6 +173,13 @@ if(NOT DISABLE_MQTT_CLIENT)
       add_dependencies(mqtt_client_test overwrite_for_mqtt_client)
       target_compile_definitions(mqtt_client_test PUBLIC -DMOPTIONS_CUSTOM_HEADER="${MOPTIONS_CUSTOM_MQTT_CLIENT_FILE}")
     endif()
+  endif()
+endif()
+
+# NanoROOT samples
+if(ENABLE_NANOROOT)
+  if(BUILD_SAMPLES)
+    add_subdirectory(samples/nanoroot)
   endif()
 endif()
 

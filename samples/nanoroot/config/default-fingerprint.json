@@ -32,7 +32,7 @@
           "attribute_name": "MAC ADDRESS",
           "attribute_value": {
               "type": "program",
-              "path": "./samples/nanoroot/config/get_mac_address.sh",
+              "path": "/etc/digicert/get_mac_address.sh",
               "argument": "eno1"
           }
       },
@@ -61,7 +61,7 @@
           "attribute_name": "CPUID",
           "attribute_value": {
               "type": "program",
-              "path": "./samples/nanoroot/config/get_cpuid.sh"
+              "path": "/etc/digicert/get_cpuid.sh"
           }
       }
   ]
