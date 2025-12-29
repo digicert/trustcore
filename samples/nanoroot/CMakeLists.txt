@@ -14,6 +14,12 @@ option(CM_ENABLE_HW_ACCEL "Build with hw-accel library." OFF)
 # Where to find CMake files
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../projects/shared_cmake)
 
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    set(CRYPTO_LIB_ARCH_DIR "aarch64")
+else()
+    set(CRYPTO_LIB_ARCH_DIR "linux-x86_64")
+endif()
+
 if(CM_ENABLE_DEBUG)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
@@ -140,18 +146,45 @@ if(BUILD_FOR_OSI)
     set(COMMON_LIB          "${LIB_DIR}/libcommon.so")
     set(INITIALIZE_LIB      "${LIB_DIR}/libinitialize.so")
     set(PLATFORM_LIB        "${LIB_DIR}/libplatform.so")
-    set(NANOCAP_LIB         "${LIB_DIR}/libnanocap.so")
-    set(NANOCERT_LIB        "${LIB_DIR}/libnanocert.so")
-    set(NANOCRYPTO_LIB      "${LIB_DIR}/libnanocrypto.so")
-    set(CRYPTOINTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
     set(SMPNANOROOT         "${LIB_DIR}/libsmpnanoroot.so")
-    set(NANOTAP2_COMMON_LIB "${LIB_DIR}/libnanotap2_common.so")
-    set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.so")
-    set(NANOTAP2_LIB        "${LIB_DIR}/libnanotap2.so")
+
+    set(CRYPTO_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../../crypto_lib/${CRYPTO_LIB_ARCH_DIR}")
+
+    add_library(nanocap SHARED IMPORTED)
+    set_target_properties(nanocap PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocap.so")
+
+    add_library(nanocert SHARED IMPORTED)
+    set_target_properties(nanocert PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocert.so")
+
+    add_library(nanocrypto SHARED IMPORTED)
+    set_target_properties(nanocrypto PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocrypto.so")
+
+    add_library(cryptointerface SHARED IMPORTED)
+    set_target_properties(cryptointerface PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libcryptointerface.so")
+
+    add_library(nanotap2_common SHARED IMPORTED)
+    set_target_properties(nanotap2_common PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2_common.so")
+
+    add_library(nanotap2_configparser SHARED IMPORTED)
+    set_target_properties(nanotap2_configparser PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2_configparser.so")
+
+    add_library(nanotap2 SHARED IMPORTED)
+    set_target_properties(nanotap2 PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2.so")
+
+    add_library(smptpm2 SHARED IMPORTED)
+    set_target_properties(smptpm2 PROPERTIES
+        IMPORTED_LOCATION "${CRYPTO_LIBS}/libsmptpm2.so")
 
     set(libraryLists ${COMMON_LIB} ${PLATFORM_LIB} ${ASN1_LIB} ${INITIALIZE_LIB} ${NANOROOT_LIB}
-                     ${NANOTAP2_COMMON_LIB} ${NANOTAP2_CONFIGPARSER_LIB} ${NANOTAP2_LIB} ${CRYPTOINTERFACE_LIB}
-                     ${NANOCAP_LIB} ${NANOCERT_LIB} ${NANOCRYPTO_LIB})
+                     nanotap2_common nanotap2_configparser nanotap2 cryptointerface
+                     nanocap nanocert nanocrypto)
 else()
     set(libraryLists ${COMMON_LIB} ${ASN1_LIB} ${INITIALIZE_LIB} ${NANOCERT_LIB} ${NANOTAP2_LIB}
                      ${CRYPTOINTERFACE_LIB} ${NANOTAP2_COMMON_LIB})

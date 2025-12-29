@@ -51,6 +51,7 @@ set(MOPTIONS_CUSTOM_MQTT_CLIENT_FILE ${CMAKE_SOURCE_DIR}/src/common/moptions_cus
 if(ENABLE_NANOROOT)
   set(ENABLE_TAP ON CACHE BOOL "Enable TAP" FORCE)
   set(CM_ENABLE_SMP_NANOROOT ON CACHE BOOL "Enable NANOROOT SMP." FORCE)
+  set(CM_ENABLE_PROCESS ON CACHE BOOL "Enable Process APIs." FORCE)
 endif()
 
 add_subdirectory(projects/platform)

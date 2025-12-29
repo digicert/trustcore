@@ -151,6 +151,11 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_RTOS_LOCK_ACQUIRE,                             -5818)
     ERROR_DEF       (ERR_RTOS_LOCK_RELEASE,                             -5819)
     ERROR_DEF       (ERR_RTOS_THREAD_JOIN,                              -5820)
+    ERROR_DEF       (ERR_RTOS_THREAD_KILL,                              -5821)
+    ERROR_DEF       (ERR_RTOS_PROCESS_CREATE,                           -5822)
+    ERROR_DEF       (ERR_RTOS_PROCESS_WAIT,                             -5823)
+    ERROR_DEF       (ERR_RTOS_PROCESS_FAILED,                           -5824)
+    ERROR_DEF       (ERR_RTOS_PROCESS_TERMINATED,                       -5825)
 
     ERROR_DEF       (ERR_TCP,                                           -5900)
     ERROR_DEF       (ERR_TCP_SOCKET_CLOSED,                             -5901)

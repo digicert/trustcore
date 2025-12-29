@@ -26,6 +26,17 @@ endif()
 # Where to find CMake files
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../shared_cmake)
 
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    set(CRYPTO_LIB_ARCH_DIR "aarch64")
+else()
+    set(CRYPTO_LIB_ARCH_DIR "linux-x86_64")
+endif()
+
+if(CM_ENABLE_DEBUG)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+endif()
+
 include(MocPlatform)
 include(locate_lib)
 include(build_library)
