@@ -179,6 +179,7 @@ endif()
 
 # NanoROOT samples
 if(ENABLE_NANOROOT)
+  add_subdirectory(projects/smp_nanoroot)
   if(BUILD_SAMPLES)
     add_subdirectory(samples/nanoroot)
   endif()

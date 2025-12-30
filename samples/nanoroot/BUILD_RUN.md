@@ -33,10 +33,10 @@ samples/nanoroot/
 
 ## ⚙️ Build Options
 
-| Option            | Description                                    | Default |
-|-------------------|------------------------------------------------|---------|
-| `ENABLE_NANOROOT` | Enable NanoROOT SMP library build              | `OFF`   |
-| `SECURE_PATH`     | Restrict credential file access to secure path | `OFF`   |
+| Option            | Description                                    | Default   |
+|-------------------|------------------------------------------------|-----------|
+| `ENABLE_NANOROOT` | Enable NanoROOT SMP library build              | `OFF`     |
+| `SECURE_PATH`     | Restrict credential file access to secure path | `Not Set` |
 
 ---
 
@@ -110,8 +110,8 @@ This script sets fingerprint-related environment variables required by NanoROOT.
 ### Set Library Path
 
 ```bash
-export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
-```
+export LD_LIBRARY_PATH=lib/:crypto_lib/linux-x86_64/:$LD_LIBRARY_PATH
+ ```
 
 ### Prepare `/etc/digicert/` for Standard Build (without secure path)
 
