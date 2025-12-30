@@ -38,6 +38,8 @@ TrustCore SDK provides comprehensive support for various security and communicat
 
 - [NanoCert](https://dev.digicert.com/en/trustcore-sdk/nanocert.html) – EST and SCEP Protocols for automated certificate enrollment and management.
 
+- [NanoROOT](https://dev.digicert.com/en/trustcore-sdk/nanoroot.html) – Hardware-rooted security module provider for device fingerprinting, data sealing, and quantum-resistant digital signatures.
+
 ### **Documentation**
 
 All the TrustCore documentation is available at [TrustCore SDK documentation](https://dev.digicert.com/en/trustcore-sdk.html).  
