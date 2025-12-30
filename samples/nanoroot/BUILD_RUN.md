@@ -257,7 +257,7 @@ cd <repository_root>
 ```bash
 # Set environment variables
 source samples/nanoroot/config/setFingerPrintValues.sh
-export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=lib/:crypto_lib/linux-x86_64/:$LD_LIBRARY_PATH
 
 # Create test data
 echo "Confidential data" > plaintext.txt
@@ -365,7 +365,7 @@ sudo chown -R $(whoami):$(whoami) /opt/digicert/
 
 ```bash
 # Set library path
-export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=lib/:crypto_lib/linux-x86_64/:$LD_LIBRARY_PATH
 
 # Source fingerprint environment variables
 source samples/nanoroot/config/setFingerPrintValues.sh
