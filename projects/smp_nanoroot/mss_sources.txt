@@ -1,0 +1,5 @@
+MSS_SRC_DIR/smp/smp_nanoroot/smp_nanoroot_device_protect.c
+MSS_SRC_DIR/smp/smp_nanoroot/smp_nanoroot_util.c
+MSS_SRC_DIR/smp/smp_nanoroot/smp_nanoroot_api.c
+MSS_SRC_DIR/smp/smp_nanoroot/smp_nanoroot_interface.c
+MSS_SRC_DIR/smp/smp_nanoroot/smp_nanoroot_parseConfig.c

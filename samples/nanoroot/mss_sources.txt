@@ -1,0 +1,1 @@
+MSS_SRC_DIR/../samples/nanoroot/src/tap_nanoroot_example.c

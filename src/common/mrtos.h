@@ -235,6 +235,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 
 #if !defined(__RTOS_ZEPHYR__)
 #define RTOS_processExecute         LINUX_processExecute
+#define RTOS_processExecuteWithArg  LINUX_processExecuteWithArg
 #endif
 #if defined(__MOC_PLATFORM_MODULE__)
 #define RTOS_deltaMS                MOC_deltaMS
@@ -1014,6 +1015,7 @@ MOC_EXTERN MSTATUS      RTOS_timeGMT                (TimeDate* td);
 MOC_EXTERN void         RTOS_setTimeGMT(TimeDate* td);
 
 MOC_EXTERN MSTATUS      RTOS_processExecute         (sbyte *pCmd, sbyte **ppOutput);
+MOC_EXTERN MSTATUS      RTOS_processExecuteWithArg  (sbyte *pCmd, sbyte *pArg, sbyte **ppOutput);
 
 #if (defined(__LINUX_RTOS__) || defined(__ANDROID_RTOS__)) && !defined(__KERNEL__)
 MOC_EXTERN RTOS_THREAD  RTOS_currentThreadId        (void);
