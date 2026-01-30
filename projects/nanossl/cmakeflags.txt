@@ -1,0 +1,831 @@
+cmake_minimum_required (VERSION 3.5)
+
+function(buildflags targetdir extraFlags mocana_flags)
+  message("TARGET_DIR = ${targetdir}")
+
+  if(CM_ENABLE_EXPORT_ED AND EXISTS "${targetdir}/mocana_export_flags.txt")
+    set(MOCANA_FLAGS_FILE "${targetdir}/mocana_export_flags.txt")
+  else()
+    set(MOCANA_FLAGS_FILE "${targetdir}/mocana_flags.txt")
+  endif()
+
+  if(CM_ENABLE_EXPORT_ED)
+    set(MOCANA_SUITEB_FLAGS_FILE "${targetdir}/../mocana_suiteb_export_flags.txt")
+    message("\n MOCANA_SUITEB_FLAGS_FILE = ${MOCANA_SUITEB_FLAGS_FILE}")
+  else()
+    set(MOCANA_SUITEB_FLAGS_FILE "${targetdir}/../mocana_suiteb_flags.txt")
+    message("\n MOCANA_SUITEB_FLAGS_FILE = ${MOCANA_SUITEB_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_DEBUG)
+      set(MOCANA_DEBUG_FLAGS_FILE "${targetdir}/../mocana_debug_flags.txt")
+      message("\n MOCANA_DEBUG_FLAGS_FILE = ${MOCANA_DEBUG_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_TAP)
+      set(MOCANA_TAP_LOCAL_FLAGS_FILE "${targetdir}/../mocana_tap_local_flags.txt")
+      message("\n MOCANA_TAP_LOCAL_FLAGS_FILE = ${MOCANA_TAP_LOCAL_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_TAP_REMOTE)
+      set(MOCANA_TAP_REMOTE_FLAGS_FILE "${targetdir}/../mocana_tap_remote_flags.txt")
+      message("\n MOCANA_TAP_REMOTE_FLAGS_FILE = ${MOCANA_TAP_REMOTE_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_TAP_EXTERN)
+      set(MOCANA_TAP_EXTERN_FLAGS_FILE "${targetdir}/../mocana_tap_extern_flags.txt")
+      message("\n MOCANA_TAP_EXTERN_FLAGS_FILE = ${MOCANA_TAP_EXTERN_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_SSL_PROXY_CONNECT)
+      set(MOCANA_SSL_PROXY_CONNECT_FLAGS_FILE "${targetdir}/../mocana_ssl_proxy_connect_flags.txt")
+      message("\n MOCANA_SSL_PROXY_CONNECT_FLAGS_FILE = ${MOCANA_SSL_PROXY_CONNECT_FLAGS_FILE}")
+  endif()
+
+  if (NOT CM_DISABLE_CI)
+      set(MOCANA_CI_FLAGS_FILE "${targetdir}/../mocana_ci_flags.txt")
+      message("\n MOCANA_CI_FLAGS_FILE = ${MOCANA_CI_FLAGS_FILE}")
+  endif()
+
+  if(CM_ENABLE_OPENSSL_SHIM )
+      set(MOCANA_OPENSSL_SHIM_FLAGS_FILE "${targetdir}/../mocana_openssl_shim_flags.txt")
+      message("\n MOCANA_OPENSSL_SHIM_FLAGS_FILE = ${MOCANA_OPENSSL_SHIM_FLAGS_FILE}")
+
+      if (CM_ENABLE_TAP_REMOTE)
+          set(MOCANA_OPENSSL_SHIM_TAP_REMOTE_FLAGS_FILE "${targetdir}/../mocana_openssl_shim_tap_remote_flags.txt")
+          message("\n MOCANA_OPENSSL_SHIM_TAP_REMOTE_FLAGS_FILE = ${MOCANA_OPENSSL_SHIM_TAP_REMOTE_FLAGS_FILE}")
+
+      elseif (CM_ENABLE_TAP_REMOTE_TCP)
+          set(MOCANA_OPENSSL_SHIM_TAP_REMOTE_TCP_FLAGS_FILE "${targetdir}/../mocana_openssl_shim_tap_remote_flags.txt")
+          message("\n MOCANA_OPENSSL_SHIM_TAP_REMOTE_TCP_FLAGS_FILE = ${MOCANA_OPENSSL_SHIM_TAP_REMOTE_TCP_FLAGS_FILE}")
+      endif()
+
+
+  endif()
+
+  if(CM_ENABLE_DTLS)
+      set(MOCANA_DTLS_FLAGS_FILE "${targetdir}/../dtls/mocana_flags.txt")
+      message("\n MOCANA_DTLS_FLAGS_FILE = ${MOCANA_DTLS_FLAGS_FILE}")
+      if (CM_ENABLE_DTLS_SRTP)
+        set(MOCANA_DTLS_SRTP_FLAGS_FILE "${targetdir}/../dtls/mocana_flags_srtp.txt")
+      endif()
+  endif()
+
+  if(CM_ENABLE_TAP_REMOTE_TCP)
+      set(MOCANA_TAP_REMOTE_TCP_FILE "${targetdir}/../mocana_tap_remote_tcp_flags.txt")
+      message("\n MOCANA_TAP_REMOTE_TCP_FILE = ${MOCANA_TAP_REMOTE_TCP_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_SELF_SIGNED_CERT)
+      set(MOCANA_SSL_SELF_SIGNED_CERT_FILE "${targetdir}/../features/mocana_self_signed_flags.txt")
+      message("\n MOCANA_SSL_SELF_SIGNED_CERT_FILE = ${MOCANA_SSL_SELF_SIGNED_CERT_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_NONTRUSTED_CERT)
+      set(MOCANA_SSL_NONTRUSTED_CERT_FILE "${targetdir}/../features/mocana_non_trusted_cert_flags.txt")
+      message("\n MOCANA_SSL_NONTRUSTED_CERT_FILE = ${MOCANA_SSL_NONTRUSTED_CERT_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_CERT_STATUS_OVERRIDE)
+      set(MOCANA_SSL_CERT_STATUS_OVERRIDE_FILE "${targetdir}/../features/mocana_cert_status_override_flags.txt")
+      message("\n MOCANA_SSL_CERT_STATUS_OVERRIDE_FILE = ${MOCANA_SSL_CERT_STATUS_OVERRIDE_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_OCSP)
+      set(MOCANA_SSL_OCSP_FILE "${targetdir}/../features/mocana_ocsp_flags.txt")
+      message("\n MOCANA_SSL_OCSP_FILE = ${MOCANA_SSL_OCSP_FILE}")
+  endif()
+
+  if(CM_ENABLE_GCC_PROFILING)
+      set(MOCANA_PROFILING_FILE "${targetdir}/../features/mocana_gcc_profiling_flags.txt")
+      message("\n MOCANA_PROFILING_FILE = ${MOCANA_PROFILING_FILE}")
+  endif()
+
+  if(CM_ENABLE_FIPS)
+      set(MOCANA_FIPS_MODULE_FILE "${targetdir}/../features/mocana_fips_flags.txt")
+      message("\n MOCANA_FIPS_MODULE_FILE = ${MOCANA_FIPS_MODULE_FILE}")
+  else()
+      if (CM_ENABLE_ECP192_SUPPORT)
+          set(MOCANA_ECP192_FILE "${targetdir}/../features/mocana_ecp192_flags.txt")
+          message("\n MOCANA_ECP192_FILE = ${MOCANA_ECP192_FILE}")
+      endif()
+
+      set(MOCANA_EDDH_FILE "${targetdir}/../features/mocana_eddh_flags.txt")
+      message("\n MOCANA_EDDH_FILE = ${MOCANA_EDDH_FILE}")
+  endif()
+
+  if(CM_ENABLE_RSA_1024_SUPPORT OR CM_ENABLE_RSA_8K)
+      set(MOCANA_RSA_ALL_KEYSIZE_SUPPORT_FILE "${targetdir}/../features/mocana_rsa_all_keysize.txt")
+      message("\n MOCANA_RSA_ALL_KEYSIZE_SUPPORT_FILE = ${MOCANA_RSA_ALL_KEYSIZE_SUPPORT_FILE}")
+  endif()
+
+  if(CM_ENABLE_SHA1_SUPPORT)
+      set(MOCANA_SHA1_SUPPORT_FILE "${targetdir}/../features/mocana_sha1.txt")
+      message("\n MOCANA_SHA1_SUPPORT_FILE = ${MOCANA_SHA1_SUPPORT_FILE}")
+  endif()
+
+  if(CM_ENABLE_DSA_SUPPORT)
+      set(MOCANA_DSA_SUPPORT_FILE "${targetdir}/../features/mocana_dsa.txt")
+      message("\n MOCANA_DSA_SUPPORT_FILE = ${MOCANA_DSA_SUPPORT_FILE}")
+  endif()
+  if(CM_ENABLE_ERR_SSL_NO_CIPHER_MATCH)
+      set(MOCANA_ENABLE_ERR_SSL_NO_CIPHER_MATCH_FILE "${targetdir}/../features/mocana_enable_err_ssl_no_cipher_match_flags.txt")
+      message("\n MOCANA_ENABLE_ERR_SSL_NO_CIPHER_MATCH_FILE = ${MOCANA_ENABLE_ERR_SSL_NO_CIPHER_MATCH_FILE}")
+  endif()
+
+  if(CM_DISABLE_RSA_SUPPORT)
+      set(MOCANA_DISABLE_RSA_SUPPORT_FILE "${targetdir}/../features/mocana_disable_rsa_flags.txt")
+      message("\n MOCANA_DISABLE_RSA_SUPPORT_FILE = ${MOCANA_DISABLE_RSA_SUPPORT_FILE}")
+  endif()
+
+  if(CM_DISABLE_3DES_SUPPORT)
+      set(MOCANA_DISABLE_3DES_SUPPORT_FILE "${targetdir}/../features/mocana_disable_3des_flags.txt")
+      message("\n MOCANA_DISABLE_3DES_SUPPORT_FILE = ${MOCANA_DISABLE_3DES_SUPPORT_FILE}")
+  endif()
+
+  if(CM_ENABLE_DES_SUPPORT)
+      set(MOCANA_ENABLE_DES_SUPPORT_FILE "${targetdir}/../features/mocana_enable_des_flags.txt")
+      message("\n MOCANA_ENABLE_DES_SUPPORT_FILE = ${MOCANA_ENABLE_DES_SUPPORT_FILE}")
+  endif()
+
+  if(CM_DISABLE_CBC_SUPPORT)
+      set(MOCANA_DISABLE_CBC_SUPPORT_FILE "${targetdir}/../features/mocana_disable_cbc_flags.txt")
+      message("\n MOCANA_DISABLE_CBC_SUPPORT_FILE = ${MOCANA_DISABLE_CBC_SUPPORT_FILE}")
+  endif()
+
+  if(CM_ENABLE_EAP_FAST)
+      set(MOCANA_ENABLE_EAP_SUPPORT_FILE "${targetdir}/../features/mocana_enable_eap_flags.txt")
+      message("\n MOCANA_ENABLE_EAP_SUPPORT_FILE = ${MOCANA_ENABLE_EAP_SUPPORT_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_PEM_R_BIO_REDEFINE)
+      set(MOCANA_SSL_PEM_R_BIO_REDEFINE_FILE "${targetdir}/../features/mocana_ssl_redefine_pem_flags.txt")
+      message("\n MOCANA_SSL_PEM_R_BIO_REDEFINE_FILE = ${MOCANA_SSL_PEM_R_BIO_REDEFINE_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_REHANDSHAKE)
+      set(MOCANA_SSL_REHANDSHAKE_FILE "${targetdir}/../features/mocana_rehandshake_flags.txt")
+      message("\n MOCANA_SSL_REHANDSHAKE_FILE = ${MOCANA_SSL_REHANDSHAKE_FILE}")
+  endif()
+
+  if(CM_ENABLE_OPENSSL_SHIM)
+    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_1 OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1F OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1I OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1K)
+        set(MOCANA_SSL_OPENSSL_LIB_1_1_1_FILE "${targetdir}/../features/mocana_openssl_1_1_1_flags.txt")
+        message("\n MOCANA_SSL_OPENSSL_LIB_1_1_1_FILE = ${MOCANA_SSL_OPENSSL_LIB_1_1_1_FILE}")
+    endif()
+
+    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_X)
+        set(MOCANA_SSL_OPENSSL_LIB_1_1_X_FILE "${targetdir}/../features/mocana_openssl_1_1_x_flags.txt")
+        message("\n MOCANA_SSL_OPENSSL_LIB_1_1_X_FILE = ${MOCANA_SSL_OPENSSL_LIB_1_1_X_FILE}")
+    endif()
+  endif()
+
+  if(CM_BUILD_NANOSSL_LIB)
+    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_1 OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1F OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1I OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1K OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_7 OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_12)
+      if(CM_ENABLE_TLS13)
+        set(MOCANA_OPENSSL_TLS13_FLAGS_FILE "${targetdir}/../features/mocana_openssl_tls13_flags.txt")
+        message("\n MOCANA_OPENSSL_TLS13_FLAGS_FILE = ${MOCANA_OPENSSL_TLS13_FLAGS_FILE}")
+      endif()
+    endif()
+  endif()
+
+  if(CM_ENABLE_SSL_EXTENDED_KEYUSAGE)
+      set(MOCANA_SSL_EXTENDED_KEYUSAGE_FILE "${targetdir}/../features/mocana_extendedKeyUsage_flags.txt")
+      message("\n MOCANA_SSL_EXTENDED_KEYUSAGE_FILE = ${MOCANA_SSL_EXTENDED_KEYUSAGE_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_SRP)
+      set(MOCANA_SSL_SRP_FLAGS_FILE "${targetdir}/../mocana_srp_flags.txt")
+      message("\n MOCANA_SSL_SRP_FLAGS_FILE = ${MOCANA_SSL_SRP_FLAGS_FILE}")
+  endif()
+
+  if(CM_ENABLE_SESSION_TICKET_RFC_5077)
+      set(MOCANA_SESSION_TICKET_RFC_5077_FILE "${targetdir}/../mocana_session_ticket_rfc_5077_flags.txt")
+      message("\n MOCANA_SESSION_TICKET_RFC_5077_FILE = ${MOCANA_SESSION_TICKET_RFC_5077_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_HEARTBEAT_RFC_6520)
+      set(MOCANA_SSL_HEARTBEAT_RFC_6520_FILE "${targetdir}/../mocana_ssl_heartbeat_rfc_6520_flags.txt")
+      message("\n MOCANA_SSL_HEARTBEAT_RFC_6520_FILE = ${MOCANA_SSL_HEARTBEAT_RFC_6520_FILE}")
+  endif()
+
+  if(CM_ENABLE_SSL_EXTENDED_MASTERSECRET_RFC_7627)
+      set(MOCANA_SSL_EXTENDED_MASTERSECRET_RFC_7627_FILE "${targetdir}/../mocana_ssl_extended_mastersecret_rfc_7627_flags.txt")
+      message("\n MOCANA_SSL_EXTENDED_MASTERSECRET_RFC_7627_FILE = ${MOCANA_SSL_EXTENDED_MASTERSECRET_RFC_7627_FILE}")
+  endif()
+
+  if (CM_BUILD_SSL_CLIENT_SP800_135)
+    set(MOCANA_SSL_CLIENT_SP800_135_FILE "${targetdir}/mocana_flags_sp800_135.txt")
+    message("\n MOCANA_SSL_CLIENT_SP800_135_FILE = ${MOCANA_SSL_CLIENT_SP800_135_FILE}")
+  endif()
+
+  if(NOT EXISTS ${MOCANA_FLAGS_FILE})
+      message(FATAL_ERROR "\nMOCANA_FLAGS_FILE = ${MOCANA_FLAGS_FILE} does not exist")
+  endif()
+
+  message("\nMOCANA_FLAGS_FILE = ${MOCANA_FLAGS_FILE}")
+
+  file(STRINGS ${MOCANA_FLAGS_FILE} mocana_flags)
+
+  if(CM_ENABLE_OPENSSL_SHIM AND WIN32)
+      set(mocana_flags ${mocana_flags} "-D_CRT_SECURE_NO_WARNINGS" "-D_WINSOCK_DEPRECATED_NO_WARNINGS")
+  endif()
+  
+  if(CM_ENABLE_MOCANA_SSL_EXAMPLE_SMART_CARD)
+      set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_EXAMPLE_SMART_CARD__)
+  endif()
+
+  # TLS 1.3 flags
+  if (NOT CM_BUILD_OPENSSL_SHIM_LIB)
+      if (CM_ENABLE_TLS13)
+        file(STRINGS ${targetdir}/../nanossl/mocana_tls13_flags.txt tls13_flags)
+        set(mocana_flags ${mocana_flags} ${tls13_flags})
+
+        if (CM_ENABLE_TLS13_PSK)
+          file(STRINGS ${targetdir}/../nanossl/mocana_tls13_psk_flags.txt tls13_flags)
+          set(mocana_flags ${mocana_flags} ${tls13_flags})
+          if (CM_ENABLE_TLS13_0RTT)
+            file(STRINGS ${targetdir}/../nanossl/mocana_tls13_0rtt_flags.txt tls13_flags)
+            set(mocana_flags ${mocana_flags} ${tls13_flags})
+          endif()
+        endif()
+      endif()
+    endif()
+
+  # Adding suiteb flags
+  file(STRINGS ${MOCANA_SUITEB_FLAGS_FILE} mocana_suiteb_flags)
+  set(mocana_flags ${mocana_flags} ${mocana_suiteb_flags})
+  if(CM_ENABLE_AES_GCM_4K)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_GCM_4K__)
+  elseif(CM_ENABLE_AES_GCM_256B)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_GCM_256B__)
+  else()
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_GCM_64K__)
+  endif()
+
+  if (CM_DISABLE_WEAK_CIPHERS)
+    set(mocana_flags ${mocana_flags} -D__DISABLE_DIGICERT_SSL_WEAK_CIPHERS__)
+  endif()
+
+  if (NOT CM_DISABLE_CHACHA20POLY1305)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_CHACHA20__ -D__ENABLE_DIGICERT_POLY1305__)
+  endif()
+
+  if (NOT CM_DISABLE_AES_CCM)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_CCM__ -D__ENABLE_DIGICERT_CCM_8__)
+  endif()
+
+  if (NOT CM_DISABLE_DUAL_MODE_API)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_DUAL_MODE_API__ -D__ENABLE_DIGICERT_SSL_ASYNC_API_EXTENSIONS__)
+  endif()
+
+  if (NOT CM_DISABLE_SERVER_ASYNC_API)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__)
+  endif()
+
+  if (NOT CM_DISABLE_CLIENT_ASYNC_API)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__)
+  endif()
+
+  if (NOT CM_DISABLE_SERVER_API)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_SERVER__)
+  endif()
+
+  if (NOT CM_DISABLE_CIPHERSUITE_SELECT)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__)
+  endif()
+
+  if (NOT CM_DISABLE_SSL_KEY_EXPANSION)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_KEY_EXPANSION__)
+  endif()
+
+  if(NOT CM_DISABLE_RSA_SUPPORT)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_RSA_KEYEX_SUPPORT__)
+  endif()
+
+  if (NOT CM_DISABLE_CI)
+      file(STRINGS ${MOCANA_CI_FLAGS_FILE} mocana_ci_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_ci_flags})
+  endif()
+
+  # Adding IPV6 flags
+  if (CM_ENABLE_IPV6)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_IPV6__)
+  endif()
+
+  # Adding debug flags
+  if (CM_ENABLE_DEBUG)
+      file(STRINGS ${MOCANA_DEBUG_FLAGS_FILE} mocana_debug_flags)
+      message("\nMOCANA_DEBUG_FLAGS = ${mocana_debug_flags}")
+      if(WIN32)
+          string(REGEX REPLACE "-D__ENABLE_DIGICERT_VALGRIND_SUPPORT__" "" mocana_debug_flags "${mocana_debug_flags}")
+      endif()
+      set(mocana_flags ${mocana_flags} ${mocana_debug_flags})
+  endif()
+
+  if ((CM_BUILD_SSL_CLIENT) AND (CM_ENABLE_MOCANA_EXAMPLE_AESGCM_CIPHERS_ONLY))
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_EXAMPLE_AESGCM_CIPHERS_ONLY__)
+  endif()
+
+  if (CM_ENABLE_MOCANA_EXAMPLE_INTEROP_TEST)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_TEST__)
+  endif()
+
+  if (CM_ENABLE_MOCANA_EXAMPLE_INTEROP_PSK_TEST)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_TEST__ -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_PSK_TEST__)
+  endif()
+
+  if (CM_ENABLE_MOCANA_EXAMPLE_INTEROP_EXTERNAL_PSK_TEST)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_TEST__ -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_EXTERNAL_PSK_TEST__)
+  endif()
+
+  if (CM_ENABLE_MOCANA_EXAMPLE_INTEROP_TICKET_TEST)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_TEST__ -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_TICKET_TEST__)
+  endif()
+
+  if (CM_ENABLE_MOCANA_EXAMPLE_INTEROP_SESSIONID_TEST)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_TEST__ -D__ENABLE_DIGICERT_SSL_EXAMPLE_INTEROP_SESSIONID_TEST__)
+  endif()
+
+  if (CM_ENABLE_MOCANA_DTLS_EXAMPLE_INTEROP_TEST)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_DTLS_EXAMPLE_INTEROP_TEST__)
+  endif()
+
+  if(CM_ENABLE_MOCANA_DTLS_EXAMPLE_INTEROP_REHANDSHAKE_TEST)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_DTLS_EXAMPLE_INTEROP_REHANDSHAKE_TEST__)
+  endif()
+
+  if (CM_ENABLE_MOCANA_DATA_PROTECTION)
+    set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_DATA_PROTECTION__)
+  endif()
+
+  # Adding tap local flags
+  if (CM_ENABLE_TAP)
+      file(STRINGS ${MOCANA_TAP_LOCAL_FLAGS_FILE} mocana_tap_local_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tap_local_flags})
+
+      if(CM_ENABLE_TAP_DEFER_UNLOADKEY)
+            set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_TAP_DEFER_UNLOADKEY__)
+      endif()
+
+      if(CM_ENABLE_OPENSSL_SHIM)
+        if(CM_ENABLE_TAP_EXTERN)
+            file(STRINGS ${MOCANA_TAP_EXTERN_FLAGS_FILE} mocana_tap_extern_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_tap_extern_flags})
+        endif()
+      endif()
+
+  endif()
+
+  # Adding tap remote flags
+  if ( (CM_BUILD_SSL_CLIENT) OR (CM_BUILD_SSL_SERVER ) OR (CM_BUILD_SSL_SERVER_GW) OR (CM_ENABLE_OPENSSL_SHIM) )
+      if (CM_ENABLE_TAP_REMOTE)
+
+          file(STRINGS ${MOCANA_TAP_REMOTE_FLAGS_FILE} mocana_tap_remote_flags)
+          set(mocana_flags ${mocana_flags} ${mocana_tap_remote_flags})
+
+          if(CM_ENABLE_OPENSSL_SHIM )
+               file(STRINGS ${MOCANA_OPENSSL_SHIM_TAP_REMOTE_FLAGS_FILE} mocana_openssl_shim_tap_remote_flags)
+               set(mocana_flags ${mocana_flags} ${mocana_openssl_shim_tap_remote_flags})
+
+               if(CM_ENABLE_TAP_EXTERN)
+                    file(STRINGS ${MOCANA_TAP_EXTERN_FLAGS_FILE} mocana_tap_extern_flags)
+                    set(mocana_flags ${mocana_flags} ${mocana_tap_extern_flags})
+               endif()
+          endif()
+        # Adding tap remote tcp flags
+      elseif (CM_ENABLE_TAP_REMOTE_TCP)
+                file(STRINGS ${MOCANA_TAP_REMOTE_TCP_FILE} mocana_tap_remote_tcp_flags)
+                set(mocana_flags ${mocana_flags} ${mocana_tap_remote_tcp_flags})
+
+                if(CM_ENABLE_OPENSSL_SHIM )
+                    file(STRINGS ${MOCANA_OPENSSL_SHIM_TAP_REMOTE_TCP_FLAGS_FILE} mocana_openssl_shim_tap_remote_flags)
+                    set(mocana_flags ${mocana_flags} ${mocana_openssl_shim_tap_remote_flags})
+
+                    if(CM_ENABLE_TAP_EXTERN)
+                            file(STRINGS ${MOCANA_TAP_EXTERN_FLAGS_FILE} mocana_tap_extern_flags)
+                            set(mocana_flags ${mocana_flags} ${mocana_tap_extern_flags})
+                    endif()
+                endif()
+        endif()
+   endif()
+
+   #Add SSL Proxy Connect flags
+   if(CM_ENABLE_SSL_PROXY_CONNECT)
+       file(STRINGS ${MOCANA_SSL_PROXY_CONNECT_FLAGS_FILE} mocana_ssl_proxy_connect_flags)
+       set(mocana_flags ${mocana_flags} ${mocana_ssl_proxy_connect_flags})
+   endif()
+
+   if(CM_BUILD_NANOSSL_LIB)
+       if(CM_ENABLE_PSS_AUTO_RECOVER)
+           set(MOCANA_PSS_AUTO_RECOVER_FILE "${targetdir}/../nanossl/mocana_pss_auto_recover_flags.txt")
+           message("\n MOCANA_PSS_AUTO_RECOVER_FILE = ${MOCANA_PSS_AUTO_RECOVER_FILE}")
+           file(STRINGS ${MOCANA_PSS_AUTO_RECOVER_FILE} mocana_pss_auto_recover_flags)
+           set(mocana_flags ${mocana_flags} ${mocana_pss_auto_recover_flags})
+       endif()
+   endif()
+
+   if(CM_BUILD_NANOSSL_LIB OR CM_ENABLE_OPENSSL_SHIM)
+       if(CM_ENABLE_OPENSSL_SHIM)
+            file(STRINGS ${MOCANA_OPENSSL_SHIM_FLAGS_FILE} mocana_openssl_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_openssl_flags})
+            if (CM_ENABLE_OSSL_MULTIPACKET_READ)
+                set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_OSSL_MULTIPACKET_READ__)
+            endif()
+
+            if (CM_ENABLE_OSSL_MULTIPACKET_BIO_RETRY)
+                set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_OSSL_MUTIPACKET_BIO_RETRY__)
+            endif()
+
+            if (CM_DISABLE_PEER_ERROR)
+                set(mocana_flags ${mocana_flags} -D__DISABLE_DIGICERT_OPENSSL_PEEK_ERROR__)
+            endif()
+       endif()
+   endif()
+
+   if(CM_BUILD_NANOSSL_LIB AND CM_ENABLE_OPENSSL_SHIM AND CM_ENABLE_TLS13)
+        if(NOT CM_ENABLE_SSL_OPENSSL_LIB_1_1_1 AND NOT CM_ENABLE_SSL_OPENSSL_LIB_1_1_1F AND NOT CM_ENABLE_SSL_OPENSSL_LIB_1_1_1I AND NOT CM_ENABLE_SSL_OPENSSL_LIB_1_1_1K AND NOT CM_ENABLE_SSL_OPENSSL_LIB_3_0_7 AND NOT CM_ENABLE_SSL_OPENSSL_LIB_3_0_12)
+            set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_FORCE_TLS13_CIPHERS__)
+        endif()
+   endif()
+
+  if((CM_ENABLE_SSL_MAUTH_SUPPORT) OR (CM_ENABLE_OPENSSL_SHIM))
+      set(MOCANA_MUTUAL_AUTH_FLAGS_FILE "${targetdir}/../mocana_mutual_auth_flags.txt")
+      message("\n MOCANA_MUTUAL_AUTH_FLAGS_FILE = ${MOCANA_MUTUAL_AUTH_FLAGS_FILE}")
+      file(STRINGS ${MOCANA_MUTUAL_AUTH_FLAGS_FILE} mocana_mutual_auth_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_mutual_auth_flags})
+
+      if(CM_BUILD_SSL_SERVER OR CM_BUILD_SSL_CLIENT OR CM_BUILD_SSL_CLIENT_ASYNC OR
+         CM_BUILD_SSL_SERVER_ASYNC OR CM_BUILD_DTLS_CLIENT OR CM_BUILD_DTLS_SERVER OR
+         CM_BUILD_SSL_SERVER_GW)
+        set(MOCANA_MUTUAL_AUTH_EXAMPLE_FLAGS_FILE "${targetdir}/../features/mocana_mauth_example_flags.txt")
+        message("\n MOCANA_MUTUAL_AUTH_EXAMPLE_FLAGS_FILE = ${MOCANA_MUTUAL_AUTH_EXAMPLE_FLAGS_FILE}")
+        file(STRINGS ${MOCANA_MUTUAL_AUTH_EXAMPLE_FLAGS_FILE} mocana_mutual_auth_example_flags)
+        set(mocana_flags ${mocana_flags} ${mocana_mutual_auth_example_flags})
+      endif()
+  endif()
+
+  if(CM_ENABLE_OSSL_TLS_UNIQUE)
+      set(MOCANA_TLS_UNIQUE_FLAGS_FILE "${targetdir}/../openssl_shim/mocana_tls_unique_flags.txt")
+      message("\n MOCANA_TLS_UNIQUE_FLAGS_FILE = ${MOCANA_TLS_UNIQUE_FLAGS_FILE}")
+      file(STRINGS ${MOCANA_TLS_UNIQUE_FLAGS_FILE} mocana_tls_unique_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tls_unique_flags})
+  endif()
+
+  if (CM_BUILD_NANOSSL_LIB OR CM_BUILD_SSL_SERVER OR CM_BUILD_SSL_CLIENT)
+        if(CM_ENABLE_RSA_1024_SUPPORT OR CM_ENABLE_RSA_8K)
+            file(STRINGS ${MOCANA_RSA_ALL_KEYSIZE_SUPPORT_FILE} mocana_rsa_all_keysize_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_rsa_all_keysize_flags})
+        endif()
+        if (CM_DISABLE_POLYCHACHA_TLS12_SUPPORT)
+            set(mocana_flags ${mocana_flags} "-D__DISABLE_DIGICERT_TLS12_CHACHA20_POLY1035__")
+        endif()
+  endif()
+
+    if(CM_BUILD_NANOSSL_LIB OR CM_BUILD_SSL_SERVER OR CM_BUILD_SSL_CLIENT OR
+       CM_BUILD_SSL_CLIENT_ASYNC OR CM_BUILD_SSL_SERVER_ASYNC OR CM_BUILD_DTLS_CLIENT
+       OR CM_BUILD_DTLS_SERVER OR CM_BUILD_NANO_DTLS_CLIENT OR CM_BUILD_NANO_DTLS_SERVER
+       OR CM_BUILD_SSL_SERVER_GW)
+
+        if(CM_ENABLE_SHA1_SUPPORT)
+            file(STRINGS ${MOCANA_SHA1_SUPPORT_FILE} mocana_sha1_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_sha1_flags})
+        endif()
+        if(CM_ENABLE_DSA_SUPPORT)
+            file(STRINGS ${MOCANA_DSA_SUPPORT_FILE} mocana_dsa_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_dsa_flags})
+        endif()
+
+    endif()
+
+  if((CM_BUILD_SSL_CLIENT) OR (CM_BUILD_SSL_SERVER) OR (CM_BUILD_DTLS_CLIENT) OR (CM_BUILD_DTLS_SERVER) OR (CM_BUILD_NANOSSL_LIB) OR (CM_ENABLE_OPENSSL_SHIM))
+        if(CM_DISABLE_3DES_SUPPORT)
+            file(STRINGS ${MOCANA_DISABLE_3DES_SUPPORT_FILE} mocana_disable_3des_support_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_disable_3des_support_flags})
+        endif()
+        if(CM_DISABLE_CBC_SUPPORT)
+            file(STRINGS ${MOCANA_DISABLE_CBC_SUPPORT_FILE} mocana_disable_cbc_support_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_disable_cbc_support_flags})
+        endif()
+        if(CM_ENABLE_DES_SUPPORT)
+            file(STRINGS ${MOCANA_ENABLE_DES_SUPPORT_FILE} mocana_enable_des_support_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_enable_des_support_flags})
+        endif()
+        if(CM_ENABLE_ERR_SSL_NO_CIPHER_MATCH)
+            file(STRINGS ${MOCANA_ENABLE_ERR_SSL_NO_CIPHER_MATCH_FILE} mocana_enable_err_ssl_no_cipher_match_support_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_enable_err_ssl_no_cipher_match_support_flags})
+        endif()
+  endif()
+
+  if((CM_BUILD_SSL_CLIENT) OR (CM_BUILD_SSL_SERVER) OR (CM_BUILD_DTLS_CLIENT) OR (CM_BUILD_DTLS_SERVER) OR (CM_BUILD_NANOSSL_LIB))
+        if(CM_DISABLE_RSA_SUPPORT)
+            file(STRINGS ${MOCANA_DISABLE_RSA_SUPPORT_FILE} mocana_disable_rsa_support_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_disable_rsa_support_flags})
+        endif()
+
+        if(CM_ENABLE_SSL_REHANDSHAKE)
+            set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_SSL_REHANDSHAKE_EXAMPLE__")
+        endif()
+
+  endif()
+
+  if(CM_ENABLE_EAP_FAST)
+      file(STRINGS ${MOCANA_ENABLE_EAP_SUPPORT_FILE} mocana_enable_eap_support_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_enable_eap_support_flags})
+  endif()
+
+   if(CM_BUILD_NANOSSL_LIB OR CM_ENABLE_OPENSSL_SHIM)
+       if(CM_ENABLE_DTLS)
+            file(STRINGS ${MOCANA_DTLS_FLAGS_FILE} mocana_dtls_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_dtls_flags})
+            if (CM_ENABLE_DTLS_SRTP)
+                file(STRINGS ${MOCANA_DTLS_SRTP_FLAGS_FILE} mocana_dtls_srtp_flags)
+                set(mocana_flags ${mocana_flags} ${mocana_dtls_srtp_flags})
+            endif()
+       endif()
+
+        if(CM_ENABLE_SSL_SELF_SIGNED_CERT)
+            file(STRINGS ${MOCANA_SSL_SELF_SIGNED_CERT_FILE} mocana_self_signed_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_self_signed_flags})
+        endif()
+
+        if(CM_ENABLE_SSL_NONTRUSTED_CERT)
+            file(STRINGS ${MOCANA_SSL_NONTRUSTED_CERT_FILE} mocana_non_trusted_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_non_trusted_flags})
+        endif()
+
+        if(CM_ENABLE_SSL_CERT_STATUS_OVERRIDE)
+            file(STRINGS ${MOCANA_SSL_CERT_STATUS_OVERRIDE_FILE} mocana_cert_status_override_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_cert_status_override_flags})
+        endif()
+
+        if(CM_ENABLE_GCC_PROFILING)
+            file(STRINGS ${MOCANA_PROFILING_FILE} mocana_gcc_profiling_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_gcc_profiling_flags})
+
+            set(C_FLAGS_MOCANA    "${C_FLAGS_MOCANA}  -finstrument-functions")
+
+        endif()
+
+        if(CM_ENABLE_FIPS)
+            file(STRINGS ${MOCANA_FIPS_MODULE_FILE} mocana_fips_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_fips_flags})
+            if(CM_ENABLE_STRICT_DH)
+                set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_STRICT_DH_GROUP__)
+            endif()
+        else()
+            if (CM_ENABLE_ECP192_SUPPORT)
+                file(STRINGS ${MOCANA_ECP192_FILE} mocana_ecp192_flags)
+                set(mocana_flags ${mocana_flags} ${mocana_ecp192_flags})
+            endif()
+
+            if (NOT CM_ENABLE_EXPORT_ED)
+                file(STRINGS ${MOCANA_EDDH_FILE} mocana_eddh_flags)
+                set(mocana_flags ${mocana_flags} ${mocana_eddh_flags})
+            endif()
+        endif()
+
+        if(CM_ENABLE_SSL_PEM_R_BIO_REDEFINE)
+            file(STRINGS ${MOCANA_SSL_PEM_R_BIO_REDEFINE_FILE} mocana_ssl_pem_redefine_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_ssl_pem_redefine_flags})
+        endif()
+
+   endif()
+
+    if(CM_BUILD_NANOSSL_LIB OR CM_ENABLE_OPENSSL_SHIM OR CM_BUILD_SSL_CLIENT OR
+       CM_BUILD_SSL_SERVER)
+
+        if(CM_ENABLE_SSL_OCSP)
+            file(STRINGS ${MOCANA_SSL_OCSP_FILE} mocana_ocsp_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_ocsp_flags})
+        endif()
+
+    endif()
+
+  if(CM_ENABLE_PSK)
+      set(MOCANA_SSL_PSK_FILE "${targetdir}/../features/mocana_psk_flags.txt")
+      message("\n MOCANA_SSL_PSK_FILE = ${MOCANA_SSL_PSK_FILE}")
+      file(STRINGS ${MOCANA_SSL_PSK_FILE} mocana_psk_flags.txt)
+      set(mocana_flags ${mocana_flags} ${mocana_psk_flags.txt})
+  endif()
+
+  if(CM_ENABLE_SSL_REHANDSHAKE)
+      file(STRINGS ${MOCANA_SSL_REHANDSHAKE_FILE} mocana_rehandshake_flags.txt)
+      set(mocana_flags ${mocana_flags} ${mocana_rehandshake_flags.txt})
+  endif()
+
+
+  if(CM_BUILD_NANOSSL_LIB)
+    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_1 OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1F OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1I OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1K OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_7 OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_12)
+      if(CM_ENABLE_TLS13)
+        file(STRINGS ${MOCANA_OPENSSL_TLS13_FLAGS_FILE} mocana_openssl_tls13_flags)
+        set(mocana_flags ${mocana_flags} ${mocana_openssl_tls13_flags})
+      endif()
+    endif()
+  endif()
+
+  if(CM_ENABLE_OPENSSL_SHIM)
+    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_1 OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1F OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1I OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1K)
+        file(STRINGS ${MOCANA_SSL_OPENSSL_LIB_1_1_1_FILE} mocana_openssl_1_1_1_flags.txt)
+        set(mocana_flags ${mocana_flags} ${mocana_openssl_1_1_1_flags.txt})
+    endif()
+
+    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_X)
+        file(STRINGS ${MOCANA_SSL_OPENSSL_LIB_1_1_X_FILE} mocana_openssl_1_1_x_flags.txt)
+        set(mocana_flags ${mocana_flags} ${mocana_openssl_1_1_x_flags.txt})
+    endif()
+  endif()
+
+  if(CM_ENABLE_SSL_EXTENDED_KEYUSAGE)
+      file(STRINGS ${MOCANA_SSL_EXTENDED_KEYUSAGE_FILE} mocana_extendedKeyUsage_flags.txt)
+      set(mocana_flags ${mocana_flags} ${mocana_extendedKeyUsage_flags.txt})
+  endif()
+
+  if(CM_DISABLE_SSL_SERVER_NAME)
+      set(mocana_flags ${mocana_flags} "-D__DISABLE_DIGICERT_SERVERNAME_VALIDATION__")
+  endif()
+
+  if(CM_DISABLE_SSL_CLIENT_COMMON_NAME_VALIDATION)
+      set(mocana_flags ${mocana_flags} "-D__DISABLE_DIGICERT_CLIENT_COMMONNAME_VALIDATION__")
+  endif()
+
+  if(CM_DISABLE_OSSL_DEFAULT_TRUST_CERTS)
+      set(mocana_flags ${mocana_flags} "-D__DISABLE_DIGICERT_OSSL_DEFAULT_TRUST_CERTS__")
+  endif()
+
+  if(CM_ENABLE_OSSL_FORCE_CERT_CHAIN)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OSSL_FORCE_CERT_CHAIN__")
+  endif()
+
+  if(CM_ENABLE_NIL)
+    set(mocana_flags ${mocana_flags} "-D__ENABLE_NIL_CIPHER__")
+  endif()
+
+  if(CM_ENABLE_TLS12_FALLBACK)
+    set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_TLS12_FALLBACK__")
+  endif()
+
+  if(CM_ENABLE_SSL_ANON)
+    set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__")
+    set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__")
+  endif()
+  
+  # Flag is required for the OpenSSL shim/connector. When including the header file
+  # windows.h, other windows header files are included from there. These header files
+  # conflict with OpenSSL header files. To avoid including those files this macro has
+  # to be defined.
+  if (WIN32 AND CM_ENABLE_OPENSSL_SHIM)
+    set(mocana_flags ${mocana_flags} "-DWIN32_LEAN_AND_MEAN")
+  endif()
+
+  if(CM_ENABLE_VERSION_LOGGING AND CM_ENABLE_OPENSSL_SHIM)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_SSL_VERSION_LOG_CALLBACK__")
+  endif()
+
+  if(CM_ENABLE_LOGGING_REDIRECT AND CM_ENABLE_OPENSSL_SHIM)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OSSL_LOG_REDIRECT_STDERR__")
+  endif()
+
+  if(CM_ENABLE_OSSL_LOAD_ALGOS AND CM_ENABLE_OPENSSL_SHIM)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OSSL_LOAD_ALL_ALGORITHMS__")
+  endif()
+
+  if(CM_ENABLE_OSSLC_THREAD_SAFE AND CM_ENABLE_OPENSSL_SHIM)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__")
+  endif()
+
+  if(CM_ENABLE_OPENSSL_SHIM AND CM_ENABLE_OSSL_LOG)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OSSL_LOGGING__")
+  endif()
+
+  if(CM_ENABLE_SSL_KEYLOG_FILE)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_SSL_KEYLOG_FILE__")
+  endif()
+
+  if(CM_ENABLE_SSL_KEYLOG_ENV_VAR)
+      set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_SSL_KEYLOG_ENV_VAR__")
+  endif()
+
+  if (CM_ENABLE_SSL_SRP)
+      file(STRINGS ${MOCANA_SSL_SRP_FLAGS_FILE} mocana_srp_flags)
+      message("\nMOCANA_SSL_SRP_FLAGS = ${mocana_srp_flags}")
+      set(mocana_flags ${mocana_flags} ${mocana_srp_flags})
+  endif()
+
+  if(CM_ENABLE_SESSION_TICKET_RFC_5077)
+      file(STRINGS ${MOCANA_SESSION_TICKET_RFC_5077_FILE} mocana_session_ticket_rfc_5077_flags)
+      message("\nMOCANA_SESSION_TICKET_RFC_5077_FLAGS = ${mocana_session_ticket_rfc_5077_flags}")
+      set(mocana_flags ${mocana_flags} ${mocana_session_ticket_rfc_5077_flags})
+  endif()
+
+  if(CM_ENABLE_SSL_HEARTBEAT_RFC_6520)
+      file(STRINGS ${MOCANA_SSL_HEARTBEAT_RFC_6520_FILE} mocana_ssl_heartbeat_rfc_6520_flags)
+      message("\nMOCANA_SSL_HEARTBEAT_RFC_6520_FLAGS = ${mocana_ssl_heartbeat_rfc_6520_flags}")
+      set(mocana_flags ${mocana_flags} ${mocana_ssl_heartbeat_rfc_6520_flags})
+  endif()
+
+  if(CM_ENABLE_SSL_EXTENDED_MASTERSECRET_RFC_7627)
+      file(STRINGS ${MOCANA_SSL_EXTENDED_MASTERSECRET_RFC_7627_FILE} mocana_ssl_extended_mastersecret_rfc_7627_flags)
+      message("\nMOCANA_SSL_EXTENDED_MASTERSECRET_RFC_7627_FLAGS = ${mocana_ssl_extended_mastersecret_rfc_7627_flags}")
+      set(mocana_flags ${mocana_flags} ${mocana_ssl_extended_mastersecret_rfc_7627_flags})
+  endif()
+
+  if (CM_BUILD_SSL_CLIENT_SP800_135)
+      file(STRINGS ${MOCANA_SSL_CLIENT_SP800_135_FILE} mocana_ssl_client_sp800_135_flags)
+      message("\nMOCANA_SSL_CLIENT_SP800_135_FILE = ${mocana_ssl_client_sp800_135_flags}")
+      set(mocana_flags ${mocana_flags} ${mocana_ssl_client_sp800_135_flags})
+  endif()
+
+  if(CM_ENABLE_ENFORCE_CERT_SIG_ALGO)
+      set(MOCANA_ENFORCE_CERT_SIG_ALGO_FILE "${targetdir}/../mocana_enforce_cert_sig_algo_flags.txt")
+      message("\n MOCANA_ENFORCE_CERT_SIG_ALGO_FILE = ${MOCANA_ENFORCE_CERT_SIG_ALGO_FILE}")
+      file(STRINGS ${MOCANA_ENFORCE_CERT_SIG_ALGO_FILE} mocana_enforce_cert_sig_algo_flags)
+      message("\nMOCANA_ENFORCE_CERT_SIG_ALGO_FLAGS = ${mocana_enforce_cert_sig_algo_flags}")
+      set(mocana_flags ${mocana_flags} ${mocana_enforce_cert_sig_algo_flags})
+  endif()
+
+  # This section defines macros for Windows that are assigned with a specifc
+  # value. CMake does not add the flags properly for other platforms here. If
+  # adding any flags, also add them to the duplicated list below.
+  if(WIN32)
+    if (CM_BUILD_NANOSSL_LIB OR CM_BUILD_SSL_SERVER OR CM_BUILD_SSL_CLIENT)
+        if(CM_ENABLE_RSA_1024_SUPPORT)
+            set(mocana_flags ${mocana_flags} "-DMIN_SSL_RSA_SIZE=1024")
+        endif()
+        if(CM_ENABLE_RSA_8K)
+            set(mocana_flags ${mocana_flags} "-DMOCANA_MAX_MODULUS_SIZE=1024")
+        endif()
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_8K)
+        set(mocana_flags ${mocana_flags} "-DOSSL_MAX_SSL_RX_MSG_SZ=8192")
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_4K)
+        set(mocana_flags ${mocana_flags} "-DOSSL_MAX_SSL_RX_MSG_SZ=4096")
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_2K)
+        set(mocana_flags ${mocana_flags} "-DOSSL_MAX_SSL_RX_MSG_SZ=2048")
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_1K)
+        set(mocana_flags ${mocana_flags} "-DOSSL_MAX_SSL_RX_MSG_SZ=1024")
+    endif()
+
+    if(CM_DISABLE_OSSL_READ_AHEAD)
+        set(mocana_flags ${mocana_flags} "-DOSSL_DEFAULT_READ_AHEAD=0")
+    endif()
+  endif()
+
+ if(CM_ENABLE_SSL_OPENSSL_LIB_3_0_7 OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_12)
+    set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OPENSSL_LIB_3_0__")
+ endif()
+
+  if(CM_ENABLE_SSL_SESSION_CACHE)
+      string(REGEX REPLACE "-D__DISABLE_DIGICERT_SSL_SESSION_CACHE__" "" mocana_flags "${mocana_flags}")
+  endif()
+
+  set(mocana_flags ${mocana_flags} ${extraFlags})
+
+  foreach(flag ${mocana_flags})
+      string(STRIP "${MOCANA_FLAGS} ${flag}" MOCANA_FLAGS)
+  endforeach()
+
+  # Flag has to be added here for non-Windows builds. Stripping the flags in
+  # the above call causes invalid quotes to be added to the compile flags. For
+  # Windows the flags must be added in the list earlier up.
+  if(NOT WIN32)
+    if (CM_BUILD_NANOSSL_LIB OR CM_BUILD_SSL_SERVER OR CM_BUILD_SSL_CLIENT)
+        if(CM_ENABLE_RSA_1024_SUPPORT)
+            set(MOCANA_FLAGS ${MOCANA_FLAGS} MIN_SSL_RSA_SIZE=1024 )
+        endif()
+        if(CM_ENABLE_RSA_8K)
+            set(MOCANA_FLAGS ${MOCANA_FLAGS} MOCANA_MAX_MODULUS_SIZE=1024 )
+        endif()
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_8K)
+        set(MOCANA_FLAGS ${MOCANA_FLAGS} OSSL_MAX_SSL_RX_MSG_SZ=8192 )
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_4K)
+        set(MOCANA_FLAGS ${MOCANA_FLAGS} OSSL_MAX_SSL_RX_MSG_SZ=4096 )
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_2K)
+        set(MOCANA_FLAGS ${MOCANA_FLAGS} OSSL_MAX_SSL_RX_MSG_SZ=2048 )
+    endif()
+
+    if(CM_ENABLE_OSSL_RX_BUF_1K)
+        set(MOCANA_FLAGS ${MOCANA_FLAGS} OSSL_MAX_SSL_RX_MSG_SZ=1024)
+    endif()
+
+    if(CM_DISABLE_OSSL_READ_AHEAD)
+        set(MOCANA_FLAGS ${MOCANA_FLAGS} OSSL_DEFAULT_READ_AHEAD=0 )
+    endif()
+  endif()
+
+  set(MOCANA_FLAGS ${MOCANA_FLAGS} PARENT_SCOPE)
+
+endfunction()

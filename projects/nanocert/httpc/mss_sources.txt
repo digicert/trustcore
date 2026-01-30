@@ -1,0 +1,7 @@
+MSS_SRC_DIR/http/http.c
+MSS_SRC_DIR/http/http_common.c
+MSS_SRC_DIR/http/http_transfer_coding.c
+MSS_SRC_DIR/http/http_auth.c
+MSS_SRC_DIR/http/http_context.c
+MSS_SRC_DIR/http/client/http_client_process.c
+MSS_SRC_DIR/http/client/http_request.c

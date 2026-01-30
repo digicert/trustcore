@@ -1,0 +1,6 @@
+MSS_SRC_DIR/ocsp/ocsp.c
+MSS_SRC_DIR/ocsp/ocsp_message.c
+MSS_SRC_DIR/ocsp/ocsp_context.c
+MSS_SRC_DIR/ocsp/client/ocsp_client.c
+MSS_SRC_DIR/ocsp/ocsp_http.c
+MSS_SRC_DIR/ocsp/ocsp_store.c

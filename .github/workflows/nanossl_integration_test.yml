@@ -1,0 +1,40 @@
+name: "NanoSSL Integration Tests"
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  nanossl-integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake
+        cmake --version
+        sudo apt-get install -y python3-pip
+        pip install tls-client
+    - name: Clone mocn-qa-m-products
+      env:
+        MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+      run: |
+        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+    - name: Checkout develop_trustcore branch
+      run: |
+        cd mocn-qa-m-products
+        git checkout develop_trustcore
+        git pull
+        cd ..
+    - name: Copy SSL Test Files
+      run: |
+        cp -r mocn-qa-m-products/ssl_test/test_integration/* .
+    - name: Run NanoSSL Integration Test
+      run: |
+         python3 nanossl_integration_test.py build_server_cap_no_tap.json
+    - name: Cleanup mocn-qa-m-products
+      run: |
+        rm -rf mocn-qa-m-products

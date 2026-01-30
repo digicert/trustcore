@@ -1,0 +1,16 @@
+MSS_SRC_DIR/common/vlong/vlong_add.c
+MSS_SRC_DIR/common/vlong/vlong_cmp.c
+MSS_SRC_DIR/common/vlong/vlong_const.c
+MSS_SRC_DIR/common/vlong/vlong_conv.c
+MSS_SRC_DIR/common/vlong/vlong_gcd.c
+MSS_SRC_DIR/common/vlong/vlong_misc.c
+MSS_SRC_DIR/common/vlong/vlong_modinv.c
+MSS_SRC_DIR/common/vlong/vlong_mul.c
+MSS_SRC_DIR/common/vlong/vlong_sub.c
+MSS_SRC_DIR/common/vlong/vlong_barrett.c
+MSS_SRC_DIR/common/vlong/vlong_common.c
+MSS_SRC_DIR/common/vlong/vlong_div.c
+MSS_SRC_DIR/common/vlong/vlong_karatsuba.c
+MSS_SRC_DIR/common/vlong/vlong_modexp.c
+MSS_SRC_DIR/common/vlong/vlong_monty.c
+MSS_SRC_DIR/common/vlong/vlong_shift.c

@@ -14,7 +14,7 @@
  *
  */
 
-#if (defined(__ENABLE_MOCANA_TAP__) && defined(__ENABLE_MOCANA_EXAMPLES__))
+#if (defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_EXAMPLES__))
 
 /*------------------------------------------------------------------*/
 /* Includes for this example
@@ -623,7 +623,7 @@ MSTATUS initTapModuleCtx(TAP_Module *pModule, TAP_Context **ppTapContext)
         PRINT_ERR(status, "Error initializing tap context");
         goto exit;
     }
-    PRINT_SUCCESS("TAP Module initialized");
+    DB_PRINT("TAP Module initialized");
 
 exit:
     return status;
@@ -650,18 +650,14 @@ MSTATUS uninitTapModuleCtx(TAP_Context **ppTapContext)
     }
     else
     {
-        PRINT_SUCCESS("TAP_Context uninitialized");
+        DB_PRINT("TAP_Context uninitialized");
     }
     if (*ppTapContext)
     {
-        status = MOC_FREE((void **)ppTapContext);
+        status = DIGI_FREE((void **)ppTapContext);
         if (OK != status)
         {
             PRINT_ERR(status, "Failed releasing memory for ppTAPContext");
-        }
-        else
-        {
-            PRINT_SUCCESS("Released memory from ppTAPContext");
         }
     }
 
@@ -721,15 +717,15 @@ EXAMPLE_init(cmdLineOpts *pOpts)
     }
 
     /* Initialize using default setup by passing in NULL */
-    status = MOCANA_initialize(NULL, NULL);
+    status = DIGICERT_initialize(NULL, NULL);
     if (OK != status)
     {
         PRINT_ERR(status, "Mocana Init failed");
         goto exit;
     }
-    PRINT_SUCCESS("MOCANA Initialized successfully!");
+    DB_PRINT("MOCANA Initialized successfully!");
 
-    status = MOC_CALLOC((void **)&(configInfoList.pConfig), 1, sizeof(TAP_ConfigInfo));
+    status = DIGI_CALLOC((void **)&(configInfoList.pConfig), 1, sizeof(TAP_ConfigInfo));
     if (OK != status)
     {
         PRINT_ERR(status, "Failed allocating memory for config list");
@@ -740,10 +736,9 @@ EXAMPLE_init(cmdLineOpts *pOpts)
     status = initTapConfigInfo(configInfoList.pConfig, pOpts);
     if (OK != status)
     {
-        PRINT_ERR(status, "Failed to retrieved a module configuration");
         goto exit;
     }
-    PRINT_SUCCESS("Module configured");
+    DB_PRINT("Module configured");
 
     DB_PRINT("Calling TAP_init ...\n");
     status = TAP_init(&configInfoList, &gErrContext);
@@ -752,14 +747,14 @@ EXAMPLE_init(cmdLineOpts *pOpts)
         PRINT_ERR(status, "TAP_init failed");
         goto exit;
     }
-    PRINT_SUCCESS("TAP Init completed successfully");
+    DB_PRINT("TAP Init completed successfully");
 
 exit:
     if (NULL != configInfoList.pConfig)
     {
         if (NULL != configInfoList.pConfig[0].configInfo.pBuffer)
             TAP_UTILS_freeBuffer(&(configInfoList.pConfig[0].configInfo));
-        MOC_FREE((void **) &(configInfoList.pConfig));
+        DIGI_FREE((void **) &(configInfoList.pConfig));
     }
 
     return status;
@@ -770,7 +765,7 @@ exit:
  * that was initialized in EXAMPLE_init()
  * Demonstrates usage of - 
  *  TAP_uninit
- *  MOCANA_free
+ *  DIGICERT_free
  */
 MSTATUS EXAMPLE_uninit(byteBoolean isTapInit)
 {
@@ -781,7 +776,7 @@ MSTATUS EXAMPLE_uninit(byteBoolean isTapInit)
         status = TAP_uninit(&gErrContext);
     }
 
-    MOCANA_free(NULL);
+    DIGICERT_free(NULL);
 
     return status;
 }
@@ -918,7 +913,7 @@ MSTATUS sealData(   TAP_Context*        pTapContext,
         goto exit;
     }
 
-    PRINT_SUCCESS("Seal With Trusted Data completed");
+    PRINT_SUCCESS("Seal operation completed");
 
 #ifdef DUMP_DATA
     DB_PRINT("Sealed Data size = %d\nSealed data buffer:-\n\t",
@@ -973,7 +968,7 @@ MSTATUS unsealData( TAP_Context*        pTapContext,
         goto exit;
     }
 
-    DB_PRINT("UnSeal With Trusted Data OK.\n");
+    PRINT_SUCCESS("UnSeal operation completed");
 
 #ifdef DUMP_DATA
     DB_PRINT("Unsealed Data size = %d\nUnsealed data buffer:-\n\t",
@@ -1012,14 +1007,14 @@ MOC_STATIC MSTATUS genCredAttrList(ubyte *pCredentials, int credentialLen, TAP_A
         return status;
     }
     /* Allocate Attribute list */
-    status = MOC_CALLOC((void **)&pAttributeList, 1, sizeof(*pAttributeList));
+    status = DIGI_CALLOC((void **)&pAttributeList, 1, sizeof(*pAttributeList));
     if (OK != status)
     {
         goto exit;
     }
 
     /* Allocate single element of TAP_BUFFER */
-    status = MOC_CALLOC((void **)&pAttribute, 1, sizeof(*pAttribute));
+    status = DIGI_CALLOC((void **)&pAttribute, 1, sizeof(*pAttribute));
     if (OK != status)
     {
         goto exit;
@@ -1031,13 +1026,13 @@ MOC_STATIC MSTATUS genCredAttrList(ubyte *pCredentials, int credentialLen, TAP_A
     pAttribute->type = TAP_ATTR_CREDENTIAL;
     pAttribute->length = sizeof(TAP_Credential);
 
-    status = MOC_CALLOC((void **)&pCredential, 1, sizeof(*pCredential));
+    status = DIGI_CALLOC((void **)&pCredential, 1, sizeof(*pCredential));
     if (OK != status)
     {
         goto exit;
     }
 
-    status = MOC_CALLOC((void **)&pCredential->credentialData.pBuffer, 1, credentialLen+1);
+    status = DIGI_CALLOC((void **)&pCredential->credentialData.pBuffer, 1, credentialLen+1);
     if (OK != status)
     {
         goto exit;
@@ -1048,7 +1043,7 @@ MOC_STATIC MSTATUS genCredAttrList(ubyte *pCredentials, int credentialLen, TAP_A
     pCredential->credentialFormat = TAP_CREDENTIAL_FORMAT_PLAINTEXT;
     pCredential->credentialContext = TAP_CREDENTIAL_CONTEXT_USER;
     pCredential->credentialData.bufferLen = credentialLen;
-    status = MOC_MEMCPY(pCredential->credentialData.pBuffer, pCredentials, credentialLen);
+    status = DIGI_MEMCPY(pCredential->credentialData.pBuffer, pCredentials, credentialLen);
     if (OK != status)
     {
         PRINT_ERR(status, "Failed to copy pCredentials");
@@ -1064,15 +1059,15 @@ exit:
         {
             if (pCredential->credentialData.pBuffer)
             {
-                MOC_MEMSET_FREE(&pCredential->credentialData.pBuffer, pCredential->credentialData.bufferLen);
+                DIGI_MEMSET_FREE(&pCredential->credentialData.pBuffer, pCredential->credentialData.bufferLen);
             }
         }
 
         if (pAttribute)
-            MOC_FREE((void **)&pAttribute);
+            DIGI_FREE((void **)&pAttribute);
 
         if (pAttributeList)
-            MOC_FREE((void **)&pAttributeList);
+            DIGI_FREE((void **)&pAttributeList);
     }
 
     return status;
@@ -1097,15 +1092,15 @@ MOC_STATIC void freeAttrList(TAP_AttributeList *pAttributeList)
                 pCredential = pAttr->pStructOfType;
                 if (pCredential->credentialData.pBuffer)
                 {
-                    MOC_MEMSET_FREE(&pCredential->credentialData.pBuffer, pCredential->credentialData.bufferLen);
+                    DIGI_MEMSET_FREE(&pCredential->credentialData.pBuffer, pCredential->credentialData.bufferLen);
                 }
-                MOC_FREE((void **)&pCredential);
+                DIGI_FREE((void **)&pCredential);
             }
 
-            MOC_FREE((void **)&pAttr);
+            DIGI_FREE((void **)&pAttr);
         }
     }
-    MOC_FREE((void **)&pAttributeList);
+    DIGI_FREE((void **)&pAttributeList);
     return;
 }
 
@@ -1151,17 +1146,17 @@ MSTATUS publishRSAPublicKey(TAP_Key *pTapKey, char * pubKeyFile, AsymmetricKey *
     }
 
     /* And write it to a file */
-    status = MOCANA_writeFile(pubKeyFile, pKeyBuff, keyBuffLen);
+    status = DIGICERT_writeFile(pubKeyFile, pKeyBuff, keyBuffLen);
     if (OK != status)
     {
-        PRINT_ERR(status, "MOCANA_writeFile()  public key failed");
+        PRINT_ERR(status, "DIGICERT_writeFile()  public key failed");
         goto exit;
     }
 
 exit:
     if (NULL != pKeyBuff)
     {
-        (void) MOC_MEMSET_FREE(&pKeyBuff, keyBuffLen);
+        (void) DIGI_MEMSET_FREE(&pKeyBuff, keyBuffLen);
     }
     return status;
 }
@@ -1198,11 +1193,11 @@ MSTATUS verifyRSASignature(AsymmetricKey *pPubKey,
         PRINT_ERR(status, "Sign verification using CRYPTO_INTERFACE_RSA_verifyData() failed");
         goto exit;
     }
-    PRINT_SUCCESS("Sign verification completed using CRYPTO_INTERFACE_RSA_verifyData()");
+    DB_PRINT("Sign verification completed using CRYPTO_INTERFACE_RSA_verifyData()");
 
     if(TRUE == *pIsSigValid)
     {
-        PRINT_SUCCESS("Signature verification PASS.");
+        DB_PRINT("Signature verification PASS.");
     }
     else
     {
@@ -1242,26 +1237,26 @@ MSTATUS publishECCPublicKey(TAP_Key *pTapKey, char * pubKeyFile, AsymmetricKey *
     /* ECC Public key length = 1 byte for "0x04" + pubX len + pubY len */
     eccKeyBuffLen = 1 + pTapKey->keyData.publicKey.publicKey.eccKey.pubXLen + pTapKey->keyData.publicKey.publicKey.eccKey.pubYLen;
 
-    status = MOC_CALLOC((void **)&pEccKeyBuff, 1, eccKeyBuffLen);
+    status = DIGI_CALLOC((void **)&pEccKeyBuff, 1, eccKeyBuffLen);
     if (OK != status)
     {
         PRINT_ERR(status, "Failed to allocate memory for pEccKeyBuff.");
         goto exit;
     }
-    if (OK != MOC_MEMSET(pEccKeyBuff, 0x04, 1))
+    if (OK != DIGI_MEMSET(pEccKeyBuff, 0x04, 1))
     {
         PRINT_ERR(status, "Failed to memset 0x04");
         goto exit;
     }
 
-    status = MOC_MEMCPY(pEccKeyBuff + 1 , pTapKey->keyData.publicKey.publicKey.eccKey.pPubX,
+    status = DIGI_MEMCPY(pEccKeyBuff + 1 , pTapKey->keyData.publicKey.publicKey.eccKey.pPubX,
                 pTapKey->keyData.publicKey.publicKey.eccKey.pubXLen);
     if (OK != status)
     {
         PRINT_ERR(status, "Failed to copy pPubX");
         goto exit;
     }
-    status = MOC_MEMCPY(pEccKeyBuff + 1 +  pTapKey->keyData.publicKey.publicKey.eccKey.pubXLen,
+    status = DIGI_MEMCPY(pEccKeyBuff + 1 +  pTapKey->keyData.publicKey.publicKey.eccKey.pubXLen,
                 pTapKey->keyData.publicKey.publicKey.eccKey.pPubY,
                 pTapKey->keyData.publicKey.publicKey.eccKey.pubYLen);
     if (OK != status)
@@ -1287,21 +1282,21 @@ MSTATUS publishECCPublicKey(TAP_Key *pTapKey, char * pubKeyFile, AsymmetricKey *
     }
 
     /* And write it to a file */
-    status = MOCANA_writeFile(pubKeyFile, pKeyBuff, keyBuffLen);
+    status = DIGICERT_writeFile(pubKeyFile, pKeyBuff, keyBuffLen);
     if (OK != status)
     {
-        PRINT_ERR(status, "MOCANA_writeFile()  public key failed");
+        PRINT_ERR(status, "DIGICERT_writeFile()  public key failed");
         goto exit;
     }
 
 exit:
     if (NULL != pEccKeyBuff)
     {
-        (void) MOC_MEMSET_FREE(&pEccKeyBuff, eccKeyBuffLen);
+        (void) DIGI_MEMSET_FREE(&pEccKeyBuff, eccKeyBuffLen);
     }
     if (NULL != pKeyBuff)
     {
-        (void) MOC_MEMSET_FREE(&pKeyBuff, keyBuffLen);
+        (void) DIGI_MEMSET_FREE(&pKeyBuff, keyBuffLen);
     }
     return status;
 }
@@ -1329,19 +1324,19 @@ MSTATUS verifyECCSignature(AsymmetricKey *pPubKey,
 
     /* Prepare signature to write to output file */
     eccSigBuffLen = pSignature->rDataLen + pSignature->sDataLen;
-    status = MOC_CALLOC((void **)&pEccSigBuff, 1, eccSigBuffLen);
+    status = DIGI_CALLOC((void **)&pEccSigBuff, 1, eccSigBuffLen);
     if (OK != status)
     {
         PRINT_ERR(status, "Failed to allocate memory for pEccSigBuff.");
         goto exit;
     }
-    status = MOC_MEMCPY(pEccSigBuff, pSignature->pRData, pSignature->rDataLen);
+    status = DIGI_MEMCPY(pEccSigBuff, pSignature->pRData, pSignature->rDataLen);
     if (OK != status)
     {
         PRINT_ERR(status, "Failed to copy pRData");
         goto exit;
     }
-    status = MOC_MEMCPY(pEccSigBuff + pSignature->rDataLen, pSignature->pSData, pSignature->sDataLen);
+    status = DIGI_MEMCPY(pEccSigBuff + pSignature->rDataLen, pSignature->pSData, pSignature->sDataLen);
     if (OK != status)
     {
         PRINT_ERR(status, "Failed to copy pSData");
@@ -1360,11 +1355,11 @@ MSTATUS verifyECCSignature(AsymmetricKey *pPubKey,
         PRINT_ERR(status, "Sign verification using CRYPTO_INTERFACE_ECDSA_verifyMessageExt() failed");
         goto exit;
     }
-    PRINT_SUCCESS("Sign verification completed using CRYPTO_INTERFACE_ECDSA_verifyMessageExt()");
+    DB_PRINT("Sign verification completed using CRYPTO_INTERFACE_ECDSA_verifyMessageExt()");
     if (0 == vfy)
     {
         *pIsSigValid = TRUE;
-        PRINT_SUCCESS("Signature verification PASS.");
+        DB_PRINT("Signature verification PASS.");
     }
     else 
     {
@@ -1372,7 +1367,7 @@ MSTATUS verifyECCSignature(AsymmetricKey *pPubKey,
         PRINT_ERR(status, "Signature verification failed");
         goto exit;
     }
-    MOC_FREE((void **)&pSigOut->pBuffer);
+    DIGI_FREE((void **)&pSigOut->pBuffer);
     pSigOut->pBuffer = NULL;
     pSigOut->bufferLen = 0;
 
@@ -1386,11 +1381,11 @@ MSTATUS verifyECCSignature(AsymmetricKey *pPubKey,
 
 exit:
 
-    MOC_FREE((void **)&pSignature->pRData);
-    MOC_FREE((void **)&pSignature->pSData);
+    DIGI_FREE((void **)&pSignature->pRData);
+    DIGI_FREE((void **)&pSignature->pSData);
     if(OK != status)
     {
-        MOC_FREE((void **)&pSigOut->pBuffer);
+        DIGI_FREE((void **)&pSigOut->pBuffer);
     }
     return status;
 }
@@ -1440,10 +1435,10 @@ MSTATUS publishMLDSAPublicKey(TAP_Key *pTapKey,
     }
 
     /* And write it to a file */
-    status = MOCANA_writeFile(pubKeyFile, pKeyBuffer, keyBufferLen);
+    status = DIGICERT_writeFile(pubKeyFile, pKeyBuffer, keyBufferLen);
     if (OK != status)
     {
-        PRINT_ERR(status, "MOCANA_writeFile()  public key failed");
+        PRINT_ERR(status, "DIGICERT_writeFile()  public key failed");
         goto exit;
     }
     *ppCtx = pCtx;
@@ -1451,7 +1446,7 @@ MSTATUS publishMLDSAPublicKey(TAP_Key *pTapKey,
 exit:
     if (NULL != pKeyBuffer)
     {
-        (void) MOC_MEMSET_FREE(&pKeyBuffer, keyBufferLen);
+        (void) DIGI_MEMSET_FREE(&pKeyBuffer, keyBufferLen);
     }
     return status;
 }
@@ -1481,11 +1476,11 @@ MSTATUS verifyMLDSASignature(QS_CTX *pCtx,
         PRINT_ERR(status, "Sign verification using CRYPTO_INTERFACE_QS_SIG_verify() failed");
         goto exit;
     }
-    PRINT_SUCCESS("Sign verification completed using CRYPTO_INTERFACE_QS_SIG_verify()");
+    DB_PRINT("Sign verification completed using CRYPTO_INTERFACE_QS_SIG_verify()");
     if(0 == verifyStatus)
     {
         *pIsSigValid = TRUE;
-        PRINT_SUCCESS("Signature verification PASS.");
+        DB_PRINT("Signature verification PASS.");
     }
     else 
     {
@@ -1615,7 +1610,7 @@ MSTATUS testAsymSignVerify( TAP_Key *pTapKey,
         PRINT_ERR(status, "Asymmetric Sign operation using TAP_asymSign failed");
         goto exit;
     }
-    PRINT_SUCCESS("Asymmetric Sign operation using TAP_asymSign done");
+    DB_PRINT("Asymmetric Sign operation using TAP_asymSign done");
 
 
     /*********** Publish public key and verify signature ***********/
@@ -1697,7 +1692,7 @@ MSTATUS testAsymSignVerify( TAP_Key *pTapKey,
         PRINT_ERR(status, "Signature verification failed");
         goto exit;
     }
-    PRINT_SUCCESS("Signature verification completed successfully");
+    PRINT_SUCCESS("Signature generated successfully");
 
 exit:
     (void) HARDWARE_ACCEL_CLOSE_CHANNEL(MOCANA_MSS, &hwAccelCtx);
@@ -1796,7 +1791,7 @@ MSTATUS signData(   TAP_Context *pTapContext,
         PRINT_ERR(status, "Key generation failed");
         goto exit;
     }
-    PRINT_SUCCESS("Asymmetric Key Generated using TAP_importKeyFromID");
+    DB_PRINT("Asymmetric Key Generated using TAP_importKeyFromID");
 
     DB_PRINT("%s.%d Executing sign+verify using the above generated key...\n",
             __FUNCTION__, __LINE__);
@@ -1820,7 +1815,7 @@ exit:
         }
         else
         {
-            PRINT_SUCCESS("TAP_unloadKey operation done");
+            DB_PRINT("TAP_unloadKey operation done");
         }
 
         DB_PRINT("%s.%d Releasing the unloaded key...\n",
@@ -1831,7 +1826,7 @@ exit:
         }
         else
         {
-            PRINT_SUCCESS("TAP_freeKey operation done");
+            DB_PRINT("TAP_freeKey operation done");
         }
     }
 
@@ -1888,12 +1883,12 @@ MSTATUS verifyRSASignFromFile( TAP_Buffer *pDataToVerify,
         PRINT_ERR(status, "Sign verification using CRYPTO_INTERFACE_RSA_verifyData() failed");
         goto exit;
     }
-    PRINT_SUCCESS("Sign verification completed using CRYPTO_INTERFACE_RSA_verifyData()");
+    DB_PRINT("Sign verification completed using CRYPTO_INTERFACE_RSA_verifyData()");
 
     /* Check the verification result */
     if (TRUE == *pIsSigValid)
     {
-        PRINT_SUCCESS("Signature verification PASS.");
+        DB_PRINT("Signature verification PASS.");
     }
     else
     {
@@ -1954,7 +1949,7 @@ MSTATUS verifyECCSignFromFile( TAP_Buffer *pDataToVerify,
 
     /* Allocate signature buffer, space for r and s
      */
-    status = MOC_MALLOC((void **) &pSig, 2 * elementLen);
+    status = DIGI_MALLOC((void **) &pSig, 2 * elementLen);
     if (OK != status)
         goto exit;
 
@@ -1976,11 +1971,11 @@ MSTATUS verifyECCSignFromFile( TAP_Buffer *pDataToVerify,
         PRINT_ERR(status, "Sign verification using CRYPTO_INTERFACE_ECDSA_verifyMessageExt() failed");
         goto exit;
     }
-    PRINT_SUCCESS("Sign verification completed using CRYPTO_INTERFACE_ECDSA_verifyMessageExt()");
+    DB_PRINT("Sign verification completed using CRYPTO_INTERFACE_ECDSA_verifyMessageExt()");
     if (0 == vfy)
     {
         *pIsSigValid = TRUE;
-        PRINT_SUCCESS("Signature verification PASS.");
+        DB_PRINT("Signature verification PASS.");
     }
     else 
     {
@@ -1993,7 +1988,7 @@ exit:
 
     if (NULL != pSig)
     {
-        MOC_FREE((void **) &pSig);
+        DIGI_FREE((void **) &pSig);
     }
     (void) CRYPTO_uninitAsymmetricKey(&asymPubKey, NULL);
     (void) HARDWARE_ACCEL_CLOSE_CHANNEL(MOCANA_MSS, &hwAccelCtx);
@@ -2051,11 +2046,11 @@ MSTATUS verifyMLDSASignFromFile( TAP_Buffer *pDataToVerify,
         PRINT_ERR(status, "Sign verification using CRYPTO_INTERFACE_QS_SIG_verify() failed");
         goto exit;
     }
-    PRINT_SUCCESS("Sign verification completed using CRYPTO_INTERFACE_QS_SIG_verify()");
+    DB_PRINT("Sign verification completed using CRYPTO_INTERFACE_QS_SIG_verify()");
     if(0 == verifyStatus)
     {
         *pIsSigValid = TRUE;
-        PRINT_SUCCESS("Signature verification PASS.");
+        DB_PRINT("Signature verification PASS.");
     }
     else 
     {
@@ -2098,14 +2093,14 @@ MSTATUS verifyData( TAP_Buffer *pDataToVerify,
         return status;
     }
 
-    status = MOCANA_readFile(signFile, &signBuf.pBuffer, &signBuf.bufferLen);
+    status = DIGICERT_readFile(signFile, &signBuf.pBuffer, &signBuf.bufferLen);
     if (OK != status)
     {
         LOG_ERROR("Failed to read signature file : %s, status : %d", signFile, status);
         goto exit;
     }
 
-    status = MOCANA_readFile(pubKeyFile, &pubKeyData.pBuffer, &pubKeyData.bufferLen);
+    status = DIGICERT_readFile(pubKeyFile, &pubKeyData.pBuffer, &pubKeyData.bufferLen);
     if (OK != status)
     {
         LOG_ERROR("Failed to read public key file : %s, status : %d", pubKeyFile, status);
@@ -2173,8 +2168,8 @@ MSTATUS verifyData( TAP_Buffer *pDataToVerify,
 
 exit:
 
-    MOC_FREE((void **)&signBuf.pBuffer);
-    MOC_FREE((void **)&pubKeyData.pBuffer);
+    DIGI_FREE((void **)&signBuf.pBuffer);
+    DIGI_FREE((void **)&pubKeyData.pBuffer);
     return status;
 }
 
@@ -2197,7 +2192,7 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
         return status;
     }
 
-    status = MOCANA_readFile(pOpts->configFile, &tapConfig.configInfo.pBuffer,
+    status = DIGICERT_readFile(pOpts->configFile, &tapConfig.configInfo.pBuffer,
                              &tapConfig.configInfo.bufferLen);
     if (OK != status)
     {
@@ -2206,7 +2201,7 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
     }
     tapConfig.provider = TAP_PROVIDER_NANOROOT;
 
-    status = MOCANA_readFile(pOpts->inputFile, &inputData.pBuffer, &inputData.bufferLen);
+    status = DIGICERT_readFile(pOpts->inputFile, &inputData.pBuffer, &inputData.bufferLen);
     if (OK != status)
     {
         LOG_ERROR("Failed to read input file : %s, status : %d", pOpts->inputFile, status);
@@ -2296,7 +2291,7 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
 
     if(pOpts->opType == NanoROOT_SEAL || pOpts->opType == NanoROOT_UNSEAL)
     {
-        status = MOCANA_writeFile(pOpts->outputFile, outputData.pBuffer, outputData.bufferLen);
+        status = DIGICERT_writeFile(pOpts->outputFile, outputData.pBuffer, outputData.bufferLen);
         if (OK != status)
         {
             LOG_ERROR("Failed to write output file : %s, status : %d", pOpts->outputFile, status);
@@ -2305,7 +2300,7 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
     }
     else if(pOpts->opType == NanoROOT_SIGN)
     {
-        status = MOCANA_writeFile(pOpts->signatureFile, outputData.pBuffer, outputData.bufferLen);
+        status = DIGICERT_writeFile(pOpts->signatureFile, outputData.pBuffer, outputData.bufferLen);
         if (OK != status)
         {
             LOG_ERROR("Failed to write signature file : %s, status : %d", pOpts->signatureFile, status);
@@ -2316,9 +2311,9 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
 exit:
 
     freeAttrList(pAttributeList);
-    MOC_FREE((void **)&outputData.pBuffer);
-    MOC_FREE((void **)&inputData.pBuffer);
-    MOC_FREE((void **)&tapConfig.configInfo.pBuffer);
+    DIGI_FREE((void **)&outputData.pBuffer);
+    DIGI_FREE((void **)&inputData.pBuffer);
+    DIGI_FREE((void **)&tapConfig.configInfo.pBuffer);
     return status;
 }
 
@@ -2342,7 +2337,7 @@ int main(int argc, char **argv)
         goto exit;
     }
 
-    status = MOC_CALLOC((void **)&pOpts, 1, sizeof(cmdLineOpts));
+    status = DIGI_CALLOC((void **)&pOpts, 1, sizeof(cmdLineOpts));
     if (OK != status)
     {
         PRINT_ERR(status, "Failed to allocate memory for cmdLineOpts.");
@@ -2382,7 +2377,7 @@ int main(int argc, char **argv)
     /* Get Modules list */
     PRINT_TEST_HEADER("Get list of Providers and Modules");
 
-    status = MOC_CALLOC((void **)&pModuleList, 1, sizeof(TAP_ModuleList));
+    status = DIGI_CALLOC((void **)&pModuleList, 1, sizeof(TAP_ModuleList));
     if (OK != status)
     {
         PRINT_ERR(status, "Error allocating memory for TAP_ModuleList");    
@@ -2405,7 +2400,7 @@ int main(int argc, char **argv)
         PRINT_ERR(status, "Failed initializing module");
         goto exit;
     }
-    PRINT_SUCCESS("Module Initialized ...");
+    DB_PRINT("Module Initialized ...");
 
     status = executeOptions(pTapContext, pOpts);
     if (OK != status)
@@ -2426,11 +2421,11 @@ exit:
     if (NULL != pModuleList)
     {
         TAP_freeModuleList(pModuleList);  
-        MOC_FREE((void**)&pModuleList);
+        DIGI_FREE((void**)&pModuleList);
     }
-    MOC_FREE((void**)&pOpts);
+    DIGI_FREE((void **)&pOpts);
 
     return status;
 }
 
-#endif  /* defined(__ENABLE_MOCANA_TAP__)) && defined(__ENABLE_MOCANA_EXAMPLES__) */
+#endif  /* defined(__ENABLE_DIGICERT_TAP__)) && defined(__ENABLE_DIGICERT_EXAMPLES__) */

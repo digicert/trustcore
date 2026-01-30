@@ -108,11 +108,11 @@ if(CM_ENABLE_DEBUG)
 endif()
 
 if(CM_ENABLE_IPV6)
-  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_IPV6__)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_IPV6__)
 endif()
 
 if(CM_ENABLE_ABSOLUTE_PATH)
-  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__)
 endif()
 
 if (DEFINED SECURE_PATH)
@@ -122,7 +122,7 @@ if (DEFINED SECURE_PATH)
 endif()
 
 if(CM_ENABLE_PROCESS)
-  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_RTOS_PROCESS__)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_RTOS_PROCESS__)
 endif()
 
 if(CM_ENABLE_MPART)
@@ -131,9 +131,9 @@ if(CM_ENABLE_MPART)
 endif()
 
 if(CM_ENABLE_GLOBAL_MUTEX)
-  set(mocana_flags ${mocana_flags} -D__ENABLE_MOCANA_GLOBAL_MUTEX__)
+  set(mocana_flags ${mocana_flags} -D__ENABLE_DIGICERT_GLOBAL_MUTEX__)
 else()
-  set(mocana_flags ${mocana_flags} -D__DISABLE_MOCANA_TPM_MUTEX__)
+  set(mocana_flags ${mocana_flags} -D__DISABLE_DIGICERT_TPM_MUTEX__)
 endif()
 
 # Now load all flags into MOCANA_FLAGS

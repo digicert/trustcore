@@ -1,0 +1,5 @@
+MSS_SRC_DIR/est/est_context.c
+MSS_SRC_DIR/est/est_cert_utils.c
+MSS_SRC_DIR/est/est_client_api.c
+MSS_SRC_DIR/est/est_message.c
+MSS_SRC_DIR/est/est_utils.c

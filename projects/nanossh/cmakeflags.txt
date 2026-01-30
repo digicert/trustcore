@@ -1,7 +1,7 @@
 if(BUILD_FOR_OSI)
   cmake_minimum_required(VERSION 3.16)
 else()
-  cmake_minimum_required (VERSION 3.2)
+  cmake_minimum_required (VERSION 3.5)
 endif()
 
 function(init_flags)
@@ -106,32 +106,32 @@ function(buildflags targetdir extraFlags mocana_flags)
 
   # Adding SSH DSA support flags in NanoSSH
   if (CM_ENABLE_DSA_SUPPORT)
-    string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_DSA_SUPPORT__" mocana_flags)
+    string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_SSH_DSA_SUPPORT__ -D__ENABLE_DIGICERT_DSA__" mocana_flags)
   endif()
 
   # Removing Ed25519 support flags in NanoSSH
   if (CM_DISABLE_EDDSA_25519_SUPPORT)
-    string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDSA_25519__" "" mocana_flags "${mocana_flags}")
+    string(REGEX REPLACE "-D__ENABLE_DIGICERT_ECC_EDDSA_25519__" "" mocana_flags "${mocana_flags}")
   endif()
 
   # Removing Ed448 support flags in NanoSSH
   if (CM_DISABLE_EDDSA_448_SUPPORT)
-    string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDSA_448__" "" mocana_flags "${mocana_flags}")
+    string(REGEX REPLACE "-D__ENABLE_DIGICERT_ECC_EDDSA_448__" "" mocana_flags "${mocana_flags}")
   endif()
 
   # Removing ECDH with Curve25519 flags in NanoSSH
   if (CM_DISABLE_ECDH_25519_SUPPORT)
-    string(REGEX REPLACE "-D__ENABLE_MOCANA_ECC_EDDH_25519__" "" mocana_flags "${mocana_flags}")
+    string(REGEX REPLACE "-D__ENABLE_DIGICERT_ECC_EDDH_25519__" "" mocana_flags "${mocana_flags}")
   endif()
 
   # Building server or client example with gracefully shutdown
   if (CM_ENABLE_MOCANA_SSH_EXAMPLE_GRACEFUL_SHUTDOWN)
-    string(APPEND mocana_flags " -D__ENABLE_MOCANA_SSH_EXAMPLE_GRACEFUL_SHUTDOWN__")
+    string(APPEND mocana_flags " -D__ENABLE_DIGICERT_SSH_EXAMPLE_GRACEFUL_SHUTDOWN__")
   endif()
 
   # Building server or client example with weak ciphers disabled
   if (CM_ENABLE_WEAK_CIPHERS)
-    string(APPEND mocana_flags " -D__ENABLE_MOCANA_SSH_WEAK_CIPHERS__")
+    string(APPEND mocana_flags " -D__ENABLE_DIGICERT_SSH_WEAK_CIPHERS__")
   endif()
 
   # Adding debug flags
@@ -141,7 +141,7 @@ function(buildflags targetdir extraFlags mocana_flags)
       file(STRINGS ${MOCANA_DEBUG_FLAGS_FILE} mocana_debug_flags)
       message("\nMOCANA_DEBUG_FLAGS = ${mocana_debug_flags}")
       if(WIN32)
-          string(REGEX REPLACE "-D__ENABLE_MOCANA_VALGRIND_SUPPORT__" "" mocana_debug_flags "${mocana_debug_flags}")
+          string(REGEX REPLACE "-D__ENABLE_DIGICERT_VALGRIND_SUPPORT__" "" mocana_debug_flags "${mocana_debug_flags}")
       endif()
       set(mocana_flags ${mocana_flags} ${mocana_debug_flags})
   endif()
@@ -235,7 +235,7 @@ function(buildflags targetdir extraFlags mocana_flags)
 
   # Enabling NanoSSH with SCP example
   if(CM_ENABLE_SCP_EXAMPLE)
-    string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_SCP_REKEY_EXAMPLE__ -D__ENABLE_MOCANA_SSH_EXEC__" mocana_flags)
+    string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_SSH_SCP_REKEY_EXAMPLE__ -D__ENABLE_DIGICERT_SSH_EXEC__" mocana_flags)
   endif()
 
   if(NOT CM_DISABLE_PQC)
@@ -246,21 +246,21 @@ function(buildflags targetdir extraFlags mocana_flags)
   endif()
 
   if(CM_ENABLE_DATA_PROTECTION)
-      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_DATA_PROTECTION__" mocana_flags)
+      string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_DATA_PROTECTION__" mocana_flags)
   endif()
 
   if(CM_ENABLE_KEYBOARD_INTERACTIVE)
-      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__" mocana_flags)
+      string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__" mocana_flags)
   endif()
 
   if(CM_ENABLE_SERIAL_CHANNEL)
-      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_SSH_SERIAL_CHANNEL__" mocana_flags)
+      string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_SSH_SERIAL_CHANNEL__" mocana_flags)
   endif()
 
   if(CM_ENABLE_FIPS)
-      string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_FIPS_MODULE__" mocana_flags)
+      string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_FIPS_MODULE__" mocana_flags)
       if (CM_ENABLE_STRICT_DH)
-          string(STRIP "${mocana_flags} -D__ENABLE_MOCANA_STRICT_DH_GROUP__" mocana_flags)
+          string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_STRICT_DH_GROUP__" mocana_flags)
       endif()
   endif()
 

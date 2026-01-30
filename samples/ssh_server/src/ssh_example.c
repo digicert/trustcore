@@ -4,22 +4,22 @@
  * Example code for integrating SSH Server Stack
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
-#if defined(__ENABLE_MOCANA_WIN_STUDIO_BUILD__)
+#if defined(__ENABLE_DIGICERT_WIN_STUDIO_BUILD__)
 #include <windows.h>
 #endif
 
 #include "../common/moptions.h"
-#if (defined( __ENABLE_MOCANA_SSH_SERVER_EXAMPLE__ ) && !defined( __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ ) && !defined(__ENABLE_MOCANA_SSH_PORT_FORWARDING__))
+#if (defined( __ENABLE_DIGICERT_SSH_SERVER_EXAMPLE__ ) && !defined( __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ ) && !defined(__ENABLE_DIGICERT_SSH_PORT_FORWARDING__))
 
 /* see ssh_example_async.c for asynchronous API */
 #include "../common/mtypes.h"
@@ -42,10 +42,10 @@
 #include "../ssh/sftp.h"
 #include "../ssh/ssh.h"
 #include "../ssh/ssh_utils.h"
-#ifdef __ENABLE_MOCANA_TPM__
+#ifdef __ENABLE_DIGICERT_TPM__
 #include "../crypto/secmod/moctap.h"
 #endif
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 #include "../smp/smp_cc.h"
 #include "../tap/tap_api.h"
 #include "../tap/tap_utils.h"
@@ -56,18 +56,18 @@
 #include "../crypto_interface/cryptointerface.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_OCSP_CERT_VERIFY__
+#ifdef __ENABLE_DIGICERT_OCSP_CERT_VERIFY__
 #include "../common/memfile.h"
 #include "../ocsp/ocsp.h"
 #include "../ocsp/ocsp_context.h"
 #include "../ocsp/client/ocsp_client.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
 #include "../data_protection/file_protect.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__
+#ifdef __ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__
 #include "../radius/radius.h"
 #endif
 
@@ -81,11 +81,11 @@ static certStorePtr pSshCertStore;
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
 extern void SFTP_EXAMPLE_init(void);
 #endif
 
-#ifdef __ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__
+#ifdef __ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__
 extern int
 SSH_RADIUS_EXAMPLE_authPasswordFunction(int connectionInstance,
                                         const unsigned char *pUser,     unsigned int userLength,
@@ -111,9 +111,9 @@ SSH_RADIUS_EXAMPLE_authPasswordFunction(int connectionInstance,
 #define AUTH_KEYFILE_NAME               "id_dsa.pub"
 #endif
 
-#if defined(__ENABLE_MOCANA_TAP__)
+#if defined(__ENABLE_DIGICERT_TAP__)
 #include "../common/tpm2_path.h"
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
 static unsigned short  taps_ServerPort     = 0;
 static char * 	       taps_ServerName     = NULL;
 #endif
@@ -125,16 +125,17 @@ static TAP_CredentialList       *g_pTapKeyCred    = NULL;
 static TAP_ModuleList g_moduleList                = { 0 };
 #endif
 
-#ifdef __ENABLE_MOCANA_TPM__
+#ifdef __ENABLE_DIGICERT_TPM__
 static MOCTAP_HANDLE mh;
 static void* reqKeyContext;
 #endif
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
 extern memPartDescr *gMemPartDescr;
 #endif
 
 #define MAX_SSH_CONNECTIONS_ALLOWED        (4)
+static sbyte4 g_numClientThreads            = 0;
 static unsigned short  ssh_ServerPort       = SSH_DEFAULT_TCPIP_PORT;
 static byteBoolean  ssh_disablePasswordExpiryTest  = FALSE;
 static char *          ssh_ServerCert       = NULL;
@@ -144,6 +145,7 @@ static char *          ocsp_ResponderUrl    = NULL;
 static ubyte4          ocsp_Timeout         = 500000;
 static char *          ssh_UserName         = NULL;
 static char *          ssh_Password         = NULL;
+static RTOS_THREAD g_clientThreads[MAX_SSH_CONNECTIONS_ALLOWED];
 
 /* for interactive-keyboard authentication */
 enum exampleAuthStates
@@ -172,7 +174,7 @@ m_passwordPrompts[] =
     { (sbyte *)"Enter it again: ",     16, AUTH_NO_ECHO }
 };
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)))
 static ubyte cacert[] =
 {
     0x30, 0x82, 0x05, 0x61, 0x30, 0x82, 0x03, 0x49, 0xa0, 0x03, 0x02, 0x01, 0x02, 0x02, 0x09, 0x00,
@@ -386,7 +388,7 @@ static ubyte privkey_pem[] =
 };
 #endif
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 static sbyte4
 SSH_EXAMPLE_getTapContext(TAP_Context **ppTapContext,
@@ -440,7 +442,7 @@ SSH_EXAMPLE_InitializeTapContext(ubyte *pTpm2ConfigFile, TAP_Context **ppTapCtx,
     TAP_ErrorContext *pErrContext = NULL;
     TAP_EntityCredentialList *pEntityCredentials = { 0 };
     TAP_CredentialList *pKeyCredentials = { 0 };
-#ifdef __ENABLE_MOCANA_TAP_REMOTE__
+#ifdef __ENABLE_DIGICERT_TAP_REMOTE__
     TAP_ConnectionInfo connInfo = { 0 };
 #endif
 
@@ -450,8 +452,8 @@ SSH_EXAMPLE_InitializeTapContext(ubyte *pTpm2ConfigFile, TAP_Context **ppTapCtx,
         goto exit;
     }
 
-#if (!defined(__ENABLE_MOCANA_TAP_REMOTE__))
-    status = MOC_CALLOC((void **)&(configInfoList.pConfig), 1, sizeof(TAP_ConfigInfo));
+#if (!defined(__ENABLE_DIGICERT_TAP_REMOTE__))
+    status = DIGI_CALLOC((void **)&(configInfoList.pConfig), 1, sizeof(TAP_ConfigInfo));
     if (OK != status)
     {
         printf("Failed to allocate memory, status = %d", status);
@@ -476,14 +478,14 @@ SSH_EXAMPLE_InitializeTapContext(ubyte *pTpm2ConfigFile, TAP_Context **ppTapCtx,
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
 
-    connInfo.serverName.bufferLen = MOC_STRLEN((char *)taps_ServerName)+1;
-    status = MOC_CALLOC ((void **)&(connInfo.serverName.pBuffer), 1, connInfo.serverName.bufferLen);
+    connInfo.serverName.bufferLen = DIGI_STRLEN((char *)taps_ServerName)+1;
+    status = DIGI_CALLOC ((void **)&(connInfo.serverName.pBuffer), 1, connInfo.serverName.bufferLen);
     if (OK != status)
     goto exit;
 
-    status = MOC_MEMCPY ((void *)(connInfo.serverName.pBuffer), (void *)taps_ServerName, MOC_STRLEN(taps_ServerName));
+    status = DIGI_MEMCPY ((void *)(connInfo.serverName.pBuffer), (void *)taps_ServerName, DIGI_STRLEN(taps_ServerName));
     if (OK != status)
     goto exit;
 
@@ -507,7 +509,7 @@ SSH_EXAMPLE_InitializeTapContext(ubyte *pTpm2ConfigFile, TAP_Context **ppTapCtx,
     }
 
     /* For local TAP, parse the config file and get the Entity Credentials */
-#if (!defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (!defined(__ENABLE_DIGICERT_TAP_REMOTE__))
     status = TAP_getModuleCredentials(&(g_moduleList.pModuleList[0]),
                                       pTpm2ConfigFile, 0,
                                       &pEntityCredentials,
@@ -532,10 +534,10 @@ SSH_EXAMPLE_InitializeTapContext(ubyte *pTpm2ConfigFile, TAP_Context **ppTapCtx,
     }
 
 exit:
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
     if (connInfo.serverName.pBuffer != NULL)
     {
-        MOC_FREE((void**)&connInfo.serverName.pBuffer);
+        DIGI_FREE((void**)&connInfo.serverName.pBuffer);
     }
 #endif
     return status;
@@ -568,10 +570,10 @@ SSH_EXAMPLE_authPasswordFunction(sbyte4 connectionInstance,
         return 0;
 
     /* always check the lengths first, there may not be a username or password */
-    if (userLength != (MOC_STRLEN(ssh_UserName)))
+    if (userLength != (DIGI_STRLEN(ssh_UserName)))
         return 0;
 
-    if (passwordLength != (MOC_STRLEN(ssh_Password)))
+    if (passwordLength != (DIGI_STRLEN(ssh_Password)))
         return 0;
 
     if ((0 != memcmp(pUser,     ssh_UserName, userLength)) ||
@@ -580,7 +582,7 @@ SSH_EXAMPLE_authPasswordFunction(sbyte4 connectionInstance,
         return 0;
     }
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     SSH_sftpSetMemberOfGroups(connectionInstance, 0);
     SSH_sftpSetHomeDirectory(connectionInstance, (sbyte *)"/");
 #endif
@@ -615,7 +617,7 @@ SSH_EXAMPLE_keyboardInteractiveAuth(sbyte4                  connectionInstance,
         /* if pAuthResponse is null, assume inital log on state */
         if (0 != pAuthResponse)
         {
-#if defined(__ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
+#if defined(__ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
             isAuth = SSH_RADIUS_EXAMPLE_authPasswordFunction(connectionInstance,
 #else
             isAuth = SSH_EXAMPLE_authPasswordFunction(connectionInstance,
@@ -764,7 +766,7 @@ SSH_EXAMPLE_releaseKeyboardInteractiveRequest(sbyte4 connectionInstance,
 
 /*------------------------------------------------------------------*/
 
-#ifdef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifdef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 static char dsaPublicKeyPart[] =
 {
     0x00, 0x00, 0x00, 0x5d, 0x00, 0xcb, 0x24, 0xb0, 0x05, 0xff, 0x77, 0xb7, 0x07, 0xff, 0xf7, 0xf7,
@@ -851,14 +853,14 @@ SSH_EXAMPLE_testHostKeys(void)
     ubyte4  privateKeyLength;
     sbyte4  status;
 
-    if (0 > (status = MOCANA_readFile(PUBLIC_HOST_KEY_FILE_NAME, (ubyte **)&pRetPublicKey, &publicKeyLength)))
+    if (0 > (status = DIGICERT_readFile(PUBLIC_HOST_KEY_FILE_NAME, (ubyte **)&pRetPublicKey, &publicKeyLength)))
         goto exit;
 
-    status = MOCANA_readFile(PRIVATE_HOST_KEY_FILE_NAME, (ubyte **)&pRetPrivateKey, &privateKeyLength);
+    status = DIGICERT_readFile(PRIVATE_HOST_KEY_FILE_NAME, (ubyte **)&pRetPrivateKey, &privateKeyLength);
 
 exit:
-    MOCANA_freeReadFile((ubyte **)&pRetPublicKey);
-    MOCANA_freeReadFile((ubyte **)&pRetPrivateKey);
+    DIGICERT_freeReadFile((ubyte **)&pRetPublicKey);
+    DIGICERT_freeReadFile((ubyte **)&pRetPrivateKey);
 
     return status;
 }
@@ -873,7 +875,7 @@ typedef struct sshExamplekeyFilesDescr
     ubyte*      pPubFilename;
     ubyte4      keyType;
     ubyte4      keySize;
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     ubyte4      qsAlgType;
 #endif
 
@@ -884,46 +886,46 @@ typedef struct sshExamplekeyFilesDescr
 
 static sshExamplekeyFilesDescr mNakedKeyFiles[] =
 { /* HostKeys used by the example - Please ensure the keys match the negotiated algorithms and Key sizes */
-#ifdef __ENABLE_MOCANA_SSH_DSA_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
     { (ubyte *)"ssh_dss.key", (ubyte *)"ssh_dss.pub", akt_dsa, 1024
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         , 0
 #endif
      },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_RSA_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_RSA_SUPPORT__
     { (ubyte *)"ssh_rsa.key", (ubyte *)"ssh_rsa.pub", akt_rsa, 2048
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         , 0
 #endif
     },
 #endif
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
     { (ubyte *)"ssh_ecdsa.key", (ubyte *)"ssh_ecdsa.pub", akt_ecc, 256
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         , 0
 #endif
      },
 #endif
-#ifdef __ENABLE_MOCANA_ECC_EDDSA_25519__
+#ifdef __ENABLE_DIGICERT_ECC_EDDSA_25519__
     { (ubyte *)"ssh_ed25519.key", (ubyte *)"ssh_ed25519.pub", akt_ecc_ed, 255
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         , 0
 #endif
      },
 #endif
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
      {
         (ubyte *)"ssh_mldsa44.key", NULL, akt_qs, 0, cid_PQC_MLDSA_44
      },
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
      {
         (ubyte *)"ssh_mldsa44_p256.key", NULL, akt_hybrid, cid_EC_P256, cid_PQC_MLDSA_44
      },
 #endif
     { NULL, NULL, akt_undefined, 0
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         , 0
 #endif
     }
@@ -941,11 +943,11 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
     ubyte4  keyBlobLength;
     ubyte4  index;
     sbyte4  status;
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__))
     ubyte*      caCert = NULL;
     ubyte4      caCertLen;
 
-#if (defined(__ENABLE_MOCANA_PEM_CONVERSION__))
+#if (defined(__ENABLE_DIGICERT_PEM_CONVERSION__))
     ubyte*      pTempCert = NULL;
     ubyte4      tempCertLen;
 #endif
@@ -956,7 +958,7 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
     AsymmetricKey asymKey = {0};
     hwAccelDescr    hwAccelCtx;
 
-#if (defined(__ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__))
     certDescriptor tempCertificateDescr = {0};
 #endif
 
@@ -975,25 +977,25 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
             continue;
 
         /* check for pre-existing set of host keys */
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
-        if (0 > (status = MOCANA_readFileEx((const char *)mNakedKeyFiles[index].pFilename, &pKeyBlob, &keyBlobLength, TRUE)))
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
+        if (0 > (status = DIGICERT_readFileEx((const char *)mNakedKeyFiles[index].pFilename, &pKeyBlob, &keyBlobLength, TRUE)))
 #else
-        if (0 > (status = MOCANA_readFile((const char *)mNakedKeyFiles[index].pFilename, &pKeyBlob, &keyBlobLength)))
+        if (0 > (status = DIGICERT_readFile((const char *)mNakedKeyFiles[index].pFilename, &pKeyBlob, &keyBlobLength)))
 #endif
         {
             /* if data protect is enabled, we do not generate keys */
-#ifndef __ENABLE_MOCANA_DATA_PROTECTION__
+#ifndef __ENABLE_DIGICERT_DATA_PROTECTION__
             DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, (sbyte *)"SSH_EXAMPLE_sshCertStoreInit: host key does not exist, computing new key...");
 
             /* if not, compute new host keys */
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
             if (0 > (status = CA_MGMT_generateNakedKeyPQC(mNakedKeyFiles[index].keyType, mNakedKeyFiles[index].keySize, mNakedKeyFiles[index].qsAlgType, &pKeyBlob, &keyBlobLength)))
 #else
             if (0 > (status = CA_MGMT_generateNakedKey(mNakedKeyFiles[index].keyType, mNakedKeyFiles[index].keySize, &pKeyBlob, &keyBlobLength)))
 #endif
                 goto exit;
 
-            if (0 > (status = MOCANA_writeFile((const char *)mNakedKeyFiles[index].pFilename, pKeyBlob, keyBlobLength)))
+            if (0 > (status = DIGICERT_writeFile((const char *)mNakedKeyFiles[index].pFilename, pKeyBlob, keyBlobLength)))
                 goto exit;
 
             if (mNakedKeyFiles[index].pPubFilename != NULL)
@@ -1002,7 +1004,7 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
                 if (0 > (status = SSH_UTILS_generateServerAuthKeyFile(pKeyBlob, keyBlobLength, &pEncodedKey, &encodedKeyLen)))
                     goto exit;
 
-                if (0 > (status = MOCANA_writeFile((const char *)mNakedKeyFiles[index].pPubFilename, pEncodedKey, encodedKeyLen)))
+                if (0 > (status = DIGICERT_writeFile((const char *)mNakedKeyFiles[index].pPubFilename, pEncodedKey, encodedKeyLen)))
                     goto exit;
             }
             DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, (sbyte *)"SSH_EXAMPLE_sshCertStoreInit: host key computation completed.");
@@ -1043,14 +1045,14 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
             CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
             if (NULL != pKeyBlob)
             {
-                MOC_FREE((void **)&pKeyBlob);
+                DIGI_FREE((void **)&pKeyBlob);
             }
-            MOC_FREE((void **)&pEncodedKey);
-            MOC_FREE((void **)&certDesc.pKeyBlob);
+            DIGI_FREE((void **)&pEncodedKey);
+            DIGI_FREE((void **)&certDesc.pKeyBlob);
         }
     }
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__))
     if (ssh_CACert == NULL)
     {
         status = ERR_NULL_POINTER;
@@ -1058,12 +1060,12 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
     }
 
     /* Read the issuer/CACert certificate */
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
     if (OK > (status = DPM_readSignedFile(ssh_CACert,
                                        &caCert,
                                        &caCertLen, TRUE, DPM_CA_CERTS)))
 #else
-    if (OK > (status = MOCANA_readFile(ssh_CACert,
+    if (OK > (status = DIGICERT_readFile(ssh_CACert,
                                        &caCert,
                                        &caCertLen)))
 #endif
@@ -1072,12 +1074,12 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_PEM_CONVERSION__))
+#if (defined(__ENABLE_DIGICERT_PEM_CONVERSION__))
     status = CA_MGMT_decodeCertificate(caCert, caCertLen,
         &pTempCert, &tempCertLen);
     if (OK == status)
     {
-        status = MOC_FREE((void**)&caCert);
+        status = DIGI_FREE((void**)&caCert);
         if (OK != status)
             goto exit;
 
@@ -1097,10 +1099,10 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
 #endif
 
 
-#ifdef __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__
-#ifdef __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__
 
-    MOC_MEMSET((ubyte *)&tempCertificateDescr, 0, sizeof (certDescriptor));
+    DIGI_MEMSET((ubyte *)&tempCertificateDescr, 0, sizeof (certDescriptor));
     tempCertificateDescr.pCertificate = cacert;
     tempCertificateDescr.certLength = sizeof (cacert);
     if (OK > (status = CERT_STORE_addTrustPoint(*ppNewStore,
@@ -1126,10 +1128,10 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
 
 #else
 
-    if ((0 > (status = MOCANA_readFile((sbyte *)"rsa.der",
+    if ((0 > (status = DIGICERT_readFile((sbyte *)"rsa.der",
                                        &tempCertificateDescr.pCertificate,
                                        &tempCertificateDescr.certLength))) ||
-        (0 > (status = MOCANA_readFile((sbyte *)"rsakey.dat",
+        (0 > (status = DIGICERT_readFile((sbyte *)"rsakey.dat",
                                        &pKeyBlob,
                                        &keyBlobLength))) )
     {
@@ -1164,7 +1166,7 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
 
     CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
 #endif
-#endif /* __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__ */
 
 
 exit:
@@ -1172,28 +1174,28 @@ exit:
 
     if (NULL != pKeyBlob)
     {
-        MOC_FREE((void**)&pKeyBlob);
+        DIGI_FREE((void**)&pKeyBlob);
     }
 
-#if (defined(__ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__))
-    MOC_FREE((void**)&tempCertificateDescr.pKeyBlob);
+#if (defined(__ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__))
+    DIGI_FREE((void**)&tempCertificateDescr.pKeyBlob);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__))
     if(caCert)
-        MOC_FREE((void**)&caCert) ;
+        DIGI_FREE((void**)&caCert) ;
 #endif
-#ifdef __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__
     if(tempCertificateDescr.pKeyBlob)
-        MOC_FREE((void**)&tempCertificateDescr.pKeyBlob);
-#ifndef __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__
+        DIGI_FREE((void**)&tempCertificateDescr.pKeyBlob);
+#ifndef __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__
     if(tempCertificateDescr.pCertificate)
-        MOC_FREE((void**)&tempCertificateDescr.pCertificate);
+        DIGI_FREE((void**)&tempCertificateDescr.pCertificate);
 #endif
 #endif
     if (pKeyBlob)
     {
-        MOC_FREE((void**)&pKeyBlob);
+        DIGI_FREE((void**)&pKeyBlob);
     }
 
 nocleanup:
@@ -1204,7 +1206,7 @@ nocleanup:
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 static sbyte4
 SSH_EXAMPLE_pubkeyNotify(sbyte4 connectionInstance,
                          const ubyte *pUser,   ubyte4 userLength,
@@ -1226,14 +1228,14 @@ SSH_EXAMPLE_pubkeyNotify(sbyte4 connectionInstance,
         goto exit;
 
     /* always check the lengths first, there may not be a username or password */
-    if (userLength != MOC_STRLEN(ssh_UserName))
+    if (userLength != DIGI_STRLEN(ssh_UserName))
         goto exit;
 
     if (0 != memcmp(pUser, ssh_UserName, userLength))
         goto exit;
 
     /* make sure the client provided pubkey matches a pub key on file */
-    if (0 > MOCANA_readFile(AUTH_KEYFILE_NAME,
+    if (0 > DIGICERT_readFile(AUTH_KEYFILE_NAME,
                             &pStoredPublicKey,
                             &storedPublicKeyLength))
     {
@@ -1242,7 +1244,7 @@ SSH_EXAMPLE_pubkeyNotify(sbyte4 connectionInstance,
         ubyte *pRetEncodedAuthKey = NULL;
         ubyte4 pRetEncodedAuthKeyLen;
         SSH_UTILS_generateServerAuthKeyFile((ubyte*)pPubKey, pubKeyLength, &pRetEncodedAuthKey,&pRetEncodedAuthKeyLen);
-        MOCANA_writeFile(AUTH_KEYFILE_NAME, pRetEncodedAuthKey, pRetEncodedAuthKeyLen);
+        DIGICERT_writeFile(AUTH_KEYFILE_NAME, pRetEncodedAuthKey, pRetEncodedAuthKeyLen);
         if (pRetEncodedAuthKey != NULL)
         {
             FREE(pRetEncodedAuthKey);
@@ -1265,7 +1267,7 @@ SSH_EXAMPLE_pubkeyNotify(sbyte4 connectionInstance,
 
 exit:
     if (NULL != pStoredPublicKey)
-        MOCANA_freeReadFile(&pStoredPublicKey);
+        DIGICERT_freeReadFile(&pStoredPublicKey);
 
     return result;
 
@@ -1288,8 +1290,8 @@ SSH_EXAMPLE_certstatus(sbyte4 connectionInstance,
         goto exit ;
     }
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_MOCANA_OCSP_CLIENT__)) && \
-        (defined(__ENABLE_MOCANA_OCSP_CERT_VERIFY__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_DIGICERT_OCSP_CLIENT__)) && \
+        (defined(__ENABLE_DIGICERT_OCSP_CERT_VERIFY__)))
     status = OCSP_CLIENT_getCertStatus((sbyte *) ocsp_ResponderUrl, pCertificate,certLen,pCertChain, pAnchorCert, anchorCertLen  ) ;
 #endif
 
@@ -1313,7 +1315,7 @@ SSH_EXAMPLE_postAccept(sbyte4 connectionInstance, sbyte4 clientSocket)
         goto exit;
     }
 
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifdef __USE_DIGICERT_SSH_SERVER__
     if (OK > (status = SSH_assignCertificateStore(connectionInstance, pSshCertStore)))
     {
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_startServer: SSH_assignCertificateStore() failed, error = ", status);
@@ -1354,7 +1356,7 @@ SSH_EXAMPLE_simpleFileTransfer(sbyte4 connInstance, sbyte4 mesgType,
 
     while (1)
     {
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
         if (0 > (status = SSH_recvMessage(connInstance, &mesgType, pInBuffer,
                                 &numBytesReceived, 10000)))
         {
@@ -1370,7 +1372,7 @@ SSH_EXAMPLE_simpleFileTransfer(sbyte4 connInstance, sbyte4 mesgType,
 
         switch (mesgType)
         {
-#ifndef __ENABLE_MOCANA_SSH_SERIAL_CHANNEL__
+#ifndef __ENABLE_DIGICERT_SSH_SERIAL_CHANNEL__
             case SSH_SESSION_EOF:
 #endif
             case SSH_SESSION_CLOSED:
@@ -1399,7 +1401,7 @@ SSH_EXAMPLE_simpleCLI(sbyte4 connInstance, sbyte4 mesgType,
     /* shell: echo client input */
     while (1)
     {
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
         if (0 > (status = SSH_recvMessage(connInstance, &mesgType, pInBuffer,
                                           &numBytesReceived, 10000)))
         {
@@ -1479,7 +1481,7 @@ SSH_EXAMPLE_simpleCLI(sbyte4 connInstance, sbyte4 mesgType,
                             goto exit;
                         else if (('!' == pInBuffer[i]) && (3 == state))
                         {
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifdef __USE_DIGICERT_SSH_SERVER__
                             SSH_stopServer();
                             SSH_disconnectAllClients();
 #else
@@ -1531,7 +1533,7 @@ SSH_EXAMPLE_simpleExecCommands(sbyte4 connInstance, sbyte4 mesgType,
         if (0 > (status = SSH_sendMessage(connInstance, (sbyte *)"hello world\n", 12, &bytesSent)))
             goto exit;
 
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
         if (0 > (status = SSH_recvMessage(connInstance, &mesgType, pInBuffer,
                                           &numBytesReceived, 10000)))
         {
@@ -1574,7 +1576,7 @@ exit:
 }
 
 
-#if (defined(__ENABLE_MOCANA_SSH_SCP_REKEY_EXAMPLE__)  && defined(__ENABLE_MOCANA_SSH_EXEC__))
+#if (defined(__ENABLE_DIGICERT_SSH_SCP_REKEY_EXAMPLE__)  && defined(__ENABLE_DIGICERT_SSH_EXEC__))
 static sbyte4
 SSH_EXAMPLE_parseSCPCommand(sbyte *pCommand, ubyte4 commandLen, ubyte4 *pFileSize)
 {
@@ -1592,7 +1594,7 @@ SSH_EXAMPLE_parseSCPCommand(sbyte *pCommand, ubyte4 commandLen, ubyte4 *pFileSiz
             pCommand[i] = '\0';
         }
     }
-    ptr += (MOC_STRLEN(ptr) + 1);
+    ptr += (DIGI_STRLEN(ptr) + 1);
     fileSize = atoi(ptr);
 
     *pFileSize = fileSize;
@@ -1615,7 +1617,7 @@ SSH_EXAMPLE_simpleSCPReKeyExample(sbyte4 connInstance, sbyte4 mesgType,
     ubyte4 bytesWritten = 0;
     ubyte4 fileSize = 0;
     ubyte4 fileBytesRead = 0;
-#ifdef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifdef __ENABLE_DIGICERT_SSH_STREAM_API__
     ubyte pBuffer[SSH_SYNC_BUFFER_SIZE] = {0};
     ubyte4 bufferWritten = 0;
     intBoolean bytesPending = FALSE;
@@ -1634,7 +1636,7 @@ SSH_EXAMPLE_simpleSCPReKeyExample(sbyte4 connInstance, sbyte4 mesgType,
     /* shell: echo client input */
     while (1)
     {
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
         if (0 > (status = SSH_recvMessage(connInstance, &mesgType, pInBuffer,
                                           &numBytesReceived, timeout)))
         {
@@ -1651,7 +1653,7 @@ SSH_EXAMPLE_simpleSCPReKeyExample(sbyte4 connInstance, sbyte4 mesgType,
         switch (mesgType)
         {
             case SSH_SESSION_DATA:
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
                 SSH_EXAMPLE_displayCommand(pInBuffer, numBytesReceived);
                 if ('C' == pInBuffer[0]) {
                     if (0 > (status = SSH_EXAMPLE_parseSCPCommand(pInBuffer, numBytesReceived, &fileSize)))
@@ -1750,13 +1752,13 @@ exit:
     FMGMT_fclose(&pFileCtx);
     return status;
 }
-#endif /* (defined(__ENABLE_MOCANA_SSH_SCP_REKEY_EXAMPLE__)  && defined(__ENABLE_MOCANA_SSH_EXEC__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SCP_REKEY_EXAMPLE__)  && defined(__ENABLE_DIGICERT_SSH_EXEC__)) */
 /*------------------------------------------------------------------*/
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_SERIAL_CHANNEL__
+#ifdef __ENABLE_DIGICERT_SSH_SERIAL_CHANNEL__
 static void
 SSH_EXAMPLE_simpleSerialChannelDemo(sbyte4 connInstance)
 {
@@ -1793,7 +1795,7 @@ SSH_EXAMPLE_simpleSerialChannelDemo(sbyte4 connInstance)
             if ((sbyte4)SSH_SESSION_CLOSED == mesgType)
             goto exit;
 
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
             if (0 > (status = SSH_recvMessage(connInstance, &mesgType, pInBuffer,
                                               &numBytesReceived, 0)))
             {
@@ -1835,7 +1837,7 @@ exit:
     if (0 > status)
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_simpleSerialChannelDemo: status = ", status);
 
-#ifndef __USE_MOCANA_SSH_SERVER__
+#ifndef __USE_DIGICERT_SSH_SERVER__
     TCP_CLOSE_SOCKET(socket);
 #endif
 
@@ -1881,7 +1883,7 @@ SSH_EXAMPLE_simpleDemo(sbyte4 connInstance)
         if ((sbyte4)SSH_SESSION_CLOSED == mesgType)
 	    goto exit;
 
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
         if (0 > (status = SSH_recvMessage(connInstance, &mesgType, pInBuffer,
                                           &numBytesReceived, 0)))
         {
@@ -1904,7 +1906,7 @@ SSH_EXAMPLE_simpleDemo(sbyte4 connInstance)
     else if ((sbyte4)SSH_SESSION_OPEN_EXEC == mesgType)
     {
         /* handle ssh exec open */
-#if (defined(__ENABLE_MOCANA_SSH_SCP_REKEY_EXAMPLE__)  && defined(__ENABLE_MOCANA_SSH_EXEC__))
+#if (defined(__ENABLE_DIGICERT_SSH_SCP_REKEY_EXAMPLE__)  && defined(__ENABLE_DIGICERT_SSH_EXEC__))
         status = SSH_EXAMPLE_simpleSCPReKeyExample(connInstance, mesgType, pInBuffer, numBytesReceived);
 #else
         status = SSH_EXAMPLE_simpleExecCommands(connInstance, mesgType, pInBuffer, numBytesReceived);
@@ -1921,13 +1923,16 @@ exit:
         FREE(pInBuffer);
 
     /* free up any data stored in the cookie */
-    if (0 < connInstance)
+    if (0 < connInstance) {
         SSH_closeConnection(connInstance, status);
+        /* Give client time to receive close messages and respond before thread exits */
+        RTOS_sleepMS(2000);
+    }
 
     if (0 > status)
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_simpleDemo: status = ", status);
 
-#ifndef __USE_MOCANA_SSH_SERVER__
+#ifndef __USE_DIGICERT_SSH_SERVER__
     TCP_CLOSE_SOCKET(socket);
 #endif
 
@@ -1942,7 +1947,7 @@ static void
 SSH_EXAMPLE_simpleDemoThreadEntry(void* hconnInstance)
 {
     sbyte8 connInstance = (sbyte8)((uintptr)hconnInstance);
-#ifdef __ENABLE_MOCANA_SSH_SERIAL_CHANNEL__
+#ifdef __ENABLE_DIGICERT_SSH_SERIAL_CHANNEL__
     SSH_EXAMPLE_simpleSerialChannelDemo((sbyte4)connInstance);
 #else
     SSH_EXAMPLE_simpleDemo((sbyte4)connInstance);
@@ -1951,7 +1956,7 @@ SSH_EXAMPLE_simpleDemoThreadEntry(void* hconnInstance)
 
 /*------------------------------------------------------------------*/
 
-#ifndef __USE_MOCANA_SSH_SERVER__
+#ifndef __USE_DIGICERT_SSH_SERVER__
 static void
 SSH_EXAMPLE_startServer(void)
 {
@@ -1971,7 +1976,7 @@ SSH_EXAMPLE_startServer(void)
     DEBUG_INT(DEBUG_SSH_EXAMPLE, (sbyte4)SSH_sshSettings()->sshListenPort);
     DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, (sbyte *)"");
 
-    MOCANA_log(MOCANA_SSH, LS_INFO, (sbyte *)"SSH EXAMPLE server listening for clients");
+    DIGICERT_log(MOCANA_SSH, LS_INFO, (sbyte *)"SSH EXAMPLE server listening for clients");
 
 
     while (1)
@@ -2015,13 +2020,14 @@ SSH_EXAMPLE_startServer(void)
             goto exit;
         }
 
-	if (tid != NULL)
-	    RTOS_destroyThread(tid);
-	tid = NULL;
+        /* Store thread handle for later joining */
+        if (g_numClientThreads < MAX_SSH_CONNECTIONS_ALLOWED) {
+            g_clientThreads[g_numClientThreads++] = tid;
+        }
     }
 
 exit:
-#if defined(__ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
+#if defined(__ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
     RADIUS_shutdown();
 #endif
 
@@ -2031,7 +2037,7 @@ nocleanup:
     return;
 
 } /* SSH_EXAMPLE_startServer */
-#endif /* __USE_MOCANA_SSH_SERVER__ */
+#endif /* __USE_DIGICERT_SSH_SERVER__ */
 
 
 /*------------------------------------------------------------------*/
@@ -2041,17 +2047,17 @@ SSH_EXAMPLE_authMethod(sbyte4 connectionInstance)
 {
     MOC_UNUSED(connectionInstance);
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
     /* allows dynamic enable / disable of authentication methods */
     return (MOCANA_SSH_AUTH_PUBLIC_KEY | MOCANA_SSH_AUTH_PASSWORD
-#ifdef __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__
             | MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE
 #endif
             );
 #else
     /* allows dynamic enable / disable of authentication methods */
     return (MOCANA_SSH_AUTH_PASSWORD
-#ifdef __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__
             | MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE
 #endif
             );
@@ -2062,14 +2068,14 @@ SSH_EXAMPLE_authMethod(sbyte4 connectionInstance)
 static void
 setParameter(char ** param, char *value)
 {
-	if (OK > MOC_MALLOC((void **)param, (MOC_STRLEN((const sbyte *)value))+1))
+	if (OK > DIGI_MALLOC((void **)param, (DIGI_STRLEN((const sbyte *)value))+1))
         return;
 
     if (NULL == *param)
         return;
 
-    (void) MOC_MEMCPY(*param, value, MOC_STRLEN((const sbyte *)value));
-    (*param)[MOC_STRLEN((const sbyte *)value)] = '\0';
+    (void) DIGI_MEMCPY(*param, value, DIGI_STRLEN((const sbyte *)value));
+    (*param)[DIGI_STRLEN((const sbyte *)value)] = '\0';
 }
 
 /*------------------------------------------------------------------*/
@@ -2087,8 +2093,8 @@ SSH_EXAMPLE_displayHelp(char *prog)
     printf("    -ssh_ca_cert <ca_cert>     sets the CA certificate\n");
     printf("    -ocsp_responder_url <url>  sets the OCSP Responder URL\n");
     printf("    -ocsp_timeout <timeout>    sets the OCSP Wait Timeout(in ms)\n");
-#if (defined(__ENABLE_MOCANA_TAP__))
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (defined(__ENABLE_DIGICERT_TAP__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
     printf("    -tap_server_port <tap_server_port> TAP server port\n");
     printf("    -tap_server_name <tap_server_name> TAP server name\n");
 #endif
@@ -2107,9 +2113,9 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
     sbyte4 status = 0;
     int i = 0, userSet = 0, pwdSet = 0;
     char *temp;
-#if (defined(__ENABLE_MOCANA_TAP__))
+#if (defined(__ENABLE_DIGICERT_TAP__))
     int tapConfigFileSet = 0;
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
     int tapServerNameSet = 0, tapServerPortSet = 0;
 #endif
 #endif
@@ -2122,16 +2128,16 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 
     for (i = 1; i < argc; i++) /*Skiping argv[0] which is example progam name*/
     {
-		if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-port") == 0)
+		if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-port") == 0)
 		{
 			if (++i < argc)
 			{
 				temp = argv[i];
-				ssh_ServerPort = (unsigned short) MOC_ATOL((const sbyte *)temp,NULL);
+				ssh_ServerPort = (unsigned short) DIGI_ATOL((const sbyte *)temp,NULL);
 			}
 			continue;
 		}
-        else if (MOC_STRCMP((sbyte *)argv[i], (sbyte *) "-username") == 0)
+        else if (DIGI_STRCMP((sbyte *)argv[i], (sbyte *) "-username") == 0)
         {
             if (++i < argc)
             {
@@ -2140,7 +2146,7 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
             }
             continue;
         }
-        else if (MOC_STRCMP((sbyte *) argv[i], (sbyte *) "-password") == 0)
+        else if (DIGI_STRCMP((sbyte *) argv[i], (sbyte *) "-password") == 0)
         {
             if (++i < argc)
             {
@@ -2149,7 +2155,7 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
             }
             continue;
         }
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ssh_server_cert") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ssh_server_cert") == 0)
 		{
 			if (++i < argc)
 			{
@@ -2157,7 +2163,7 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 			}
 			continue;
 		}
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ssh_server_blob") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ssh_server_blob") == 0)
 		{
 			if (++i < argc)
 			{
@@ -2165,7 +2171,7 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 			}
 			continue;
 		}
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ssh_ca_cert") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ssh_ca_cert") == 0)
 		{
 			if (++i < argc)
 			{
@@ -2173,7 +2179,7 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 			}
 			continue;
 		}
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ocsp_responder_url") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ocsp_responder_url") == 0)
 		{
 			if (++i < argc)
 			{
@@ -2181,23 +2187,23 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 			}
 			continue;
 		}
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ocsp_timeout") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-ocsp_timeout") == 0)
 		{
 			if (++i < argc)
 			{
 				temp = argv[i];
-				ocsp_Timeout= (ubyte4) MOC_ATOL((const sbyte *)temp,NULL);
+				ocsp_Timeout= (ubyte4) DIGI_ATOL((const sbyte *)temp,NULL);
 			}
 			continue;
 		}
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-disable_password_expiry") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-disable_password_expiry") == 0)
         {
             ssh_disablePasswordExpiryTest = TRUE;
             continue;
         }
-#if (defined(__ENABLE_MOCANA_TAP__))
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tap_server_name") == 0)
+#if (defined(__ENABLE_DIGICERT_TAP__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tap_server_name") == 0)
         {
             if (++i < argc)
             {
@@ -2206,18 +2212,18 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
             }
             continue;
         }
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tap_server_port") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tap_server_port") == 0)
         {
             if (++i < argc)
             {
                 temp = argv[i];
-                taps_ServerPort = (unsigned short) MOC_ATOL((const sbyte *)temp,NULL);
+                taps_ServerPort = (unsigned short) DIGI_ATOL((const sbyte *)temp,NULL);
                 tapServerPortSet = 1;
             }
             continue;
         }
 #endif
-        else if (MOC_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tap_config_file") == 0)
+        else if (DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tap_config_file") == 0)
         {
             if (++i < argc)
             {
@@ -2239,8 +2245,8 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
         setParameter(&ssh_Password, PASSWORD);
     }
 
-#if (defined(__ENABLE_MOCANA_TAP__))
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (defined(__ENABLE_DIGICERT_TAP__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
     if (!tapServerNameSet)
     {
     	DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, "Mandatory argument tap_server_name NOT set");
@@ -2263,7 +2269,7 @@ SSH_EXAMPLE_getArgs(int argc, char *argv[])
 
 /*------------------------------------------------------------------*/
 /* If application wants to use the serverBlob only when stack has
- * __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__ flag enabled, make sure to
+ * __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__ flag enabled, make sure to
  * disable the x509v3* mHosyKeySuites entry.\
  */
 static sbyte4
@@ -2272,7 +2278,7 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
     ubyte*      pKeyBlob = NULL;
     ubyte4      keyBlobLen;
     MSTATUS     status = OK;
-#if (defined(__ENABLE_MOCANA_SSH_SERVER_CERT_AUTH__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER_CERT_AUTH__))
     ubyte4      numCertificate = 1;
     SizedBuffer certificates = {0};
     SizedBuffer tempCertificate = {0};
@@ -2280,7 +2286,7 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
     certDescriptor certDesc = {0};
     AsymmetricKey asymKey={0};
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     ubyte*      caCert = NULL;
     ubyte4      caCertLen;
     ubyte*      pTempCert = NULL;
@@ -2297,7 +2303,7 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER_CERT_AUTH__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER_CERT_AUTH__))
     if (ssh_ServerCert == NULL)
     {
         status = ERR_NULL_POINTER;
@@ -2307,22 +2313,22 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
     /* We need an issuer certificate(CACert) for getOCSP and validateOCSP;
      * We need CACert for validation if client is authenticating itself using a certificate.
      */
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     if (ssh_CACert == NULL)
     {
         status = ERR_NULL_POINTER;
         goto exit;
     }
-#endif /* __ENABLE_MOCANA_SSH_OCSP_SUPPORT__ || __ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__ */
-#endif /* __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_SSH_OCSP_SUPPORT__ || __ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__ */
+#endif /* __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__ */
 
     /* Read the corresponding Key */
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
-    if (OK > (status = MOCANA_readFileEx(ssh_ServerBlob,
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
+    if (OK > (status = DIGICERT_readFileEx(ssh_ServerBlob,
                                        &pKeyBlob,
                                        &keyBlobLen, TRUE)))
 #else
-    if (OK > (status = MOCANA_readFile(ssh_ServerBlob,
+    if (OK > (status = DIGICERT_readFile(ssh_ServerBlob,
                                        &pKeyBlob,
                                        &keyBlobLen)))
 #endif
@@ -2343,14 +2349,14 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
     if (OK != status)
         goto exit;
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER_CERT_AUTH__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER_CERT_AUTH__))
     /* Read the certificate used for authentication */
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
     if (OK > (status = DPM_readSignedFile(ssh_ServerCert,
                                        &certificates.data,
                                        &certificates.length, TRUE, DPM_CERTS)))
 #else
-    if (OK > (status = MOCANA_readFile(ssh_ServerCert,
+    if (OK > (status = DIGICERT_readFile(ssh_ServerCert,
                                        &certificates.data,
                                        &certificates.length)))
 #endif
@@ -2358,12 +2364,12 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "failed to read server cert. status = %d\n", status);
         goto exit;
     }
-#if (defined(__ENABLE_MOCANA_PEM_CONVERSION__))
+#if (defined(__ENABLE_DIGICERT_PEM_CONVERSION__))
     status = CA_MGMT_decodeCertificate(certificates.data, certificates.length,
         &tempCertificate.data, &tempCertificate.length);
     if (OK == status)
     {
-        status = MOC_FREE((void**)&certificates.data);
+        status = DIGI_FREE((void**)&certificates.data);
         if (OK != status)
             goto exit;
 
@@ -2382,14 +2388,14 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
         DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_loadCertificate: Failed to read server cert. status = %d\n", status);
         goto exit;
     }
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     /* Read the issuer/CACert certificate */
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
     if (OK > (status = DPM_readSignedFile(ssh_CACert,
                                        &caCert,
                                        &caCertLen, TRUE, DPM_CA_CERTS)))
 #else
-    if (OK > (status = MOCANA_readFile(ssh_CACert,
+    if (OK > (status = DIGICERT_readFile(ssh_CACert,
                                        &caCert,
                                        &caCertLen)))
 #endif
@@ -2398,12 +2404,12 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_PEM_CONVERSION__))
+#if (defined(__ENABLE_DIGICERT_PEM_CONVERSION__))
     status = CA_MGMT_decodeCertificate(caCert, caCertLen,
         &pTempCert, &tempCertLen);
     if (OK == status)
     {
-        status = MOC_FREE((void**)&caCert);
+        status = DIGI_FREE((void**)&caCert);
         if (OK != status)
             goto exit;
 
@@ -2417,7 +2423,7 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
     {
         goto exit;
     }
-#endif /* ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__))) */
+#endif /* ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__))) */
 #else
 
     if (OK > (status = CERT_STORE_addIdentityNakedKey(*ppCertStore, certDesc.pKeyBlob,
@@ -2425,7 +2431,7 @@ SSH_EXAMPLE_loadCertificate(certStorePtr *ppCertStore)
         goto exit;
 
 #endif
-#if (defined(__ENABLE_MOCANA_TPM__))
+#if (defined(__ENABLE_DIGICERT_TPM__))
     AsymmetricKey *pRetKey = NULL;
       /* After adding a TPM RSA key to a cert store, you must reassign the secmod context to the key */
       /* We do this by retrieving the key from the cert store, then setting the context to the key */
@@ -2450,22 +2456,22 @@ exit:
     CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
     if (pKeyBlob)
     {
-        MOC_FREE((void**)&pKeyBlob);
+        DIGI_FREE((void**)&pKeyBlob);
     }
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) || (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     if(caCert)
-        MOC_FREE((void**)&caCert);
+        DIGI_FREE((void**)&caCert);
 
     if (NULL != pTempCert)
-        MOC_FREE((void**)&pTempCert);
+        DIGI_FREE((void**)&pTempCert);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER_CERT_AUTH__))
-    MOC_FREE((void**)&certificates.data);
-    MOC_FREE((void**)&tempCertificate.data);
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER_CERT_AUTH__))
+    DIGI_FREE((void**)&certificates.data);
+    DIGI_FREE((void**)&tempCertificate.data);
 #endif
-    MOC_FREE((void**)&certDesc.pKeyBlob);
+    DIGI_FREE((void**)&certDesc.pKeyBlob);
 nocleanup:
     return status;
 }
@@ -2473,7 +2479,7 @@ nocleanup:
 /*------------------------------------------------------------------*/
 
 /* This is only for build the SSL client using Microsoft Visual Studio project */
-#if defined(__ENABLE_MOCANA_WIN_STUDIO_BUILD__) && !defined(__ENABLE_CMAKE_BUILD__)
+#if defined(__ENABLE_DIGICERT_WIN_STUDIO_BUILD__) && !defined(__ENABLE_CMAKE_BUILD__)
 int main(int argc, char *argv[])
 {
 	void* dummy = NULL;
@@ -2483,8 +2489,10 @@ SSH_EXAMPLE_main(sbyte4 dummy)
 {
 #endif
 	MSTATUS status = OK;
+    MSTATUS joinStatus = OK;
+    sbyte4 i;
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
     if (NULL != gMemPartDescr)
     {
         /* make sure it's thread-safe! */
@@ -2497,11 +2505,11 @@ SSH_EXAMPLE_main(sbyte4 dummy)
         goto exit;
 #endif
 
-#if defined(__ENABLE_MOCANA_WIN_STUDIO_BUILD__) && !defined(__ENABLE_CMAKE_BUILD__)
+#if defined(__ENABLE_DIGICERT_WIN_STUDIO_BUILD__) && !defined(__ENABLE_CMAKE_BUILD__)
 	if (OK > ( status = SSH_EXAMPLE_getArgs(argc, argv))) /* Initialize parameters to default values */
 		return status;
 
-	if (OK > (status = MOCANA_initMocana()))
+	if (OK > (status = DIGICERT_initDigicert()))
       goto exit;
 #endif
 
@@ -2513,7 +2521,7 @@ SSH_EXAMPLE_main(sbyte4 dummy)
     if (0 > SSH_init(MAX_SSH_CONNECTIONS_ALLOWED))
         goto exit;
 
-#ifdef __ENABLE_MOCANA_TPM__
+#ifdef __ENABLE_DIGICERT_TPM__
 #ifdef __USE_TPM_EMULATOR__
     if (OK > (status = MOCTAP_initSecurityDescriptor(NULL, NULL, NULL, secmod_TPM12RSAKey, 9, (ubyte *)"localhost", &mh)))
     {
@@ -2527,9 +2535,9 @@ SSH_EXAMPLE_main(sbyte4 dummy)
         goto exit;
     }
 #endif /* __USE_TPM_EMULATOR__ */
-#endif /* __ENABLE_MOCANA_TPM__ */
+#endif /* __ENABLE_DIGICERT_TPM__ */
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
     if (OK != (status = SSH_EXAMPLE_InitializeTapContext(tap_ConfigFile, &g_pTapContext,
                                                          &g_pTapEntityCred,
                                                          &g_pTapKeyCred)))
@@ -2554,17 +2562,17 @@ SSH_EXAMPLE_main(sbyte4 dummy)
     }
     else
     {
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
         /* if necessary, create host keys */
         if (OK > (status = SSH_EXAMPLE_sshCertStoreInit(&pSshCertStore)))
             goto exit;
 #else
         if ( OK > (status = SSH_EXAMPLE_sshCertStoreInitFS(&pSshCertStore)))
             goto exit;
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
     }
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     SFTP_EXAMPLE_init();
 #endif
 
@@ -2579,13 +2587,13 @@ SSH_EXAMPLE_main(sbyte4 dummy)
 
     SSH_sshSettings()->pBannerString                    = (sbyte *)SSH_EXAMPLE_banner;
     SSH_sshSettings()->funcPtrGetAuthAdvertizedMethods  = SSH_EXAMPLE_authMethod;
-#if defined(__ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
+#if defined(__ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
     SSH_sshSettings()->funcPtrPasswordAuth              = SSH_RADIUS_EXAMPLE_authPasswordFunction;
 #else
     SSH_sshSettings()->funcPtrPasswordAuth              = SSH_EXAMPLE_authPasswordFunction;
 #endif
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
     SSH_sshSettings()->funcPtrPubKeyAuth                = SSH_EXAMPLE_pubkeyNotify;
 #endif
     SSH_sshSettings()->funcPtrCertStatus                = SSH_EXAMPLE_certstatus ;
@@ -2594,28 +2602,37 @@ SSH_EXAMPLE_main(sbyte4 dummy)
 
     SSH_sshSettings()->sshListenPort	        		= ssh_ServerPort;
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_MOCANA_OCSP_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_DIGICERT_OCSP_CLIENT__)))
     SSH_sshSettings()->pOcspResponderUrl                = (sbyte *)ocsp_ResponderUrl;
-#if (defined(__ENABLE_MOCANA_OCSP_TIMEOUT_CONFIG__))
+#if (defined(__ENABLE_DIGICERT_OCSP_TIMEOUT_CONFIG__))
     SSH_sshSettings()->ocspTimeout                      = ocsp_Timeout;
 #endif
 #endif
 
     /* startup the SSH Server */
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifdef __USE_DIGICERT_SSH_SERVER__
     SSH_startServer();
 #else
     SSH_EXAMPLE_startServer();
 #endif
 
 exit:
-    SSH_shutdown();
+    /* Wait for all client threads to finish by joining them */
+    for (i = 0; i < g_numClientThreads; i++) {
+        if (NULL != g_clientThreads[i]) {
+            joinStatus = RTOS_joinThread(g_clientThreads[i], NULL);
+            if (OK != joinStatus) {
+                DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "Failed to join thread, status = ", joinStatus);
+            }
+        }
+    }
 
+    SSH_shutdown();
     SSH_releaseTables();
-#ifdef __ENABLE_MOCANA_TPM__
+#ifdef __ENABLE_DIGICERT_TPM__
     MOCTAP_deinitializeTPMKeyContext(mh, &reqKeyContext) ;
 #endif
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
     TAP_ErrorContext *pErrContext = NULL;
 
     TAP_uninit(pErrContext);
@@ -2632,17 +2649,17 @@ exit:
         status = TAP_UTILS_clearEntityCredentialList(g_pTapEntityCred);
         if (OK != status)
             printf("TAP_UTILS_clearEntityCredentialList: %d\n", status);
-        MOC_FREE((void **)&g_pTapEntityCred);
+        DIGI_FREE((void **)&g_pTapEntityCred);
     }
-#if (defined(__ENABLE_MOCANA_TAP_REMOTE__))
+#if (defined(__ENABLE_DIGICERT_TAP_REMOTE__))
     if (NULL != taps_ServerName)
     {
-        MOC_FREE((void **)&taps_ServerName);
+        DIGI_FREE((void **)&taps_ServerName);
     }
 #endif
     if (NULL != tap_ConfigFile)
     {
-        MOC_FREE((void **)&tap_ConfigFile);
+        DIGI_FREE((void **)&tap_ConfigFile);
     }
 #endif
 
@@ -2665,5 +2682,5 @@ exit:
     return status;
 }
 
-#endif /* (defined( __ENABLE_MOCANA_SSH_SERVER_EXAMPLE__ ) && !defined( __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ ) && !defined(__ENABLE_MOCANA_SSH_PORT_FORWARDING__)) */
+#endif /* (defined( __ENABLE_DIGICERT_SSH_SERVER_EXAMPLE__ ) && !defined( __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ ) && !defined(__ENABLE_DIGICERT_SSH_PORT_FORWARDING__)) */
 

@@ -1,0 +1,59 @@
+name: Crypto Unit Tests
+
+on:
+  pull_request:
+    paths:
+      - projects/crypto_unittest/**
+      - src/common/**
+      - src/crypto/**
+      - src/fips/**
+
+permissions:
+  contents: read
+
+jobs:
+  UnitTest:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: trustcore-test
+
+      - name: Checkout conditional tests
+        uses: actions/checkout@v4
+        with:
+          repository: digicert/device-trust-jenkins-conditional-tests
+          ref: main
+          path: jct
+          token: ${{ secrets.GIT_ACCESS_TOKEN }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install ruby-full cproto cmake
+          python3 -m pip install --upgrade jenkinsapi
+          sudo apt-get install ninja-build
+          sudo apt-get install -y lcov
+          lcov --version
+          
+      - name: Build and Run Unit Tests
+        run: |
+          cd trustcore-test/projects/crypto_unittest
+          CM_ENV_CODE_COVERAGE=1 ./build.sh
+          ./run.sh
+          cd ../../../
+
+      - name: Baseline Coverage
+        run: |
+          lcov --no-external --capture --initial --directory . --output-file /tmp/crypto_base.info
+
+      - name: Capture Coverage
+        run: |
+          lcov --no-external --capture --directory . --output-file /tmp/crypto_test.info
+          lcov --add-tracefile /tmp/crypto_base.info --add-tracefile /tmp/crypto_test.info --output-file /tmp/crypto_total.info
+
+      - name: Print Coverage Summary
+        run: |
+          echo "Coverage Summary:"
+          lcov --list /tmp/crypto_total.info

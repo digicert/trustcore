@@ -17,7 +17,7 @@
 /* Add to your makefile */
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_SSH_SERVER_EXAMPLE__) || defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_MOCANA_SSH_FTP_SERVER__))
+#if ((defined(__ENABLE_DIGICERT_SSH_SERVER_EXAMPLE__) || defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__))
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
 #include "../crypto/hw_accel.h"
@@ -102,10 +102,10 @@ createPathName(const sbyte *pLongPath, sbyte *pFilename)
     sbyte4  nameLength;
 
     /* example function, which combines the path and file name */
-    if ((NULL == pLongPath) || (0 == (longLength = MOC_STRLEN((const sbyte *)pLongPath))))
+    if ((NULL == pLongPath) || (0 == (longLength = DIGI_STRLEN((const sbyte *)pLongPath))))
         longLength = 0;
 
-    if ((NULL == pFilename) || (0 == (nameLength = MOC_STRLEN((const sbyte *)pFilename))))
+    if ((NULL == pFilename) || (0 == (nameLength = DIGI_STRLEN((const sbyte *)pFilename))))
         nameLength = 0;
 
     if (NULL == (pFullPath = malloc(1 + longLength + 1 + nameLength + 1)))
@@ -662,10 +662,10 @@ SFTP_EXAMPLE_handleReadDynamicDirectory(sbyte4 connectionInstance, sbyte *pLongD
             return SSH_FTP_FAILURE;
 
     /* copy data --- just care about the file name */
-    if ((0 == MOC_STRLEN((const sbyte *)fd.cAlternateFileName)) || (SFTP_MAX_FILENAME_LENGTH > MOC_STRLEN((const sbyte*)fd.cFileName)))
+    if ((0 == DIGI_STRLEN((const sbyte *)fd.cAlternateFileName)) || (SFTP_MAX_FILENAME_LENGTH > DIGI_STRLEN((const sbyte*)fd.cFileName)))
     {
         strncpy((sbyte *)(p_sftpFileDescr->fileName),(const char*) fd.cFileName, SFTP_MAX_FILENAME_LENGTH);
-        if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cFileName)))
+        if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = DIGI_STRLEN((const sbyte*)fd.cFileName)))
         {
             /* if source is equal to or greater than specified limit, no null terminator is appended */
             p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH - 1] = '\0';
@@ -675,7 +675,7 @@ SFTP_EXAMPLE_handleReadDynamicDirectory(sbyte4 connectionInstance, sbyte *pLongD
     else
     {
         strncpy((sbyte *)(p_sftpFileDescr->fileName), (const char *)fd.cAlternateFileName, SFTP_MAX_FILENAME_LENGTH);
-        if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = MOC_STRLEN((const sbyte*)fd.cAlternateFileName)))
+        if (SFTP_MAX_FILENAME_LENGTH =< (p_sftpFileDescr->fileNameLength = DIGI_STRLEN((const sbyte*)fd.cAlternateFileName)))
         {
             /* if source is equal to or greater than specified limit, no null terminator is appended */
             p_sftpFileDescr->fileName[SFTP_MAX_FILENAME_LENGTH - 1] = '\0';
@@ -784,7 +784,7 @@ SFTP_EXAMPLE_handleReadDynamicDirectory(sbyte4 connectionInstance, sbyte *pLongD
         {
             sbyte4 length = entry.nameLength;
 
-            if ((2 >= length) && ((0 == MOC_STRCMP((sbyte *) entry.pName, (sbyte *) ".")) || (0 == MOC_STRCMP((sbyte *) entry.pName, (sbyte *) ".."))))
+            if ((2 >= length) && ((0 == DIGI_STRCMP((sbyte *) entry.pName, (sbyte *) ".")) || (0 == DIGI_STRCMP((sbyte *) entry.pName, (sbyte *) ".."))))
                 goto next;
 
             if (length > (SFTP_MAX_FILENAME_LENGTH-1))
@@ -929,4 +929,4 @@ SFTP_EXAMPLE_init(void)
     SSH_sftpSettings()->funcPtrRemoveDir       = SFTP_EXAMPLE_handleRemoveDirectory;
 }
 
-#endif /* ((defined(__ENABLE_MOCANA_SSH_SERVER_EXAMPLE__) || defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_MOCANA_SSH_FTP_SERVER__)) */
+#endif /* ((defined(__ENABLE_DIGICERT_SSH_SERVER_EXAMPLE__) || defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__)) */

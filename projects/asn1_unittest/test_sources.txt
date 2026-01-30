@@ -1,0 +1,5 @@
+MSS_TEST_DIR/derencoder_test.c
+MSS_TEST_DIR/mocdecode_test.c
+MSS_TEST_DIR/mocencode_test.c
+MSS_TEST_DIR/parseasn1_test.c
+MSS_TEST_DIR/parsecert_test.c

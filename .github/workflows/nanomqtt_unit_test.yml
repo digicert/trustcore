@@ -4,6 +4,8 @@ on:
   workflow_dispatch: {}
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   mqtt-unit-tests:
@@ -16,17 +18,27 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y cmake libcmocka-dev
+        sudo apt install -y cmake libcmocka-dev lcov
         cmake --version
 
     - name: Build NanoMQTT with Unit Tests
+      env:
+        CM_ENV_CODE_COVERAGE: 1
       run: |
-        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -B build -S .
+        cmake -DENABLE_MQTT_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -B build -S .
         cmake --build build
+
+    - name: Baseline Coverage
+      run: |
+        lcov --no-external --capture --initial --directory . --output-file /tmp/mqtt_base.info
 
     - name: Run NanoMQTT Unit Tests
       run: |
         ./projects/mqtt_testunit/run.sh
+
+    - name: Capture Coverage
+      run: |
+        lcov --no-external --capture --directory . --output-file /tmp/mqtt_test.info
 
     - name: Clean Non-Streaming Binaries
       run: |
@@ -35,13 +47,37 @@ jobs:
         echo "✅ Cleanup complete"
 
     - name: Build NanoMQTT Unit Tests with Streaming Enabled
+      env:
+        CM_ENV_CODE_COVERAGE: 1
       run: |
-        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -DENABLE_MQTT_STREAMING=ON -B build_streaming -S .
+        cmake -DENABLE_MQTT_CLIENT=ON -DENABLE_MQTT_UNITTEST=ON -DENABLE_MQTT_STREAMING=ON -B build_streaming -S .
         cmake --build build_streaming
+
+    - name: Baseline Coverage for Streaming
+      run: |
+        lcov --no-external --capture --initial --directory . --output-file /tmp/mqtt_base_streaming.info
 
     - name: Run NanoMQTT Unit Tests with Streaming Enabled
       run: |
         ./projects/mqtt_testunit/run.sh --streaming
+
+    - name: Capture Coverage for Streaming
+      run: |
+        lcov --no-external --capture --directory . --output-file /tmp/mqtt_test_streaming.info
+
+    - name: Combine All Coverage
+      run: |
+        lcov --add-tracefile /tmp/mqtt_base.info \
+             --add-tracefile /tmp/mqtt_test.info \
+             --add-tracefile /tmp/mqtt_base_streaming.info \
+             --add-tracefile /tmp/mqtt_test_streaming.info \
+             --output-file /tmp/mqtt_combined.info
+
+    - name: Print Combined Coverage Summary
+      run: |
+        echo "Combined MQTT Coverage Summary:"
+        lcov --extract /tmp/mqtt_combined.info '*/mqtt/*' --output-file /tmp/mqtt_filtered.info
+        lcov --list /tmp/mqtt_filtered.info
 
     - name: Show Job Status
       run: echo "🍏 This job's status is ${{ job.status }}."

@@ -1,0 +1,2 @@
+MSS_SRC_DIR/common/win32crypto.c
+MSS_SRC_DIR/common/win32oid.c

@@ -20,6 +20,8 @@ if (WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
+include(../shared_cmake/osi.txt)
+
 # Where to find CMake files
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../shared_cmake)
 include(MocPlatform)
@@ -126,7 +128,7 @@ if(WIN32)
 endif()
 
 if (CM_ENABLE_TAP_DATA_PROTECT)
-  set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__ENABLE_MOCANA_TAP__")
+  set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__ENABLE_DIGICERT_TAP__")
 endif()
 
 if(CM_ENABLE_MEM_PROFILE)
@@ -158,19 +160,19 @@ if(NOT CM_DISABLE_CI)
 endif()
 
 if (CM_ENABLE_FORCE_ENTROPY)
-    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__MOCANA_FORCE_ENTROPY__")
+    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__DIGICERT_FORCE_ENTROPY__")
 endif()
 
 if (CM_ENABLE_CUSTOM_ENTROPY)
-    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__")
+    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__")
 endif()
 
 if (CM_ENABLE_IPV6)
-    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__ENABLE_MOCANA_IPV6__")
+    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__ENABLE_DIGICERT_IPV6__")
 endif()
 
 if (CM_DISABLE_TCP_INIT)
-    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__DISABLE_MOCANA_TCP_INTERFACE__")
+    set(MOCANA_FLAGS "${MOCANA_FLAGS} -D__DISABLE_DIGICERT_TCP_INTERFACE__")
 endif()
 
 # Load the flags into the build
@@ -190,6 +192,11 @@ add_definitions("${EXTRA_DEFINITIONS}")
 # Add include directories defined in mss_includes.txt
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_includes.txt" MSS_INCLUDES)
 string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MSS_INCLUDES "${MSS_INCLUDES}")
+if(BUILD_FOR_OSI OR USE_OSI_PATH)
+  string(REGEX REPLACE "EXAMPLE_DIR" "../samples/common" MSS_INCLUDES "${MSS_INCLUDES}")
+else()
+  string(REGEX REPLACE "EXAMPLE_DIR" "examples" MSS_INCLUDES "${MSS_INCLUDES}")
+endif()
 
 include_directories("." ${MSS_INCLUDES})
 
@@ -208,10 +215,10 @@ endforeach()
 # Add file sources from mss_sources.txt
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/mss_sources.txt" MSS_SOURCES)
 string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MSS_SOURCES "${MSS_SOURCES}")
-if(BUILD_FOR_OSI)
-  string(REGEX REPLACE "EXTERNAL_RAND_THREAD_DIR/" "initialize/" MSS_SOURCES "${MSS_SOURCES}")
+if(BUILD_FOR_OSI OR USE_OSI_PATH)
+  string(REGEX REPLACE "EXAMPLE_DIR/" "../samples/common/" MSS_SOURCES "${MSS_SOURCES}")
 else()
-  string(REGEX REPLACE "EXTERNAL_RAND_THREAD_DIR/" "examples/" MSS_SOURCES "${MSS_SOURCES}")
+  string(REGEX REPLACE "EXAMPLE_DIR/" "examples/" MSS_SOURCES "${MSS_SOURCES}")
 endif()
 
 # Set Windows file properties
@@ -220,7 +227,11 @@ if(WIN32)
   set(MSS_SOURCES ${MSS_SOURCES} ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.rc)
 endif()
 if (CM_ENABLE_CUSTOM_ENTROPY)
-  set(MSS_SOURCES ${MSS_SOURCES} ${MSS_SRC_DIR}/examples/custom_entropy.c)
+  if(BUILD_FOR_OSI OR USE_OSI_PATH)
+    set(MSS_SOURCES ${MSS_SOURCES} ${MSS_SRC_DIR}/../samples/common/custom_entropy.c)
+  else()
+    set(MSS_SOURCES ${MSS_SOURCES} ${MSS_SRC_DIR}/examples/custom_entropy.c)
+  endif()
 endif()
 
 message("\nmss sources")

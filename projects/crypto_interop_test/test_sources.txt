@@ -1,0 +1,4 @@
+MSS_TEST_DIR/pqc_mldsa_test.c
+MSS_TEST_DIR/pqc_slhdsa_test.c
+MSS_TEST_DIR/pqc_mlkem_test.c
+MSS_TEST_DIR/main.c

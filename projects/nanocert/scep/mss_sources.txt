@@ -1,0 +1,5 @@
+MSS_SRC_DIR/scep/scep_utils.c
+MSS_SRC_DIR/scep/scep_client.c
+MSS_SRC_DIR/scep/scep_context.c
+MSS_SRC_DIR/scep/scep_message.c
+MSS_SRC_DIR/scep/scep.c

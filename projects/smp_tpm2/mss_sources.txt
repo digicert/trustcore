@@ -1,0 +1,4 @@
+MSS_SRC_DIR/smp/smp_tpm2/smp_tpm2_api.c
+MSS_SRC_DIR/smp/smp_tpm2/smp_tpm2_interface.c
+MSS_SRC_DIR/smp/smp_utils/smp_utils.c
+MSS_SRC_DIR/smp/smp_tpm2/smp_tpm2_utils.c

@@ -2,14 +2,8 @@
 
 SCRIPT_DIR=$( cd $(dirname $0) ; pwd -P )
 
-if [[ $(uname -m) == "aarch64" ]]; then
-    CRYPTO_ARCH="aarch64"
-else
-    CRYPTO_ARCH="linux-x86_64"
-fi
-
 # Set library path for both Mocana and crypto libraries
-export LD_LIBRARY_PATH=${SCRIPT_DIR}/../../lib:${SCRIPT_DIR}/../../crypto_lib/${CRYPTO_ARCH}:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${SCRIPT_DIR}/../../lib/:$LD_LIBRARY_PATH
 TEST_FAILED=false
 echo "Running Unit Test..."
 pushd ${SCRIPT_DIR}/../../src/ssh/testunit

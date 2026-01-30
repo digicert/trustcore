@@ -1,0 +1,8 @@
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/sapi2/sapi2_hash.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/sapi2/sapi2_hmac.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/sapi2/sapi2_serialize.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/sapi2/sapi2_utils.c
+MSS_SRC_DIR/tap/tap_base_serialize.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tap_serialize_tpm2.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tools/tpm2_server_helpers.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tpm_common/tpm_error_utils.c

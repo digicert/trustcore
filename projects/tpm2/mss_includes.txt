@@ -1,0 +1,6 @@
+MSS_SRC_DIR/tap
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/fapi2
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/sapi2
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tcti
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tpm_common
