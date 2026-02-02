@@ -1,0 +1,16 @@
+###############################################################################
+# Makefile to cleanup bad certs that prevent testing the servers with openssl #
+#                                                                             #
+#  Since the testmonkey.rb script runs the testaux in alphabetical order      #
+#  this is run before the other makefiles.                                    #
+#                                                                             #
+# Copyright (c) 2015 Digicert Inc, Inc.								  #
+# Proprietary and confidential material										  #
+###############################################################################
+
+all:
+	ruby cleanup_certs.rb
+
+clean:
+
+.PHONY: all clean

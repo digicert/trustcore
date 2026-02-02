@@ -1,0 +1,58 @@
+##################################################################
+#
+# makefile_mbedtls_server
+#
+# creates environment to run mbedtls servers
+# used to test our own ssl client
+#
+# Copyright (c) 2015 Digicert Inc, Inc.
+#
+##################################################################
+
+MBED_DIR:= ../../../thirdparty/mbedtls-1.3.10/mbedTLSServer
+
+include ../../../unit_tests/makefile_osdetect.inc
+
+
+all:
+	$(MAKE) -C $(MBED_DIR) all
+
+clean:
+	$(MAKE) -C $(MBED_DIR) clean
+
+
+stop:
+ifeq ($(OS_NAME), CYGWIN)
+	-tskill mbedtlsserver
+endif
+ifeq ($(OS_NAME), LINUX)
+	-ps -ef | \
+	ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /mbedtlsserver/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), OSX)
+	-ps -ef | \
+	ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /mbedtlsserver/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), SOLARIS)
+	-ps -ef | \
+	ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /mbedtlsserver/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), OPENBSD)
+	-ps -auxw | \
+	ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /mbedtlsserver/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), FREEBSD)
+	-ps -auxw | \
+	ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /mbedtlsserver/ && ! /make/;rescue;end;'
+endif
+
+
+run: stop all
+	($(MBED_DIR)/mbedtlsserver -accept 1470 -cert openssl_cert.pem -key openssl_key.pem \
+     -psk 101112131415161718191a1b1c1d1e1f &)
+
+	($(MBED_DIR)/mbedtlsserver -accept 1471 -cert openssl_ec_cert.pem -key openssl_ec_key.pem \
+	-psk 101112131415161718191a1b1c1d1e1f &)
+
+
+.PHONY: stop run

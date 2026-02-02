@@ -1,26 +1,32 @@
 /**
  * @file taps.h
  *
- * @brief The Mocana Trust Anchor Platform (TAP) Server APIs
- * @details This file contains the Mocana Trust Anchor Platform (TAP) Server APIs
+ * @brief The Trust Anchor Platform (TAP) Server APIs
+ * @details This file contains the Trust Anchor Platform (TAP) Server APIs
  * 
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
  * @flags
  * Whether the following flags are defined determines whether or not support is enabled for a particular security module:
- *    + \c \__ENABLE_MOCANA_TPM2__
+ *    + \c \__ENABLE_DIGICERT_TPM2__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  * 
  */
 
 #ifndef __TAPS_HEADER__
 #define __TAPS_HEADER__
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 #include "tap_smp.h"
 #include "tap_common.h"
@@ -29,7 +35,7 @@
 #include "tap_remote.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_TPM2__
+#ifdef __ENABLE_DIGICERT_TPM2__
 #define SRK_CREDENTIAL_OFFSET   0
 #endif
 
@@ -102,7 +108,7 @@ typedef struct {
     char confFilePath[FILE_PATH_LEN];
     byteBoolean isConfDirSpecified;
     char confDirPath[FILE_PATH_LEN];
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
     byteBoolean isProtectLibSpecified;
     char protectLibPath[FILE_PATH_LEN];
 #endif
@@ -191,6 +197,6 @@ MSTATUS TAPS_getProviderList(TAP_ProviderList *pProviderList);
 }
 #endif
 
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
 #endif /* __TAPS_HEADER__ */

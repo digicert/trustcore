@@ -1,0 +1,74 @@
+#########################################################
+#  makefile_sslserv_ocsp
+#
+#   makefile used to build mocana programs
+#
+#
+# Copyright Mocana Corp 2006-2015. All Rights Reserved.
+# Proprietary and Confidential Material.
+#
+#########################################################
+
+
+# These 3 variables can be modified.
+# The first two are exported to the sub makes
+export CFLAGS = -O0 -g
+export ASFLAGS = -g
+export CPPFLAGS = -D__ENABLE_DIGICERT_SSL_SERVER__ \
+ -D__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__ \
+ -D__ENABLE_DIGICERT_SSL_REHANDSHAKE__ \
+ -D__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_DHE_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_PSK_SUPPORT__ \
+ -D__ENABLE_DIGICERT_ECC__ \
+ -D__ENABLE_DIGICERT_ECC_P192__ \
+ -D__ENABLE_DES_CIPHER__ \
+ -D__ENABLE_NIL_CIPHER__ \
+ -D__ENABLE_DIGICERT_CHACHA20__ \
+ -D__ENABLE_DIGICERT_POLY1305__ \
+ -D__ENABLE_DIGICERT_GCM__ \
+ -D__ENABLE_DIGICERT_CCM_8__ \
+ -D__ENABLE_DIGICERT_CCM__ \
+ -D__ENABLE_DIGICERT_AEAD_CIPHER__ \
+ -D__ENABLE_DIGICERT_DER_CONVERSION__ \
+ -D__ENABLE_DIGICERT_PEM_CONVERSION__ \
+ -D__ENABLE_DIGICERT_RSA_ALL_KEYSIZE__ \
+ -D__ENABLE_DIGICERT_OCSP_CLIENT__ \
+ -D__ENABLE_TLSEXT_RFC6066__ \
+ -D__ENABLE_DIGICERT_URI__ \
+ -D__ENABLE_DIGICERT_HTTP_CLIENT__ \
+ -D__TEST_OCSP_CERT_CHAIN__ \
+ -D__xENABLE_ALL_DEBUGGING__ \
+ -D__xENABLE_DIGICERT_DEBUG_CONSOLE__ \
+ -D__xMOCANA_DUMP_CONSOLE_TO_STDOUT__
+
+
+# The list of library to link against
+# makefile.inc will add the unittest library
+# and some OS specific libraries so they don't
+# need to be specified here
+LIBS = ../../ssl/ssl.a\
+ ../../ocsp/client/client.a \
+ ../../ocsp/ocsp.a \
+ ../../crypto/crypto.a \
+ ../../asn1/asn1.a \
+ ../../crypto/crypto.a \
+ ../../common/common.a \
+ ../../platform/platform.a \
+ ../../common/common.a \
+ ../../crypto/crypto.a \
+ ../../http/http.a \
+ ../../http/client/client.a \
+ ../../http/http.a
+
+
+SRCS = ssl_serv.c ssl_serv_request.c
+
+# included makefile that does most of the work
+include ../../../unit_tests/makefile_testaux.inc
+
+#include makefile to start and stop program
+include ../../../unit_tests/makefile_runstopaux.inc

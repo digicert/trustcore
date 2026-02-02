@@ -1,0 +1,3 @@
+V	460315010741Z		CA228EBEDA2C540A	unknown	/C=US/ST=CA/L=San Francisco/O=Mocana/OU=IOT/CN=sslocsptest.mocana.com/emailAddress=info@mocana.com
+R	460315011649Z	160318110000Z	D933A5D029A7500A	unknown	/C=US/ST=CA/L=San Francisco/O=Mocana/OU=IOT/CN=sslocsptest3.mocana.com/emailAddress=info@mocana.com
+V	460315011413Z		D933A5D029A75009	unknown	/C=US/ST=CA/L=San Francisco/O=Mocana/OU=IOT/CN=sslocsptest2.mocana.com/emailAddress=info@mocana.com

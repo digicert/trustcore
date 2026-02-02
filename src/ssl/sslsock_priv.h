@@ -3,11 +3,16 @@
  *
  * SSL implementation internal definitions
  *
- * Copyright Mocana Corp 2003-2007. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
-
 
 /*------------------------------------------------------------------*/
 
@@ -19,12 +24,12 @@ extern "C" {
 #endif
 
 /* one can override these values in the make/project/moptions.h file */
-#ifndef __MOCANA_PARENT_CERT_CHECK_OPTIONS__
-#define __MOCANA_PARENT_CERT_CHECK_OPTIONS__    (0xFFFF) /* everything turned on by default */
+#ifndef __DIGICERT_PARENT_CERT_CHECK_OPTIONS__
+#define __DIGICERT_PARENT_CERT_CHECK_OPTIONS__    (0xFFFF) /* everything turned on by default */
 #endif
 
-#ifndef __MOCANA_SELFSIGNED_CERT_CHECK_OPTIONS__
-#define __MOCANA_SELFSIGNED_CERT_CHECK_OPTIONS__    (0xFFFF) /* everything turned on by default */
+#ifndef __DIGICERT_SELFSIGNED_CERT_CHECK_OPTIONS__
+#define __DIGICERT_SELFSIGNED_CERT_CHECK_OPTIONS__    (0xFFFF) /* everything turned on by default */
 #endif
 
 
@@ -71,7 +76,7 @@ extern "C" {
 #define SSL_SERVER_HELLO                    (2)
 #define SSL_SERVER_HELLO_VERIFY_REQUEST     (3)
 #define SSL_NEW_SESSION_TICKET              (4)
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
 #define SSL_CLIENT_END_OF_EARLY_DATA        (5)
 #define SSL_HELLO_RETRY_REQUEST             (6)
 #define SSL_ENCRYPTED_EXTENSIONS            (8)
@@ -85,9 +90,9 @@ extern "C" {
 #define SSL_EXPECTING_FINISHED              (19) /* not a valid record type -> only a state */
 #define SSL_FINISHED                        (20)
 #define SSL_CERTIFICATE_STATUS              (22)
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
 #define SSL_KEY_UPDATE                      (24)
-#if defined(__ENABLE_MOCANA_DTLS_SERVER__) || defined(__ENABLE_MOCANA_DTLS_CLIENT__)
+#if defined(__ENABLE_DIGICERT_DTLS_SERVER__) || defined(__ENABLE_DIGICERT_DTLS_CLIENT__)
 #define SSL_ACK                             (26)
 #endif
 #define SSL_MESSAGE_HASH                    (254)
@@ -104,13 +109,13 @@ extern "C" {
 
 #define START_RANDOM(pS)                    (pS->pSecretAndRand + SSL_MASTERSECRETSIZE)
 
-#ifdef __ENABLE_MOCANA_EAP_FAST__
+#ifdef __ENABLE_DIGICERT_EAP_FAST__
 #define EAPFAST_PAC_MASTERSECRET_HASH       (32) /* length of "PAC to master secret label hash\0" including null*/
 #define EAPFAST_IM_COMPOUND_KEY_SIZE        (27) /* length of "Inner Methods Compound Keys" */
 #define EAPFAST_IM_MSK_SIZE                 (32)
 #endif
 
-#ifdef __ENABLE_MOCANA_INNER_APP__
+#ifdef __ENABLE_DIGICERT_INNER_APP__
 #define  SSL_INNER_APP_CLIENT_PHRASE        "client phase finished"
 #define  SSL_INNER_APP_CLIENT_PHRASE_LEN    (21)
 #define  SSL_INNER_APP_SERVER_PHRASE        "server phase finished"
@@ -196,7 +201,7 @@ enum hashTypes
 #endif
 
 #define SSL_SMALL_TEMP_BUF_SIZE             (64)
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__)) && defined(__ENABLE_MOCANA_TLS13__)
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__)) && defined(__ENABLE_DIGICERT_TLS13__)
 #define SSL_BIGGER_TEMP_BUF_SIZE            (136)
 #else
 #define SSL_BIGGER_TEMP_BUF_SIZE            (96)
@@ -264,7 +269,7 @@ typedef SSL_PACKED union SSLSharedInBuffer {
     SSLClientHelloV2 clientHello;
 } SSL_PACKED_POST SSLSharedInBuffer;
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
 #define DTLSRecordHeaderPart     ubyte    protocol; ubyte    majorVersion;ubyte    minorVersion; ubyte epoch[2]; ubyte seqNo[6]; ubyte    recordLength[2]
 #define DTLS_SET_RECORD_HEADER(PTR,PROTO,MINVER,SEQNOHIGH,SEQNO,LEN)   { PTR[0] = PROTO; PTR[1] = DTLS1_MAJORVERSION; PTR[2] = MINVER; PTR[3] = (ubyte)((SEQNOHIGH & 0xff000000) >> 24); PTR[4] = (ubyte)((SEQNOHIGH & 0x00ff0000) >> 16); PTR[5] = (ubyte)((SEQNOHIGH & 0x0000ff00) >> 8); PTR[6] = (ubyte)(SEQNOHIGH & 0x000000ff); PTR[7] = (ubyte)((SEQNO) >> 24); PTR[8] = (ubyte)((SEQNO & 0x00ff0000) >> 16); PTR[9] = (ubyte)((SEQNO & 0x0000ff00) >> 8); PTR[10] = (ubyte)(SEQNO & 0x000000ff); PTR[11] = (ubyte)((LEN) >> 8); PTR[12] = (ubyte)(LEN); }
 #define DTLSHandshakeHeaderPart     ubyte    handshakeType; ubyte    handshakeSize[SSL_MEDIUMSIZE]; ubyte msgSeq[2]; ubyte fragOffset[3]; ubyte fragLength[3]
@@ -326,19 +331,19 @@ typedef struct KeyExAuthSuiteInfo
 {
     ubyte4                  flags;          /* e.g. SSL_RSA, SSL_DHE_RSA, SSL_DH_ANON, SSL_DH_PSK */
 
-#ifdef __ENABLE_MOCANA_SSL_SERVER__
+#ifdef __ENABLE_DIGICERT_SSL_SERVER__
     MSTATUS(*FillServerKEX)(SSLSocket* pSSLSock, ubyte *pHSH, ubyte *pPskHint, ubyte4 pskHintLength);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSL_CLIENT__
     MSTATUS(*ProcessServerKEX)(SSLSocket *pSSLSock, ubyte* pMessage, ubyte2 recLen);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSL_CLIENT__
     MSTATUS(*FillClientKEX)(SSLSocket* pSSLSock, ubyte *pBuffer, ubyte2 length, vlong **ppVlongQueue);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_SERVER__
+#ifdef __ENABLE_DIGICERT_SSL_SERVER__
     MSTATUS(*ProcessClientKEX)(SSLSocket* pSSLSock, ubyte* pMessage, ubyte2 recLen, ubyte **ppSecret, ubyte4 *pSecretLen, vlong **ppVlongQueue);
 #endif
     ubyte2                  keyUsage;       /* key usage on the server certificate */
@@ -392,7 +397,7 @@ typedef struct CipherSuiteInfo
 /*---------------------------------------------------------------------------*/
 
 /* MOC_EXTERN functions: implementation internal */
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
 MOC_EXTERN MSTATUS getNumBytesSent(SSLSocket *pSSLSock, ubyte *pOutputBuffer, ubyte4 maxLen, ubyte4 *pNumBytesSent);
 MOC_EXTERN MSTATUS cleanupOutputBuffer(SSLSocket *pSSLSock);
 #endif

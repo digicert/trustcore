@@ -4,17 +4,22 @@
  * @ingroup nanotap_tree
  *
  * @brief Types and structures common to Trust Anchor Platform (TAP) APIs and Security Module Plugin (SMP) providers
- * @details This file contains types and structures common to Mocana Trust Anchor Platform (TAP) APIs and Security Module Plugin (SMP) providers
+ * @details This file contains types and structures common to Trust Anchor Platform (TAP) APIs and Security Module Plugin (SMP) providers
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
-
 
 /*------------------------------------------------------------------*/
 
@@ -32,7 +37,7 @@
 
 
 /*! @cond */
-#if (defined __ENABLE_MOCANA_TAP__) || (defined __ENABLE_MOCANA_SMP__)
+#if (defined __ENABLE_DIGICERT_TAP__) || (defined __ENABLE_DIGICERT_SMP__)
 /*! @endcond */
 
 
@@ -413,7 +418,7 @@ typedef byteBoolean TAP_MODULE_PROVISION_STATE;
  *  - #TAP_BLOB_FORMAT_PEM
  */
 typedef ubyte TAP_BLOB_FORMAT;
-/*! TAP_BLOB_FORMAT_MOCANA - Blob contains data in Mocana format */
+/*! TAP_BLOB_FORMAT_MOCANA - Blob contains data in Digicert format */
 #define TAP_BLOB_FORMAT_MOCANA    (TAP_BLOB_FORMAT)0
 /*! TAP_BLOB_FORMAT_DER - Blob contains DER format data */
 #define TAP_BLOB_FORMAT_DER       (TAP_BLOB_FORMAT)1
@@ -719,7 +724,7 @@ typedef ubyte4 TAP_ATTR_TYPE;
 #define TAP_ATTR_PERMISSION_OWNER              (TAP_ATTR_TYPE)50
 /*! TAP_ATTR_MODULE_ID_STRING - 32 byte ID that identifies this secure element uniquely */
 #define TAP_ATTR_MODULE_ID_STRING              (TAP_ATTR_TYPE)51
-/*! TAP_ATTR_GET_MODULE_CREDENTIALS - Returns TAP_Buffer containing Mocana credential file contents */
+/*! TAP_ATTR_GET_MODULE_CREDENTIALS - Returns TAP_Buffer containing Digicert credential file contents */
 #define TAP_ATTR_GET_MODULE_CREDENTIALS        (TAP_ATTR_TYPE)52
 /*! TAP_ATTR_KEY_CMK */
 #define TAP_ATTR_KEY_CMK                       (TAP_ATTR_TYPE)53
@@ -1359,7 +1364,7 @@ typedef struct
 {
     /*! The number of entries in the list */
     ubyte4 listLen;
-#ifdef __ENABLE_MOCANA_SMP__
+#ifdef __ENABLE_DIGICERT_SMP__
     /*! The list of SMP_CC items */
     SMP_CC *pCmdList;
 #endif
@@ -2148,7 +2153,7 @@ typedef ubyte TAP_CREATE_KEY_TYPE;
 #endif
 
 /*! @cond */
-#endif /* __ENABLE_MOCANA_TAP__ || __ENABLE_MOCANA_SMP__*/
+#endif /* __ENABLE_DIGICERT_TAP__ || __ENABLE_DIGICERT_SMP__*/
 /*! @endcond */
 
 #endif /* __TAP_SMP_HEADER__ */

@@ -1,0 +1,15 @@
+#########################################################################
+#
+# makefile_openssl_client
+#
+# Copyright Mocana Corp 2015. All Rights Reserved.
+# Proprietary and Confidential Material.
+#
+#
+#
+#########################################################################
+
+# 2 targets: all (build the program) and clean
+SHELL_CMD := "ruby openssl_test_client.rb"
+
+include ../../../unit_tests/makefile_shellcmd.inc

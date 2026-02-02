@@ -1,0 +1,53 @@
+##################################################################
+#
+# makefile_sslserv_ocsp_responder
+#
+# creates environment to run openssl ocsp responders, runs them, stops them
+# used to test our ocsp stapling in SSL
+#
+# Copyright (c) 2006 Digicert Inc, Inc.
+#
+##################################################################
+
+include ../../../unit_tests/makefile_osdetect.inc
+
+stop:
+ifeq ($(OS_NAME), CYGWIN)
+	-tskill openssl
+endif
+ifeq ($(OS_NAME), LINUX)
+	-ps -ef | \
+    ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /openssl ocsp/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), OSX)
+	-ps -ef | \
+    ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /openssl ocsp/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), SOLARIS)
+	-ps -ef | \
+    ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /openssl ocsp/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), OPENBSD)
+	-ps -auxw | \
+    ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /openssl ocsp/ && ! /make/;rescue;end;'
+endif
+ifeq ($(OS_NAME), FREEBSD)
+	-ps -auxw | \
+    ruby -n -e 'begin;Process.kill(9, $$_.split()[1].to_i) if /openssl ocsp/ && ! /make/;rescue;end;'
+endif
+
+.PHONY: run clean stop
+
+run1:
+	(openssl ocsp -index ocsp_test_certs/index.txt -port 9800 \
+     -rsigner ocsp_test_certs/RSACA.pem -rkey ocsp_test_certs/RSACAKey.pem \
+     -CA ocsp_test_certs/RSACA.pem > /dev/null 2>&1 &)
+     
+run: stop run1
+
+# dummy targets
+clean:
+	@echo
+
+all:
+	@echo

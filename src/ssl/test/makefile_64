@@ -1,0 +1,86 @@
+#########################################################
+#  makefile_64
+#
+#   makefile used to build tests
+#
+# Copyright Mocana Corp 2006-2015. All Rights Reserved.
+# Proprietary and Confidential Material.
+#
+#########################################################
+
+uname_m := $(shell uname -m)
+
+## allow 64 bit on UltraSparc
+ifneq (,$(findstring sun4u, $(uname_m)))
+uname_m := sparc64
+endif
+
+#if 64 bit machine, do something
+
+ifneq (,$(findstring 64, $(uname_m)))
+
+
+ifneq (,$(findstring ppc64, $(uname_m)))
+# -03 crashes on ppc64 (ps3) so use -02 instead
+export CFLAGS = -O2 -g -m64
+export LDFLAGS  = -m64
+endif
+
+# other 64 platforms don't seem to have that problem
+ifeq (,$(findstring ppc64, $(uname_m)))
+export CFLAGS = -O3 -g -m64
+export LDFLAGS = -m64
+endif
+
+export CPPFLAGS = -D__ENABLE_DIGICERT_SSL_CLIENT__ \
+ -D__ENABLE_DIGICERT_SSL_INTERNAL_STRUCT_ACCESS__ \
+ -D__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_REHANDSHAKE__ \
+ -D__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__ \
+ -D__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_DHE_SUPPORT__ \
+ -D__ENABLE_DIGICERT_SSL_PSK_SUPPORT__ \
+ -D__ENABLE_DIGICERT_ECC__ \
+ -D__ENABLE_DIGICERT_ECC_P192__ \
+ -D__ENABLE_DES_CIPHER__ \
+ -D__ENABLE_NIL_CIPHER__ \
+ -D__ENABLE_DIGICERT_CHACHA20__ \
+ -D__ENABLE_DIGICERT_POLY1305__ \
+ -D__ENABLE_DIGICERT_GCM__ \
+ -D__ENABLE_DIGICERT_CCM_8__ \
+ -D__ENABLE_DIGICERT_CCM__ \
+ -D__ENABLE_DIGICERT_AEAD_CIPHER__ \
+ -D__ENABLE_DIGICERT_RSA_ALL_KEYSIZE__ \
+ -D__ENABLE_DIGICERT_SSL_SRP__ \
+ -DMIN_SSL_RSA_SIZE=1024 \
+ -DMIN_SSL_MINORVERSION=1
+
+
+
+# The list of library to link against
+# makefile.inc will add the unittest library
+# and some OS specific libraries so they don't
+# need to be specified here
+LIBS = ../../ssl/ssl.a\
+ ../../crypto/crypto.a\
+ ../../asn1/asn1.a\
+ ../../common/common.a\
+ ../../crypto/crypto.a \
+ ../../platform/platform.a
+
+
+# included makefile that does most of the work
+include ../../../unit_tests/makefile.inc
+
+endif
+
+## if not an x86_64 processor/env
+
+ifeq (,$(findstring 64, $(uname_m)))
+
+include ../../../unit_tests/makefile_nulltest.inc
+
+endif

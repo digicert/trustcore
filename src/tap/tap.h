@@ -4,14 +4,20 @@
  * @ingroup nanotap_tree
  *
  * @brief Trust Anchor Platform (TAP) Base Definitions and Types
- * @details This file contains base definitions and functions for the Mocana Trust Anchor Platform (TAP) modules.
+ * @details This file contains base definitions and functions for the Trust Anchor Platform (TAP) modules.
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -41,7 +47,7 @@ extern "C" {
 /*! @endcond */
 
 /*! @cond */
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 /*! @endcond */
 
 /*
@@ -224,17 +230,7 @@ typedef struct
     TAP_ModuleId             moduleId;
     /*! The connection info for the host on which the TAP module resides. */
     TAP_ConnectionInfo       hostInfo;
-/*! @cond */
-#if 0
-    /* The following are not supported by SMP, so we cannot get this information. */
-    /*! Local connection info for the TAP module.  For example, this could be /dev/tpm0 for a TPM module. */
-    TAP_ConnectionInfo       localConnInfo;
-    /*! flag to indicate whether remote connections to this module are allowed */
-    byteBoolean              isRemoteAllowed;
-    /*! flag to indicate whether this is a SW emulator to be used for testing only */
-    byteBoolean              isEmulator;
-#endif
-/*! @endcond */
+
 } TAP_Module;
 
 
@@ -675,7 +671,7 @@ typedef union
 
 
 /*! @cond */
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 /*! @endcond */
 
 /*! @cond */

@@ -1,0 +1,27 @@
+#########################################################
+#  makefile
+#
+#   makefile used to build mocana programs
+#
+#
+# Copyright Mocana Corp 2008. All Rights Reserved.
+# Proprietary and Confidential Material.
+#
+#########################################################
+
+export CFLAGS = -O0 -g
+export CPPFLAGS = -D__ENABLE_DIGICERT_SSL_SERVER__
+
+LIBS = \
+ ../../common/common.a\
+ ../../common/mstdlib.o\
+ ../../platform/platform.a
+
+SRCS = trac345_badssls.c
+
+# included makefile that does most of the work
+include ../../../unit_tests/makefile_testaux.inc
+
+#include makefile to start and stop program
+include ../../../unit_tests/makefile_runstopaux.inc
+
