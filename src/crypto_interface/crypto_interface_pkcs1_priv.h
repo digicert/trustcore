@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_PKCS1_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_PKCS1_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_PKCS1_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_PKCS1_INTERNAL__))
 
 #define PKCS1_rsaOaepEncrypt   CRYPTO_INTERFACE_PKCS1_rsaOaepEncrypt
 #define PKCS1_rsaOaepDecrypt   CRYPTO_INTERFACE_PKCS1_rsaOaepDecrypt

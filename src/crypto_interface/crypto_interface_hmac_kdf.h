@@ -1,7 +1,7 @@
 /*
  * crypto_interface_hmac_kdf.h
  *
- * Mocana Cryptographic Interface specification for HMAC-KDF.
+ * Cryptographic Interface specification for HMAC-KDF.
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 

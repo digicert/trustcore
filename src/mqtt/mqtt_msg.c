@@ -111,7 +111,7 @@ static MSTATUS MQTT_getGMTTimeStamp(sbyte *pBuffer, ubyte4 bufSize)
         goto exit;
 
     /* If its generalized time then offset by 2 */
-    pTime = MOC_STRLEN(pTimeBuf) == 15 ? pTimeBuf + 2 : pTimeBuf;
+    pTime = DIGI_STRLEN(pTimeBuf) == 15 ? pTimeBuf + 2 : pTimeBuf;
 
     snprintf((char *) pBuffer, bufSize, "[%.*s/%.*s/%.*s %.*s:%.*s:%.*s GMT]",
                     2, pTime + 2, 2, pTime + 4, 2, pTime,
@@ -231,7 +231,7 @@ static MSTATUS MQTT_setUserProps(MqttProperty **ppProps, ubyte4 propCount, ubyte
     ubyte4 i = 0;
     MqttProperty *pProps = NULL;
 
-    status = MOC_CALLOC((void **)&pProps, propCount, sizeof(MqttProperty));
+    status = DIGI_CALLOC((void **)&pProps, propCount, sizeof(MqttProperty));
     if (OK != status)
         goto exit;
 
@@ -243,13 +243,13 @@ static MSTATUS MQTT_setUserProps(MqttProperty **ppProps, ubyte4 propCount, ubyte
         pProps[i].name = MQTT_PROP_USER_PROPERTY;
 
         /* Name */
-        pProps[i].data.pair.name.dataLen = MOC_NTOHS(pIter);
+        pProps[i].data.pair.name.dataLen = DIGI_NTOHS(pIter);
         pIter += 2;
         pProps[i].data.pair.name.pData = pIter;
         pIter += pProps[i].data.pair.name.dataLen;
 
         /* Value */
-        pProps[i].data.pair.value.dataLen = MOC_NTOHS(pIter);
+        pProps[i].data.pair.value.dataLen = DIGI_NTOHS(pIter);
         pIter += 2;
         pProps[i].data.pair.value.pData = pIter;
         pIter += pProps[i].data.pair.value.dataLen;
@@ -262,7 +262,7 @@ exit:
 
     if (NULL != pProps)
     {
-        MOC_FREE((void **)&pProps);
+        DIGI_FREE((void **)&pProps);
     }
 
     return status;
@@ -277,7 +277,7 @@ static MSTATUS MQTT_parseReasonString(ubyte **ppIter, ubyte4 *pPropLen, ubyte **
         status = ERR_MQTT_MALFORMED_PACKET;
         goto exit;
     }
-    *pReasonStrLen = MOC_NTOHS(*ppIter);
+    *pReasonStrLen = DIGI_NTOHS(*ppIter);
     *ppIter += 2;
     *pPropLen -= 2;
     if (*pPropLen < *pReasonStrLen)
@@ -312,7 +312,7 @@ static MSTATUS MQTT_parseAuthMethod(ubyte **ppIter, ubyte4 *pPropLen, ubyte **pp
         status = ERR_MQTT_MALFORMED_PACKET;
         goto exit;
     }
-    *pAuthMethodLen = MOC_NTOHS(*ppIter);
+    *pAuthMethodLen = DIGI_NTOHS(*ppIter);
     *ppIter += 2;
     *pPropLen -= 2;
     if (*pPropLen < *pAuthMethodLen)
@@ -344,7 +344,7 @@ static MSTATUS MQTT_parseAuthData(ubyte **ppIter, ubyte4 *pPropLen, ubyte **ppAu
         status = ERR_MQTT_MALFORMED_PACKET;
         goto exit;
     }
-    *pAuthDataLen = MOC_NTOHS(*ppIter);
+    *pAuthDataLen = DIGI_NTOHS(*ppIter);
     *ppIter += 2;
     *pPropLen -= 2;
     if (*pPropLen < *pAuthDataLen)
@@ -376,7 +376,7 @@ static MSTATUS MQTT_parseAssignedClientId(MqttCtx *pCtx, ubyte **ppIter, ubyte4 
         status = ERR_MQTT_MALFORMED_PACKET;
         goto exit;
     }
-    *pAssignedClientIdLen = MOC_NTOHS(*ppIter);
+    *pAssignedClientIdLen = DIGI_NTOHS(*ppIter);
     *ppIter += 2;
     *pPropLen -= 2;
     if (*pPropLen < *pAssignedClientIdLen)
@@ -390,7 +390,7 @@ static MSTATUS MQTT_parseAssignedClientId(MqttCtx *pCtx, ubyte **ppIter, ubyte4 
 
     /* Allocate an extra 2 bytes for the client id buffer to be used for appending the packet id
         * when calculating the hash key later when storing publishes */
-    status = MOC_MALLOC_MEMCPY(
+    status = DIGI_MALLOC_MEMCPY(
         (void **) &pCtx->pClientId, *pAssignedClientIdLen + 2,
         *ppAssignedClientId, *pAssignedClientIdLen);
     if (OK != status)
@@ -418,7 +418,7 @@ static MSTATUS MQTT_parseUserProperty(ubyte **ppIter, ubyte4 *pPropLen, ubyte **
     if (*pUserPropCnt >= MAX_NUM_USER_PROPS)
     {
         status = ERR_MQTT_MALFORMED_PACKET;
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
         DEBUG_PRINT(DEBUG_MQTT_TRANSPORT, (sbyte *)"Exceeded maximum number of user properties\n");
 #endif
         goto exit;
@@ -426,7 +426,7 @@ static MSTATUS MQTT_parseUserProperty(ubyte **ppIter, ubyte4 *pPropLen, ubyte **
 
     pUserPropIters[*pUserPropCnt] = *ppIter;
     (*pUserPropCnt)++;
-    len = MOC_NTOHS(*ppIter);
+    len = DIGI_NTOHS(*ppIter);
     if (*pPropLen < len)
     {
         status = ERR_MQTT_MALFORMED_PACKET;
@@ -436,7 +436,7 @@ static MSTATUS MQTT_parseUserProperty(ubyte **ppIter, ubyte4 *pPropLen, ubyte **
     *ppIter += 2; *pPropLen -= 2;
     *ppIter += len; *pPropLen -= len;
 
-    len = MOC_NTOHS(*ppIter);
+    len = DIGI_NTOHS(*ppIter);
     if (*pPropLen < len)
     {
         status = ERR_MQTT_MALFORMED_PACKET;
@@ -471,7 +471,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
 
     if (CONNECT_NEGOTIATE != pCtx->connectionState)
     {
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
         DEBUG_PRINT(DEBUG_MQTT_TRANSPORT, (sbyte *)"Unexpected CONNACK packet received\n");
 #endif
         status = OK;
@@ -591,7 +591,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         goto exit;
                     }
                     info.sessionExpiryIntervalSet = TRUE;
-                    info.sessionExpiryInterval = MOC_NTOHL(pIter);
+                    info.sessionExpiryInterval = DIGI_NTOHL(pIter);
                     pIter += 4;
                     propLen -= 4;
                     break;
@@ -605,7 +605,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         goto exit;
                     }
                     info.receiveMaxSet = TRUE;
-                    info.receiveMax = MOC_NTOHS(pIter);
+                    info.receiveMax = DIGI_NTOHS(pIter);
                     pCtx->sendQuota = info.receiveMax;
                     /* MQTT 5.0 - Section 3.1.2.11.3
                      *
@@ -683,7 +683,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         goto exit;
                     }
                     info.maxPacketSizeSet = TRUE;
-                    info.maxPacketSize = MOC_NTOHL(pIter);
+                    info.maxPacketSize = DIGI_NTOHL(pIter);
                     if (0 == info.maxPacketSize)
                     {
                         status = ERR_MQTT_MALFORMED_PACKET;
@@ -711,7 +711,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         goto exit;
                     }
                     info.topicAliasMaxSet = TRUE;
-                    info.topicAliasMax = MOC_NTOHS(pIter);
+                    info.topicAliasMax = DIGI_NTOHS(pIter);
                     pCtx->topicAliasMax = info.topicAliasMax;
                     pIter += 2;
                     propLen -= 2;
@@ -803,7 +803,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         goto exit;
                     }
                     info.keepAliveSet = TRUE;
-                    info.keepAlive = MOC_NTOHS(pIter);
+                    info.keepAlive = DIGI_NTOHS(pIter);
                     /* Set server provided keep alive */
                     pCtx->keepAliveMS = 1000 * info.keepAlive;
                     pIter += 2;
@@ -818,7 +818,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         status = ERR_MQTT_MALFORMED_PACKET;
                         goto exit;
                     }
-                    info.responseInfoLen = MOC_NTOHS(pIter);
+                    info.responseInfoLen = DIGI_NTOHS(pIter);
                     pIter += 2;
                     propLen -= 2;
                     if (propLen < info.responseInfoLen)
@@ -846,7 +846,7 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         status = ERR_MQTT_MALFORMED_PACKET;
                         goto exit;
                     }
-                    info.serverRefLen = MOC_NTOHS(pIter);
+                    info.serverRefLen = DIGI_NTOHS(pIter);
                     pIter += 2;
                     propLen -= 2;
                     if (propLen < info.serverRefLen)
@@ -959,10 +959,10 @@ exit:
 
     if (NULL != info.pProps)
     {
-        MOC_FREE((void **)&info.pProps);
+        DIGI_FREE((void **)&info.pProps);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_parseConnAck() returns status = ", status);
@@ -1009,7 +1009,7 @@ MSTATUS MQTT_parsePingResp(
         /* Reset the counter */
         pCtx->pingCounter = 0;
         status = ERR_MQTT_MALFORMED_PACKET;
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
         DEBUG_PRINT(DEBUG_MQTT_TRANSPORT, (sbyte *)"Unexpected PINGRESP packet received\n");
 #endif
         goto exit;
@@ -1030,7 +1030,7 @@ MSTATUS MQTT_parsePingResp(
 
 exit:
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_parsePingResp() returns status = ", status);
@@ -1084,7 +1084,7 @@ MSTATUS MQTT_parseSubAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 b
         status = ERR_MQTT_MALFORMED_PACKET;
         goto exit;
     }
-    info.msgId = MOC_NTOHS(pIter);
+    info.msgId = DIGI_NTOHS(pIter);
 
     status = MQTT_checkAndMarkAcked(pCtx, info.msgId, &found);
     if (OK != status)
@@ -1093,7 +1093,7 @@ MSTATUS MQTT_parseSubAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 b
     if (FALSE == found)
     {
         status = OK;
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
         DEBUG_PRINT(DEBUG_MQTT_TRANSPORT, (sbyte *)"Unexpected SUBACK received\n");
 #endif
         goto exit;
@@ -1202,10 +1202,10 @@ exit:
 
     if (NULL != info.pProps)
     {
-        MOC_FREE((void **)&info.pProps);
+        DIGI_FREE((void **)&info.pProps);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_parseSubAck() returns status = ", status);
@@ -1254,7 +1254,7 @@ MSTATUS MQTT_parseUnsubAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4
         status = ERR_MQTT_MALFORMED_PACKET;
         goto exit;
     }
-    info.msgId = MOC_NTOHS(pIter);
+    info.msgId = DIGI_NTOHS(pIter);
     pIter += 2;
     varHdrLen -= 2;
 
@@ -1265,7 +1265,7 @@ MSTATUS MQTT_parseUnsubAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4
     if (FALSE == found)
     {
         status = OK;
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
         DEBUG_PRINT(DEBUG_MQTT_TRANSPORT, (sbyte *)"Unexpected UNSUBACK received\n");
 #endif
         goto exit;
@@ -1379,10 +1379,10 @@ exit:
 
     if (NULL != info.pProps)
     {
-        MOC_FREE((void **)&info.pProps);
+        DIGI_FREE((void **)&info.pProps);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_parseUnsubAck() returns status = ", status);
@@ -1561,10 +1561,10 @@ exit:
 
     if (NULL != info.pProps)
     {
-        MOC_FREE((void **)&info.pProps);
+        DIGI_FREE((void **)&info.pProps);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_parseAuth() returns status = ", status);
@@ -1684,7 +1684,7 @@ MSTATUS MQTT_parseDisconnect(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyt
                     goto exit;
                 }
                 info.sessionExpiryIntervalSet = TRUE;
-                info.sessionExpiryInterval = MOC_NTOHL(pIter);
+                info.sessionExpiryInterval = DIGI_NTOHL(pIter);
                 pIter += 4;
                 propLen -= 4;
                 break;
@@ -1697,7 +1697,7 @@ MSTATUS MQTT_parseDisconnect(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyt
                     status = ERR_MQTT_MALFORMED_PACKET;
                     goto exit;
                 }
-                info.serverRefLen = MOC_NTOHS(pIter);
+                info.serverRefLen = DIGI_NTOHS(pIter);
                 pIter += 2;
                 propLen -= 2;
                 if (propLen < info.serverRefLen)
@@ -1762,10 +1762,10 @@ exit:
 
     if (NULL != info.pProps)
     {
-        MOC_FREE((void **)&info.pProps);
+        DIGI_FREE((void **)&info.pProps);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_parseDisconnect() returns status = ", status);
@@ -1788,7 +1788,6 @@ static MSTATUS MQTT_parsePublishProps(
     ubyte pFoundProps[MQTT_PROP_ARRAY_SIZE] = { 0 };
     ubyte bytesUsed = 0;
     ubyte userPropCnt = 0;
-    ubyte4 len = 0;
 
     /* Process properties */
     while (0 != propLen)
@@ -1840,7 +1839,7 @@ static MSTATUS MQTT_parsePublishProps(
                     goto exit;
                 }
                 pInfo->messageExpirySet = TRUE;
-                pInfo->messageExpiry = MOC_NTOHL(pIter);
+                pInfo->messageExpiry = DIGI_NTOHL(pIter);
                 pIter += 4;
                 propLen -= 4;
                 break;
@@ -1853,7 +1852,7 @@ static MSTATUS MQTT_parsePublishProps(
                     status = ERR_MQTT_MALFORMED_PACKET;
                     goto exit;
                 }
-                pInfo->topicAlias = MOC_NTOHS(pIter);
+                pInfo->topicAlias = DIGI_NTOHS(pIter);
                 if (0 == pInfo->topicAlias)
                 {
                     status = ERR_MQTT_MALFORMED_PACKET;
@@ -1871,7 +1870,7 @@ static MSTATUS MQTT_parsePublishProps(
                     status = ERR_MQTT_MALFORMED_PACKET;
                     goto exit;
                 }
-                pInfo->responseTopicLen = MOC_NTOHS(pIter);
+                pInfo->responseTopicLen = DIGI_NTOHS(pIter);
                 pIter += 2;
                 propLen -= 2;
                 if (propLen < pInfo->responseTopicLen)
@@ -1899,7 +1898,7 @@ static MSTATUS MQTT_parsePublishProps(
                     status = ERR_MQTT_MALFORMED_PACKET;
                     goto exit;
                 }
-                pInfo->correlationDataLen = MOC_NTOHS(pIter);
+                pInfo->correlationDataLen = DIGI_NTOHS(pIter);
                 pIter += 2;
                 propLen -= 2;
                 if (propLen < pInfo->correlationDataLen)
@@ -1947,7 +1946,7 @@ static MSTATUS MQTT_parsePublishProps(
                     status = ERR_MQTT_MALFORMED_PACKET;
                     goto exit;
                 }
-                pInfo->contentTypeLen = MOC_NTOHS(pIter);
+                pInfo->contentTypeLen = DIGI_NTOHS(pIter);
                 pIter += 2;
                 propLen -= 2;
                 if (propLen < pInfo->contentTypeLen)
@@ -2012,8 +2011,8 @@ static MSTATUS MQTT_parsePublishStream(
         switch (pCtx->publishState)
         {
             case MQTT_PUBLISH_TYPE_STATE:
-                MOC_MEMSET((ubyte *) &pCtx->publishInfo, 0x00, sizeof(MqttPublishInfo));
-                MOC_MEMSET((ubyte *) &pCtx->publishData, 0x00, sizeof(MqttPublishData));
+                DIGI_MEMSET((ubyte *) &pCtx->publishInfo, 0x00, sizeof(MqttPublishInfo));
+                DIGI_MEMSET((ubyte *) &pCtx->publishData, 0x00, sizeof(MqttPublishData));
 
                 pCtx->publishInfo.dup = (**ppData & 0x08);
                 pCtx->publishInfo.qos = (**ppData & 0x06) >> 1;
@@ -2062,9 +2061,9 @@ static MSTATUS MQTT_parsePublishStream(
                 (*pDataLen)--;
                 if (2 == pCtx->publishData.topicLenCount)
                 {
-                    pCtx->publishInfo.topicLen = MOC_NTOHS(pCtx->publishData.pTopicLen);
+                    pCtx->publishInfo.topicLen = DIGI_NTOHS(pCtx->publishData.pTopicLen);
 
-                    status = MOC_MALLOC((void **) &pCtx->publishData.pTopic, pCtx->publishInfo.topicLen);
+                    status = DIGI_MALLOC((void **) &pCtx->publishData.pTopic, pCtx->publishInfo.topicLen);
                     if (OK != status)
                         goto exit;
 
@@ -2117,7 +2116,7 @@ static MSTATUS MQTT_parsePublishStream(
                 (*pDataLen)--;
                 if (2 == pCtx->publishData.pktIdCount)
                 {
-                    pCtx->publishInfo.packetId = MOC_NTOHS(pCtx->publishData.pPktId);
+                    pCtx->publishInfo.packetId = DIGI_NTOHS(pCtx->publishData.pPktId);
                     if (MQTT_V5 <= pCtx->version)
                     {
                         pCtx->publishState = MQTT_PUBLISH_PROPS_LEN_STATE;
@@ -2152,7 +2151,7 @@ static MSTATUS MQTT_parsePublishStream(
 
                     if (0 != pCtx->publishData.propsLen)
                     {
-                        status = MOC_MALLOC((void **) &pCtx->publishData.pProps, pCtx->publishData.propsLen);
+                        status = DIGI_MALLOC((void **) &pCtx->publishData.pProps, pCtx->publishData.propsLen);
                         if (OK != status)
                             goto exit;
 
@@ -2215,11 +2214,11 @@ static MSTATUS MQTT_parsePublishStream(
                 (*pDataLen) -= tmp;
                 if (TRUE == msg.finished)
                 {
-                    MOC_FREE((void **) &pCtx->publishData.pTopic);
-                    MOC_FREE((void **) &pCtx->publishData.pProps);
+                    DIGI_FREE((void **) &pCtx->publishData.pTopic);
+                    DIGI_FREE((void **) &pCtx->publishData.pProps);
 
-                    MOC_MEMSET((ubyte *) &pCtx->publishInfo, 0x00, sizeof(MqttPublishInfo));
-                    MOC_MEMSET((ubyte *) &pCtx->publishData, 0x00, sizeof(MqttPublishData));
+                    DIGI_MEMSET((ubyte *) &pCtx->publishInfo, 0x00, sizeof(MqttPublishInfo));
+                    DIGI_MEMSET((ubyte *) &pCtx->publishData, 0x00, sizeof(MqttPublishData));
 
                     pCtx->publishState = MQTT_PUBLISH_TYPE_STATE;
 
@@ -2284,7 +2283,7 @@ MSTATUS MQTT_parsePublish(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
         status = ERR_MQTT_MALFORMED_PACKET;
         goto exit;
     }
-    info.topicLen = MOC_NTOHS(pIter);
+    info.topicLen = DIGI_NTOHS(pIter);
     pIter += 2;
     varHdrLen -= 2;
     if (varHdrLen < info.topicLen)
@@ -2304,7 +2303,7 @@ MSTATUS MQTT_parsePublish(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
             status = ERR_MQTT_MALFORMED_PACKET;
             goto exit;
         }
-        info.packetId = MOC_NTOHS(pIter);
+        info.packetId = DIGI_NTOHS(pIter);
         pIter += 2;
         varHdrLen -= 2;
     }
@@ -2389,7 +2388,7 @@ MSTATUS MQTT_parsePublish(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         goto exit;
                     }
                     info.messageExpirySet = TRUE;
-                    info.messageExpiry = MOC_NTOHL(pIter);
+                    info.messageExpiry = DIGI_NTOHL(pIter);
                     pIter += 4;
                     propLen -= 4;
                     break;
@@ -2402,7 +2401,7 @@ MSTATUS MQTT_parsePublish(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         status = ERR_MQTT_MALFORMED_PACKET;
                         goto exit;
                     }
-                    info.topicAlias = MOC_NTOHS(pIter);
+                    info.topicAlias = DIGI_NTOHS(pIter);
                     if (0 == info.topicAlias || info.topicAlias > pCtx->topicAliasMax)
                     {
                         status = ERR_MQTT_INVALID_TOPIC_ALIAS;
@@ -2420,7 +2419,7 @@ MSTATUS MQTT_parsePublish(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         status = ERR_MQTT_MALFORMED_PACKET;
                         goto exit;
                     }
-                    info.responseTopicLen = MOC_NTOHS(pIter);
+                    info.responseTopicLen = DIGI_NTOHS(pIter);
                     pIter += 2;
                     propLen -= 2;
                     if (propLen < info.responseTopicLen)
@@ -2448,7 +2447,7 @@ MSTATUS MQTT_parsePublish(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         status = ERR_MQTT_MALFORMED_PACKET;
                         goto exit;
                     }
-                    info.correlationDataLen = MOC_NTOHS(pIter);
+                    info.correlationDataLen = DIGI_NTOHS(pIter);
                     pIter += 2;
                     propLen -= 2;
                     if (propLen < info.correlationDataLen)
@@ -2496,7 +2495,7 @@ MSTATUS MQTT_parsePublish(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
                         status = ERR_MQTT_MALFORMED_PACKET;
                         goto exit;
                     }
-                    info.contentTypeLen = MOC_NTOHS(pIter);
+                    info.contentTypeLen = DIGI_NTOHS(pIter);
                     pIter += 2;
                     propLen -= 2;
                     if (propLen < info.contentTypeLen)
@@ -2596,7 +2595,7 @@ exit:
 
     if (NULL != info.pProps)
     {
-        MOC_FREE((void **)&info.pProps);
+        DIGI_FREE((void **)&info.pProps);
     }
 
     return status;
@@ -2640,7 +2639,7 @@ MSTATUS MQTT_parsePubResp(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
 
     pIter += bytesUsed;
 
-    info.msgId = MOC_NTOHS(pIter);
+    info.msgId = DIGI_NTOHS(pIter);
     pIter += 2;
     varHdrLen -= 2;
 
@@ -2651,7 +2650,7 @@ MSTATUS MQTT_parsePubResp(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
         goto handle_callback;
     }
 
-    info.reasonCode = MOC_NTOHS(pIter);
+    info.reasonCode = DIGI_NTOHS(pIter);
     pIter += 1;
     varHdrLen -= 1;
 
@@ -2843,10 +2842,10 @@ exit:
 
     if (NULL != info.pProps)
     {
-        MOC_FREE((void **)&info.pProps);
+        DIGI_FREE((void **)&info.pProps);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_parsePubResp() returns status = ", status);
@@ -2930,8 +2929,8 @@ MSTATUS MQTT_parsePacket(
                             }
                         }
                         /* Resize our buffer so it can fit the full message */
-                        MOC_FREE((void **) &pCtx->pRecvBuffer);
-                        status = MOC_MALLOC((void **) &pCtx->pRecvBuffer, pCtx->recvMsgSize);
+                        DIGI_FREE((void **) &pCtx->pRecvBuffer);
+                        status = DIGI_MALLOC((void **) &pCtx->pRecvBuffer, pCtx->recvMsgSize);
                         if (OK != status)
                             goto exit;
 
@@ -2953,8 +2952,8 @@ MSTATUS MQTT_parsePacket(
                             }
                         }
                         /* Resize our buffer so it can fit the partial content */
-                        MOC_FREE((void **) &pCtx->pRecvBuffer);
-                        status = MOC_MALLOC((void **) &pCtx->pRecvBuffer, 5);
+                        DIGI_FREE((void **) &pCtx->pRecvBuffer);
+                        status = DIGI_MALLOC((void **) &pCtx->pRecvBuffer, 5);
                         if (OK != status)
                             goto exit;
 
@@ -2967,7 +2966,7 @@ MSTATUS MQTT_parsePacket(
                     copyLen = bufferLen;
 
                 /* Copy over the contents provided by caller */
-                MOC_MEMCPY(pCtx->pRecvBuffer, pBuffer, copyLen);
+                DIGI_MEMCPY(pCtx->pRecvBuffer, pBuffer, copyLen);
                 pCtx->recvMsgOffset = copyLen;
                 pBuffer += copyLen;
                 bufferLen -= copyLen;
@@ -2980,7 +2979,7 @@ MSTATUS MQTT_parsePacket(
                 if (copyLen > bufferLen)
                     copyLen = bufferLen;
 
-                MOC_MEMCPY(pCtx->pRecvBuffer + pCtx->recvMsgOffset, pBuffer, copyLen);
+                DIGI_MEMCPY(pCtx->pRecvBuffer + pCtx->recvMsgOffset, pBuffer, copyLen);
                 pCtx->recvMsgOffset += copyLen;
                 pBuffer += copyLen;
                 bufferLen -= copyLen;
@@ -3009,13 +3008,13 @@ MSTATUS MQTT_parsePacket(
                             }
                         }
                         /* Resize our buffer so it can fit the full message */
-                        status = MOC_MALLOC((void **) &pResizeBuffer, pCtx->recvMsgSize);
+                        status = DIGI_MALLOC((void **) &pResizeBuffer, pCtx->recvMsgSize);
                         if (OK != status)
                             goto exit;
 
-                        MOC_MEMCPY(pResizeBuffer, pCtx->pRecvBuffer, pCtx->recvMsgOffset);
+                        DIGI_MEMCPY(pResizeBuffer, pCtx->pRecvBuffer, pCtx->recvMsgOffset);
 
-                        MOC_FREE((void **) &pCtx->pRecvBuffer);
+                        DIGI_FREE((void **) &pCtx->pRecvBuffer);
                         pCtx->pRecvBuffer = pResizeBuffer; pResizeBuffer = NULL;
                         pCtx->recvBufferSize = pCtx->recvMsgSize;
                     }
@@ -3024,7 +3023,7 @@ MSTATUS MQTT_parsePacket(
                     else
                         copyLen = bufferLen;
 
-                    MOC_MEMCPY(pCtx->pRecvBuffer + pCtx->recvMsgOffset, pBuffer, copyLen);
+                    DIGI_MEMCPY(pCtx->pRecvBuffer + pCtx->recvMsgOffset, pBuffer, copyLen);
                     pCtx->recvMsgOffset += copyLen;
                     pBuffer += copyLen;
                     bufferLen -= copyLen;
@@ -3037,7 +3036,7 @@ MSTATUS MQTT_parsePacket(
             if (copyLen > bufferLen)
                 copyLen = bufferLen;
 
-            MOC_MEMCPY(pCtx->pRecvBuffer + pCtx->recvMsgOffset, pBuffer, copyLen);
+            DIGI_MEMCPY(pCtx->pRecvBuffer + pCtx->recvMsgOffset, pBuffer, copyLen);
             pCtx->recvMsgOffset += copyLen;
             pBuffer += copyLen;
             bufferLen -= copyLen;
@@ -3402,11 +3401,11 @@ static MSTATUS MQTT_writeUserProps(ubyte *pBuf, MqttProperty *pProps, ubyte4 pro
         }
 
         /* Name length */
-        MOC_HTONS(pBuf, (pProps[i]).data.pair.name.dataLen);
+        DIGI_HTONS(pBuf, (pProps[i]).data.pair.name.dataLen);
         pBuf += 2; offset += 2;
 
         /* Name value */
-        status = MOC_MEMCPY((void *)pBuf,
+        status = DIGI_MEMCPY((void *)pBuf,
             (void *)(pProps[i]).data.pair.name.pData,
             (pProps[i]).data.pair.name.dataLen);
         if (OK != status)
@@ -3416,10 +3415,10 @@ static MSTATUS MQTT_writeUserProps(ubyte *pBuf, MqttProperty *pProps, ubyte4 pro
         offset += (pProps[i]).data.pair.name.dataLen;
 
         /* Value length*/
-        MOC_HTONS(pBuf, (pProps[i]).data.pair.value.dataLen);
+        DIGI_HTONS(pBuf, (pProps[i]).data.pair.value.dataLen);
         pBuf += 2; offset += 2;
 
-        status = MOC_MEMCPY((void *)pBuf,
+        status = DIGI_MEMCPY((void *)pBuf,
             (void *)(pProps[i]).data.pair.value.pData,
             (pProps[i]).data.pair.value.dataLen);
         if (OK != status)
@@ -3515,7 +3514,7 @@ static MSTATUS MQTT_constructConnectProps(ubyte *pIter, MqttConnectOptions *pOpt
     {
         *pIter = MQTT_PROP_SESSION_EXPIRY_INTERVAL;
         pIter++;
-        MOC_HTONL(pIter, pOptions->sessionExpiryIntervalSeconds);
+        DIGI_HTONL(pIter, pOptions->sessionExpiryIntervalSeconds);
         pIter += 4;
     }
 
@@ -3523,7 +3522,7 @@ static MSTATUS MQTT_constructConnectProps(ubyte *pIter, MqttConnectOptions *pOpt
     {
         *pIter = MQTT_PROP_RECEIVE_MAXIMUM;
         pIter++;
-        MOC_HTONS(pIter, pOptions->receiveMax);
+        DIGI_HTONS(pIter, pOptions->receiveMax);
         pIter += 2;
     }
 
@@ -3531,7 +3530,7 @@ static MSTATUS MQTT_constructConnectProps(ubyte *pIter, MqttConnectOptions *pOpt
     {
         *pIter = MQTT_PROP_MAXIMUM_PACKET_SIZE;
         pIter++;
-        MOC_HTONL(pIter, pOptions->maxPacketSize);
+        DIGI_HTONL(pIter, pOptions->maxPacketSize);
         pIter += 4;
     }
 
@@ -3539,7 +3538,7 @@ static MSTATUS MQTT_constructConnectProps(ubyte *pIter, MqttConnectOptions *pOpt
     {
         *pIter = MQTT_PROP_TOPIC_ALIAS_MAXIMUM;
         pIter++;
-        MOC_HTONS(pIter, pOptions->topicAliasMax);
+        DIGI_HTONS(pIter, pOptions->topicAliasMax);
         pIter += 2;
     }
 
@@ -3563,7 +3562,7 @@ static MSTATUS MQTT_constructConnectProps(ubyte *pIter, MqttConnectOptions *pOpt
     {
         *pIter = MQTT_PROP_AUTHENTICATION_METHOD;
         pIter++;
-        MOC_HTONS(pIter, pOptions->authMethodLen);
+        DIGI_HTONS(pIter, pOptions->authMethodLen);
         
         if (!isValidUtf8(pOptions->pAuthMethod, pOptions->authMethodLen))
         {
@@ -3572,7 +3571,7 @@ static MSTATUS MQTT_constructConnectProps(ubyte *pIter, MqttConnectOptions *pOpt
         }
 
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, (const void *)pOptions->pAuthMethod, pOptions->authMethodLen);
+        status = DIGI_MEMCPY((void *)pIter, (const void *)pOptions->pAuthMethod, pOptions->authMethodLen);
         if (OK != status)
             goto exit;
 
@@ -3583,9 +3582,9 @@ static MSTATUS MQTT_constructConnectProps(ubyte *pIter, MqttConnectOptions *pOpt
     {
         *pIter = MQTT_PROP_AUTHENTICATION_DATA;
         pIter++;
-        MOC_HTONS(pIter, pOptions->authDataLen);
+        DIGI_HTONS(pIter, pOptions->authDataLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, (const void *)pOptions->pAuthData, pOptions->authDataLen);
+        status = DIGI_MEMCPY((void *)pIter, (const void *)pOptions->pAuthData, pOptions->authDataLen);
         if (OK != status)
             goto exit;
 
@@ -3638,7 +3637,7 @@ static MSTATUS MQTT_constructWillProps(ubyte *pIter, MqttConnectOptions *pOption
     {
         *pIter = MQTT_PROP_WILL_DELAY_INTERVAL;
         pIter++;
-        MOC_HTONL(pIter, pOptions->willInfo.willDelayInterval);
+        DIGI_HTONL(pIter, pOptions->willInfo.willDelayInterval);
         pIter += 4;
     }
 
@@ -3654,7 +3653,7 @@ static MSTATUS MQTT_constructWillProps(ubyte *pIter, MqttConnectOptions *pOption
     {
         *pIter = MQTT_PROP_MESSAGE_EXPIRY_INTERVAL;
         pIter++;
-        MOC_HTONL(pIter, pOptions->willInfo.msgExpiryInterval);
+        DIGI_HTONL(pIter, pOptions->willInfo.msgExpiryInterval);
         pIter += 4;
     }
 
@@ -3669,9 +3668,9 @@ static MSTATUS MQTT_constructWillProps(ubyte *pIter, MqttConnectOptions *pOption
             goto exit;
         }
 
-        MOC_HTONS(pIter, pOptions->willInfo.contentTypeLen);
+        DIGI_HTONS(pIter, pOptions->willInfo.contentTypeLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, (const void *)pOptions->willInfo.pContentType, pOptions->willInfo.contentTypeLen);
+        status = DIGI_MEMCPY((void *)pIter, (const void *)pOptions->willInfo.pContentType, pOptions->willInfo.contentTypeLen);
         pIter += pOptions->willInfo.contentTypeLen;
     }
 
@@ -3686,9 +3685,9 @@ static MSTATUS MQTT_constructWillProps(ubyte *pIter, MqttConnectOptions *pOption
             goto exit;
         }
 
-        MOC_HTONS(pIter, pOptions->willInfo.responseTopicLen);
+        DIGI_HTONS(pIter, pOptions->willInfo.responseTopicLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, (const void *)pOptions->willInfo.pResponseTopic, pOptions->willInfo.responseTopicLen);
+        status = DIGI_MEMCPY((void *)pIter, (const void *)pOptions->willInfo.pResponseTopic, pOptions->willInfo.responseTopicLen);
         pIter += pOptions->willInfo.responseTopicLen;
     }
 
@@ -3696,9 +3695,9 @@ static MSTATUS MQTT_constructWillProps(ubyte *pIter, MqttConnectOptions *pOption
     {
         *pIter = MQTT_PROP_CORRELATION_DATA;
         pIter++;
-        MOC_HTONS(pIter, pOptions->willInfo.correlationDataLen);
+        DIGI_HTONS(pIter, pOptions->willInfo.correlationDataLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, pOptions->willInfo.pCorrelationData, pOptions->willInfo.correlationDataLen);
+        status = DIGI_MEMCPY((void *)pIter, pOptions->willInfo.pCorrelationData, pOptions->willInfo.correlationDataLen);
         pIter += pOptions->willInfo.correlationDataLen;
     }
 
@@ -3750,7 +3749,7 @@ MSTATUS MQTT_buildConnectMsg(MqttCtx *pCtx, MqttConnectOptions *pOptions, MqttMe
     /* Fixed Header byte + remaining len encoding + connect msg (variable header + payload) */
     msgLen = 1 + bytesUsed + connectLen;
 
-    status = MOC_CALLOC((void **)&pMsg, msgLen, sizeof(ubyte));
+    status = DIGI_CALLOC((void **)&pMsg, msgLen, sizeof(ubyte));
     if (OK != status)
         goto exit;
 
@@ -3800,9 +3799,9 @@ MSTATUS MQTT_buildConnectMsg(MqttCtx *pCtx, MqttConnectOptions *pOptions, MqttMe
      * As defined in MQTTv5 spec 3.1.3 */
 
     /* Client ID */
-    MOC_HTONS(pIter, (ubyte4)pCtx->clientIdLen);
+    DIGI_HTONS(pIter, (ubyte4)pCtx->clientIdLen);
     pIter += 2;
-    status = MOC_MEMCPY((void *)pIter, (const void *)pCtx->pClientId, pCtx->clientIdLen);
+    status = DIGI_MEMCPY((void *)pIter, (const void *)pCtx->pClientId, pCtx->clientIdLen);
     pIter += pCtx->clientIdLen;
 
     /* Will properties if applicable */
@@ -3831,18 +3830,18 @@ MSTATUS MQTT_buildConnectMsg(MqttCtx *pCtx, MqttConnectOptions *pOptions, MqttMe
             goto exit;
         }
 
-        MOC_HTONS(pIter, pOptions->willInfo.willTopicLen);
+        DIGI_HTONS(pIter, pOptions->willInfo.willTopicLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, (const void *)pOptions->willInfo.pWillTopic, pOptions->willInfo.willTopicLen);
+        status = DIGI_MEMCPY((void *)pIter, (const void *)pOptions->willInfo.pWillTopic, pOptions->willInfo.willTopicLen);
         pIter += pOptions->willInfo.willTopicLen;
     }
 
     /* Will Payload */
     if (NULL != pOptions->willInfo.pWill)
     {
-        MOC_HTONS(pIter, pOptions->willInfo.willLen);
+        DIGI_HTONS(pIter, pOptions->willInfo.willLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, pOptions->willInfo.pWill, pOptions->willInfo.willLen);
+        status = DIGI_MEMCPY((void *)pIter, pOptions->willInfo.pWill, pOptions->willInfo.willLen);
         pIter += pOptions->willInfo.willLen;
     }
 
@@ -3855,22 +3854,22 @@ MSTATUS MQTT_buildConnectMsg(MqttCtx *pCtx, MqttConnectOptions *pOptions, MqttMe
             goto exit;
         }
 
-        MOC_HTONS(pIter, pOptions->usernameLen);
+        DIGI_HTONS(pIter, pOptions->usernameLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, pOptions->pUsername, pOptions->usernameLen);
+        status = DIGI_MEMCPY((void *)pIter, pOptions->pUsername, pOptions->usernameLen);
         pIter += pOptions->usernameLen;
     }
 
     /* Password */
     if (NULL != pOptions->pPassword)
     {
-        MOC_HTONS(pIter, pOptions->passwordLen);
+        DIGI_HTONS(pIter, pOptions->passwordLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, pOptions->pPassword, pOptions->passwordLen);
+        status = DIGI_MEMCPY((void *)pIter, pOptions->pPassword, pOptions->passwordLen);
         pIter += pOptions->passwordLen;
     }
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -3888,10 +3887,10 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **)&pMsg);
+        DIGI_FREE((void **)&pMsg);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildConnectMsg() returns status = ", status);
@@ -4017,7 +4016,7 @@ MSTATUS MQTT_buildSubscribeMsg(
     /* Fixed Header byte + remaining len encoding + subscribe msg (variable header + payload) */
     msgLen = 1 + bytesUsed + subscribeLen;
 
-    status = MOC_CALLOC((void **)&pMsg, msgLen, sizeof(ubyte));
+    status = DIGI_CALLOC((void **)&pMsg, msgLen, sizeof(ubyte));
     if (OK != status)
         goto exit;
 
@@ -4040,7 +4039,7 @@ MSTATUS MQTT_buildSubscribeMsg(
     if (NULL != pPacketId)
         *pPacketId = pktId;
 
-    MOC_HTONS(pIter, pktId);
+    DIGI_HTONS(pIter, pktId);
     pIter += 2;
 
     if (MQTT_V5 <= pCtx->version)
@@ -4098,10 +4097,10 @@ MSTATUS MQTT_buildSubscribeMsg(
             goto exit;
         }
 
-        MOC_HTONS(pIter, pCurTopic->topicLen);
+        DIGI_HTONS(pIter, pCurTopic->topicLen);
         pIter += 2;
 
-        MOC_MEMCPY(pIter, pCurTopic->pTopic, pCurTopic->topicLen);
+        DIGI_MEMCPY(pIter, pCurTopic->pTopic, pCurTopic->topicLen);
         pIter += pCurTopic->topicLen;
 
         *pIter = 0x00;
@@ -4114,7 +4113,7 @@ MSTATUS MQTT_buildSubscribeMsg(
         pIter++;
     }
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -4129,10 +4128,10 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **)&pMsg);
+        DIGI_FREE((void **)&pMsg);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildSubscribeMsg() returns status = ", status);
@@ -4209,7 +4208,7 @@ MSTATUS MQTT_buildUnsubscribeMsg(
 
     msgLen += len;
 
-    status = MOC_MALLOC((void **) &pMsg, msgLen);
+    status = DIGI_MALLOC((void **) &pMsg, msgLen);
     if (OK != status)
         goto exit;
 
@@ -4232,7 +4231,7 @@ MSTATUS MQTT_buildUnsubscribeMsg(
     if (NULL != pPacketId)
         *pPacketId = pktId;
 
-    MOC_HTONS(pIter, pktId);
+    DIGI_HTONS(pIter, pktId);
     pIter += 2;
 
     if (MQTT_V5 <= pCtx->version)
@@ -4276,14 +4275,14 @@ MSTATUS MQTT_buildUnsubscribeMsg(
             goto exit;
         }
 
-        MOC_HTONS(pIter, pCurTopic->topicLen);
+        DIGI_HTONS(pIter, pCurTopic->topicLen);
         pIter += 2;
 
-        MOC_MEMCPY(pIter, pCurTopic->pTopic, pCurTopic->topicLen);
+        DIGI_MEMCPY(pIter, pCurTopic->pTopic, pCurTopic->topicLen);
         pIter += pCurTopic->topicLen;
     }
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -4298,10 +4297,10 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **)&pMsg);
+        DIGI_FREE((void **)&pMsg);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildUnsubscribeMsg() returns status = ", status);
@@ -4462,7 +4461,7 @@ MSTATUS MQTT_buildPublishMsg(
     /* Fixed Header byte + remaining len encoding + publish msg (variable header + payload) */
     msgLen = 1 + bytesUsed + publishLen;
 
-    status = MOC_CALLOC((void **)&pMsg, msgLen, sizeof(ubyte));
+    status = DIGI_CALLOC((void **)&pMsg, msgLen, sizeof(ubyte));
     if (OK != status)
         goto exit;
 
@@ -4493,11 +4492,11 @@ MSTATUS MQTT_buildPublishMsg(
     }
 
     /* topic length */
-    MOC_HTONS(pIter, topicLen);
+    DIGI_HTONS(pIter, topicLen);
     pIter += 2;
 
     /* topic */
-    MOC_MEMCPY(pIter, pTopic, topicLen);
+    DIGI_MEMCPY(pIter, pTopic, topicLen);
     pIter += topicLen;
 
     if ( (NULL != pOptions) && (0 != pOptions->qos) )
@@ -4507,7 +4506,7 @@ MSTATUS MQTT_buildPublishMsg(
         if (OK != status)
             goto exit;
 
-        MOC_HTONS(pIter, pktId);
+        DIGI_HTONS(pIter, pktId);
         pIter += 2;
 
         if (NULL != pPacketId)
@@ -4535,14 +4534,14 @@ MSTATUS MQTT_buildPublishMsg(
             if (0 != pOptions->msgExpiryInterval)
             {
                 *pIter++ = MQTT_PROP_MESSAGE_EXPIRY_INTERVAL;
-                MOC_HTONL(pIter, pOptions->msgExpiryInterval);
+                DIGI_HTONL(pIter, pOptions->msgExpiryInterval);
                 pIter += 4;
             }
 
             if (0 != pOptions->topicAlias)
             {
                 *pIter++ = MQTT_PROP_TOPIC_ALIAS;
-                MOC_HTONS(pIter, pOptions->topicAlias);
+                DIGI_HTONS(pIter, pOptions->topicAlias);
                 pIter += 2;
             }
 
@@ -4555,18 +4554,18 @@ MSTATUS MQTT_buildPublishMsg(
                 }
 
                 *pIter++ = MQTT_PROP_RESPONSE_TOPIC;
-                MOC_HTONS(pIter, pOptions->responseTopicLen);
+                DIGI_HTONS(pIter, pOptions->responseTopicLen);
                 pIter += 2;
-                MOC_MEMCPY(pIter, pOptions->pResponseTopic, pOptions->responseTopicLen);
+                DIGI_MEMCPY(pIter, pOptions->pResponseTopic, pOptions->responseTopicLen);
                 pIter += pOptions->responseTopicLen;
             }
 
             if (NULL != pOptions->pCorrelationData)
             {
                 *pIter++ = MQTT_PROP_CORRELATION_DATA;
-                MOC_HTONS(pIter, pOptions->correlationDataLen);
+                DIGI_HTONS(pIter, pOptions->correlationDataLen);
                 pIter += 2;
-                MOC_MEMCPY(pIter, pOptions->pCorrelationData, pOptions->correlationDataLen);
+                DIGI_MEMCPY(pIter, pOptions->pCorrelationData, pOptions->correlationDataLen);
                 pIter += pOptions->correlationDataLen;
             }
 
@@ -4599,18 +4598,18 @@ MSTATUS MQTT_buildPublishMsg(
                 }
 
                 *pIter++ = MQTT_PROP_CONTENT_TYPE;
-                MOC_HTONS(pIter, pOptions->contentTypeLen);
+                DIGI_HTONS(pIter, pOptions->contentTypeLen);
                 pIter += 2;
-                MOC_MEMCPY(pIter, pOptions->pContentType, pOptions->contentTypeLen);
+                DIGI_MEMCPY(pIter, pOptions->pContentType, pOptions->contentTypeLen);
                 pIter += pOptions->contentTypeLen;
             }
         }
     }
 
-    MOC_MEMCPY(pIter, pData, dataLen);
+    DIGI_MEMCPY(pIter, pData, dataLen);
     pIter += dataLen;
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -4625,10 +4624,10 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **)&pMsg);
+        DIGI_FREE((void **)&pMsg);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildPublishMsg() returns status = ", status);
@@ -4696,7 +4695,7 @@ MSTATUS MQTT_buildAuthMsg(MqttCtx *pCtx, MqttAuthOptions *pOptions, MqttMessage 
     msgLen = 1 + bytesUsed + remLen;
 
     /* Length computed, alloc space for the packet and begin construction */
-    status = MOC_CALLOC((void **)&pMsg, msgLen, 1);
+    status = DIGI_CALLOC((void **)&pMsg, msgLen, 1);
     if (OK != status)
         goto exit;
 
@@ -4732,9 +4731,9 @@ MSTATUS MQTT_buildAuthMsg(MqttCtx *pCtx, MqttAuthOptions *pOptions, MqttMessage 
 
     *pIter = MQTT_PROP_AUTHENTICATION_METHOD;
     pIter++;
-    MOC_HTONS(pIter, pOptions->authMethodLen);
+    DIGI_HTONS(pIter, pOptions->authMethodLen);
     pIter += 2;
-    status = MOC_MEMCPY((void *)pIter, pOptions->pAuthMethod, pOptions->authMethodLen);
+    status = DIGI_MEMCPY((void *)pIter, pOptions->pAuthMethod, pOptions->authMethodLen);
     if (OK != status)
         goto exit;
 
@@ -4742,10 +4741,10 @@ MSTATUS MQTT_buildAuthMsg(MqttCtx *pCtx, MqttAuthOptions *pOptions, MqttMessage 
 
     *pIter = MQTT_PROP_AUTHENTICATION_DATA;
     pIter++;
-    MOC_HTONS(pIter, pOptions->authDataLen);
+    DIGI_HTONS(pIter, pOptions->authDataLen);
     pIter += 2;
 
-    status = MOC_MEMCPY((void *)pIter, pOptions->pAuthData, pOptions->authDataLen);
+    status = DIGI_MEMCPY((void *)pIter, pOptions->pAuthData, pOptions->authDataLen);
     if (OK != status)
         goto exit;
 
@@ -4755,7 +4754,7 @@ MSTATUS MQTT_buildAuthMsg(MqttCtx *pCtx, MqttAuthOptions *pOptions, MqttMessage 
     if (OK != status)
         goto exit;
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -4770,10 +4769,10 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **)&pMsg);
+        DIGI_FREE((void **)&pMsg);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildAuthMsg() returns status = ", status);
@@ -4792,7 +4791,7 @@ MSTATUS MQTT_buildPingReqMsg(
     ubyte4 msgLen = 0;
     MqttMessage *pNewMsg = NULL;
 
-    status = MOC_MALLOC((void **) &pMsg, 2);
+    status = DIGI_MALLOC((void **) &pMsg, 2);
     if (OK != status)
         goto exit;
 
@@ -4800,7 +4799,7 @@ MSTATUS MQTT_buildPingReqMsg(
     pMsg[1] = 0x00;
     msgLen = 2;
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -4813,7 +4812,7 @@ MSTATUS MQTT_buildPingReqMsg(
 
 exit:
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildPingReqMsg() returns status = ", status);
@@ -4895,7 +4894,7 @@ MSTATUS MQTT_buildDisconnectMsg(MqttCtx *pCtx, MqttDisconnectOptions *pOptions, 
     msgLen = 1 + bytesUsed + remLen;
 
     /* Length computed, alloc space for the packet and begin construction */
-    status = MOC_CALLOC((void **)&pMsg, msgLen, 1);
+    status = DIGI_CALLOC((void **)&pMsg, msgLen, 1);
     if (OK != status)
         goto exit;
 
@@ -4928,7 +4927,7 @@ MSTATUS MQTT_buildDisconnectMsg(MqttCtx *pCtx, MqttDisconnectOptions *pOptions, 
         {
             *pIter = MQTT_PROP_SESSION_EXPIRY_INTERVAL;
             pIter++;
-            MOC_HTONL(pIter, pOptions->sessionExpiryInterval);
+            DIGI_HTONL(pIter, pOptions->sessionExpiryInterval);
             pIter += 4;
         }
 
@@ -4940,9 +4939,9 @@ MSTATUS MQTT_buildDisconnectMsg(MqttCtx *pCtx, MqttDisconnectOptions *pOptions, 
                 goto exit;
             }
 
-            MOC_HTONS(pIter, pOptions->reasonStrLen);
+            DIGI_HTONS(pIter, pOptions->reasonStrLen);
             pIter += 2;
-            status = MOC_MEMCPY((void *)pIter, pOptions->pReasonStr, pOptions->reasonStrLen);
+            status = DIGI_MEMCPY((void *)pIter, pOptions->pReasonStr, pOptions->reasonStrLen);
             if (OK != status)
                 goto exit;
 
@@ -4959,7 +4958,7 @@ MSTATUS MQTT_buildDisconnectMsg(MqttCtx *pCtx, MqttDisconnectOptions *pOptions, 
         pIter++;
     }
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -4974,10 +4973,10 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **)&pMsg);
+        DIGI_FREE((void **)&pMsg);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildDisconnectMsg() returns status = ", status);
@@ -5072,7 +5071,7 @@ MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMe
     }
 
     /* Length computed, alloc space for the packet and begin construction */
-    status = MOC_CALLOC((void **)&pMsg, msgLen, 1);
+    status = DIGI_CALLOC((void **)&pMsg, msgLen, 1);
     if (OK != status)
         goto exit;
 
@@ -5096,7 +5095,7 @@ MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMe
         pIter++;
     }
 
-    MOC_HTONS(pIter, pOptions->packetId);
+    DIGI_HTONS(pIter, pOptions->packetId);
     pIter += 2;
 
     if (TRUE == shortForm)
@@ -5122,9 +5121,9 @@ MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMe
             goto exit;
         }
 
-        MOC_HTONS(pIter, pOptions->reasonStrLen);
+        DIGI_HTONS(pIter, pOptions->reasonStrLen);
         pIter += 2;
-        status = MOC_MEMCPY((void *)pIter, pOptions->pReasonStr, pOptions->reasonStrLen);
+        status = DIGI_MEMCPY((void *)pIter, pOptions->pReasonStr, pOptions->reasonStrLen);
         if (OK != status)
             goto exit;
     }
@@ -5135,7 +5134,7 @@ MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMe
 
 finish_construction:
 
-    status = MOC_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
+    status = DIGI_CALLOC((void **)&pNewMsg, 1, sizeof(MqttMessage));
     if (OK != status)
         goto exit;
 
@@ -5150,10 +5149,10 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **)&pMsg);
+        DIGI_FREE((void **)&pMsg);
     }
 
-#if defined(__ENABLE_MOCANA_DEBUG_CONSOLE__)
+#if defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__)
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_MQTT_TRANSPORT, (sbyte*)"MQTT_buildPubRespMsg() returns status = ", status);
@@ -5172,10 +5171,10 @@ extern MSTATUS MQTT_freeMsg(
     {
         if (NULL != (*ppMsg)->pData)
         {
-            status = MOC_FREE((void **) &((*ppMsg)->pData));
+            status = DIGI_FREE((void **) &((*ppMsg)->pData));
         }
 
-        fstatus = MOC_FREE((void **) ppMsg);
+        fstatus = DIGI_FREE((void **) ppMsg);
         if (OK == status)
             status = fstatus;
     }
@@ -5197,7 +5196,7 @@ extern MSTATUS MQTT_freeMsgNode(
             status = MQTT_freeMsg(&((*ppMsgList)->pMsg));
         }
 
-        fstatus = MOC_FREE((void **) ppMsgList);
+        fstatus = DIGI_FREE((void **) ppMsgList);
         if (OK == status)
             status = fstatus;
     }
@@ -5234,7 +5233,7 @@ static MSTATUS MQTT_queuePacket(
     MSTATUS status;
     MqttMessageList *pNode = NULL;
 
-    status = MOC_MALLOC((void **) &pNode, sizeof(MqttMessageList));
+    status = DIGI_MALLOC((void **) &pNode, sizeof(MqttMessageList));
     if (OK != status)
         goto exit;
 

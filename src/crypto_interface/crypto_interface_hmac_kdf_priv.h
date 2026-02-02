@@ -31,8 +31,8 @@
 extern "C" {
 #endif
     
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_HMAC_KDF_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_HMAC_KDF_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_HMAC_KDF_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_HMAC_KDF_INTERNAL__))
     
 #define HmacKdfExtract       CRYPTO_INTERFACE_HmacKdfExtract
 #define HmacKdfExpand        CRYPTO_INTERFACE_HmacKdfExpand

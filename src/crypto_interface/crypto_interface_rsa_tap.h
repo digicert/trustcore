@@ -40,7 +40,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_RsaDeferKeyUnload (
     byteBoolean deferredTokenUnload
     );
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 /**
  * @brief   Gets the key handle and token handle for an internal TAP key.

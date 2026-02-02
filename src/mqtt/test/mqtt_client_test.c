@@ -33,9 +33,9 @@
 #include "../../http/http_common.h"
 #include "../../http/http.h"
 #include "../../mqtt/mqtt_client.h"
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 #include "../../ssl/ssl.h"
-#endif /* ../__ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* ../__ENABLE_DIGICERT_SSL_CLIENT__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -223,7 +223,7 @@ typedef struct
 
 static char *gpConfig = NULL;
 MqttClientExampleCtx *gpCtx = NULL;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 certStorePtr gpStore = NULL;
 #endif
 static ubyte gExtended = FALSE;
@@ -353,7 +353,7 @@ static MSTATUS MQTT_EXAMPLE_contextCreate(
 {
     MSTATUS status;
 
-    status = MOC_CALLOC((void **) ppCtx, 1, sizeof(MqttClientExampleCtx));
+    status = DIGI_CALLOC((void **) ppCtx, 1, sizeof(MqttClientExampleCtx));
     if (OK != status)
     {
         goto exit;
@@ -378,10 +378,10 @@ static MSTATUS MQTT_EXAMPLE_contextDelete(
     {
         if (NULL != (*ppCtx)->pMqttServer)
         {
-            MOC_FREE((void **) &((*ppCtx)->pMqttServer));
+            DIGI_FREE((void **) &((*ppCtx)->pMqttServer));
         }
 
-        MOC_FREE((void **) ppCtx);
+        DIGI_FREE((void **) ppCtx);
     }
 
     return status;
@@ -418,11 +418,11 @@ static void setStringParameter(
     char** param,
     char* value)
 {
-    *param = MALLOC((MOC_STRLEN((const sbyte *)value))+1);
+    *param = MALLOC((DIGI_STRLEN((const sbyte *)value))+1);
     if (NULL == *param)
         return;
-    (void) MOC_MEMCPY(*param, value, MOC_STRLEN((const sbyte *)value));
-    (*param)[MOC_STRLEN((const sbyte *)value)] = '\0';
+    (void) DIGI_MEMCPY(*param, value, DIGI_STRLEN((const sbyte *)value));
+    (*param)[DIGI_STRLEN((const sbyte *)value)] = '\0';
 }
 
 /*----------------------------------------------------------------------------*/
@@ -456,7 +456,7 @@ static MSTATUS MQTT_EXAMPLE_sendPendingData(
 
         if (0 < sendNumBytes)
         {
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
                 status = SSL_send(
@@ -491,7 +491,7 @@ exit:
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 
 static MSTATUS MQTT_EXAMPLE_sslCertStatusCb(
     sbyte4 sslConnectionInstance,
@@ -583,14 +583,14 @@ static MSTATUS MQTT_EXAMPLE_addTrustPointFile(
     ubyte *pData = NULL, *pTemp = NULL;
     ubyte4 dataLen = 0, tempLen = 0;
 
-    status = MOCANA_readFile(pFile, &pData, &dataLen);
+    status = DIGICERT_readFile(pFile, &pData, &dataLen);
     if (OK != status)
         goto exit;
 
     status = CA_MGMT_decodeCertificate(pData, dataLen, &pTemp, &tempLen);
     if (OK == status)
     {
-        MOC_FREE((void **) &pData);
+        DIGI_FREE((void **) &pData);
         pData = pTemp;
         dataLen = tempLen;
     }
@@ -601,7 +601,7 @@ exit:
 
     if (NULL != pData)
     {
-        MOC_FREE((void **) &pData);
+        DIGI_FREE((void **) &pData);
     }
 
     return status;
@@ -652,7 +652,7 @@ MSTATUS MQTT_TEST_init()
     if (OK != status)
         goto exit;
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     status = SSL_init(0, MAX_MQTT_CLIENT_CONNECTIONS);
     if (OK != status)
     {
@@ -676,7 +676,7 @@ void MQTT_TEST_uninit()
     void *p = NULL;
     HASH_TABLE_removePtrsTable(gpMqttTestClientTable, NULL);
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     CERT_STORE_releaseStore(&gpStore);
 #endif
 }
@@ -687,11 +687,11 @@ MSTATUS MQTT_TEST_addClient(sbyte *pClientId, sbyte4 connInst, TCP_SOCKET socket
     MSTATUS status;
     ubyte4 hashVal = 0;
     MqttTestClient *pClient = NULL;
-    ubyte4 clientIdLen = MOC_STRLEN(pClientId);
+    ubyte4 clientIdLen = DIGI_STRLEN(pClientId);
 
     HASH_VALUE_hashGen(pClientId, clientIdLen, 0, &hashVal);
 
-    status = MOC_CALLOC((void **)&pClient, 1, sizeof(MqttTestClient));
+    status = DIGI_CALLOC((void **)&pClient, 1, sizeof(MqttTestClient));
     if (OK != status)
         goto exit;
 
@@ -713,19 +713,19 @@ MSTATUS MQTT_TEST_addAsyncClient(sbyte *pClientId, sbyte4 connInst, TCP_SOCKET s
     MSTATUS status;
     ubyte4 hashVal = 0;
     MqttTestClient *pClient = NULL;
-    ubyte4 clientIdLen = MOC_STRLEN(pClientId);
+    ubyte4 clientIdLen = DIGI_STRLEN(pClientId);
 
     HASH_VALUE_hashGen(pClientId, clientIdLen, 0, &hashVal);
 
-    status = MOC_CALLOC((void **)&pClient, 1, sizeof(MqttTestClient));
+    status = DIGI_CALLOC((void **)&pClient, 1, sizeof(MqttTestClient));
     if (OK != status)
         goto exit;
 
-    status = MOC_CALLOC((void **)&(pClient->pSendBuffer), 1, sendBufSize);
+    status = DIGI_CALLOC((void **)&(pClient->pSendBuffer), 1, sendBufSize);
     if (OK != status)
         goto exit;
 
-    status = MOC_CALLOC((void **)&(pClient->pRecvBuffer), 1, recvBufSize);
+    status = DIGI_CALLOC((void **)&(pClient->pRecvBuffer), 1, recvBufSize);
     if (OK != status)
         goto exit;
 
@@ -763,12 +763,12 @@ MSTATUS MQTT_TEST_removeClient(sbyte *pClientId, sbyte4 connInst)
     MSTATUS status;
     ubyte4 i = 0;
     ubyte4 hashVal = 0;
-    ubyte4 clientIdLen = MOC_STRLEN(pClientId);
+    ubyte4 clientIdLen = DIGI_STRLEN(pClientId);
     void *pValue = NULL;
     MqttTestClient *pClient = NULL;
     intBoolean found = FALSE;
     TCP_SOCKET socket = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     sbyte4 sslConnInst = 0;
 #endif
 
@@ -776,7 +776,7 @@ MSTATUS MQTT_TEST_removeClient(sbyte *pClientId, sbyte4 connInst)
     if (OK != status)
         goto exit;
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (TRUE == gSsl)
     {
         status = MQTT_TEST_getSslConnFromClientId(pClientId, &sslConnInst);
@@ -803,27 +803,27 @@ MSTATUS MQTT_TEST_removeClient(sbyte *pClientId, sbyte4 connInst)
             {
                 if (NULL != pClient->pExpects[i].pData)
                 {
-                    MOC_FREE((void **)&pClient->pExpects[i].pData);
+                    DIGI_FREE((void **)&pClient->pExpects[i].pData);
                 }
                 if (NULL != pClient->pExpects[i].pTopic)
                 {
-                    MOC_FREE((void **)&pClient->pExpects[i].pTopic);
+                    DIGI_FREE((void **)&pClient->pExpects[i].pTopic);
                 }
                 if (NULL != pClient->pExpects[i].pResponseTopic)
                 {
-                    MOC_FREE((void **)&pClient->pExpects[i].pResponseTopic);
+                    DIGI_FREE((void **)&pClient->pExpects[i].pResponseTopic);
                 }
                 if (NULL != pClient->pExpects[i].pCorrelationData)
                 {
-                    MOC_FREE((void **)&pClient->pExpects[i].pCorrelationData);
+                    DIGI_FREE((void **)&pClient->pExpects[i].pCorrelationData);
                 }
                 if (NULL != pClient->pExpects[i].pContentType)
                 {
-                    MOC_FREE((void **)&pClient->pExpects[i].pContentType);
+                    DIGI_FREE((void **)&pClient->pExpects[i].pContentType);
                 }
 
             }
-            MOC_FREE((void **)&pClient->pExpects);
+            DIGI_FREE((void **)&pClient->pExpects);
         }
 
 #ifdef __ENABLE_MQTT_ASYNC_CLIENT__
@@ -831,16 +831,16 @@ MSTATUS MQTT_TEST_removeClient(sbyte *pClientId, sbyte4 connInst)
         {
             if (NULL != pClient->pSendBuffer)
             {
-                MOC_FREE((void **)&pClient->pSendBuffer);
+                DIGI_FREE((void **)&pClient->pSendBuffer);
             }
             if (NULL != pClient->pRecvBuffer)
             {
-                MOC_FREE((void **)&pClient->pRecvBuffer);
+                DIGI_FREE((void **)&pClient->pRecvBuffer);
             }
         }
 #endif
 
-        MOC_FREE((void **)&pClient);
+        DIGI_FREE((void **)&pClient);
     }
 
 exit:
@@ -854,7 +854,7 @@ MSTATUS MQTT_TEST_getClient(sbyte *pClientId, MqttTestClient **ppClient)
     ubyte4 hashVal = 0;
     intBoolean found = FALSE;
     MqttTestClient *pClient = NULL;
-    ubyte4 clientIdLen = MOC_STRLEN(pClientId);
+    ubyte4 clientIdLen = DIGI_STRLEN(pClientId);
 
     HASH_VALUE_hashGen(pClientId, clientIdLen, 0, &hashVal);
     status = HASH_TABLE_findPtr (
@@ -883,7 +883,7 @@ MSTATUS MQTT_TEST_getConnInstFromClientId(sbyte *pClientId, sbyte4 *pConnInst)
     ubyte4 hashVal = 0;
     intBoolean found = FALSE;
     MqttTestClient *pClient = NULL;
-    ubyte4 clientIdLen = MOC_STRLEN(pClientId);
+    ubyte4 clientIdLen = DIGI_STRLEN(pClientId);
 
     HASH_VALUE_hashGen(pClientId, clientIdLen, 0, &hashVal);
     status = HASH_TABLE_findPtr (
@@ -912,7 +912,7 @@ MSTATUS MQTT_TEST_getSocketFromClientId(sbyte *pClientId, TCP_SOCKET *pSocket)
     ubyte4 hashVal = 0;
     intBoolean found = FALSE;
     MqttTestClient *pClient = NULL;
-    ubyte4 clientIdLen = MOC_STRLEN(pClientId);
+    ubyte4 clientIdLen = DIGI_STRLEN(pClientId);
 
     HASH_VALUE_hashGen(pClientId, clientIdLen, 0, &hashVal);
     status = HASH_TABLE_findPtr (
@@ -934,7 +934,7 @@ exit:
     return status;
 }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 MSTATUS MQTT_TEST_getSslConnFromClientId(sbyte *pClientId, sbyte4 *pSslConn)
 {
     MSTATUS status;
@@ -942,7 +942,7 @@ MSTATUS MQTT_TEST_getSslConnFromClientId(sbyte *pClientId, sbyte4 *pSslConn)
     ubyte4 hashVal = 0;
     intBoolean found = FALSE;
     MqttTestClient *pClient = NULL;
-    ubyte4 clientIdLen = MOC_STRLEN(pClientId);
+    ubyte4 clientIdLen = DIGI_STRLEN(pClientId);
 
     HASH_VALUE_hashGen(pClientId, clientIdLen, 0, &hashVal);
     status = HASH_TABLE_findPtr (
@@ -1028,7 +1028,7 @@ void MQTT_TEST_removeAllNonBlockingElems()
     {
         if (NULL != g_pNonBlockingElems[i])
         {
-            MOC_FREE((void **)&g_pNonBlockingElems[i]);
+            DIGI_FREE((void **)&g_pNonBlockingElems[i]);
         }
     }
 }
@@ -1091,7 +1091,7 @@ MSTATUS MQTT_TEST_parseandExecVerifyOutEmpty(JSON_ContextType *pJsonCtx, ubyte4 
 exit:
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
     return status;
 }
@@ -1157,7 +1157,7 @@ MSTATUS MQTT_TEST_parseandExecExpectOut(JSON_ContextType *pJsonCtx, ubyte4 start
         goto exit;
     
     numExpects = token.elemCnt;
-    status = MOC_CALLOC((void **)&pElements, numExpects, sizeof(ExpectOutboundElem));
+    status = DIGI_CALLOC((void **)&pElements, numExpects, sizeof(ExpectOutboundElem));
     if (OK != status)
         goto exit;
 
@@ -1178,11 +1178,11 @@ MSTATUS MQTT_TEST_parseandExecExpectOut(JSON_ContextType *pJsonCtx, ubyte4 start
         if (OK != status)
             goto exit;
 
-        if (0 == MOC_STRCMP(pPacketType, MQTT_PUBLISH_TYPE_JSTR))
+        if (0 == DIGI_STRCMP(pPacketType, MQTT_PUBLISH_TYPE_JSTR))
         {
             pElements[i].packetType = MQTT_PUBLISH;
         }
-        else if (0 == MOC_STRCMP(pPacketType, MQTT_PUBREL_TYPE_JSTR))
+        else if (0 == DIGI_STRCMP(pPacketType, MQTT_PUBREL_TYPE_JSTR))
         {
             pElements[i].packetType = MQTT_PUBREL;
         }
@@ -1195,7 +1195,7 @@ MSTATUS MQTT_TEST_parseandExecExpectOut(JSON_ContextType *pJsonCtx, ubyte4 start
 
         if (NULL != pPacketType)
         {
-            MOC_FREE((void **)&pPacketType);
+            DIGI_FREE((void **)&pPacketType);
         }
 
         status = JSON_getToken(pJsonCtx, currIndex, &token);
@@ -1210,11 +1210,11 @@ MSTATUS MQTT_TEST_parseandExecExpectOut(JSON_ContextType *pJsonCtx, ubyte4 start
 exit:
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
     if (NULL != pElements)
     {
-        MOC_FREE((void **)&pElements);
+        DIGI_FREE((void **)&pElements);
     }
 
     return status;
@@ -1232,7 +1232,7 @@ MSTATUS MQTT_TEST_parseServerSettings(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (NULL != gpCtx->pMqttServer)
     {
-        MOC_FREE((void **)&(gpCtx->pMqttServer));
+        DIGI_FREE((void **)&(gpCtx->pMqttServer));
     }
 
     status = JSON_utilReadJsonString (
@@ -1249,7 +1249,7 @@ MSTATUS MQTT_TEST_parseServerSettings(JSON_ContextType *pJsonCtx, ubyte4 startin
         pJsonCtx, startingIndex, NULL, MQTT_TEST_MODE_JSTR, &pModeValue, FALSE);
     if (OK == status)
     {
-        if (0 == MOC_STRCMP(pModeValue, MQTT_EXTENDED_MODE_JSTR))
+        if (0 == DIGI_STRCMP(pModeValue, MQTT_EXTENDED_MODE_JSTR))
         {
             gExtended = TRUE;
         }
@@ -1264,7 +1264,7 @@ exit:
 
     if (NULL != pModeValue)
     {
-        MOC_FREE((void **)&pModeValue);
+        DIGI_FREE((void **)&pModeValue);
     }
 
     return status;
@@ -1276,7 +1276,7 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
     TCP_SOCKET socket = 0;
     sbyte *pClientId = NULL;
     sbyte4 connInst = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     sbyte4 sslConnInst = 0;
     MqttTestClient *pClient = NULL;
 #endif
@@ -1290,7 +1290,7 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
     if (OK != status)
         goto exit;
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (TRUE == gSsl)
     {
         status = MQTT_TEST_getSslConnFromClientId(pClientId, &sslConnInst);
@@ -1312,7 +1312,7 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
         printf("TCP_CONNECT failed with status = %d on line %d\n", status, __LINE__);
     }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (TRUE == gSsl)
     {
         status = MQTT_TEST_getClient(pClientId, &pClient);
@@ -1368,7 +1368,7 @@ exit:
 
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
 
     return status;
@@ -1418,7 +1418,7 @@ exit:
 
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
 
     return status;
@@ -1449,7 +1449,7 @@ exit:
 
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
 
     return status;
@@ -1486,7 +1486,7 @@ exit:
 
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
 
     return status;
@@ -1513,7 +1513,7 @@ static MSTATUS MQTT_TEST_asyncExpect(MqttTestClient *pCtx, ubyte4 loopms)
         timeout = loopms;
 
         pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (MQTT_SSL == pCtx->transport)
         {
             status = SSL_recv(
@@ -1582,7 +1582,7 @@ static MSTATUS MQTT_TEST_asyncExpect(MqttTestClient *pCtx, ubyte4 loopms)
         timeout = loopms;
 
         pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (MQTT_SSL == pCtx->transport)
         {
             status = SSL_recv(
@@ -1673,7 +1673,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
     /* For non-blocking expects, launch a thread here (if we are not already in the launched thread) */
     if ( (FALSE == blocking) && (NULL == pElem) )
     {
-        status = MOC_CALLOC((void **)&pLocalElem, 1, sizeof(MqttTestNonBlockingElem));
+        status = DIGI_CALLOC((void **)&pLocalElem, 1, sizeof(MqttTestNonBlockingElem));
         if (OK != status)
             goto exit;
 
@@ -1717,7 +1717,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         goto exit;
 
     numExpects = token.elemCnt;
-    status = MOC_CALLOC((void **)&pExpects, numExpects, sizeof(ExpectElem));
+    status = DIGI_CALLOC((void **)&pExpects, numExpects, sizeof(ExpectElem));
     if (OK != status)
         goto exit;
 
@@ -1745,15 +1745,15 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
             if (OK != status)
                 goto exit;
 
-            status = MOCANA_readFile(pFilename, &(pExpects[i].pData), &(pExpects[i].dataLen));
+            status = DIGICERT_readFile(pFilename, &(pExpects[i].pData), &(pExpects[i].dataLen));
             if (OK != status)
                 goto exit;
 
-            MOC_FREE((void **)&pFilename);
+            DIGI_FREE((void **)&pFilename);
         }
         else
         {
-            pExpects[i].dataLen = MOC_STRLEN(pExpects[i].pData);
+            pExpects[i].dataLen = DIGI_STRLEN(pExpects[i].pData);
         }
 
         status = JSON_utilReadJsonInt (
@@ -1800,7 +1800,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
 
         if (OK == status)
         {
-            pExpects[i].correlationDataLen = MOC_STRLEN(pExpects[i].pCorrelationData);
+            pExpects[i].correlationDataLen = DIGI_STRLEN(pExpects[i].pCorrelationData);
         }
 
         status = JSON_utilReadJsonString (
@@ -1811,7 +1811,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
 
         if (OK == status)
         {
-            pExpects[i].contentTypeLen = MOC_STRLEN(pExpects[i].pContentType);
+            pExpects[i].contentTypeLen = DIGI_STRLEN(pExpects[i].pContentType);
         }
 
         status = JSON_utilReadJsonString (
@@ -1822,7 +1822,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
 
         if (OK == status)
         {
-            pExpects[i].responseTopicLen = MOC_STRLEN(pExpects[i].pResponseTopic);
+            pExpects[i].responseTopicLen = DIGI_STRLEN(pExpects[i].pResponseTopic);
         }
 
         status = JSON_getToken(pJsonCtx, currIndex, &token);
@@ -1930,11 +1930,11 @@ exit:
 
     if (NULL != pFilename)
     {
-        MOC_FREE((void **)&pFilename);
+        DIGI_FREE((void **)&pFilename);
     }
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
 
     return status;
@@ -1988,7 +1988,7 @@ static MSTATUS MQTT_TEST_asyncRecv(sbyte *pClientId, sbyte4 connInst, ubyte4 tim
             timeout = loopms;
 
             pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
                 status = SSL_recv(
@@ -2047,7 +2047,7 @@ static MSTATUS MQTT_TEST_asyncRecv(sbyte *pClientId, sbyte4 connInst, ubyte4 tim
         }
 
         pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (MQTT_SSL == pCtx->transport)
         {
             status = SSL_recv(
@@ -2162,7 +2162,7 @@ exit:
 
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
 
     return status;
@@ -2204,7 +2204,7 @@ MSTATUS MQTT_TEST_parseAndExecSubscribe(JSON_ContextType *pJsonCtx, ubyte4 start
         goto exit;
     
     numTopics = token.elemCnt;
-    status = MOC_CALLOC((void **)&pTopics, numTopics, sizeof(MqttSubscribeTopic));
+    status = DIGI_CALLOC((void **)&pTopics, numTopics, sizeof(MqttSubscribeTopic));
     if (OK != status)
         goto exit;
 
@@ -2218,7 +2218,7 @@ MSTATUS MQTT_TEST_parseAndExecSubscribe(JSON_ContextType *pJsonCtx, ubyte4 start
         if (OK != status)
             goto exit;
 
-        pTopics[i].topicLen = MOC_STRLEN(pTopics[i].pTopic);
+        pTopics[i].topicLen = DIGI_STRLEN(pTopics[i].pTopic);
 
         status = JSON_utilReadJsonInt (
             pJsonCtx, currIndex-1, NULL, MQTT_SUB_MAX_QOS_JSTR, &maxQos, TRUE);
@@ -2245,7 +2245,7 @@ exit:
 
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
     if (NULL != pTopics)
     {
@@ -2253,10 +2253,10 @@ exit:
         {
             if (NULL != pTopics[i].pTopic)
             {
-                MOC_FREE((void **)&(pTopics[i].pTopic));
+                DIGI_FREE((void **)&(pTopics[i].pTopic));
             }
         }
-        MOC_FREE((void **)&pTopics);
+        DIGI_FREE((void **)&pTopics);
     }
 
     return status;
@@ -2310,11 +2310,11 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
         if (OK != status)
             goto exit;
 
-        status = MOCANA_readFile(pFilename, &pData, &dataLen);
+        status = DIGICERT_readFile(pFilename, &pData, &dataLen);
     }
     else
     {
-        dataLen = MOC_STRLEN(pData);
+        dataLen = DIGI_STRLEN(pData);
     }
 
     status = JSON_utilReadJsonInt (
@@ -2365,7 +2365,7 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        pubOptions.correlationDataLen = MOC_STRLEN(pubOptions.pCorrelationData);
+        pubOptions.correlationDataLen = DIGI_STRLEN(pubOptions.pCorrelationData);
     }
 
     status = JSON_utilReadJsonString (
@@ -2376,7 +2376,7 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        pubOptions.contentTypeLen = MOC_STRLEN(pubOptions.pContentType);
+        pubOptions.contentTypeLen = DIGI_STRLEN(pubOptions.pContentType);
     }
 
     status = JSON_utilReadJsonString (
@@ -2387,11 +2387,11 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        pubOptions.responseTopicLen = MOC_STRLEN(pubOptions.pResponseTopic);
+        pubOptions.responseTopicLen = DIGI_STRLEN(pubOptions.pResponseTopic);
     }
 
     status = MQTT_publish (
-        connInst, &pubOptions, pTopic, MOC_STRLEN(pTopic), pData, dataLen);
+        connInst, &pubOptions, pTopic, DIGI_STRLEN(pTopic), pData, dataLen);
     if (expectedStatus != 0)
     {
         if (status == expectedStatus)
@@ -2419,27 +2419,27 @@ exit:
 
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
     if (NULL != pData)
     {
-        MOC_FREE((void **)&pData);
+        DIGI_FREE((void **)&pData);
     }
     if (NULL != pTopic)
     {
-        MOC_FREE((void **)&pTopic);
+        DIGI_FREE((void **)&pTopic);
     }
     if (NULL != pubOptions.pCorrelationData)
     {
-        MOC_FREE((void **)&pubOptions.pCorrelationData);
+        DIGI_FREE((void **)&pubOptions.pCorrelationData);
     }
     if (NULL != pubOptions.pContentType)
     {
-        MOC_FREE((void **)&pubOptions.pContentType);
+        DIGI_FREE((void **)&pubOptions.pContentType);
     }
     if (NULL != pubOptions.pResponseTopic)
     {
-        MOC_FREE((void **)&pubOptions.pResponseTopic);
+        DIGI_FREE((void **)&pubOptions.pResponseTopic);
     }
 
 
@@ -2510,7 +2510,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
 
-    mqttConnectOptions.usernameLen = MOC_STRLEN(mqttConnectOptions.pUsername);
+    mqttConnectOptions.usernameLen = DIGI_STRLEN(mqttConnectOptions.pUsername);
 
     status = JSON_utilReadJsonString (
         pJsonCtx, startingIndex, NULL, MQTT_PASSWORD_JSTR, 
@@ -2518,7 +2518,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
 
-    mqttConnectOptions.passwordLen = MOC_STRLEN(mqttConnectOptions.pPassword);
+    mqttConnectOptions.passwordLen = DIGI_STRLEN(mqttConnectOptions.pPassword);
 
     status = JSON_utilReadJsonInt(
         pJsonCtx, startingIndex, NULL, MQTT_WILL_QOS_JSTR, &willQos, TRUE);
@@ -2537,7 +2537,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        mqttConnectOptions.willInfo.willTopicLen = (ubyte2)MOC_STRLEN(mqttConnectOptions.willInfo.pWillTopic);
+        mqttConnectOptions.willInfo.willTopicLen = (ubyte2)DIGI_STRLEN(mqttConnectOptions.willInfo.pWillTopic);
     }
     
     status = JSON_utilReadJsonString(
@@ -2548,7 +2548,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        mqttConnectOptions.willInfo.willLen = (ubyte4)MOC_STRLEN(mqttConnectOptions.willInfo.pWill);
+        mqttConnectOptions.willInfo.willLen = (ubyte4)DIGI_STRLEN(mqttConnectOptions.willInfo.pWill);
     }
 
     status = JSON_utilReadJsonBoolean(
@@ -2581,7 +2581,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        mqttConnectOptions.willInfo.responseTopicLen = MOC_STRLEN(mqttConnectOptions.willInfo.pResponseTopic);
+        mqttConnectOptions.willInfo.responseTopicLen = DIGI_STRLEN(mqttConnectOptions.willInfo.pResponseTopic);
     }
 
     status = JSON_utilReadJsonString(
@@ -2592,7 +2592,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        mqttConnectOptions.willInfo.correlationDataLen = MOC_STRLEN(mqttConnectOptions.willInfo.pCorrelationData);
+        mqttConnectOptions.willInfo.correlationDataLen = DIGI_STRLEN(mqttConnectOptions.willInfo.pCorrelationData);
     }
 
     status = JSON_utilReadJsonString(
@@ -2603,7 +2603,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     if (OK == status)
     {
-        mqttConnectOptions.willInfo.contentTypeLen = MOC_STRLEN(mqttConnectOptions.willInfo.pContentType);
+        mqttConnectOptions.willInfo.contentTypeLen = DIGI_STRLEN(mqttConnectOptions.willInfo.pContentType);
     }
 
     status = JSON_utilReadJsonInt(
@@ -2644,7 +2644,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
             }
 
             pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
                 status = SSL_recv(
@@ -2700,35 +2700,35 @@ exit:
     }
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
     if (NULL != mqttConnectOptions.pUsername)
     {
-        MOC_FREE((void **)&mqttConnectOptions.pUsername);
+        DIGI_FREE((void **)&mqttConnectOptions.pUsername);
     }
     if (NULL != mqttConnectOptions.pPassword)
     {
-        MOC_FREE((void **)&mqttConnectOptions.pPassword);
+        DIGI_FREE((void **)&mqttConnectOptions.pPassword);
     }
     if (NULL != mqttConnectOptions.willInfo.pWillTopic)
     {
-        MOC_FREE((void **)&mqttConnectOptions.willInfo.pWillTopic);
+        DIGI_FREE((void **)&mqttConnectOptions.willInfo.pWillTopic);
     }
     if (NULL != mqttConnectOptions.willInfo.pWill)
     {
-        MOC_FREE((void **)&mqttConnectOptions.willInfo.pWill);
+        DIGI_FREE((void **)&mqttConnectOptions.willInfo.pWill);
     }
     if (NULL != mqttConnectOptions.willInfo.pResponseTopic)
     {
-        MOC_FREE((void **)&mqttConnectOptions.willInfo.pResponseTopic);
+        DIGI_FREE((void **)&mqttConnectOptions.willInfo.pResponseTopic);
     }
     if (NULL != mqttConnectOptions.willInfo.pCorrelationData)
     {
-        MOC_FREE((void **)&mqttConnectOptions.willInfo.pCorrelationData);
+        DIGI_FREE((void **)&mqttConnectOptions.willInfo.pCorrelationData);
     }
     if (NULL != mqttConnectOptions.willInfo.pContentType)
     {
-        MOC_FREE((void **)&mqttConnectOptions.willInfo.pContentType);
+        DIGI_FREE((void **)&mqttConnectOptions.willInfo.pContentType);
     }
 
     return status;
@@ -2789,7 +2789,7 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
 
     if (TRUE == async)
     {
-        connInst = MQTT_asyncConnect(version, (ubyte *)pClientId, (ubyte2)MOC_STRLEN(pClientId));
+        connInst = MQTT_asyncConnect(version, (ubyte *)pClientId, (ubyte2)DIGI_STRLEN(pClientId));
         if (0 > connInst)
         {
             status = ERR_MQTT;
@@ -2799,7 +2799,7 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
     else
 #endif
     {
-        connInst = MQTT_connect(version, (ubyte *)pClientId, (ubyte2)MOC_STRLEN(pClientId));
+        connInst = MQTT_connect(version, (ubyte *)pClientId, (ubyte2)DIGI_STRLEN(pClientId));
         if (0 > connInst)
         {
             status = ERR_MQTT;
@@ -2859,7 +2859,7 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (TRUE == gSsl)
         {
             status = MQTT_TEST_initSslConnection(gpCtx, socket, &sslConnInst);
@@ -2874,7 +2874,7 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
 #endif
     {
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (TRUE == gSsl)
         {
             status = MQTT_TEST_initSslConnection(gpCtx, socket, &sslConnInst);
@@ -2910,13 +2910,13 @@ exit:
     }
     if (NULL != pClientId)
     {
-        MOC_FREE((void **)&pClientId);
+        DIGI_FREE((void **)&pClientId);
     }
 
 #ifdef __MQTT_ENABLE_FILE_PERSIST__
     if (NULL != pPersistDir)
     {
-        MOC_FREE((void **)&pPersistDir);
+        DIGI_FREE((void **)&pPersistDir);
     }
 #endif
 
@@ -2952,7 +2952,7 @@ MSTATUS MQTT_TEST_parseAndExecConfig(char *pFilename)
     ubyte4 loopms = 0;
     moctime_t start = {0};
     moctime_t current = {0};
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     sbyte *pCaFile = NULL;
     intBoolean allow = FALSE;
 #endif
@@ -2961,7 +2961,7 @@ MSTATUS MQTT_TEST_parseAndExecConfig(char *pFilename)
     ubyte4 clientIdLen = 0;
 #endif
 
-    status = MOCANA_readFile(pFilename, &pData, &dataLen);
+    status = DIGICERT_readFile(pFilename, &pData, &dataLen);
     if (OK != status)
         goto exit;
 
@@ -2981,7 +2981,7 @@ MSTATUS MQTT_TEST_parseAndExecConfig(char *pFilename)
     if (OK != status)
         goto exit;
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     /* Check for "sslSettings" */
     status = JSON_getObjectIndex(pJsonCtx, (sbyte *)MQTT_SSL_SETTINGS_JSTR, startingIndex, &currentIndex, FALSE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
@@ -3048,51 +3048,51 @@ MSTATUS MQTT_TEST_parseAndExecConfig(char *pFilename)
             goto exit;
         }
 
-        MOC_MEMCPY(pOpBuf, (const char *)token.pStart,  token.len);
+        DIGI_MEMCPY(pOpBuf, (const char *)token.pStart,  token.len);
         pOpBuf[token.len] = '\0';
 
         printf("Found optype: %s\n", pOpBuf);
 
-        if (0 == MOC_STRCMP(MQTT_OP_CREATE_JSTR, pOpBuf))
+        if (0 == DIGI_STRCMP(MQTT_OP_CREATE_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecCreate(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_CONNECT_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_CONNECT_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecConnect(pJsonCtx, currentIndex, &connInst);
             process = TRUE;
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_PUBLISH_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_PUBLISH_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecPublish(pJsonCtx, currentIndex, &connInst);
             process = TRUE;
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_SUBSCRIBE_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_SUBSCRIBE_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecSubscribe(pJsonCtx, currentIndex, &connInst);
             process = TRUE;
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_RECV_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_RECV_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecRecv(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_EXPECT_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_EXPECT_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecExpect(pJsonCtx, currentIndex, NULL);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_DISCONNECT_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_DISCONNECT_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecDisconn(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_DESTROY_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_DESTROY_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecDestroy(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_RESET_NETWORK_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_RESET_NETWORK_JSTR, pOpBuf))
         {
             status = MQTT_TEST_resetNetwork(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_SYNC_EXPECTS_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_SYNC_EXPECTS_JSTR, pOpBuf))
         {
             /* If there are non-blocking expects still running, loop until they complete or timeout */
             while(MQTT_TEST_expecting())
@@ -3100,23 +3100,23 @@ MSTATUS MQTT_TEST_parseAndExecConfig(char *pFilename)
                 RTOS_sleepMS(MQTT_TEST_DEFLT_SLEEP_MS);
             }
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_SLEEP_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_SLEEP_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecSleep(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_SET_PUB_TIMEOUT_JSTR, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_SET_PUB_TIMEOUT_JSTR, pOpBuf))
         {
             status = MQTT_TEST_parseAndExecSetPubTimeout(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_VERIFY_OUT_EMPTY, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_VERIFY_OUT_EMPTY, pOpBuf))
         {
             status = MQTT_TEST_parseandExecVerifyOutEmpty(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_VERIFY_IN_EMPTY, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_VERIFY_IN_EMPTY, pOpBuf))
         {
             status = MQTT_TEST_parseandExecVerifyInEmpty(pJsonCtx, currentIndex);
         }
-        else if (0 == MOC_STRCMP(MQTT_OP_EXPECT_OUTBOUND, pOpBuf))
+        else if (0 == DIGI_STRCMP(MQTT_OP_EXPECT_OUTBOUND, pOpBuf))
         {
             status = MQTT_TEST_parseandExecExpectOut(pJsonCtx, currentIndex);
         }
@@ -3192,15 +3192,15 @@ exit:
         RTOS_sleepMS(MQTT_TEST_DEFLT_SLEEP_MS);
     }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (NULL != pCaFile)
     {
-        MOC_FREE((void **)&pCaFile);
+        DIGI_FREE((void **)&pCaFile);
     }
 #endif
     if (NULL != pData)
     {
-        MOC_FREE((void **)&pData);
+        DIGI_FREE((void **)&pData);
     }
     if (NULL != pJsonCtx)
     {
@@ -3255,12 +3255,12 @@ static MSTATUS MQTT_TEST_publishHandler(
             continue;
         }
 
-        if (MOC_STRLEN(pClient->pExpects[i].pTopic) != pInfo->topicLen)
+        if (DIGI_STRLEN(pClient->pExpects[i].pTopic) != pInfo->topicLen)
         {
             continue;
         }
 
-        status = MOC_MEMCMP(pInfo->pTopic, pClient->pExpects[i].pTopic, pInfo->topicLen, &cmp);
+        status = DIGI_MEMCMP(pInfo->pTopic, pClient->pExpects[i].pTopic, pInfo->topicLen, &cmp);
         if (OK != status)
             goto exit;
 
@@ -3269,7 +3269,7 @@ static MSTATUS MQTT_TEST_publishHandler(
             continue;
         }
 
-        status = MOC_MEMCMP(pInfo->pPayload, pClient->pExpects[i].pData, pInfo->payloadLen, &cmp);
+        status = DIGI_MEMCMP(pInfo->pPayload, pClient->pExpects[i].pData, pInfo->payloadLen, &cmp);
         if (OK != status)
             goto exit;
 
@@ -3311,7 +3311,7 @@ static MSTATUS MQTT_TEST_publishHandler(
                 continue;
             }
 
-            status = MOC_MEMCMP (
+            status = DIGI_MEMCMP (
                 pInfo->pCorrelationData, pClient->pExpects[i].pCorrelationData, pInfo->correlationDataLen, &cmp);
             if (OK != status)
                 goto exit;
@@ -3329,7 +3329,7 @@ static MSTATUS MQTT_TEST_publishHandler(
                 continue;
             }
 
-            status = MOC_MEMCMP (
+            status = DIGI_MEMCMP (
                 pInfo->pContentType, pClient->pExpects[i].pContentType, pInfo->contentTypeLen, &cmp);
             if (OK != status)
                 goto exit;
@@ -3437,12 +3437,12 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
 
     for (i = 1; i < argc; i++)
     {
-        if (0 == MOC_STRCMP(ppArgv[i], "--help"))
+        if (0 == DIGI_STRCMP(ppArgv[i], "--help"))
         {
             status = MQTT_EXAMPLE_displayHelp(ppArgv[0], NULL);
             goto exit;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_config"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_config"))
         {
             i++;
             if (i >= argc)
@@ -3497,10 +3497,10 @@ int main(int argc, char *ppArgv[])
     MqttClientExampleCtx *pCtx = NULL;
     ubyte4 i;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
     {
-        printf("MOCANA_initMocana failed with status = %d on line %d\n", status, __LINE__);
+        printf("DIGICERT_initDigicert failed with status = %d on line %d\n", status, __LINE__);
         goto exit;
     }
 
@@ -3544,12 +3544,12 @@ exit:
 
     if (NULL != gpConfig)
     {
-        MOC_FREE((void **)&gpConfig);
+        DIGI_FREE((void **)&gpConfig);
     }
 
     MQTT_shutdownStack();
 
-    MOCANA_freeMocana();
+    DIGICERT_freeDigicert();
 
     return (OK > status) ? -1 : 0;
 }

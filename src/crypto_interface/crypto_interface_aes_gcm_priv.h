@@ -31,8 +31,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_GCM_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_GCM_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_GCM_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_GCM_INTERNAL__))
 
 #define GCM_createCtx_256b       CRYPTO_INTERFACE_GCM_createCtx_256b
 #define GCM_update_nonce_256b    CRYPTO_INTERFACE_GCM_update_nonce_256b

@@ -1,7 +1,7 @@
 /*
  * crypto_interface_ansix9_63_kdf.h
  *
- * Mocana Cryptographic Interface specification for ANSIX9_63-KDF.
+ * Cryptographic Interface specification for ANSIX9_63-KDF.
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 

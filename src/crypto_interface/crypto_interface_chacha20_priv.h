@@ -24,16 +24,16 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_CHACHA20_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_CHACHA20_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_CHACHA20_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_CHACHA20_INTERNAL__))
 
 #define CreateChaCha20Ctx               CRYPTO_INTERFACE_CreateChaCha20Ctx
 #define DoChaCha20                      CRYPTO_INTERFACE_DoChaCha20
 #define DeleteChaCha20Ctx               CRYPTO_INTERFACE_DeleteChaCha20Ctx
 #define CHACHA20_setNonceAndCounterSSH  CRYPTO_INTERFACE_CHACHA20_setNonceAndCounterSSH
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_POLY1305_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_POLY1305_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_POLY1305_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_POLY1305_INTERNAL__))
 
 #define ChaCha20Poly1305_createCtx    CRYPTO_INTERFACE_ChaCha20Poly1305_createCtx
 #define ChaCha20Poly1305_deleteCtx    CRYPTO_INTERFACE_ChaCha20Poly1305_deleteCtx

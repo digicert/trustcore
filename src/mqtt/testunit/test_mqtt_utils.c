@@ -162,7 +162,7 @@ static int testSetup(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK == status)
         ret = 0;
 
@@ -174,7 +174,7 @@ static int testTeardown(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
     if (OK == status)
         ret = 0;
 

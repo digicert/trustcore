@@ -29,8 +29,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_DSA_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_DSA_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_DSA_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_DSA_INTERNAL__))
 
 #define DSA_createKey             CRYPTO_INTERFACE_DSA_createKey
 #define DSA_cloneKey              CRYPTO_INTERFACE_DSA_cloneKey

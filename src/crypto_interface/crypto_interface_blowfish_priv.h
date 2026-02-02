@@ -30,8 +30,8 @@
 extern "C" {
 #endif
     
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_BLOWFISH_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_BLOWFISH_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_BLOWFISH_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_BLOWFISH_INTERNAL__))
     
 #define CreateBlowfishCtx          CRYPTO_INTERFACE_CreateBlowfishCtx
 #define DeleteBlowfishCtx          CRYPTO_INTERFACE_DeleteBlowfishCtx

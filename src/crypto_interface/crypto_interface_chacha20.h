@@ -110,7 +110,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_DeleteChaCha20Ctx (
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
 
  @inc_file   chacha20.h
 
@@ -178,8 +178,8 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_ChaCha20Poly1305_deleteCtx(
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 

@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_SHA1_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_SHA1_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA1_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA1_INTERNAL__))
 
 #define SHA1_allocDigest    CRYPTO_INTERFACE_SHA1_allocDigest
 #define SHA1_freeDigest     CRYPTO_INTERFACE_SHA1_freeDigest

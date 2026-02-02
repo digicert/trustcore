@@ -38,7 +38,7 @@ typedef ubyte4 *UserAddr_t;
 #elif defined(__RTOS_VXWORKS__)
 
 /* definitions */
-#define __MOCANA_ENABLE_HARNESS_RTOS_TIMER__
+#define __DIGICERT_ENABLE_HARNESS_RTOS_TIMER__
 
 #define HARNESS_DRV_WRAPPER_mapKernelToPhysicalAddr(X)  (X)
 #define HARNESS_DRV_WRAPPER_mapPhysicalToKernelAddr(X)  (X)
@@ -74,7 +74,7 @@ MOC_EXTERN void  HARNESS_DRVVXW_writeIO64(ubyte4* pWriteAddress, ubyte4  loVal32
 #elif defined(__RTOS_LINUX__)
 
 /* definitions */
-#define __MOCANA_ENABLE_HARNESS_RTOS_TIMER__
+#define __DIGICERT_ENABLE_HARNESS_RTOS_TIMER__
 #define HARNESS_NAME                                    "moc_harness"
 
 /* lookups */
@@ -121,7 +121,7 @@ MOC_EXTERN void  HARNESS_DRV26_signalCompletion(struct mahChannelPair *pChannelD
 
 /* definitions */
 #define HARNESS_NAME                                    "moc_harness"
-#define __MOCANA_ENABLE_HARNESS_RTOS_TIMER__
+#define __DIGICERT_ENABLE_HARNESS_RTOS_TIMER__
 
 /* lookups */
 #define HARNESS_DRV_WRAPPER_mapKernelToPhysicalAddr     HARNESS_DRVQNX_mapKernelToPhysicalAddr
@@ -160,7 +160,7 @@ MOC_EXTERN void* HARNESS_DRVQNX_mapPhysicalToKernelAddr(void*);
 #elif defined(__RTOS_OSE__)
 
 /* definitions */
-#define __MOCANA_ENABLE_HARNESS_RTOS_TIMER__
+#define __DIGICERT_ENABLE_HARNESS_RTOS_TIMER__
 #define HARNESS_DRV_WRAPPER_mapKernelToPhysicalAddr        HARNESS_DRVOSE_mapKernelToPhysicalAddr
 
 #define HARNESS_DRV_WRAPPER_mapPhysicalToKernelAddr    HARNESS_DRVOSE_mapPhysicalToKernelAddr

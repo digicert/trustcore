@@ -1,7 +1,7 @@
 /*
  * crypto_interface_aes_keywrap.h
  *
- * Mocana Cryptographic Interface specification for AES-KEYWRAP.
+ * Cryptographic Interface specification for AES-KEYWRAP.
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 

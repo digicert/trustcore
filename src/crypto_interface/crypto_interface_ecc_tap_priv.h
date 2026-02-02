@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_getECCPublicKeyEx (
@@ -75,7 +75,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_EC_cloneKey (
     MocAsymKey pSrc
     );
 
-#endif /* if (defined(__ENABLE_MOCANA_ECC__)) */
+#endif /* if (defined(__ENABLE_DIGICERT_ECC__)) */
 
 #ifdef __cplusplus
 }

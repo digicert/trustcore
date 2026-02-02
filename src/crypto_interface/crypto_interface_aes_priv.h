@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_INTERNAL__))
 
 #define AESALGO_makeAesKey       CRYPTO_INTERFACE_AESALGO_makeAesKey
 #define AESALGO_makeAesKeyEx     CRYPTO_INTERFACE_AESALGO_makeAesKeyEx

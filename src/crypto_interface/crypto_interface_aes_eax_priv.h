@@ -30,8 +30,8 @@
 extern "C" {
 #endif
     
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_EAX_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_EAX_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_EAX_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_EAX_INTERNAL__))
     
 #define AES_EAX_init               CRYPTO_INTERFACE_AES_EAX_init
 #define AES_EAX_updateHeader       CRYPTO_INTERFACE_AES_EAX_updateHeader

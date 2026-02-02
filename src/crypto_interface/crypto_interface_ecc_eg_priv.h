@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_ECC_ELGAMAL_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_ECC_ELGAMAL_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC_ELGAMAL_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC_ELGAMAL_INTERNAL__))
 
 #define ECEG_init               CRYPTO_INTERFACE_ECEG_init
 #define ECEG_update             CRYPTO_INTERFACE_ECEG_update

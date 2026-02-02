@@ -27,9 +27,6 @@
 #include "common/mstdlib.h"
 #include "common/mocana.h"
 #include "common/mtcp.h"
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
-#include "../../ssl/ssl.h"
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
 #include "../../mqtt/mqtt_client.h"
 #include "../../mqtt/mqtt_client_priv.h"
 #include "../../mqtt/mqtt_core.h"
@@ -483,7 +480,7 @@ static int testSetup(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK == status)
         ret = 0;
 
@@ -495,7 +492,7 @@ static int testTeardown(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
     if (OK == status)
         ret = 0;
 

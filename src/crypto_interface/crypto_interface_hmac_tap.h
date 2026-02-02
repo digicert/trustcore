@@ -65,7 +65,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_HmacDeferKeyUnload (
     byteBoolean deferredTokenUnload
     );
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 /**
  * @brief   Gets the key handle and token handle for an internal TAP key.
@@ -87,7 +87,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_HmacGetKeyInfo (
     TAP_KeyHandle *pKeyHandle
     );
 
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
 /**
  * @internal This API is private. One should use \c CRYPTO_INTERFACE_HmacReset.

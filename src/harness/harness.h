@@ -22,14 +22,14 @@
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_HARNESS__
+#ifdef __ENABLE_DIGICERT_HARNESS__
 #define CRYPTO_ALLOC(HW_ACCEL,SIZE,IS_CRYPTO,BUF_PTR_PTR)   HARNESS_kernelAlloc(HW_ACCEL, SIZE, IS_CRYPTO, (void **)(BUF_PTR_PTR))
 #define CRYPTO_FREE(HW_ACCEL,IS_CRYPTO,BUF_PTR_PTR)         HARNESS_kernelFree(HW_ACCEL, IS_CRYPTO, (void **)(BUF_PTR_PTR))
 #define CRYPTO_DEBUG_RELABEL_MEMORY(PTR)
 #else
-#define CRYPTO_ALLOC(HW_ACCEL,SIZE,IS_CRYPTO,BUF_PTR_PTR)   MOC_MALLOC((void **)BUF_PTR_PTR, SIZE)
-#define CRYPTO_FREE(HW_ACCEL,IS_CRYPTO,BUF_PTR_PTR)         MOC_FREE((void **)BUF_PTR_PTR)
-#ifdef __ENABLE_MOCANA_DEBUG_MEMORY__
+#define CRYPTO_ALLOC(HW_ACCEL,SIZE,IS_CRYPTO,BUF_PTR_PTR)   DIGI_MALLOC((void **)BUF_PTR_PTR, SIZE)
+#define CRYPTO_FREE(HW_ACCEL,IS_CRYPTO,BUF_PTR_PTR)         DIGI_FREE((void **)BUF_PTR_PTR)
+#ifdef __ENABLE_DIGICERT_DEBUG_MEMORY__
 #define CRYPTO_DEBUG_RELABEL_MEMORY(PTR)                    dbg_relabel_memory(PTR,(ubyte *)__FILE__,__LINE__)
 #else
 #define CRYPTO_DEBUG_RELABEL_MEMORY(PTR)
@@ -126,7 +126,7 @@ MOC_EXTERN MSTATUS HARNESS_mapAllocToKernel(hwAccelDescr hwAccelCtx, void *pBloc
 MOC_EXTERN MSTATUS HARNESS_mapAllocToPhysical(hwAccelDescr hwAccelCtx, void *pBlock, void **ppRetPhysicalMemBlock);
 #endif
 
-#ifdef __ENABLE_MOCANA_HARNESS_MEMORY_DEBUG__
+#ifdef __ENABLE_DIGICERT_HARNESS_MEMORY_DEBUG__
 MOC_EXTERN MSTATUS HARNESS_testAddress(hwAccelDescr hwAccelCtx, void *pBlock);
 #endif
 

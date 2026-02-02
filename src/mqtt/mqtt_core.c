@@ -107,7 +107,7 @@ MSTATUS MQTT_initCore(
             goto exit;
 
         /* Create and initialize connect table */
-        status = MOC_MALLOC(
+        status = DIGI_MALLOC(
             (void **) &ppTable,
             sizeof(MqttCtx*) * mqttMaxClientConnections);
         if (OK != status)
@@ -176,7 +176,7 @@ exit:
 
     if (NULL != ppTable)
     {
-        MOC_FREE((void **) &ppTable);
+        DIGI_FREE((void **) &ppTable);
     }
 
     if (NULL != pMutex)
@@ -199,7 +199,7 @@ extern MSTATUS MQTT_uninitCore(void)
         if (OK != status)
             goto exit;
 
-        status = MOC_FREE((void **) &gppMqttConnectTable);
+        status = DIGI_FREE((void **) &gppMqttConnectTable);
 
 #if defined(__ENABLE_MQTT_HASH_TABLE__)
 
@@ -270,7 +270,7 @@ static MSTATUS MQTT_createClientCtx(
 
     /* Input argument validation not required */
 
-    status = MOC_CALLOC((void **)&pNewCtx, 1, sizeof(MqttCtx));
+    status = DIGI_CALLOC((void **)&pNewCtx, 1, sizeof(MqttCtx));
     if (OK != status)
         goto exit;
 
@@ -278,7 +278,7 @@ static MSTATUS MQTT_createClientCtx(
     {
         /* Allocate an extra 2 bytes for the client id buffer to be used for appending the packet id
          * when calculating the hash key later when storing publishes */
-        status = MOC_MALLOC_MEMCPY((void **)&pNewCtx->pClientId, clientIdLen + 2, pClientId, clientIdLen);
+        status = DIGI_MALLOC_MEMCPY((void **)&pNewCtx->pClientId, clientIdLen + 2, pClientId, clientIdLen);
         if (OK != status)
             goto exit;
 
@@ -302,8 +302,8 @@ static MSTATUS MQTT_createClientCtx(
         pNewCtx->streamingCurPkt = FALSE;
         pNewCtx->pktHandler = NULL;
         pNewCtx->publishState = MQTT_PUBLISH_TYPE_STATE;
-        MOC_MEMSET((ubyte *) &pNewCtx->publishInfo, 0x00, sizeof(MqttPublishInfo));
-        MOC_MEMSET((ubyte *) &pNewCtx->publishData, 0x00, sizeof(MqttPublishData));
+        DIGI_MEMSET((ubyte *) &pNewCtx->publishInfo, 0x00, sizeof(MqttPublishInfo));
+        DIGI_MEMSET((ubyte *) &pNewCtx->publishData, 0x00, sizeof(MqttPublishData));
 #endif
     }
 
@@ -321,7 +321,7 @@ exit:
 
     if (NULL != pNewCtx)
     {
-        MOC_FREE((void **)&pNewCtx);
+        DIGI_FREE((void **)&pNewCtx);
     }
 
     return status;
@@ -444,17 +444,17 @@ MSTATUS MQTT_releaseClientCtx(MqttCtx **ppClientCtx)
 
     if (NULL != pCtx->pClientId)
     {
-        MOC_FREE((void **) &pCtx->pClientId);
+        DIGI_FREE((void **) &pCtx->pClientId);
     }
 
     if (NULL != pCtx->pSyncBuffer)
     {
-        MOC_FREE((void **) &pCtx->pSyncBuffer);
+        DIGI_FREE((void **) &pCtx->pSyncBuffer);
     }
 
     if (NULL != pCtx->pRecvBuffer)
     {
-        MOC_FREE((void **) &pCtx->pRecvBuffer);
+        DIGI_FREE((void **) &pCtx->pRecvBuffer);
     }
 
     if (NULL != pCtx->pPacketIdList)
@@ -470,11 +470,11 @@ MSTATUS MQTT_releaseClientCtx(MqttCtx **ppClientCtx)
 #if defined(__MQTT_ENABLE_FILE_PERSIST__)
     if (NULL != pCtx->pDir)
     {
-        MOC_FREE((void **) &pCtx->pDir);
+        DIGI_FREE((void **) &pCtx->pDir);
     }
     if (NULL != pCtx->pFilename)
     {
-        MOC_FREE((void **) &pCtx->pFilename);
+        DIGI_FREE((void **) &pCtx->pFilename);
     }
 #endif
 
@@ -503,7 +503,7 @@ MSTATUS MQTT_releaseClientCtx(MqttCtx **ppClientCtx)
             goto exit;
     }
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
 
     status = OK;
 
@@ -529,7 +529,7 @@ static MSTATUS MQTT_computeHashKey(MqttCtx *pCtx, ubyte2 packetId, ubyte4 *pHash
      * Key = (clientId || packetId) */
     if(pCtx->pClientId != NULL)
     {
-        MOC_HTONS((pCtx->pClientId + pCtx->clientIdLen), packetId);
+        DIGI_HTONS((pCtx->pClientId + pCtx->clientIdLen), packetId);
         HASH_VALUE_hashGen(pCtx->pClientId, pCtx->clientIdLen + 2, 0, &hashVal);
         *pHashVal = hashVal;
     }
@@ -550,11 +550,11 @@ void MQTT_freePacketIdList(MqttCtx *pCtx)
         while(NULL != pNode)
         {
             pTemp = pNode->pNext;
-            MOC_FREE((void **)&pNode);
+            DIGI_FREE((void **)&pNode);
             pNode = pTemp;
         }
 
-        MOC_FREE((void **)&pWrapper);
+        DIGI_FREE((void **)&pWrapper);
     }
 }
 
@@ -588,7 +588,7 @@ MSTATUS MQTT_addPacketIdToList(MqttCtx *pCtx, ubyte2 packetId)
     MqttPacketList *pNode = NULL;
     MqttPacketListWrapper *pWrapper = NULL;
 
-    status = MOC_CALLOC((void **) &pNode, 1, sizeof(MqttPacketList));
+    status = DIGI_CALLOC((void **) &pNode, 1, sizeof(MqttPacketList));
     if (OK != status)
         goto exit;
 
@@ -599,7 +599,7 @@ MSTATUS MQTT_addPacketIdToList(MqttCtx *pCtx, ubyte2 packetId)
     if (NULL == pWrapper)
     {
         /* First addition to the list, create it new */
-        status = MOC_CALLOC((void **) &pWrapper, 1, sizeof(MqttPacketListWrapper));
+        status = DIGI_CALLOC((void **) &pWrapper, 1, sizeof(MqttPacketListWrapper));
         if (OK != status)
             goto exit;
     }
@@ -627,7 +627,7 @@ exit:
 
     if (NULL != pNode)
     {
-        MOC_FREE((void **)&pNode);
+        DIGI_FREE((void **)&pNode);
     }
 
     return status;
@@ -667,7 +667,7 @@ MSTATUS MQTT_removePacketIdFromList(MqttCtx *pCtx, ubyte2 packetId)
                 pPrev->pNext = pNode->pNext;
             }
             
-            MOC_FREE((void **)&pNode);
+            DIGI_FREE((void **)&pNode);
             pWrapper->numElements--;
             break;
         }
@@ -701,7 +701,7 @@ MSTATUS MQTT_addPacketId(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
     if (OK != status)
         goto exit;
     
-    status = MOC_MALLOC((void **)&pValue, (bytesUsed + 8 + pMsg->dataLen));
+    status = DIGI_MALLOC((void **)&pValue, (bytesUsed + 8 + pMsg->dataLen));
     if (OK != status)
         goto exit;
 
@@ -714,12 +714,12 @@ MSTATUS MQTT_addPacketId(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
     pIter += bytesUsed;
 
     RTOS_deltaMS(NULL, &timer);
-    MOC_HTONL(pIter, timer.u.time[0]);
+    DIGI_HTONL(pIter, timer.u.time[0]);
     pIter += 4;
-    MOC_HTONL(pIter, timer.u.time[1]);
+    DIGI_HTONL(pIter, timer.u.time[1]);
     pIter += 4;
 
-    status = MOC_MEMCPY((void *)pIter, (void *)pMsg->pData, pMsg->dataLen);
+    status = DIGI_MEMCPY((void *)pIter, (void *)pMsg->pData, pMsg->dataLen);
     if (OK != status)
         goto exit;
 
@@ -732,7 +732,7 @@ MSTATUS MQTT_addPacketId(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
 exit:
     if (NULL != pValue)
     {
-        MOC_FREE((void **)&pValue);
+        DIGI_FREE((void **)&pValue);
     }
     
     return status;
@@ -757,7 +757,7 @@ MSTATUS MQTT_checkAndMarkAcked(MqttCtx *pCtx, ubyte2 packetId, intBoolean *found
 
     if (TRUE == *found)
     {
-        MOC_FREE((void **)&pValue);
+        DIGI_FREE((void **)&pValue);
     }
 
 exit:
@@ -783,36 +783,36 @@ MSTATUS MQTT_initFilenameBuffer(MqttCtx *pCtx)
         goto exit;
     }
 
-    status = MOC_CALLOC((void **)&pDirName, 1, MOC_STRLEN(pCtx->pDir) + 1 + pCtx->clientIdLen + 1);
+    status = DIGI_CALLOC((void **)&pDirName, 1, DIGI_STRLEN(pCtx->pDir) + 1 + pCtx->clientIdLen + 1);
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY(pDirName, pCtx->pDir, MOC_STRLEN(pCtx->pDir));
+    status = DIGI_MEMCPY(pDirName, pCtx->pDir, DIGI_STRLEN(pCtx->pDir));
     if (OK != status)
         goto exit;
 
-    pDirName[MOC_STRLEN(pCtx->pDir)] = MQTT_DIR_SLASH;
+    pDirName[DIGI_STRLEN(pCtx->pDir)] = MQTT_DIR_SLASH;
 
-    status = MOC_MEMCPY(pDirName + MOC_STRLEN(pCtx->pDir) + 1, pCtx->pClientId, pCtx->clientIdLen);
+    status = DIGI_MEMCPY(pDirName + DIGI_STRLEN(pCtx->pDir) + 1, pCtx->pClientId, pCtx->clientIdLen);
     if (OK != status)
         goto exit;
 
     /* We will reuse filename buffer, enough space for persistdir/clientid-out/65535 */
-    status = MOC_CALLOC((void **)&(pCtx->pFilename), 1, (MOC_STRLEN(pDirName) + 4 + 1 + 6 + 5));
+    status = DIGI_CALLOC((void **)&(pCtx->pFilename), 1, (DIGI_STRLEN(pDirName) + 4 + 1 + 6 + 5));
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY(pCtx->pFilename, pDirName, MOC_STRLEN(pDirName));
+    status = DIGI_MEMCPY(pCtx->pFilename, pDirName, DIGI_STRLEN(pDirName));
     if (OK != status)
         goto exit;
 
-    pCtx->filePrefixLen = MOC_STRLEN(pDirName);
+    pCtx->filePrefixLen = DIGI_STRLEN(pDirName);
 
 exit:
 
     if (NULL != pDirName)
     {
-        MOC_FREE((void **)&pDirName);
+        DIGI_FREE((void **)&pDirName);
     }
 
     return status;
@@ -826,9 +826,9 @@ MSTATUS MQTT_persistMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId, sbyte
     FileDescriptor pFile = NULL;
     ubyte4 bytesWritten = 0;
 
-    MOC_MEMSET((void *)strPacketIdBuf, 0, 6);
+    DIGI_MEMSET((void *)strPacketIdBuf, 0, 6);
 
-    pRet = MOC_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
+    pRet = DIGI_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
     if (NULL == pRet)
     {
         status = ERR_INTERNAL_ERROR;
@@ -847,9 +847,9 @@ MSTATUS MQTT_persistMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId, sbyte
     }
 
     /* memset everything beyond persistdir/clientid , enough space for -out (4) || / (1) || 65535 (6) */
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY(pCtx->pFilename + pCtx->filePrefixLen, pSuffix, suffixLen);
+    status = DIGI_MEMCPY(pCtx->pFilename + pCtx->filePrefixLen, pSuffix, suffixLen);
     if (OK != status)
         goto exit;
 
@@ -867,9 +867,9 @@ MSTATUS MQTT_persistMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId, sbyte
 
     pCtx->pFilename[pCtx->filePrefixLen + suffixLen] = MQTT_DIR_SLASH;
     
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen + suffixLen + 1, 
-        strPacketIdBuf, MOC_STRLEN(strPacketIdBuf));
+        strPacketIdBuf, DIGI_STRLEN(strPacketIdBuf));
     if (OK != status)
         goto exit;
 
@@ -939,7 +939,7 @@ MSTATUS MQTT_storePublishMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
     if (OK != status)
         goto exit;
     
-    status = MOC_MALLOC((void **)&pValue, (bytesUsed + 8 + pMsg->dataLen));
+    status = DIGI_MALLOC((void **)&pValue, (bytesUsed + 8 + pMsg->dataLen));
     if (OK != status)
         goto exit;
 
@@ -952,12 +952,12 @@ MSTATUS MQTT_storePublishMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
     pIter += bytesUsed;
 
     RTOS_deltaMS(NULL, &timer);
-    MOC_HTONL(pIter, timer.u.time[0]);
+    DIGI_HTONL(pIter, timer.u.time[0]);
     pIter += 4;
-    MOC_HTONL(pIter, timer.u.time[1]);
+    DIGI_HTONL(pIter, timer.u.time[1]);
     pIter += 4;
 
-    status = MOC_MEMCPY((void *)pIter, (void *)pMsg->pData, pMsg->dataLen);
+    status = DIGI_MEMCPY((void *)pIter, (void *)pMsg->pData, pMsg->dataLen);
     if (OK != status)
         goto exit;
 
@@ -978,7 +978,7 @@ exit:
 
     if (NULL != pValue)
     {
-        MOC_FREE((void **)&pValue);
+        DIGI_FREE((void **)&pValue);
     }
 
     return status;
@@ -1027,7 +1027,7 @@ MSTATUS MQTT_storePubRelMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
 
     if (NULL != pValue)
     {
-        MOC_FREE((void **)&pValue);
+        DIGI_FREE((void **)&pValue);
     }
 
     /* Construct the new value and store it in the hash table */
@@ -1037,7 +1037,7 @@ MSTATUS MQTT_storePubRelMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
     if (OK != status)
         goto exit;
 
-    status = MOC_CALLOC((void **)&pValue, 1, (bytesUsed + 8 + pMsg->dataLen));
+    status = DIGI_CALLOC((void **)&pValue, 1, (bytesUsed + 8 + pMsg->dataLen));
     if (OK != status)
         goto exit;
 
@@ -1050,12 +1050,12 @@ MSTATUS MQTT_storePubRelMsg(MqttCtx *pCtx, MqttMessage *pMsg, ubyte2 packetId)
     pIter += bytesUsed;
 
     RTOS_deltaMS(NULL, &timer);
-    MOC_HTONL(pIter, timer.u.time[0]);
+    DIGI_HTONL(pIter, timer.u.time[0]);
     pIter += 4;
-    MOC_HTONL(pIter, timer.u.time[1]);
+    DIGI_HTONL(pIter, timer.u.time[1]);
     pIter += 4;
 
-    status = MOC_MEMCPY((void *)pIter, (void *)pMsg->pData, pMsg->dataLen);
+    status = DIGI_MEMCPY((void *)pIter, (void *)pMsg->pData, pMsg->dataLen);
     if (OK != status)
         goto exit;
 
@@ -1087,9 +1087,9 @@ MSTATUS MQTT_markAckedPersist(MqttCtx *pCtx, ubyte2 packetId)
             goto exit;
     }
 
-    MOC_MEMSET((void *)strPacketIdBuf, 0, 6);
+    DIGI_MEMSET((void *)strPacketIdBuf, 0, 6);
 
-    pRet = MOC_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
+    pRet = DIGI_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
     if (NULL == pRet)
     {
         status = ERR_INTERNAL_ERROR;
@@ -1097,16 +1097,16 @@ MSTATUS MQTT_markAckedPersist(MqttCtx *pCtx, ubyte2 packetId)
     }
 
     /* memset everything beyond persistdir/clientid , enough space for -out (4) || / (1) || 65535 (6) */
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-out", 4);
     if (OK != status)
         goto exit;
 
     pCtx->pFilename[pCtx->filePrefixLen + 4] = MQTT_DIR_SLASH;
-    status = MOC_MEMCPY (
-        pCtx->pFilename + pCtx->filePrefixLen + 4 + 1, strPacketIdBuf, MOC_STRLEN(strPacketIdBuf));
+    status = DIGI_MEMCPY (
+        pCtx->pFilename + pCtx->filePrefixLen + 4 + 1, strPacketIdBuf, DIGI_STRLEN(strPacketIdBuf));
     if (OK != status)
         goto exit;
 
@@ -1135,23 +1135,23 @@ MSTATUS MQTT_markInboundPubrelPersist(MqttCtx *pCtx, ubyte2 packetId)
             goto exit;
     }
 
-    MOC_MEMSET((void *)strPacketIdBuf, 0, 6);
+    DIGI_MEMSET((void *)strPacketIdBuf, 0, 6);
 
-    pRet = MOC_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
+    pRet = DIGI_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
     if (NULL == pRet)
     {
         status = ERR_INTERNAL_ERROR;
         goto exit;
     }
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-in", 3);
     if (OK != status)
         goto exit;
 
     pCtx->pFilename[pCtx->filePrefixLen + 3] = MQTT_DIR_SLASH;
-    status = MOC_MEMCPY (
-        pCtx->pFilename + pCtx->filePrefixLen + 3 + 1, strPacketIdBuf, MOC_STRLEN(strPacketIdBuf));
+    status = DIGI_MEMCPY (
+        pCtx->pFilename + pCtx->filePrefixLen + 3 + 1, strPacketIdBuf, DIGI_STRLEN(strPacketIdBuf));
     if (OK != status)
         goto exit;
 
@@ -1182,18 +1182,18 @@ MSTATUS MQTT_checkPublishDeliveryAllowedPersist(MqttCtx *pCtx, ubyte2 packetId, 
             goto exit;
     }
 
-    MOC_MEMSET((void *)strPacketIdBuf, 0, 6);
+    DIGI_MEMSET((void *)strPacketIdBuf, 0, 6);
 
-    pRet = MOC_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
+    pRet = DIGI_LTOA((sbyte4)packetId, (sbyte *)strPacketIdBuf, 6);
     if (NULL == pRet)
     {
         status = ERR_INTERNAL_ERROR;
         goto exit;
     }
 
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-in", 3);
     if (OK != status)
         goto exit;
@@ -1209,8 +1209,8 @@ MSTATUS MQTT_checkPublishDeliveryAllowedPersist(MqttCtx *pCtx, ubyte2 packetId, 
     }
 
     pCtx->pFilename[pCtx->filePrefixLen + 3] = MQTT_DIR_SLASH;
-    status = MOC_MEMCPY (
-        pCtx->pFilename + pCtx->filePrefixLen + 3 + 1, strPacketIdBuf, MOC_STRLEN(strPacketIdBuf));
+    status = DIGI_MEMCPY (
+        pCtx->pFilename + pCtx->filePrefixLen + 3 + 1, strPacketIdBuf, DIGI_STRLEN(strPacketIdBuf));
     if (OK != status)
         goto exit;
 
@@ -1288,7 +1288,7 @@ MSTATUS MQTT_markAcked(MqttCtx *pCtx, ubyte2 packetId)
 
     if (TRUE == found)
     {
-        MOC_FREE((void **)&pValue);
+        DIGI_FREE((void **)&pValue);
     }
 
     
@@ -1375,7 +1375,7 @@ exit:
 
 typedef struct {
     ubyte strPacketId[6];
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
     sbyte8 timeStamp;
 #else
     sbyte4 timeStamp;
@@ -1427,9 +1427,9 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
             goto exit;
     }
 
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-out", 4);
     if (OK != status)
         goto exit;
@@ -1466,7 +1466,7 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
     }
 
     /* Allocate array of resend elements */
-    status = MOC_CALLOC((void **)&pElements, fileCount, sizeof(ResendPersistElem));
+    status = DIGI_CALLOC((void **)&pElements, fileCount, sizeof(ResendPersistElem));
     if (OK != status)
         goto exit;
 
@@ -1484,11 +1484,11 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
 
     while (FTNone != dir_entry.type)
     {
-        MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 4 + 1), 0, 6);
+        DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 4 + 1), 0, 6);
         if (FTFile == dir_entry.type)
         {
-            MOC_MEMSET((void *)(pElements[i].strPacketId), 0, 6);
-            status = MOC_MEMCPY (
+            DIGI_MEMSET((void *)(pElements[i].strPacketId), 0, 6);
+            status = DIGI_MEMCPY (
                 pCtx->pFilename + pCtx->filePrefixLen + 4 + 1, dir_entry.pName, dir_entry.nameLength);
             if (OK != status)
                 goto exit;
@@ -1500,7 +1500,7 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
                 continue;
             }
 
-            status = MOC_MEMCPY (
+            status = DIGI_MEMCPY (
                 pElements[i].strPacketId, dir_entry.pName, dir_entry.nameLength);
             if (OK != status)
                 goto exit;
@@ -1534,7 +1534,7 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
         if (MQTT_IS_ASYNC(pCtx))
         {
-            status = MOC_CALLOC((void **)&pElements[i].pMsg, 1, sizeof(MqttMessage));
+            status = DIGI_CALLOC((void **)&pElements[i].pMsg, 1, sizeof(MqttMessage));
             if (OK != status)
                 goto exit;
             pCurrentMsg = pElements[i].pMsg;
@@ -1553,9 +1553,9 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
         locked = TRUE;
 
         /* Construct the filename */
-        MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 4 + 1), 0, 6);
-        status = MOC_MEMCPY (
-            pCtx->pFilename + pCtx->filePrefixLen + 4 + 1, pElements[i].strPacketId, MOC_STRLEN(pElements[i].strPacketId));
+        DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 4 + 1), 0, 6);
+        status = DIGI_MEMCPY (
+            pCtx->pFilename + pCtx->filePrefixLen + 4 + 1, pElements[i].strPacketId, DIGI_STRLEN(pElements[i].strPacketId));
         if (OK != status)
             goto exit;
 
@@ -1574,10 +1574,10 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
 
         if (NULL != pByteValue)
         {
-            MOC_FREE((void **)&pByteValue);
+            DIGI_FREE((void **)&pByteValue);
         }
 
-        status = MOC_CALLOC((void **)&pByteValue, 1, fileSize);
+        status = DIGI_CALLOC((void **)&pByteValue, 1, fileSize);
         if (OK != status)
             goto exit;
 
@@ -1614,7 +1614,7 @@ MSTATUS MQTT_resendUnackedPacketsPersist(MqttCtx *pCtx)
         if (MQTT_IS_ASYNC(pCtx))
         {
             /* async will need a copy of the data */
-            status = MOC_MALLOC_MEMCPY (
+            status = DIGI_MALLOC_MEMCPY (
                 (void **)&pCurrentMsg->pData, fileSize,
                  pByteValue, fileSize);
             if (OK != status)
@@ -1651,7 +1651,7 @@ exit:
     
     if (NULL != pByteValue)
     {
-        MOC_FREE((void **)&pByteValue);
+        DIGI_FREE((void **)&pByteValue);
     }
 
     if (NULL != pElements)
@@ -1669,7 +1669,7 @@ exit:
         }
 #endif
 
-        MOC_FREE((void **)&pElements);
+        DIGI_FREE((void **)&pElements);
     }
 
     if (NULL != dir_list)
@@ -1710,9 +1710,9 @@ MSTATUS MQTT_timeoutStoredPublishesPersist(MqttCtx *pCtx)
             goto exit;
     }
 
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-out", 4);
     if (OK != status)
         goto exit;
@@ -1733,7 +1733,7 @@ MSTATUS MQTT_timeoutStoredPublishesPersist(MqttCtx *pCtx)
     {
         if (FTFile == dir_entry.type)
         {
-            status = MOC_MEMCPY (
+            status = DIGI_MEMCPY (
                 pCtx->pFilename + pCtx->filePrefixLen + 4 + 1, dir_entry.pName, dir_entry.nameLength);
             if (OK != status)
                 goto exit;
@@ -1751,7 +1751,7 @@ MSTATUS MQTT_timeoutStoredPublishesPersist(MqttCtx *pCtx)
              * a moctime_t reliably, so we have no choice but to make assumption on contents of moctime_t */
             if ((timeStamp.u.time[0] - f.modifyTime) > pCtx->publishTimeoutSeconds)
             {
-                packetId = MOC_ATOL(dir_entry.pName, NULL);
+                packetId = DIGI_ATOL(dir_entry.pName, NULL);
 
                 /* markacked will also try for the file buffer mutex, prevent recursive lock */
                 if (TRUE == locked)
@@ -1850,7 +1850,7 @@ MSTATUS MQTT_resendUnackedPackets(MqttCtx *pCtx)
     }
 
     /* Allocate list of elements containing information needed to resend packets. */
-    status = MOC_CALLOC((void **)&pElements, pWrapper->numElements, sizeof(ResendElem));
+    status = DIGI_CALLOC((void **)&pElements, pWrapper->numElements, sizeof(ResendElem));
     if (OK != status)
         goto exit;
 
@@ -1892,8 +1892,8 @@ MSTATUS MQTT_resendUnackedPackets(MqttCtx *pCtx)
         pElements[i].hashVal = hashVal;
         pElements[i].packetId = pNode->packetId;
         pElements[i].pValue = pValue;
-        pElements[i].timeStamp.u.time[0] = (ubyte4)MOC_NTOHL(pValue + numBytesUsed);
-        pElements[i].timeStamp.u.time[1] = (ubyte4)MOC_NTOHL(pValue + numBytesUsed + 4);
+        pElements[i].timeStamp.u.time[0] = (ubyte4)DIGI_NTOHL(pValue + numBytesUsed);
+        pElements[i].timeStamp.u.time[1] = (ubyte4)DIGI_NTOHL(pValue + numBytesUsed + 4);
 
         i++;
         pNode = pNode->pNext;
@@ -1912,7 +1912,7 @@ MSTATUS MQTT_resendUnackedPackets(MqttCtx *pCtx)
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
         if (MQTT_IS_ASYNC(pCtx))
         {
-            status = MOC_CALLOC((void **)&pElements[i].pMsg, 1, sizeof(MqttMessage));
+            status = DIGI_CALLOC((void **)&pElements[i].pMsg, 1, sizeof(MqttMessage));
             if (OK != status)
                 goto exit;
             pCurrentMsg = pElements[i].pMsg;
@@ -1954,7 +1954,7 @@ MSTATUS MQTT_resendUnackedPackets(MqttCtx *pCtx)
         if (MQTT_IS_ASYNC(pCtx))
         {
             /* async will need a copy of the data */
-            status = MOC_MALLOC_MEMCPY (
+            status = DIGI_MALLOC_MEMCPY (
                 (void **)&pCurrentMsg->pData, len - 8,
                  pByteValue + offset, len - 8);
             if (OK != status)
@@ -1997,7 +1997,7 @@ exit:
         }
 #endif
 
-        MOC_FREE((void **)&pElements);
+        DIGI_FREE((void **)&pElements);
     }
 
     return status;
@@ -2082,8 +2082,8 @@ MSTATUS MQTT_timeoutStoredPublishes(MqttCtx *pCtx)
             goto exit;
         }
 
-        timeStamp.u.time[0] = (ubyte4)MOC_NTOHL(pValue + numBytesUsed);
-        timeStamp.u.time[1] = (ubyte4)MOC_NTOHL(pValue + numBytesUsed + 4);
+        timeStamp.u.time[0] = (ubyte4)DIGI_NTOHL(pValue + numBytesUsed);
+        timeStamp.u.time[1] = (ubyte4)DIGI_NTOHL(pValue + numBytesUsed + 4);
 
         /* If we call markAcked, pNode will be freed so get the next element now */
         packetId = pNode->packetId;
@@ -2132,9 +2132,9 @@ MSTATUS MQTT_verifyOutboundEmptyPersist(MqttCtx *pCtx)
             goto exit;
     }
 
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-out", 4);
     if (OK != status)
         goto exit;
@@ -2283,13 +2283,13 @@ MSTATUS MQTT_expectOutboundPersist(MqttCtx *pCtx, ExpectOutboundElem *pElems, ub
             goto exit;
     }
 
-    status = MOC_CALLOC((void **)&pMarked, numElems, sizeof(ubyte));
+    status = DIGI_CALLOC((void **)&pMarked, numElems, sizeof(ubyte));
     if (OK != status)
         goto exit;
 
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-out", 4);
     if (OK != status)
         goto exit;
@@ -2312,12 +2312,12 @@ MSTATUS MQTT_expectOutboundPersist(MqttCtx *pCtx, ExpectOutboundElem *pElems, ub
         {
             markedThisRound = FALSE;
 
-            status = MOC_MEMCPY (
+            status = DIGI_MEMCPY (
                 pCtx->pFilename + pCtx->filePrefixLen + 4 + 1, dir_entry.pName, dir_entry.nameLength);
             if (OK != status)
                 goto exit;
 
-            packetId = MOC_ATOL(dir_entry.pName, NULL);
+            packetId = DIGI_ATOL(dir_entry.pName, NULL);
 
             for (i = 0; i < numElems; i++)
             {
@@ -2362,10 +2362,10 @@ MSTATUS MQTT_expectOutboundPersist(MqttCtx *pCtx, ExpectOutboundElem *pElems, ub
 
             if (NULL != pByteValue)
             {
-                MOC_FREE((void **)&pByteValue);
+                DIGI_FREE((void **)&pByteValue);
             }
 
-            status = MOC_CALLOC((void **)&pByteValue, 1, fileSize);
+            status = DIGI_CALLOC((void **)&pByteValue, 1, fileSize);
             if (OK != status)
                 goto exit;
 
@@ -2410,11 +2410,11 @@ exit:
         FMGMT_closeDir (&dir_list);
     if (NULL != pByteValue)
     {
-        MOC_FREE((void **)&pByteValue);
+        DIGI_FREE((void **)&pByteValue);
     }
     if (NULL != pMarked)
     {
-        MOC_FREE((void **)&pMarked);
+        DIGI_FREE((void **)&pMarked);
     }
     
     if (TRUE == locked)
@@ -2563,9 +2563,9 @@ MSTATUS MQTT_verifyInboundEmptyPersist(MqttCtx *pCtx)
             goto exit;
     }
 
-    MOC_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
+    DIGI_MEMSET((void *)(pCtx->pFilename + pCtx->filePrefixLen + 1), 0, 4 + 1 + 6);
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
         pCtx->pFilename + pCtx->filePrefixLen, "-in", 3);
     if (OK != status)
         goto exit;

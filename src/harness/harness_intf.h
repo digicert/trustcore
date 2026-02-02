@@ -96,7 +96,7 @@
 
 #endif
 
-#ifdef __ENABLE_MOCANA_PKCS11_CRYPTO__
+#ifdef __ENABLE_DIGICERT_PKCS11_CRYPTO__
 #undef HARNESS_WRAPPER_init
 #undef HARNESS_WRAPPER_uninit
 #undef HARNESS_WRAPPER_openChannel

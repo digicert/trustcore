@@ -22,8 +22,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_RC5_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_RC5_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RC5_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RC5_INTERNAL__))
 
 #define MocCreateRC5Ctx CRYPTO_INTERFACE_MocCreateRC5Ctx
 #define MocDeleteRC5Ctx CRYPTO_INTERFACE_MocDeleteRC5Ctx

@@ -38,7 +38,7 @@ static void mqtt_test_MQTT_buildConnectMsg(void **ppState)
     MqttMessage *pMsg = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
 /*version 5 test*/
@@ -77,7 +77,7 @@ static void mqtt_test_MQTT_buildConnectMsg(void **ppState)
     status = MQTT_buildConnectMsg(pCtx, &options, &pMsg);
     assert_int_equal(ERR_MQTT_CLEAN_SESSION_REQUIRED, status);
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
 }
@@ -94,10 +94,10 @@ static void mqtt_test_MQTT_buildSubscribeMsg(void **ppState)
 
     MQTT_init(1);
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
-    MOC_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
+    DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
     pCtx->clientIdLen = 10;
 
@@ -118,7 +118,7 @@ static void mqtt_test_MQTT_buildSubscribeMsg(void **ppState)
     assert_int_equal(OK, status);
    
     options.propCount = 2;
-    MOC_MALLOC((void **)&options.pProps, sizeof(MqttProperty) * 2);
+    DIGI_MALLOC((void **)&options.pProps, sizeof(MqttProperty) * 2);
     options.pProps[0].data.pair.name.pData = "testName";
     options.pProps[0].data.pair.name.dataLen = 8;
     options.pProps[0].data.pair.value.pData = "testValue";
@@ -136,9 +136,9 @@ static void mqtt_test_MQTT_buildSubscribeMsg(void **ppState)
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **)&pCtx->pClientId);
-    MOC_FREE((void **)&pCtx);
-    MOC_FREE((void **)&options.pProps);
+    DIGI_FREE((void **)&pCtx->pClientId);
+    DIGI_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&options.pProps);
     MQTT_shutdownStack();
      
 }
@@ -155,10 +155,10 @@ static void mqtt_test_MQTT_buildUnsubscribeMsg(void **ppState)
 
     MQTT_init(1);
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
-    MOC_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
+    DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
     pCtx->clientIdLen = 10;
 
@@ -176,7 +176,7 @@ static void mqtt_test_MQTT_buildUnsubscribeMsg(void **ppState)
     assert_int_equal(OK, status);
 
     options.propCount = 2;
-    MOC_MALLOC((void **)&options.pProps, sizeof(MqttProperty) * 2);
+    DIGI_MALLOC((void **)&options.pProps, sizeof(MqttProperty) * 2);
     options.pProps[0].data.pair.name.pData = "testName";
     options.pProps[0].data.pair.name.dataLen = 8;
     options.pProps[0].data.pair.value.pData = "testValue";
@@ -194,9 +194,9 @@ static void mqtt_test_MQTT_buildUnsubscribeMsg(void **ppState)
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **)&pCtx->pClientId);
-    MOC_FREE((void **)&pCtx);
-    MOC_FREE((void **)&options.pProps);
+    DIGI_FREE((void **)&pCtx->pClientId);
+    DIGI_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&options.pProps);
     MQTT_shutdownStack();
 }
 
@@ -207,7 +207,7 @@ static void mqtt_test_MQTT_buildPublishMsg(void **ppState)
     MqttMessage *pMsg = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->version = 5;
@@ -234,7 +234,7 @@ static void mqtt_test_MQTT_buildPublishMsg(void **ppState)
     assert_int_equal(OK, status);
     assert_null(pMsg);
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;  
 
     status = MQTT_buildPublishMsg(pCtx, &options, "testTopic", 9, "testData", 8, &pCtx->pktId, &pMsg);
@@ -259,7 +259,7 @@ static void mqtt_test_MQTT_buildPublishMsg(void **ppState)
     /* test user properties */
     pCtx->version = 5;
     options.propCount = 1;
-    MOC_MALLOC((void **)&options.pProps, sizeof(MqttProperty));
+    DIGI_MALLOC((void **)&options.pProps, sizeof(MqttProperty));
     options.pProps[0].data.pair.name.pData = "testName";
     options.pProps[0].data.pair.name.dataLen = 8;
     options.pProps[0].data.pair.value.pData = "testValue";
@@ -273,8 +273,8 @@ static void mqtt_test_MQTT_buildPublishMsg(void **ppState)
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
     assert_null(pMsg);
-    MOC_FREE((void **)&pCtx);
-    MOC_FREE((void **)&options.pProps);
+    DIGI_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&options.pProps);
 
 }
 
@@ -285,7 +285,7 @@ static void mqtt_test_MQTT_buildPubRespMsg(void **ppState)
     MqttMessage *pMsg = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->version = 5;
@@ -331,7 +331,7 @@ static void mqtt_test_MQTT_buildPubRespMsg(void **ppState)
     assert_int_equal(7, pMsg->type);
 
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
 }
@@ -342,7 +342,7 @@ static void mqtt_test_MQTT_buildPingReqMsg(void **ppState)
     MqttMessage *pMsg = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->version = 5;
@@ -366,7 +366,7 @@ static void mqtt_test_MQTT_buildPingReqMsg(void **ppState)
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
 }
 
 static void mqtt_test_MQTT_buildDisconnectMsg(void **ppState)
@@ -376,7 +376,7 @@ static void mqtt_test_MQTT_buildDisconnectMsg(void **ppState)
     MqttMessage *pMsg = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->version = 5;
@@ -407,7 +407,7 @@ static void mqtt_test_MQTT_buildDisconnectMsg(void **ppState)
     /* user properties */
     options.sessionExpiryInterval = 0;
     options.propCount = 2;
-    MOC_MALLOC((void **)&options.pProps, sizeof(MqttProperty) * 2);
+    DIGI_MALLOC((void **)&options.pProps, sizeof(MqttProperty) * 2);
     options.pProps[0].data.pair.name.pData = "testName";
     options.pProps[0].data.pair.name.dataLen = 8;
     options.pProps[0].data.pair.value.pData = "testValue";
@@ -425,7 +425,7 @@ static void mqtt_test_MQTT_buildDisconnectMsg(void **ppState)
 
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
-    MOC_FREE((void **)&options.pProps);
+    DIGI_FREE((void **)&options.pProps);
     
     pCtx->version = 4;
     status = MQTT_buildDisconnectMsg(pCtx, &options, &pMsg);
@@ -436,7 +436,7 @@ static void mqtt_test_MQTT_buildDisconnectMsg(void **ppState)
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);  
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
 }
 
 static void mqtt_test_MQTT_freeMsg(void **ppState)
@@ -448,18 +448,18 @@ static void mqtt_test_MQTT_freeMsg(void **ppState)
     assert_int_equal(OK, status);
     assert_null(pMsg);
 
-    MOC_MALLOC((void **)&pMsg, sizeof(MqttMessage));
+    DIGI_MALLOC((void **)&pMsg, sizeof(MqttMessage));
     assert_non_null(pMsg);
 
-    MOC_MEMSET((ubyte *)pMsg, 0x00, sizeof(MqttMessage));
+    DIGI_MEMSET((ubyte *)pMsg, 0x00, sizeof(MqttMessage));
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
     assert_null(pMsg);
 
-    MOC_MALLOC((void **)&pMsg, sizeof(MqttMessage));
+    DIGI_MALLOC((void **)&pMsg, sizeof(MqttMessage));
     assert_non_null(pMsg);
 
-    MOC_MALLOC_MEMCPY((void **)&pMsg->pData, 8, "testData", 8);
+    DIGI_MALLOC_MEMCPY((void **)&pMsg->pData, 8, "testData", 8);
     pMsg->dataLen = 8;
     pMsg->type = 3;
 
@@ -475,7 +475,7 @@ static void mqtt_test_MQTT_buildAuthMsg(void **ppState)
     MqttMessage *pMsg = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->version = 5;
@@ -508,7 +508,7 @@ static void mqtt_test_MQTT_buildAuthMsg(void **ppState)
     status = MQTT_freeMsg(&pMsg);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
     
 }
 
@@ -520,9 +520,9 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
 
     MQTT_init(1);
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
     pCtx->maxPacketSize = 1024;
     pCtx->version = 5;
@@ -537,9 +537,9 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 11);
     assert_int_equal(OK, status);
     assert_int_equal(2, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->maxPacketSize = 5;
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -548,7 +548,7 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 11);
     assert_int_equal(ERR_MQTT_PACKET_TOO_LARGE, status);
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
     pCtx->clientIdLen = 10;
@@ -565,10 +565,10 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     assert_int_equal(OK, status);
     assert_int_equal(2, (*(pCtx->pRecvBuffer) >> 4));
 
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
     /* reason code : 128*/
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
     pCtx->clientIdLen = 10;
@@ -578,9 +578,9 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     pBuffer = buffer3;
     status = MQTT_parsePacket(1, pCtx, pBuffer, 11);
     assert_int_equal(ERR_MQTT_CONNECTION_REFUSED, status);
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
     pCtx->clientIdLen = 10;
@@ -591,12 +591,12 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 24);
     assert_int_equal(OK, status);
     assert_int_equal(2, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
 /* packet type: SUBACK */
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
-    MOC_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
+    DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
 
     pCtx->clientIdLen = 10;
@@ -607,13 +607,13 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 6);
     assert_int_equal(OK, status);
     assert_int_equal(9, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
-    MOC_FREE((void **)&pCtx->pClientId);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pClientId);
 
     /* properties */
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
-    MOC_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
+    DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
 
     pCtx->clientIdLen = 10;
@@ -624,12 +624,12 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 19);
     assert_int_equal(OK, status);
     assert_int_equal(9, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
-    MOC_FREE((void **)&pCtx->pClientId);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pClientId);
 
 /* packet type: Unsuback*/
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
-    MOC_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
 
     pCtx->clientIdLen = 10;
@@ -640,12 +640,12 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 6);
     assert_int_equal(OK, status);
     assert_int_equal(11, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
-    MOC_FREE((void **)&pCtx->pClientId);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pClientId);
 
     /* properties */
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
-    MOC_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
 
     pCtx->clientIdLen = 10;
@@ -656,12 +656,12 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 19);
     assert_int_equal(OK, status);
     assert_int_equal(11, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
-    MOC_FREE((void **)&pCtx->pClientId);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pClientId);
 
 /* packet type: Publish*/
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
 
     pCtx->pClientId = "testClient";
@@ -673,12 +673,12 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 16);
     assert_int_equal(OK, status);
     assert_int_equal(3, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
     /* properties */
     
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient"; 
     pCtx->clientIdLen = 10;
@@ -694,9 +694,9 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 61);
     assert_int_equal(OK, status);
     assert_int_equal(3, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
     pCtx->clientIdLen = 10;
@@ -771,11 +771,11 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 1015);
     assert_int_equal(OK, status);
     assert_int_equal(3, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
     
 /* packet type: ping response*/
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
     pCtx->clientIdLen = 10;
@@ -786,10 +786,10 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 2);
     assert_int_equal(OK, status);
     assert_int_equal(13, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
 /*packet type: disconnect*/
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
     pCtx->clientIdLen = 10;
@@ -799,16 +799,16 @@ static void mqtt_test_MQTT_parsePacket(void **ppState)
     status = MQTT_parsePacket(1, pCtx, pBuffer, 4);
     assert_int_equal(OK, status);
     assert_int_equal(14, (*(pCtx->pRecvBuffer) >> 4));
-    MOC_FREE((void **)&pCtx->pRecvBuffer);
+    DIGI_FREE((void **)&pCtx->pRecvBuffer);
 
     /* properties */
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
     pCtx->clientIdLen = 10;
     pCtx->maxPacketSize = 1024;
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
     MQTT_shutdownStack();
 
 }
@@ -824,13 +824,13 @@ static void mqtt_test_MQTT_freeMsgNode(void **ppState)
     assert_int_equal(OK, status);
     assert_null(pMsgList);
 
-    MOC_MALLOC((void **)&pMsgList, sizeof(MqttMessageList));
+    DIGI_MALLOC((void **)&pMsgList, sizeof(MqttMessageList));
     assert_non_null(pMsgList);
 
-    MOC_MALLOC((void **)&pMsgList->pMsg, sizeof(MqttMessage));
+    DIGI_MALLOC((void **)&pMsgList->pMsg, sizeof(MqttMessage));
     assert_non_null(pMsgList->pMsg);
 
-    MOC_MALLOC_MEMCPY((void **)&pMsgList->pMsg->pData, 8, "testData", 8);   
+    DIGI_MALLOC_MEMCPY((void **)&pMsgList->pMsg->pData, 8, "testData", 8);   
     pMsgList->pMsg->dataLen = 8;
 
     status = MQTT_freeMsgNode(&pMsgList);
@@ -846,13 +846,13 @@ static void mqtt_test_MQTT_freeMsgList(void **ppState)
     status = MQTT_freeMsgList(&pMsgList);
     assert_int_equal(OK, status);
 
-    MOC_MALLOC((void **)&pMsgList, sizeof(MqttMessageList));
+    DIGI_MALLOC((void **)&pMsgList, sizeof(MqttMessageList));
     assert_non_null(pMsgList);
 
-    MOC_MALLOC((void **)&pMsgList->pMsg, sizeof(MqttMessage));
+    DIGI_MALLOC((void **)&pMsgList->pMsg, sizeof(MqttMessage));
     assert_non_null(pMsgList->pMsg);
 
-    MOC_MALLOC_MEMCPY((void **)&pMsgList->pMsg->pData, 8, "testData", 8);   
+    DIGI_MALLOC_MEMCPY((void **)&pMsgList->pMsg->pData, 8, "testData", 8);   
     pMsgList->pMsg->dataLen = 8;
     pMsgList->pNext = NULL;
   
@@ -866,7 +866,7 @@ static int testSetup(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK == status)
         ret = 0;
 
@@ -878,7 +878,7 @@ static int testTeardown(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
     if (OK == status)
         ret = 0;
 

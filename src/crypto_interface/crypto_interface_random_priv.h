@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_RANDOM_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_RANDOM_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RANDOM_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RANDOM_INTERNAL__))
 
 #define RANDOM_acquireContextEx      CRYPTO_INTERFACE_RANDOM_acquireContextEx
 #define RANDOM_releaseContextEx      CRYPTO_INTERFACE_RANDOM_releaseContextEx

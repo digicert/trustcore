@@ -23,7 +23,7 @@
             Key Operations like Sign and verify to be done irrespective
             of the below layer which is implementing the operation.
 @flags      This file requires that the following flags be defined:
-    + \c \__ENABLE_MOCANA_CRYPTO_INTERFACE__
+    + \c \__ENABLE_DIGICERT_CRYPTO_INTERFACE__
 
 @filedoc    cryptointerface.h
 */
@@ -43,34 +43,34 @@
 #include "../crypto/des.h"
 #include "../crypto/three_des.h"
 
-#if defined(__ENABLE_MOCANA_TAP__)
+#if defined(__ENABLE_DIGICERT_TAP__)
 #include "../tap/tap.h"
 #include "../tap/tap_smp.h"
 #endif
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_rsa.h"
 #include "../crypto_interface/crypto_interface_aes_gcm.h"
 #include "../crypto_interface/crypto_interface_tdes.h"
 
-#if defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_DIGICERT_ECC__)
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
 
-#if defined(__ENABLE_MOCANA_TAP__)
+#if defined(__ENABLE_DIGICERT_TAP__)
 #include "../data_protection/tap_data_protect.h"
 #endif
 
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
-#if defined(__ENABLE_MOCANA_TAP__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_TAP__)
 
-#if defined(__ENABLE_MOCANA_TAP_EXTERN__)
+#if defined(__ENABLE_DIGICERT_TAP_EXTERN__)
 MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAPExternInit();
 #endif
 /**
@@ -114,10 +114,10 @@ MOC_EXTERN pFuncPtrGetTapContext g_pFuncPtrGetTapContext;
 
 @param ppElements      On return, Pointer to the finger print data. The buffer
                        for this structure, and its element pLabel are allocated
-                       by this API and needs to be freed by the caller using MOC_FREE
+                       by this API and needs to be freed by the caller using DIGI_FREE
 @param pNumElements    On return, number of elements in FingerprintElement
 @param ppInitialSeed   On return, pointer to initial seed. The buffer is allocated
-                       by this API and needs to be freed by the caller using MOC_FREE
+                       by this API and needs to be freed by the caller using DIGI_FREE
 @param pInitialSeedLen On return, length of ppInitialSeed buffer.
 @param ek_obj_id       object id of endorsement key
 
@@ -220,7 +220,7 @@ CRYPTO_INTERFACE_copyAsymmetricKey(AsymmetricKey *pNew, const AsymmetricKey *pSr
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_getPublicKey(AsymmetricKey *pKey, AsymmetricKey *pPubKey);
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 /* This function is deprecated. Use CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux
  * instead.
  */
@@ -228,7 +228,7 @@ MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_getECurve(void *pKey, PEllipticCurvePtr *ppECurve, ubyte4 keyType);
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /**
 @ingroup    cryptowrapper_functions
 @brief      Get the ECC Public key from the Asymmetric key.
@@ -297,7 +297,7 @@ CRYPTO_INTERFACE_getRSAPublicKey(AsymmetricKey *pKey, RSAKey **ppPub);
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_getRsaSwPubFromTapKey(RSAKey *pKey, RSAKey **ppPub);
 
-#if defined(__ENABLE_MOCANA_TAP__)
+#if defined(__ENABLE_DIGICERT_TAP__)
 /**
  * @brief   Add credentials to a TAP key
  * @details Stores credentials in a TAP AsymmetricKey structure. The credentials
@@ -346,13 +346,13 @@ CRYPTO_INTERFACE_TAP_AsymDeferUnload(AsymmetricKey *pKey, byteBoolean deferredTo
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_TAP_rsaDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferredTokenUnload);
 
-#if defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_DIGICERT_ECC__)
 /**
  * @internal This API is for internal use. \c CRYPTO_INTERFACE_TAP_eccDeferUnload should be used.
  */
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_TAP_eccDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferredTokenUnload);
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
 /**
  * @brief   Gets the key handle and token handle for an internal TAP key.
@@ -378,7 +378,7 @@ CRYPTO_INTERFACE_TAP_AsymGetKeyInfo(AsymmetricKey *pKey, ubyte4 keyType, TAP_Tok
 MOC_EXTERN MSTATUS 
 CRYPTO_INTERFACE_TAP_rsaGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTokenHandle, TAP_KeyHandle *pKeyHandle);
 
-#if defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_DIGICERT_ECC__)
 
 /**
  * @internal This API is for internal use. \c CRYPTO_INTERFACE_TAP_eccGetKeyInfo should be used.
@@ -386,7 +386,7 @@ CRYPTO_INTERFACE_TAP_rsaGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTok
 MOC_EXTERN MSTATUS 
 CRYPTO_INTERFACE_TAP_eccGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTokenHandle, TAP_KeyHandle *pKeyHandle);
 
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
 
 /**
@@ -507,7 +507,7 @@ CRYPTO_INTERFACE_unloadTapToken(TAP_Context *pTapCtx, TAP_TokenHandle tokenHandl
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_RSA_getTapKey(RSAKey *pRsaKey, TAP_Key **ppTapKey);
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 MOC_EXTERN MSTATUS 
 CRYPTO_INTERFACE_TAP_eccGetKeyInfo(ECCKey *pECCKey, ubyte4 keyType,
@@ -538,8 +538,8 @@ CRYPTO_INTERFACE_TAP_eccGetKeyInfo(ECCKey *pECCKey, ubyte4 keyType,
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_ECC_getTapKey(ECCKey *pEccKey, TAP_Key **ppTapKey);
 
-#endif /* if (defined(__ENABLE_MOCANA_ECC__)) */
-#endif /* if defined(__ENABLE_MOCANA_TAP__) */
+#endif /* if (defined(__ENABLE_DIGICERT_ECC__)) */
+#endif /* if defined(__ENABLE_DIGICERT_TAP__) */
 
 /**
 @ingroup    cryptowrapper_functions
@@ -637,7 +637,7 @@ MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_RSA_verifySignature(MOC_RSA(hwAccelDescr hwAccelCtx) void *pRSAKey,
     const ubyte* cipherText, ubyte* plainText, ubyte4* plainTextLen, vlong **ppVlongQueue, ubyte4 keyType);
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /**
 @ingroup    cryptowrapper_functions
 @brief      Creates ECDSA signature.
@@ -877,7 +877,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_RSA_freeKeyTemplate(
  *                     RSA modulus.
  * @param inputLen     The input data length.
  * @param ppOutput     The output buffer. This buffer will be allocated by this
- *                     function and must be freed by the caller using MOC_FREE.
+ *                     function and must be freed by the caller using DIGI_FREE.
  * @param ppVlongQueue Optional vlong queue.
  * @param keyType      The key type, must be akt_rsa or akt_tap_rsa.
  *
@@ -908,7 +908,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_RSA_applyPublicKey(
  *                     RSA modulus.
  * @param inputLen     The input data length.
  * @param ppOutput     The output buffer. This buffer will be allocated by this
- *                     function and must be freed by the caller using MOC_FREE.
+ *                     function and must be freed by the caller using DIGI_FREE.
  * @param ppVlongQueue Optional vlong queue.
  * @param keyType      The key type, must be akt_rsa or akt_tap_rsa.
  *
@@ -991,7 +991,7 @@ CRYPTO_INTERFACE_RSA_decrypt(MOC_RSA(hwAccelDescr hwAccelCtx) void *pRSAKey,
         const ubyte* cipherText, ubyte* plainText, ubyte4* plainTextLen,
         RNGFun rngFun, void* rngFunArg, vlong **ppVlongQueue, ubyte4 keyType);
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 /**
  * Free an ECC Key.
@@ -1415,7 +1415,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_ECDSA_verifySignatureDigest (
 /**
  * Generate an ECDH shared secret from a public and private key. Note that this
  * function will allocate the shared secret and it is the callers responsibility
- * to free that memory using MOC_FREE.
+ * to free that memory using DIGI_FREE.
  *
  * @param pPrivateKey      Pointer to the private key for this operation.
  * @param pPublicKey       Pointer to the public key for this operation.
@@ -1484,7 +1484,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_ECDH_generateSharedSecretFromPublicByteStrin
     ubyte4 keyType
     );
 
-#endif /* ifdef __ENABLE_MOCANA_ECC__ */
+#endif /* ifdef __ENABLE_DIGICERT_ECC__ */
 
 /**
  * Clone a hash object. A context must have been at least initialized
@@ -1530,7 +1530,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_AES_createKeyMaterial (
     );
 
 
-#endif /* #ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__  */
+#endif /* #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__  */
 
 #ifdef __cplusplus
 }

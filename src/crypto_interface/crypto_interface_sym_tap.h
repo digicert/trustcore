@@ -81,7 +81,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_SymDeferUnload (
     byteBoolean deferredTokenUnload
     );
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 /**
  * @internal This API is for internal use. Appropriate \c CRYPTO_INTERFACE_TAP_<cipher>GetKeyInfo should be used.
@@ -92,7 +92,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_SymGetKeyInfo (
     TAP_KeyHandle *pKeyHandle
     );
 
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
 /**
  * @brief   Marks a Symmetric Key containing a TAP key to not be unloaded when done with its cipher operations.

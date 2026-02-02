@@ -1,7 +1,7 @@
 /*
  * crypto_interface_nist_kdf.h
  *
- * Mocana Cryptographic Interface specification for NIST-KDF.
+ * Cryptographic Interface specification for NIST-KDF.
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 

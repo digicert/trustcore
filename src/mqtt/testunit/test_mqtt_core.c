@@ -94,7 +94,7 @@ static void mqtt_test_MQTT_hasUnackedPackets(void **ppState)
     byteBoolean result = 0;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->pPacketIdList = NULL;
@@ -102,7 +102,7 @@ static void mqtt_test_MQTT_hasUnackedPackets(void **ppState)
     assert_int_equal(0, result);
     
     MqttPacketListWrapper *pWrapper = NULL;
-    MOC_MALLOC((void **)&pWrapper, sizeof(MqttPacketListWrapper));
+    DIGI_MALLOC((void **)&pWrapper, sizeof(MqttPacketListWrapper));
     assert_non_null(pWrapper);
 
     pWrapper->numElements = 0;
@@ -119,8 +119,8 @@ static void mqtt_test_MQTT_hasUnackedPackets(void **ppState)
     result = MQTT_hasUnackedPackets(pCtx);
     assert_int_equal(1, result);
 
-    MOC_FREE((void **)&pWrapper);
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pWrapper);
+    DIGI_FREE((void **)&pCtx);
    
 }
 
@@ -131,7 +131,7 @@ static void mqtt_test_MQTT_addPacketIdToList(void **ppState)
     MqttPacketListWrapper *pWrapper = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->pPacketIdList = NULL;
@@ -159,7 +159,7 @@ static void mqtt_test_MQTT_addPacketIdToList(void **ppState)
     assert_int_equal(3, pWrapper->pTail->packetId);
 
     MQTT_freePacketIdList(pCtx);
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
     
 }
 
@@ -169,7 +169,7 @@ static void mqtt_test_MQTT_removePacketIdFromList(void **ppState)
     MqttPacketListWrapper *pWrapper = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
 
     pCtx->pPacketIdList = NULL;
@@ -206,7 +206,7 @@ static void mqtt_test_MQTT_removePacketIdFromList(void **ppState)
     assert_int_equal(2, pWrapper->pTail->packetId);    
 
     MQTT_freePacketIdList(pCtx);
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
 
 }
 
@@ -217,8 +217,8 @@ static void mqtt_test_MQTT_checkPublishDeliveryAllowed(void **ppState)
     byteBoolean allowed = 0;
 
     MQTT_initCore(1);
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
     status = MQTT_checkPublishDeliveryAllowed(pCtx, 1, &allowed);
     assert_int_equal(OK, status);
@@ -229,7 +229,7 @@ static void mqtt_test_MQTT_checkPublishDeliveryAllowed(void **ppState)
     assert_int_equal(0, allowed);
 
     MQTT_uninitCore();
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
     
 }
 
@@ -258,13 +258,13 @@ static void mqtt_test_MQTT_packetIdExists(void **ppState)
 
     MQTT_initCore(1);
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
     exists = MQTT_packetIdExists(pCtx, 1);
     assert_int_equal(FALSE, exists);
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
     MQTT_uninitCore();
 }
 
@@ -273,7 +273,7 @@ static int testSetup(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK == status)
         ret = 0;
 
@@ -285,7 +285,7 @@ static int testTeardown(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
     if (OK == status)
         ret = 0;
 

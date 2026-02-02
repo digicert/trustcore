@@ -31,8 +31,8 @@
 extern "C" {
 #endif
     
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_NIST_KDF_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_NIST_KDF_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_NIST_KDF_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_NIST_KDF_INTERNAL__))
     
 #define KDF_NIST_CounterMode        CRYPTO_INTERFACE_KDF_NIST_CounterMode
 #define KDF_NIST_FeedbackMode       CRYPTO_INTERFACE_KDF_NIST_FeedbackMode
