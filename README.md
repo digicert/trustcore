@@ -30,7 +30,7 @@ TrustCore SDK provides comprehensive support for various security and communicat
 
 - [NanoSSH](https://dev.digicert.com/en/trustcore-sdk/nanossh.html) – Secure Shell (SSH) client and server implementation optimized for lightweight environments.
 
-- [NanoMQTT]() - Secure MQTT (Message Queuing Telemetry Transport) for IoT and cloud communications.
+- [NanoMQTT](https://dev.digicert.com/en/trustcore-sdk/nanomqtt.html) - Secure MQTT (Message Queuing Telemetry Transport) for IoT and cloud communications.
 
 - [NanoSSL](https://dev.digicert.com/en/trustcore-sdk/nanossl.html) - Implementation for SSL/TLS 1.3, providing secure transport layer encryption.
 
