@@ -20,7 +20,7 @@
 
 #include "../cap/capdecl.h"
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
 #include "../crypto_interface/crypto_interface_chacha20_priv.h"
 #endif
 
@@ -37,7 +37,7 @@ extern "C" {
         ubyte4  schedule[16];
         ubyte   keystream[CHACHA20_KEYSTREAM_SIZE];
         ubyte   streamOffset; /* next available position in keyStream */
-#ifdef __ENABLE_MOCANA_POLY1305__
+#ifdef __ENABLE_DIGICERT_POLY1305__
         byteBoolean encrypt;      /* encrpyt vs decrypt flag */
         byteBoolean aadFinalized;
         ubyte4  aadLen;
@@ -48,7 +48,7 @@ extern "C" {
         ubyte enabled;
     } ChaCha20Ctx;
 
-/* the Mocana canonical prototypes for encryption */
+/* the Digicert canonical prototypes for encryption */
 
 /**
  @brief      Creates and initializes a context for use in the chacha20 stream
@@ -61,7 +61,7 @@ extern "C" {
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
 
  @inc_file   chacha20.h
 
@@ -88,7 +88,7 @@ MOC_EXTERN BulkCtx CreateChaCha20Ctx(MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
 
  @inc_file   chacha20.h
 
@@ -112,7 +112,7 @@ MOC_EXTERN MSTATUS DeleteChaCha20Ctx(MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
 
  @inc_file   chacha20.h
 
@@ -147,7 +147,7 @@ MOC_EXTERN MSTATUS DoChaCha20(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx,
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
 
  @inc_file   chacha20.h
 
@@ -185,7 +185,7 @@ MOC_EXTERN MSTATUS CloneChaCha20Ctx(
     BulkCtx *ppNewCtx
     );
 
-#if defined(__ENABLE_MOCANA_POLY1305__)
+#if defined(__ENABLE_DIGICERT_POLY1305__)
 /* ChaCha20Poly1305 AEAD cipher */
 
 /**
@@ -199,8 +199,8 @@ MOC_EXTERN MSTATUS CloneChaCha20Ctx(
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -226,8 +226,8 @@ MOC_EXTERN BulkCtx ChaCha20Poly1305_createCtx( MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -252,8 +252,8 @@ MOC_EXTERN MSTATUS ChaCha20Poly1305_deleteCtx(MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -294,8 +294,8 @@ MOC_EXTERN MSTATUS ChaCha20Poly1305_cipherSSH(MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -337,8 +337,8 @@ MOC_EXTERN MSTATUS ChaCha20Poly1305_cipher(MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -368,8 +368,8 @@ MOC_EXTERN MSTATUS ChaCha20Poly1305_update_nonce(MOC_SYM(hwAccelDescr hwAccelCtx
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -400,8 +400,8 @@ MOC_EXTERN MSTATUS ChaCha20Poly1305_update_aad(MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -433,8 +433,8 @@ MOC_EXTERN MSTATUS ChaCha20Poly1305_update_data(MOC_SYM(hwAccelDescr hwAccelCtx)
  @ingroup    chacha20_functions
 
  @flags      To enable this method, the following flags must be defined:
-             + \c \__ENABLE_MOCANA_CHACHA20__
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_CHACHA20__
+             + \c \__ENABLE_DIGICERT_POLY1305__
 
  @inc_file   chacha20.h
 
@@ -476,7 +476,7 @@ MOC_EXTERN MSTATUS ChaCha20Poly1305_cloneCtx(MOC_SYM(hwAccelDescr hwAccelCtx)
                                              BulkCtx *ppNewCtx
                                              );
 
-#endif /* defined(__ENABLE_MOCANA_POLY1305__) */
+#endif /* defined(__ENABLE_DIGICERT_POLY1305__) */
 
 #ifdef __cplusplus
 }

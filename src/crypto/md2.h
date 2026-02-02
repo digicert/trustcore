@@ -39,7 +39,7 @@ typedef struct MD2_CTX {
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_MD2__
+#ifdef __ENABLE_DIGICERT_MD2__
 
 /**
  * Allocate a new MD2 context. It is the callers responsibility to free this

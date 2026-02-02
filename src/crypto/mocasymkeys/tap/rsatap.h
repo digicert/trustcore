@@ -3,8 +3,14 @@
  *
  * Functions for performing RSA TAP operations.
  *
- * Copyright Mocana Corp 2017. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -16,14 +22,14 @@
 #include "../../../tap/tap_smp.h"
 #include "../../../tap/tap_utils.h"
 
-#ifndef __MOCANA_ASYM_RSA_TAP_HEADER__
-#define __MOCANA_ASYM_RSA_TAP_HEADER__
+#ifndef __DIGICERT_ASYM_RSA_TAP_HEADER__
+#define __DIGICERT_ASYM_RSA_TAP_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 /* RSA TAP local data, note the TAP context and credential information
  * is only used for deserialization operations */
@@ -68,7 +74,7 @@ typedef struct
   MOperatorCallback         Callback;
 } MRsaTapCreateArgs;
 
-/* RSA TAP Key Mocana Blob Definition */
+/* RSA TAP Key Digicert Blob Definition */
 #define MOC_RSA_TAP_BLOB_START_LEN 12
 #define MOC_RSA_TAP_BLOB_START \
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, \
@@ -159,7 +165,7 @@ MOC_EXTERN MSTATUS SerializeRsaTapKeyAlloc (
 
 /* This will build the Mocana version 2 key blob of the given key.
  * It will allocate memory for the result. It is the responsibility of the caller
- * to free it using MOC_FREE.
+ * to free it using DIGI_FREE.
  */
 MOC_EXTERN MSTATUS BuildRsaTapKeyBlobAlloc (
   TAP_Key *pTapKey,
@@ -169,7 +175,7 @@ MOC_EXTERN MSTATUS BuildRsaTapKeyBlobAlloc (
 
 /* This will build the PKCS 8 DER encoding of the private key.
  * It will allocate memory for the result. It is the responsibility of the caller
- * to free it using MOC_FREE.
+ * to free it using DIGI_FREE.
  */
 MOC_EXTERN MSTATUS DerEncodeRsaTapKeyAlloc (
   TAP_Key *pTapKey,
@@ -221,10 +227,10 @@ MOC_EXTERN MSTATUS RsaTapGetPubFromPri (
   struct vlong **ppVlongQueue
   );
 
-#endif  /* __ENABLE_MOCANA_TAP__ */
+#endif  /* __ENABLE_DIGICERT_TAP__ */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __MOCANA_ASYM_RSA_TAP_HEADER__ */
+#endif /* __DIGICERT_ASYM_RSA_TAP_HEADER__ */

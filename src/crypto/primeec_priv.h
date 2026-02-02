@@ -17,7 +17,7 @@
 #ifndef __PRIMEEC_PRIV_HEADER__
 #define __PRIMEEC_PRIV_HEADER__
 
-#if defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_DIGICERT_ECC__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,10 +46,16 @@ struct PrimeEllipticCurve
     ConstPFEPtr         b;    /* b parameter, a = -3 */
     ConstPFEPtr         n;    /* order of point */
     ConstPFEPtr         mu;   /* special barrett constant */
-#ifdef __ENABLE_MOCANA_FIPS_MODULE__
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
     ubyte4              h;    /* cofactor */
 #endif
 };
+
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
+#define ECDSA_TRIGGER_FAIL_F_ID   1
+
+MOC_EXTERN const FIPS_entry_fct* ECDSA_getPrivileged(void);
+#endif
 
 #ifdef __cplusplus
 }

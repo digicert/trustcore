@@ -22,7 +22,7 @@
  * @details    Header file for the NanoCrypto NIST Deterministic Random Bit Generator.
  *
  * @flags      To enable this file's methods define the following flag:
- *             + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *             + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @filedoc    nist_drbg_hash.h
  */
@@ -45,7 +45,7 @@
 
 #include "../cap/capdecl.h"
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_nist_drbg_hash_priv.h"
 #endif
 
@@ -65,7 +65,7 @@ extern "C" {
  * @param pOutput   Buffer to hold the resulting output.
  *
  * @flags       To enable this method define the following flag:
- *              + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *              + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return      Must return \c OK (0) if successful and non-zero if unsuccessful.
  *
@@ -108,7 +108,7 @@ typedef struct NIST_HASH_DRBG_Ctx
  * @param hashOutLenBytes     The output length of the hashMethod chosen.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -134,7 +134,7 @@ MOC_EXTERN MSTATUS NIST_HASHDRBG_newSeededContext(MOC_SYM(hwAccelDescr hwAccelCt
  * @param ppContext   Pointer to the location of the context to be deleted.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -156,7 +156,7 @@ MOC_EXTERN MSTATUS NIST_HASHDRBG_deleteContext( MOC_SYM(hwAccelDescr hwAccelCtx)
  * @param additionalInputLen  The length of the additional input data in bytes.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -185,7 +185,7 @@ MOC_EXTERN MSTATUS NIST_HASHDRBG_reSeed(MOC_SYM(hwAccelDescr hwAccelCtx)
  * @param outputLenBytes      The number of output bytes requested.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -212,7 +212,7 @@ MOC_EXTERN MSTATUS NIST_HASHDRBG_generate(MOC_SYM(hwAccelDescr hwAccelCtx)
  * @param outputLenBytes      The number of output bytes requested.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -236,7 +236,7 @@ MOC_EXTERN MSTATUS NIST_HASHDRBG_numberGenerator(MOC_SYM(hwAccelDescr hwAccelCtx
  * @param pBuffer         Buffer to hold the resulting output bytes.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.

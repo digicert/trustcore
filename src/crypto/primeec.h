@@ -23,7 +23,7 @@
             functions of the NanoCrypto Finite Field Elliptic Curve (EC) API.
 
 @flags      To enable the functions in primeec.{c,h}, the following flag must be defined in moptions.h:
-            + \c \__ENABLE_MOCANA_ECC__
+            + \c \__ENABLE_DIGICERT_ECC__
 
 @filedoc primeec.h
 */
@@ -70,7 +70,7 @@ typedef struct ECCKey
 /* Forward declaration */
 typedef struct MEccKeyTemplate *MEccKeyTemplatePtr;
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 #ifdef MOC_EXTERN_PRIMEEC_H
 #undef MOC_EXTERN_PRIMEEC_H
@@ -111,35 +111,35 @@ typedef struct MEccKeyTemplate *MEccKeyTemplatePtr;
 #define MOC_EXTERN_P MOC_EXTERN_PRIMEEC_H
 
 /* NIST curves */
-#ifndef __ENABLE_MOCANA_ECC_P192__
+#ifndef __ENABLE_DIGICERT_ECC_P192__
 #define NUM_EC_P192 (0)
 #else
 #define NUM_EC_P192 (1)
 MOC_EXTERN_PRIMEEC_H const PEllipticCurvePtr EC_P192;
 #endif
 
-#ifdef __DISABLE_MOCANA_ECC_P224__
+#ifdef __DISABLE_DIGICERT_ECC_P224__
 #define NUM_EC_P224 (0)
 #else
 #define NUM_EC_P224 (1)
 MOC_EXTERN_PRIMEEC_H const PEllipticCurvePtr EC_P224;
 #endif
 
-#ifdef __DISABLE_MOCANA_ECC_P256__
+#ifdef __DISABLE_DIGICERT_ECC_P256__
 #define NUM_EC_P256 (0)
 #else
 #define NUM_EC_P256 (1)
 MOC_EXTERN_PRIMEEC_H const PEllipticCurvePtr EC_P256;
 #endif
 
-#ifdef __DISABLE_MOCANA_ECC_P384__
+#ifdef __DISABLE_DIGICERT_ECC_P384__
 #define NUM_EC_P384 (0)
 #else
 #define NUM_EC_P384 (1)
 MOC_EXTERN_PRIMEEC_H const PEllipticCurvePtr EC_P384;
 #endif
 
-#ifdef __DISABLE_MOCANA_ECC_P521__
+#ifdef __DISABLE_DIGICERT_ECC_P521__
 #define NUM_EC_P521 (0)
 #else
 #define NUM_EC_P521 (1)
@@ -639,7 +639,7 @@ MOC_EXTERN MSTATUS ECDH_generateSharedSecret(PEllipticCurvePtr pEC,
  *          This method allocates a buffer to hold the secret. Be sure to FREE
  *          this buffer when done with it.
  *
- * @flags   To use this method one must define __ENABLE_MOCANA_ECDH_MODES__
+ * @flags   To use this method one must define __ENABLE_DIGICERT_ECDH_MODES__
  *
  * @param mode                  One of the following macro values
  *                              + \c FULL_UNIFIED
@@ -677,7 +677,7 @@ MOC_EXTERN MSTATUS ECDH_keyAgreementSchemePrimeCurve(
     ubyte **ppSharedSecret,
     ubyte4 *pSharedSecretLen);
 
-#if defined(__ENABLE_MOCANA_ECC_COMB__) || !defined( __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__)
+#if defined(__ENABLE_DIGICERT_ECC_COMB__) || !defined( __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__)
 
 /**
  * @brief   Computes the total number of \c pf_units that will be needed to store a comb.
@@ -690,8 +690,8 @@ MOC_EXTERN MSTATUS ECDH_keyAgreementSchemePrimeCurve(
  * @param windowSize The input window size. This must be 2 or larger.
  * @param size       Contents will be set to the comb size.
  *
- * @flags            To use this method one must define __ENABLE_MOCANA_ECC_COMB__
- *                   and have __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__ not defined.
+ * @flags            To use this method one must define __ENABLE_DIGICERT_ECC_COMB__
+ *                   and have __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__ not defined.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -714,8 +714,8 @@ MOC_EXTERN MSTATUS EC_combSize( PrimeFieldPtr pPF, sbyte4 windowSize, sbyte4* si
  * @param pPrecomputed Pointer to the location of a newly allocated array of \c PFEPtrs
  *                     representing the comb table of the input point.
  *
- * @flags              To use this method one must define __ENABLE_MOCANA_ECC_COMB__
- *                     and have __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__ not defined.
+ * @flags              To use this method one must define __ENABLE_DIGICERT_ECC_COMB__
+ *                     and have __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__ not defined.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -738,8 +738,8 @@ MOC_EXTERN MSTATUS EC_precomputeComb(PrimeFieldPtr pPF, ConstPFEPtr pQx,
  * @param pCurvePrecomputed  Pointer to the location of a newly allocated array of
  *                            \c PFEPtrs representing the comb table of the generator point.
  *
- * @flags              To use this method one must define __ENABLE_MOCANA_ECC_COMB__
- *                     and have __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__ not defined.
+ * @flags              To use this method one must define __ENABLE_DIGICERT_ECC_COMB__
+ *                     and have __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__ not defined.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -758,17 +758,17 @@ MOC_EXTERN MSTATUS EC_precomputeCombOfCurve(PEllipticCurvePtr pEC, sbyte4 window
  *                   used when the comb was created.
  * @param pComb      Pointer to the location of the comb to be deleted.
  *
- * @flags            To use this method one must define __ENABLE_MOCANA_ECC_COMB__
- *                   and have __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__ not defined.
+ * @flags            To use this method one must define __ENABLE_DIGICERT_ECC_COMB__
+ *                   and have __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__ not defined.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
  */
 MOC_EXTERN MSTATUS EC_deleteComb(PrimeFieldPtr pPF, sbyte4 windowSize, PFEPtr *pComb);
 
-#endif /* __ENABLE_MOCANA_ECC_COMB__ !__ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__ */
+#endif /* __ENABLE_DIGICERT_ECC_COMB__ !__ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__ */
 
-#if !defined(__DISABLE_MOCANA_SIGNED_ODD_COMB__) && defined(__ENABLE_MOCANA_SIGNED_ODD_COMB_PERSIST__)
+#if !defined(__DISABLE_DIGICERT_SIGNED_ODD_COMB__) && defined(__ENABLE_DIGICERT_SIGNED_ODD_COMB_PERSIST__)
 /**
  * @brief   Zeros and frees globally stored combs and mutexes.
  *
@@ -776,8 +776,8 @@ MOC_EXTERN MSTATUS EC_deleteComb(PrimeFieldPtr pPF, sbyte4 windowSize, PFEPtr *p
  *          created by the \c EC_createPrimeCurveMutexes method. The comb's will have
  *          been generated as needed by the ECDSA signing algorithm.
  *
- * @flags   To use this method one must define __ENABLE_MOCANA_SIGNED_ODD_COMB_PERSIST__
- *          and not have __DISABLE_MOCANA_SIGNED_ODD_COMB__ not defined.
+ * @flags   To use this method one must define __ENABLE_DIGICERT_SIGNED_ODD_COMB_PERSIST__
+ *          and not have __DISABLE_DIGICERT_SIGNED_ODD_COMB__ not defined.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -790,11 +790,11 @@ MOC_EXTERN MSTATUS EC_deletePrimeCurveCombsAndMutexes(void);
  * @details Creates globally stored mutexes used for thread safety among comb
  *          generation for each of the prime curve's cyclic group generators. This
  *          method should only be called once and in an initialization phase, for
- *          example from \c CRYPTO_MOC_init. Be sure to then also call
+ *          example from \c CRYPTO_DIGI_init. Be sure to then also call
  *          \c EC_deletePrimeCurveCombsAndMutexes in an appropriate cleanup phase.
  *
- * @flags   To use this method one must define __ENABLE_MOCANA_SIGNED_ODD_COMB_PERSIST__
- *          and not have __DISABLE_MOCANA_SIGNED_ODD_COMB__ not defined.
+ * @flags   To use this method one must define __ENABLE_DIGICERT_SIGNED_ODD_COMB_PERSIST__
+ *          and not have __DISABLE_DIGICERT_SIGNED_ODD_COMB__ not defined.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -831,7 +831,7 @@ MOC_EXTERN MSTATUS ECDSA_verifySignatureEx(PEllipticCurvePtr pEC,
                                            sbyte4 pubKeyWinSize, ConstPFEPtr pPubKeyPrecomp,
                                            ConstPFEPtr r, ConstPFEPtr s);
 
-#endif /* __ENABLE_MOCANA_ECC__  */
+#endif /* __ENABLE_DIGICERT_ECC__  */
 
 #ifdef __cplusplus
 }

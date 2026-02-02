@@ -24,8 +24,8 @@
 @filedoc    moccms_encode.h
 */
 
-#ifndef __MOCANA_CMS_ENCODE_HEADER__
-#define __MOCANA_CMS_ENCODE_HEADER__
+#ifndef __DIGICERT_CMS_ENCODE_HEADER__
+#define __DIGICERT_CMS_ENCODE_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -152,7 +152,7 @@ typedef struct MOC_CMS_OUT_CTX
     intBoolean               lastDone;
     MOC_CMS_ASN1_Memory*     pAsn1Mem;
     MOC_CMS_OUT_TypeCtx*     pUn;
-#ifdef __ENABLE_MOCANA_RE_SIGNER__
+#ifdef __ENABLE_DIGICERT_RE_SIGNER__
     void*                    pResData;
 #endif
 } MOC_CMS_OUT_CTX;
@@ -174,7 +174,7 @@ typedef struct MOC_CMS_OUT_CTX
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN void
-MOC_CMS_deleteContextOut(MOC_CMS_OUT_CTX* pCtx);
+DIGI_CMS_deleteContextOut(MOC_CMS_OUT_CTX* pCtx);
 
 /** 
  * @brief Function to create a specific context for 'signed' CMS data output.
@@ -192,7 +192,7 @@ MOC_CMS_deleteContextOut(MOC_CMS_OUT_CTX* pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_createSignContextOut(MOC_CMS_OUT_CTX *pCtx);
+DIGI_CMS_createSignContextOut(MOC_CMS_OUT_CTX *pCtx);
 
 /** 
  * @brief Function to delete a 'MOC_CMS_OUT_SignedCtx' instance.
@@ -208,7 +208,7 @@ MOC_CMS_createSignContextOut(MOC_CMS_OUT_CTX *pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_deleteSignContextOut(MOC_CMS_OUT_SignedCtx *pCtx);
+DIGI_CMS_deleteSignContextOut(MOC_CMS_OUT_SignedCtx *pCtx);
 
 /** 
  * @brief Function to create a specific context for 'envelop' CMS data output.
@@ -225,7 +225,7 @@ MOC_CMS_deleteSignContextOut(MOC_CMS_OUT_SignedCtx *pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_createEnvelopContextOut(MOC_CMS_OUT_CTX *pCtx);
+DIGI_CMS_createEnvelopContextOut(MOC_CMS_OUT_CTX *pCtx);
 
 /** 
  * @brief Function to delete a 'MOC_CMS_OUT_EnvelopCtx' instance.
@@ -241,7 +241,7 @@ MOC_CMS_createEnvelopContextOut(MOC_CMS_OUT_CTX *pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_deleteEnvelopContextOut(MOC_CMS_OUT_EnvelopCtx *pCtx);
+DIGI_CMS_deleteEnvelopContextOut(MOC_CMS_OUT_EnvelopCtx *pCtx);
 
 /** 
  * @brief Stream more ASN1 payload data for the given context, which represents a
@@ -262,7 +262,7 @@ MOC_CMS_deleteEnvelopContextOut(MOC_CMS_OUT_EnvelopCtx *pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_writeSigned(MOC_CMS_OUT_CTX *pCtx,
+DIGI_CMS_writeSigned(MOC_CMS_OUT_CTX *pCtx,
                     const ubyte *pData,
                     ubyte4 dataLen,
                     intBoolean last);
@@ -282,7 +282,7 @@ MOC_CMS_writeSigned(MOC_CMS_OUT_CTX *pCtx,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_finalizeSigned(MOC_CMS_OUT_CTX *pCtx);
+DIGI_CMS_finalizeSigned(MOC_CMS_OUT_CTX *pCtx);
 
 /** 
  * @brief Stream more ASN1 payload data for the given context, which represents an
@@ -303,7 +303,7 @@ MOC_CMS_finalizeSigned(MOC_CMS_OUT_CTX *pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_writeEnvelop(MOC_CMS_OUT_CTX *pCtx,
+DIGI_CMS_writeEnvelop(MOC_CMS_OUT_CTX *pCtx,
                      const ubyte *pData,
                      ubyte4 dataLen,
                      intBoolean last);
@@ -323,7 +323,7 @@ MOC_CMS_writeEnvelop(MOC_CMS_OUT_CTX *pCtx,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_finalizeEnvelop(MOC_CMS_OUT_CTX *pCtx);
+DIGI_CMS_finalizeEnvelop(MOC_CMS_OUT_CTX *pCtx);
 
 /** 
  * @brief Add an 'attribute' to the CMS output by adding its data to the \c MOC_CMS_SignerCtx instance.
@@ -349,7 +349,7 @@ MOC_CMS_finalizeEnvelop(MOC_CMS_OUT_CTX *pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_addAttribute(MOC_CMS_SignerCtx *pSigner,
+DIGI_CMS_addAttribute(MOC_CMS_SignerCtx *pSigner,
                      intBoolean        authenticated,
                      const ubyte       *pOID,
                      ubyte4            oidLen,
@@ -375,7 +375,7 @@ MOC_CMS_addAttribute(MOC_CMS_SignerCtx *pSigner,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_makeASN1FromAttribute(ubyte4 typeID,
+DIGI_CMS_makeASN1FromAttribute(ubyte4 typeID,
                               const ubyte* value,
                               ubyte4 valueLen,
                               MOC_CMS_Attribute* pAttr);
@@ -395,7 +395,7 @@ MOC_CMS_makeASN1FromAttribute(ubyte4 typeID,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_createBulkAlgo(MOC_SYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_createBulkAlgo(MOC_SYM(hwAccelDescr hwAccelCtx)
                        ubyte  *pOID,
                        ubyte4 OIDLen,
                        MOC_CMS_ASN1_Memory    *pMem,
@@ -405,4 +405,4 @@ MOC_CMS_createBulkAlgo(MOC_SYM(hwAccelDescr hwAccelCtx)
 }
 #endif
 
-#endif  /* __MOCANA_CMS_ENCODE_HEADER__ */
+#endif  /* __DIGICERT_CMS_ENCODE_HEADER__ */

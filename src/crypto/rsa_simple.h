@@ -20,7 +20,7 @@
 #ifndef __RSA_SIMPLE_H__
 #define __RSA_SIMPLE_H__
 
-#if (defined(__ENABLE_MOCANA_RSA_SIMPLE__) && defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_RSA_SIMPLE__) && defined(__ENABLE_DIGICERT_ECC__))
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,6 +65,6 @@ MOC_EXTERN MSTATUS RSA_SIMPLE_sign_blind(sbyte4 n,
 }
 #endif
 
-#endif /* __ENABLE_MOCANA_RSA_SIMPLE__ */
+#endif /* __ENABLE_DIGICERT_RSA_SIMPLE__ */
 
 #endif /* __RSA_SIMPLE_H__ */

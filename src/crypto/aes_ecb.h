@@ -27,7 +27,7 @@
 #ifndef __AES_ECB_HEADER__
 #define __AES_ECB_HEADER__
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_aes_priv.h"
 #endif
 

@@ -20,8 +20,8 @@
 @brief      Header file for the Mocana Cryptographic Message Syntax (CMS) ASN parsing tools.
 @details    Header file for the Mocana Cryptographic Message Syntax (CMS) ASN parsing tools.
 */
-#ifndef __MOCANA_CMS_ASN1_HEADER__
-#define __MOCANA_CMS_ASN1_HEADER__
+#ifndef __DIGICERT_CMS_ASN1_HEADER__
+#define __DIGICERT_CMS_ASN1_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,8 +29,8 @@ extern "C" {
 
 /** A structure to collect partial ASN1 strings when data is being
  *  streamed.
- *  <p>This structure is used when the function <code>MOC_CMS_A_collectEncoded</code>
- *     or <code>MOC_CMS_A_collectOid</code> are used while streaming data with unknown
+ *  <p>This structure is used when the function <code>DIGI_CMS_A_collectEncoded</code>
+ *     or <code>DIGI_CMS_A_collectOid</code> are used while streaming data with unknown
  *     placement of the chunk 'borders'.
  *  <p>You do not need this when parsing a complete ASN1 string in memory with the
  *     <code>MAsn1Decode</code> function.
@@ -90,7 +90,7 @@ typedef struct MOC_CMS_DataInfo
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_A_decodeSeqDataReturn(void *pCallbackInfo,
+DIGI_CMS_A_decodeSeqDataReturn(void *pCallbackInfo,
                               ubyte *pData,
                               ubyte4 dataLen,
                               MAsn1Element *pElement);
@@ -108,7 +108,7 @@ MOC_CMS_A_decodeSeqDataReturn(void *pCallbackInfo,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_A_freeDataInfo(MOC_CMS_DataInfo *pDataInfo);
+DIGI_CMS_A_freeDataInfo(MOC_CMS_DataInfo *pDataInfo);
 
 /** 
  * @brief Create a new instance of 'MOC_CMS_CollectData' and fill a few fields.
@@ -125,7 +125,7 @@ MOC_CMS_A_freeDataInfo(MOC_CMS_DataInfo *pDataInfo);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_A_createCollectData(MOC_CMS_CollectData **ppData,
+DIGI_CMS_A_createCollectData(MOC_CMS_CollectData **ppData,
                             MAsn1Element *pParent,
                             MAsn1Element *pTarget);
 
@@ -141,7 +141,7 @@ MOC_CMS_A_createCollectData(MOC_CMS_CollectData **ppData,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_A_freeCollectData(MOC_CMS_CollectData **ppData);
+DIGI_CMS_A_freeCollectData(MOC_CMS_CollectData **ppData);
 
 /** 
  * @brief Capture the whole encoded ASN1 ENCODED string for the given input, while it is streamed.
@@ -155,7 +155,7 @@ MOC_CMS_A_freeCollectData(MOC_CMS_CollectData **ppData);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_A_collectEncoded(MOC_CMS_CollectData *pData);
+DIGI_CMS_A_collectEncoded(MOC_CMS_CollectData *pData);
 
 /** 
  * @brief Capture the whole encoded ASN1 SET_OF string for the given input, while it is streamed.
@@ -169,7 +169,7 @@ MOC_CMS_A_collectEncoded(MOC_CMS_CollectData *pData);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_A_collectSetOF(MOC_CMS_CollectData* pData);
+DIGI_CMS_A_collectSetOF(MOC_CMS_CollectData* pData);
 
 /** 
  * @brief Capture the whole encoded ASN1 OID string for the given input, while it is streamed.
@@ -184,10 +184,10 @@ MOC_CMS_A_collectSetOF(MOC_CMS_CollectData* pData);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_A_collectOid(MOC_CMS_CollectData* pData);
+DIGI_CMS_A_collectOid(MOC_CMS_CollectData* pData);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* __MOCANA_CMS_ASN1_HEADER__ */
+#endif  /* __DIGICERT_CMS_ASN1_HEADER__ */

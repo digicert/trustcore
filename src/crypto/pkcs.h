@@ -37,7 +37,7 @@ extern "C" {
 
 /* exported routines */
 
-#ifdef __ENABLE_MOCANA_PKCS7__
+#ifdef __ENABLE_DIGICERT_PKCS7__
 
 /* This API returns an DER encoded PKCS7 message that contains the
 payload enveloped using the provided certificate. This is just a
@@ -83,7 +83,7 @@ PKCS7_SignWithCertificateAndKeyBlob( const ubyte* cert, ubyte4 certLen,
                                     RNGFun rngFun, void* rngFunArg,
                                     ubyte** ppSigned, ubyte4* pSignedLen);
 
-#endif /*__ENABLE_MOCANA_PKCS7__ */
+#endif /*__ENABLE_DIGICERT_PKCS7__ */
 
 #ifdef __cplusplus
 }

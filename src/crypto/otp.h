@@ -21,7 +21,7 @@
  * @details    Header file for declaring One-Time-Password and S/Key methods.
  *
  * @flags      To enable the methods in this file please define:
- *             + \c \__ENABLE_MOCANA_OTP__
+ *             + \c \__ENABLE_DIGICERT_OTP__
  *
  * @filedoc    otp.h
  */
@@ -56,7 +56,7 @@ extern "C" {
  *                 This is 64 bits (8 bytes) in length.
  *
  * @flags      To enable this method please define:
- *             + \c \__ENABLE_MOCANA_OTP__
+ *             + \c \__ENABLE_DIGICERT_OTP__
  *
  * @return  \c OK (0) if successful, otherwise a negative number
  *          error code from merrors.h.
@@ -77,7 +77,7 @@ MOC_EXTERN MSTATUS OTP_otp(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte ht_type, cons
  *                  plus the '\0' terminating character.
  *
  * @flags      To enable this method please define:
- *             + \c \__ENABLE_MOCANA_OTP__
+ *             + \c \__ENABLE_DIGICERT_OTP__
  *
  * @return  \c OK (0) if successful, otherwise a negative number
  *          error code from merrors.h.

@@ -15,7 +15,7 @@
  */
 
 /*------------------------------------------------------------------*/
-#ifndef __DISABLE_MOCANA_OPENSSL_EVP__
+#ifndef __DISABLE_DIGICERT_OPENSSL_EVP__
 
 #ifndef __EVP_HEADER__
 #define __EVP_HEADER__
@@ -123,7 +123,7 @@ int EVP_MD_size(const EVP_MD *md);
 #ifndef __EVP_C__
 /* all structures are opaque except HMAC_CTX */
 
-#if defined( __DISABLE_MOCANA_SHA512__) && defined(__DISABLE_MOCANA_SHA384__)
+#if defined( __DISABLE_DIGICERT_SHA512__) && defined(__DISABLE_DIGICERT_SHA384__)
 #define HMAC_BLOCK_SIZE            (64)  /* Maximum Hash Block Size = MD5_BLOCK_SIZE = SHA1_BLOCK_SIZE  = SHA256_BLOCK_SIZE */
 #else
 #define HMAC_BLOCK_SIZE            (128) /* Maximum Hash Block Size = SHA512_BLOCK_SIZE */
@@ -192,7 +192,7 @@ MOC_EXTERN int MD5_Init(MOC_HASH(hwAccelDescr hwAccelCtx) MD5_CTX * ctx);
 MOC_EXTERN int MD5_Update(MOC_HASH(hwAccelDescr hwAccelCtx) MD5_CTX *c, const void *data,unsigned long len);
 MOC_EXTERN int MD5_Final(MOC_HASH(hwAccelDescr hwAccelCtx) unsigned char *md, MD5_CTX *c);
 
-#ifdef __ENABLE_MOCANA_MD4__
+#ifdef __ENABLE_DIGICERT_MD4__
 MOC_EXTERN int MD4_Init(MOC_HASH(hwAccelDescr hwAccelCtx) MD4_CTX * ctx);
 MOC_EXTERN int MD4_Update(MOC_HASH(hwAccelDescr hwAccelCtx) MD4_CTX *c, const void *data,unsigned long len);
 MOC_EXTERN int MD4_Final(MOC_HASH(hwAccelDescr hwAccelCtx) unsigned char *md, MD4_CTX *c);
@@ -306,7 +306,7 @@ MOC_EXTERN void     HMAC_Final(MOC_HASH(hwAccelDescr hwAccelCtx)HMAC_CTX *ctx, u
 MOC_EXTERN unsigned char *HMAC(MOC_HASH(hwAccelDescr hwAccelCtx) const EVP_MD *evp_md, const void *key,int key_len, const unsigned char *d, int n,unsigned char *md, unsigned int *md_len);
 
 MOC_EXTERN const EVP_MD*    EVP_dss1(void); /* DSA/SHA1 */
-#ifdef __ENABLE_MOCANA_MD4__
+#ifdef __ENABLE_DIGICERT_MD4__
 MOC_EXTERN const EVP_MD*    EVP_md4(void);  /* RSA/MD4 */
 #endif
 MOC_EXTERN const EVP_MD*    EVP_md5(void);  /* RSA/MD5 */
@@ -412,7 +412,7 @@ MOC_EXTERN int RAND_status(void);
 
 #define RAND_pseudo_bytes RAND_bytes
 
-#ifdef __ENABLE_MOCANA_PKCS5__
+#ifdef __ENABLE_DIGICERT_PKCS5__
 MOC_EXTERN int PKCS5_PBKDF2_HMAC_SHA1(MOC_HASH(hwAccelDescr hwAccelCtx)
                                       const char *pass, int passlen,
                                       const unsigned char *salt, int saltlen, int iter,

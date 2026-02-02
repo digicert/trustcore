@@ -23,7 +23,7 @@
              functions of the NanoCrypto EC prime field management APIs.
 
  @flags      To enable the functions in primeec.{c,h}, the following flag must be defined in moptions.h:
-             + \c \__ENABLE_MOCANA_ECC__
+             + \c \__ENABLE_DIGICERT_ECC__
 
  @filedoc    primefld.h
  */
@@ -39,9 +39,9 @@
 extern "C" {
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 #define MOC_EC_ONE 0x01ULL
 #define MOC_EC_TWO 0x02ULL
 #else
@@ -79,27 +79,27 @@ extern "C" {
 #define MOC_EXTERN_P MOC_EXTERN_PRIMEFLD_H
 
 /* NIST curves */
-#ifdef __ENABLE_MOCANA_ECC_P192__
+#ifdef __ENABLE_DIGICERT_ECC_P192__
 MOC_EXTERN_PRIMEFLD_H const PrimeFieldPtr PF_p192;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P224__
+#ifndef __DISABLE_DIGICERT_ECC_P224__
 MOC_EXTERN_PRIMEFLD_H const PrimeFieldPtr PF_p224;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P256__
+#ifndef __DISABLE_DIGICERT_ECC_P256__
 MOC_EXTERN_PRIMEFLD_H const PrimeFieldPtr PF_p256;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P384__
+#ifndef __DISABLE_DIGICERT_ECC_P384__
 MOC_EXTERN_PRIMEFLD_H const PrimeFieldPtr PF_p384;
 #endif
 
-#if defined(__ENABLE_MOCANA_ECC_EDDSA_448__) || defined(__ENABLE_MOCANA_ECC_EDDH_448__) || defined(__ENABLE_MOCANA_FIPS_MODULE__)
+#if defined(__ENABLE_DIGICERT_ECC_EDDSA_448__) || defined(__ENABLE_DIGICERT_ECC_EDDH_448__) || defined(__ENABLE_DIGICERT_FIPS_MODULE__)
 MOC_EXTERN_PRIMEFLD_H const PrimeFieldPtr PF_p448;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P521__
+#ifndef __DISABLE_DIGICERT_ECC_P521__
 MOC_EXTERN_PRIMEFLD_H const PrimeFieldPtr PF_p521;
 #endif
 
@@ -514,8 +514,8 @@ MOC_EXTERN MSTATUS PRIMEFIELD_inverseAux( sbyte4 k, PFEPtr pInverse, ConstPFEPtr
  *
  * @flags           Must enable one of the curve448 algorithms in order to use this method.
  *
- *                  + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
- *                  + \c \__ENABLE_MOCANA_ECC_EDDH_448__
+ *                  + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
+ *                  + \c \__ENABLE_DIGICERT_ECC_EDDH_448__
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -536,8 +536,8 @@ MOC_EXTERN MSTATUS PRIMEFIELD_add2( PrimeFieldPtr pField, PFEPtr pSum, ConstPFEP
  *
  * @flags            Must enable one of the curve448 algorithms in order to use this method.
  *
- *                   + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
- *                   + \c \__ENABLE_MOCANA_ECC_EDDH_448__
+ *                   + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
+ *                   + \c \__ENABLE_DIGICERT_ECC_EDDH_448__
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -572,15 +572,15 @@ MOC_EXTERN MSTATUS PRIMEFIELD_additiveInvert(PrimeFieldPtr pField, PFEPtr pA);
  *
  * @flags            Must enable one of the curve448 algorithms in order to use this method.
  *
- *                   + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
- *                   + \c \__ENABLE_MOCANA_ECC_EDDH_448__
+ *                   + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
+ *                   + \c \__ENABLE_DIGICERT_ECC_EDDH_448__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
  */
 MOC_EXTERN MSTATUS PRIMEFIELD_specialExp448( PFEPtr pResult, ConstPFEPtr pA, byteBoolean isInverse);
 
-#if (defined(__ENABLE_MOCANA_VLONG_ECC_CONVERSION__))
+#if (defined(__ENABLE_DIGICERT_VLONG_ECC_CONVERSION__))
 
 /**
  * @brief   Creates a new prime field element from a vlong element.
@@ -594,7 +594,7 @@ MOC_EXTERN MSTATUS PRIMEFIELD_specialExp448( PFEPtr pResult, ConstPFEPtr pA, byt
  * @param ppNewElem  Pointer that will be set to the location of the newly created prime
  *                   field element.
  *
- * @flags   Must define + \c \__ENABLE_MOCANA_VLONG_ECC_CONVERSION__ in order to use this method.
+ * @flags   Must define + \c \__ENABLE_DIGICERT_VLONG_ECC_CONVERSION__ in order to use this method.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -614,7 +614,7 @@ MOC_EXTERN MSTATUS PRIMEFIELD_newElementFromVlong( PrimeFieldPtr pField, const v
  * @param ppNewElem  Pointer that will be set to the location of the newly created vlong.
  * @param ppQueue    Pointer to an optional vlong queue.
  *
- * @flags   Must define + \c \__ENABLE_MOCANA_VLONG_ECC_CONVERSION__ in order to use this method.
+ * @flags   Must define + \c \__ENABLE_DIGICERT_VLONG_ECC_CONVERSION__ in order to use this method.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -633,7 +633,7 @@ MOC_EXTERN MSTATUS PRIMEFIELD_newVlongFromElement( PrimeFieldPtr pField, ConstPF
  * @param ppPrime    Pointer that will be set to the location of the newly created vlong
  *                   element representing the prime p associated with the field.
  *
- * @flags   Must define + \c \__ENABLE_MOCANA_VLONG_ECC_CONVERSION__ in order to use this method.
+ * @flags   Must define + \c \__ENABLE_DIGICERT_VLONG_ECC_CONVERSION__ in order to use this method.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -654,7 +654,7 @@ MOC_EXTERN MSTATUS PRIMEFIELD_getPrime( PrimeFieldPtr pField, vlong** ppPrime);
  * @param pRetMpintLength  Contents will be set to the number of bytes in the new integer.
  * @param ppVlongQueue     Pointer to an optional vlong queue.
  *
- * @flags   Must define + \c \__ENABLE_MOCANA_VLONG_ECC_CONVERSION__ in order to use this method.
+ * @flags   Must define + \c \__ENABLE_DIGICERT_VLONG_ECC_CONVERSION__ in order to use this method.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -678,7 +678,7 @@ MOC_EXTERN MSTATUS PRIMEFIELD_newMpintFromElement(PrimeFieldPtr pField, ConstPFE
  * @param pField      The globally defined prime field pointer you wish to associate with the element.
  * @param ppNewElem   Pointer to the location that will hold the newly allocated prime field element.
  *
- * @flags   Must define + \c \__ENABLE_MOCANA_VLONG_ECC_CONVERSION__ in order to use this method.
+ * @flags   Must define + \c \__ENABLE_DIGICERT_VLONG_ECC_CONVERSION__ in order to use this method.
  *
  * @return  \c OK (0) if successful, otherwise a negative number error
  *          code from merrors.h
@@ -686,7 +686,7 @@ MOC_EXTERN MSTATUS PRIMEFIELD_newMpintFromElement(PrimeFieldPtr pField, ConstPFE
 MOC_EXTERN MSTATUS PRIMEFIELD_newElementFromMpint(const ubyte* pBuffer, ubyte4 bufSize, ubyte4 *pBufIndex, PrimeFieldPtr pField, PFEPtr* ppNewElem);
 #endif
 
-#endif /* __ENABLE_MOCANA_ECC__  */
+#endif /* __ENABLE_DIGICERT_ECC__  */
 
 #ifdef __cplusplus
 }

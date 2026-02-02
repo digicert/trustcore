@@ -21,8 +21,8 @@
 
 @flags
 The following flags are required to enable this file's functions:
-+ \c \__ENABLE_MOCANA_KEY_UTILS__
-+ \c \__ENABLE_MOCANA_DSA__
++ \c \__ENABLE_DIGICERT_KEY_UTILS__
++ \c \__ENABLE_DIGICERT_DSA__
 
 */
 
@@ -36,7 +36,7 @@ The following flags are required to enable this file's functions:
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_KEY_UTILS__
+#ifdef __ENABLE_DIGICERT_KEY_UTILS__
 
 /**
  @brief      Determine whether a PEM key is encrypted.
@@ -47,7 +47,7 @@ extern "C" {
  @ingroup    key_utils
  
  @flags      To enable this function, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_KEY_UTILS__
+             + \c \__ENABLE_DIGICERT_KEY_UTILS__
  
  @inc_file key_utils.h
  
@@ -76,7 +76,7 @@ MOC_EXTERN void KEY_UTILS_PEMKeyIsEncrypted(ubyte *pPrivKey, ubyte4 privKeyLengt
  @ingroup    key_utils
  
  @flags      To enable this function, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_KEY_UTILS__
+             + \c \__ENABLE_DIGICERT_KEY_UTILS__
  
  @inc_file key_utils.h
  
@@ -107,7 +107,7 @@ MOC_EXTERN MSTATUS KEY_UTILS_PEMKeyIsValid(MOC_ASYM(hwAccelDescr hwAccelCtx) uby
  @ingroup    key_utils
  
  @flags      To enable this function, the following flag must be defined:
-             + \c \__ENABLE_MOCANA_KEY_UTILS__
+             + \c \__ENABLE_DIGICERT_KEY_UTILS__
  
  @inc_file key_utils.h
  

@@ -30,23 +30,13 @@ extern "C" {
 #define FIPS_PRINT              printf
 #endif
 
-#ifdef __ENABLE_MOCANA_FIPS_MODULE__
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
 
 MOC_EXTERN MSTATUS FIPS_INTEG_TEST_hash_memory(
     ubyte* hashReturn, ubyte* data, ubyte4 dataLen);
 
 /* Sub FIPS Tests */
 MOC_EXTERN MSTATUS FIPS_knownAnswerTests(void);
-#if (!defined(__ENABLE_MOCANA_CRYPTO_KERNEL_MODULE_FIPS__))
-MOC_EXTERN MSTATUS FIPS_pairwiseConsistencyTests(void);
-#endif
-
-/* Run-time support for operational testing.
- *
- */
-#ifdef __FIPS_OPS_TEST__
-MOC_EXTERN void FIPS_resetStartupFail(void);
-#endif
 
 #define DO_ENCRYPT 1
 #define DO_DECRYPT 0
@@ -138,34 +128,47 @@ enum FIPSAlgoTestNames
     FIPS_ECDH_TESTNUM = 46,
     FIPS_EDDH_TESTNUM = 47,
 
-    /* PCT Test Names */
     FIPS_RSA_TESTNUM = 48,
     FIPS_RSA_WRAPPER_TESTNUM = 49,
     FIPS_DSA_TESTNUM = 50,
     FIPS_ECDSA_TESTNUM = 51,
     FIPS_EDDSA_TESTNUM = 52,
+    FIPS_MLKEM_KEY_TESTNUM = 53,
+    FIPS_MLKEM_ENCAP_TESTNUM = 54,
+    FIPS_MLKEM_DECAP_TESTNUM = 55,
+    FIPS_MLDSA_KEY_TESTNUM = 56,
+    FIPS_MLDSA_SIGN_TESTNUM = 57,
+    FIPS_MLDSA_VERIFY_TESTNUM = 58,
+    FIPS_SLHDSA_SHA2_KEY_TESTNUM = 59,
+    FIPS_SLHDSA_SHA2_SIGN_TESTNUM = 60,
+    FIPS_SLHDSA_SHA2_VERIFY_TESTNUM = 61,
+    FIPS_SLHDSA_SHAKE_KEY_TESTNUM = 62,
+    FIPS_SLHDSA_SHAKE_SIGN_TESTNUM = 63,
+    FIPS_SLHDSA_SHAKE_VERIFY_TESTNUM = 64,
 
     /* Failure Test Names */
-    FIPS_BREAK_PUBLIC_KEY_TESTNUM = 53,
-    FIPS_DSA_CONSISTANCY_TESTNUM = 54,
-    FIPS_RSA_CONSISTANCY_TESTNUM = 55,
-    FIPS_ECDSA_CONSISTANCY_TESTNUM = 56,
-    FIPS_EDDSA_CONSISTANCY_TESTNUM = 57,
-    FIPS_FORCE_FAIL_DRBG_CTR_RNG_TESTNUM = 58,
-    FIPS_FORCE_FAIL_NO_ENTROPY_ADDED_TESTNUM = 59,
-    FIPS_FORCE_FAIL_ENTROPY_LIMIT_TESTNUM = 60,
+    FIPS_BREAK_PUBLIC_KEY_TESTNUM = 65,
+    FIPS_DSA_CONSISTANCY_TESTNUM = 66,
+    FIPS_RSA_CONSISTANCY_TESTNUM = 67,
+    FIPS_ECDSA_CONSISTANCY_TESTNUM = 68,
+    FIPS_EDDSA_CONSISTANCY_TESTNUM = 69,
+    FIPS_MLDSA_CONSISTANCY_TESTNUM = 70,
+    FIPS_SLHDSA_CONSISTANCY_TESTNUM = 71,
+    FIPS_MLKEM_CONSISTANCY_TESTNUM = 72,
+
+    FIPS_FORCE_FAIL_DRBG_CTR_RNG_TESTNUM = 73,
+    FIPS_FORCE_FAIL_NO_ENTROPY_ADDED_TESTNUM = 74,
+    FIPS_FORCE_FAIL_ENTROPY_LIMIT_TESTNUM = 75,
 
     /* Integrity Test Names */
-    FIPS_INTEGRITY_CHECK_TESTNUM = 61,
-    FIPS_INTEGRITY_FAIL_AND_CHECK_TESTNUM = 62,
+    FIPS_INTEGRITY_CHECK_TESTNUM = 76,
+    FIPS_INTEGRITY_FAIL_AND_CHECK_TESTNUM = 77,
 
-    FIPS_MAX_TEST_COUNT = 63
+    FIPS_MAX_TEST_COUNT = 78
 };
 
 #define FIRST_KAT_TEST  FIPS_RNG_DRBG_CTR_TESTNUM
-#define LAST_KAT_TEST   FIPS_EDDH_TESTNUM
-#define FIRST_PCT_TEST  FIPS_RSA_TESTNUM
-#define LAST_PCT_TEST   FIPS_EDDSA_TESTNUM
+#define LAST_KAT_TEST   FIPS_SLHDSA_SHAKE_VERIFY_TESTNUM
 
 typedef struct FIPS_InternalTestSetup
 {
@@ -184,6 +187,7 @@ typedef struct FIPS_InternalPowerupTestConfig
 extern FIPS_InternalPowerupTestConfig sInternalCurrPowerupTestConfig;
 
 #define FIPS_STATUS_MUTEX   100
+#define FIPS_CONFIG_MUTEX   101
 
 #define ALGO_POWERUP_ALGOIDSHOULDRUN(ALGOID) \
     ( (sCurrAlgoTestConfig.test[ALGOID].action == FIPS_FORCE) )
@@ -197,7 +201,10 @@ extern FIPS_InternalPowerupTestConfig sInternalCurrPowerupTestConfig;
 #define FIPS_FORCE_FAIL_RSA_CONSISTANCY_TESTNUM        0x02    /* startup & ops */
 #define FIPS_FORCE_FAIL_ECDSA_CONSISTANCY_TESTNUM      0x03    /* startup & ops */
 #define FIPS_FORCE_FAIL_EDDSA_CONSISTANCY_TESTNUM      0x04    /* startup & ops */
-#define FIPS_FORCE_FAIL_DRBG_TESTNUM                   0x05    /* startup & ops */
+#define FIPS_FORCE_FAIL_MLDSA_CONSISTANCY_TESTNUM      0x05    /* startup & ops */
+#define FIPS_FORCE_FAIL_SLHDSA_CONSISTANCY_TESTNUM     0x06    /* startup & ops */
+#define FIPS_FORCE_FAIL_MLKEM_CONSISTANCY_TESTNUM      0x07    /* startup & ops */
+#define FIPS_FORCE_FAIL_DRBG_TESTNUM                   0x08    /* startup & ops */
 
 #define ALGO_POWERUP_TESTSHOULDFAIL(ALGOID) \
     ( (sInternalCurrPowerupTestConfig.test[ALGOID].failurePowerup == TRUE) )
@@ -275,6 +282,18 @@ extern FIPS_InternalPowerupTestConfig sInternalCurrPowerupTestConfig;
 #define FIPS_FORCE_FAIL_DSA_TEST               (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_DSA_TESTNUM))
 #define FIPS_FORCE_FAIL_ECDSA_TEST             (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_ECDSA_TESTNUM))
 #define FIPS_FORCE_FAIL_EDDSA_TEST             (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_EDDSA_TESTNUM))
+#define FIPS_FORCE_FAIL_MLKEM_KEY_TEST         (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_MLKEM_KEY_TESTNUM))
+#define FIPS_FORCE_FAIL_MLKEM_ENCAP_TEST       (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_MLKEM_ENCAP_TESTNUM))
+#define FIPS_FORCE_FAIL_MLKEM_DECAP_TEST       (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_MLKEM_DECAP_TESTNUM))
+#define FIPS_FORCE_FAIL_MLDSA_KEY_TEST         (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_MLDSA_KEY_TESTNUM))
+#define FIPS_FORCE_FAIL_MLDSA_SIGN_TEST        (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_MLDSA_SIGN_TESTNUM))
+#define FIPS_FORCE_FAIL_MLDSA_VERIFY_TEST      (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_MLDSA_VERIFY_TESTNUM))
+#define FIPS_FORCE_FAIL_SLHDSA_SHA2_KEY_TEST   (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_SLHDSA_SHA2_KEY_TESTNUM))
+#define FIPS_FORCE_FAIL_SLHDSA_SHA2_SIGN_TEST  (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_SLHDSA_SHA2_SIGN_TESTNUM))
+#define FIPS_FORCE_FAIL_SLHDSA_SHA2_VERIFY_TEST (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_SLHDSA_SHA2_VERIFY_TESTNUM))
+#define FIPS_FORCE_FAIL_SLHDSA_SHAKE_KEY_TEST  (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_SLHDSA_SHAKE_KEY_TESTNUM))
+#define FIPS_FORCE_FAIL_SLHDSA_SHAKE_SIGN_TEST (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_SLHDSA_SHAKE_SIGN_TESTNUM))
+#define FIPS_FORCE_FAIL_SLHDSA_SHAKE_VERIFY_TEST (ALGO_POWERUP_TESTSHOULDFAIL(FIPS_SLHDSA_SHAKE_VERIFY_TESTNUM))
 
 /* =========================================================================================================== */
 /* FIPS Integrity Tests and Others                                                                                     */
@@ -314,13 +333,6 @@ MOC_EXTERN MSTATUS FIPS_getDefaultConfig(FIPSRuntimeConfig *pfips_config);
 /* Internal Test interface used in CMVP Operational testing, exported because it is useful when debugging... */
 MOC_EXTERN MSTATUS FIPS_InternalCopyStartupStatus(FIPSStartupStatus *pCopyOfStatus);
 
-#ifdef __FIPS_OPS_TEST__
-/* Test interfaces used only in CMVP Operational testing. */
-MOC_EXTERN MSTATUS FIPS_InternalStartupSelftest(FIPS_InternalPowerupTestConfig* testConfig);
-
-MOC_EXTERN MSTATUS FIPS_InternalResetInitialAlgoStatus(int fips_algoid);
-#endif
-
 /* =========================================================================================================== */
 /* FIPS Known Answer Tests                                                                                     */
 /* =========================================================================================================== */
@@ -330,6 +342,22 @@ MOC_EXTERN MSTATUS FIPS_rsaKat(hwAccelDescr hwAccelCtx);
 MOC_EXTERN MSTATUS FIPS_dsaKat(hwAccelDescr hwAccelCtx);
 MOC_EXTERN MSTATUS FIPS_ecdsaKat(hwAccelDescr hwAccelCtx);
 MOC_EXTERN MSTATUS FIPS_eddsaKat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_mldsaKat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_slhdsaKat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_mlkemKat(hwAccelDescr hwAccelCtx);
+
+MOC_EXTERN MSTATUS FIPS_mldsa_key_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_mldsa_sign_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_mldsa_verify_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_slhdsa_sha2_key_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_slhdsa_sha2_sign_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_slhdsa_sha2_verify_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_slhdsa_shake_key_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_slhdsa_shake_sign_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_slhdsa_shake_verify_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_mlkem_key_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_mlkem_decap_Kat(hwAccelDescr hwAccelCtx);
+MOC_EXTERN MSTATUS FIPS_mlkem_encap_Kat(hwAccelDescr hwAccelCtx);
 
 MOC_EXTERN MSTATUS FIPS_sha1Kat(hwAccelDescr hwAccelCtx);
 MOC_EXTERN MSTATUS FIPS_sha224Kat(hwAccelDescr hwAccelCtx);
@@ -372,7 +400,7 @@ MOC_EXTERN MSTATUS FIPS_tdesCbcKat(hwAccelDescr hwAccelCtx);
 
 MOC_EXTERN MSTATUS FIPS_aesGcmKat(hwAccelDescr hwAccelCtx);
 
-#ifndef __ENABLE_MOCANA_CRYPTO_KERNEL_MODULE_FIPS__
+#ifndef __ENABLE_DIGICERT_CRYPTO_KERNEL_MODULE_FIPS__
 MOC_EXTERN MSTATUS FIPS_dhKat(hwAccelDescr hwAccelCtx);
 MOC_EXTERN MSTATUS FIPS_ecdhKat(hwAccelDescr hwAccelCtx);
 MOC_EXTERN MSTATUS FIPS_eddhKat(hwAccelDescr hwAccelCtx);
@@ -392,18 +420,6 @@ MOC_EXTERN MSTATUS FIPS_hmacKdfSha3_512Kat(hwAccelDescr hwAccelCtx);
 #endif
 
 /* =========================================================================================================== */
-/* FIPS Pairwise Consistency Tests                                                                             */
-/* =========================================================================================================== */
-
-#ifdef __ENABLE_MOCANA_FIPS_LEGACY_PCT__
-#ifndef __ENABLE_MOCANA_CRYPTO_KERNEL_MODULE_FIPS__
-MOC_EXTERN MSTATUS FIPS_dsaPct(hwAccelDescr hwAccelCtx, randomContext *pRandomContext);
-MOC_EXTERN MSTATUS FIPS_ecdsaPct(hwAccelDescr hwAccelCtx, randomContext *pRandomContext);
-MOC_EXTERN MSTATUS FIPS_eddsaPct(hwAccelDescr hwAccelCtx, randomContext *pRandomContext);
-#endif 
-#endif /* __ENABLE_MOCANA_FIPS_LEGACY_PCT__ */
-
-/* =========================================================================================================== */
 /* FIPS Algorithm Logging functions (called within FIPS boundary.                                              */
 /* =========================================================================================================== */
 
@@ -415,7 +431,27 @@ MOC_EXTERN void FIPS_logAlgoEvent(enum FIPS_EventTypes eventType,
 /* FIPS Power-up status check, FIPS Event / Algorithm logging & related #defines are defined in moptions.h     */
 /* =========================================================================================================== */
 
-#endif /* __ENABLE_MOCANA_FIPS_MODULE__ */
+/* Types to access 'hidden' functions via privileged call 
+ * Types s_fct and FIPS_entry_fct are in mtypes.h so they will 
+ * be available to all crypto source folders */
+
+/* Run-time support for operational testing.
+ * Accessed via the "privileged" API.
+ */
+#define FIPS_RESET_STARTUP_FAIL_F_ID        1
+#define FIPS_INTERNAL_STARTUP_SELFTEST_F_ID 2
+#define FIPS_INTERNAL_RESET_INITIAL_F_ID    3
+#define FIPS_FILL_INTERNAL_POWERUP_F_ID     4
+
+typedef MSTATUS (fips_internal_startup_selftest)(FIPS_InternalPowerupTestConfig* testConfig);
+typedef MSTATUS (fips_internal_reset_initial)(int fips_algoid);
+typedef MSTATUS (fips_fill_internal_powerup)(FIPS_InternalPowerupTestConfig* testConfig);
+
+MOC_EXTERN const FIPS_entry_fct* FIPS_getPrivileged(void);
+
+MOC_EXTERN MSTATUS FIPS_locateFunction(const FIPS_entry_fct *table, int id, s_fct **ppOut);
+
+#endif /* __ENABLE_DIGICERT_FIPS_MODULE__ */
 
 #ifdef __cplusplus
 }

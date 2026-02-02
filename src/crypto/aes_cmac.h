@@ -29,7 +29,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_aes_cmac_priv.h"
 #endif
 
@@ -252,7 +252,7 @@ MOC_EXTERN MSTATUS AESCMAC_initExt(MOC_SYM(hwAccelDescr hwAccelCtx) const ubyte 
 MOC_EXTERN MSTATUS AESCMAC_updateExt(MOC_SYM(hwAccelDescr hwAccelCtx) const ubyte* pData, sbyte4 dataLength, AESCMAC_Ctx* pCtx, void *pExtCtx);
 MOC_EXTERN MSTATUS AESCMAC_finalExt(MOC_SYM(hwAccelDescr hwAccelCtx) ubyte cmac[CMAC_RESULT_SIZE], AESCMAC_Ctx* pCtx, void *pExtCtx);
 
-/* reusable functions -- to be used internally by mocana only */
+/* reusable functions -- to be used internally by digicert only */
 MOC_EXTERN MSTATUS AES_OMAC_init(AES_OMAC_Ctx* pOMACCtx);
 MOC_EXTERN MSTATUS AES_OMAC_update(MOC_SYM(hwAccelDescr hwAccelCtx) aesCipherContext* pAESCtx, AES_OMAC_Ctx* pOMACCtx, const ubyte* data, sbyte4 dataLength);
 MOC_EXTERN MSTATUS AES_OMAC_final( MOC_SYM(hwAccelDescr hwAccelCtx) aesCipherContext* pAESCtx, AES_OMAC_Ctx* pOMACCtx, ubyte cmac[CMAC_RESULT_SIZE]);

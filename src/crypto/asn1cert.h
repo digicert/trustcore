@@ -273,12 +273,12 @@ MOC_EXTERN MSTATUS ASN1CERT_AddExtensions(DER_ITEMPTR pExtensionTag, const certE
  *
  * @return  \c OK (0) if successful, otherwise a negative number
  *          error code from merrors.h.
- */
+ */                   
 MOC_EXTERN MSTATUS ASN1CERT_encodeRS( ubyte *pR, ubyte4 rLen,
                                       ubyte *pS, ubyte4 sLen,
                                       ubyte **ppSer, ubyte4 *pSerLen);
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /**
  * @brief   Writes ECC public key information to a certificate in the process of being generated.
  *

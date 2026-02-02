@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-#if defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_DIGICERT_ECC__)
 
-#if !defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__)
+#if !defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__)
 
 /* create a ECC key based on the SEC1 DER encoding */
 MOC_EXTERN MSTATUS SEC_getKey(MOC_ECC(hwAccelDescr hwAccelCtx) const ubyte* sec1DER, ubyte4 sec1DERLen, AsymmetricKey* pECCKey);
@@ -34,9 +34,9 @@ MOC_EXTERN MSTATUS SEC_getKey(MOC_ECC(hwAccelDescr hwAccelCtx) const ubyte* sec1
 MOC_EXTERN MSTATUS SEC_getPrivateKey(MOC_ECC(hwAccelDescr hwAccelCtx) ASN1_ITEMPTR pSeq, CStream cs, ubyte curveId,
                                      AsymmetricKey* pECCKey);
 
-#endif /* !defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__) */
+#endif /* !defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__) */
 
-#if defined( __ENABLE_MOCANA_DER_CONVERSION__) || defined(__ENABLE_MOCANA_PEM_CONVERSION__)
+#if defined( __ENABLE_DIGICERT_DER_CONVERSION__) || defined(__ENABLE_DIGICERT_PEM_CONVERSION__)
 
 enum
 {
@@ -47,9 +47,9 @@ MOC_EXTERN MSTATUS SEC_setKey(MOC_ASYM(hwAccelDescr hwAccelCtx) const Asymmetric
 MOC_EXTERN MSTATUS SEC_setKeyEx(MOC_ASYM(hwAccelDescr hwAccelCtx) const AsymmetricKey* pKey, ubyte4 options,
                                 ubyte **ppRetKeyDER, ubyte4 *pRetKeyDERLength);
 
-#endif /* defined( __ENABLE_MOCANA_DER_CONVERSION__) || defined(__ENABLE_MOCANA_PEM_CONVERSION__) */
+#endif /* defined( __ENABLE_DIGICERT_DER_CONVERSION__) || defined(__ENABLE_DIGICERT_PEM_CONVERSION__) */
 
-#endif /* defined(__ENABLE_MOCANA_ECC__) */
+#endif /* defined(__ENABLE_DIGICERT_ECC__) */
 
 
 #ifdef __cplusplus

@@ -24,7 +24,7 @@
 #ifndef __PPKCS5_HEADER__
 #define __PPKCS5_HEADER__
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_pkcs5_priv.h"
 #endif
 
@@ -60,7 +60,7 @@ enum encFunc
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PKCS5__
+#ifdef __ENABLE_DIGICERT_PKCS5__
 
 #define MOC_MIN_800_132_SALT_LEN          16
 #define MOC_MIN_800_132_KEY_LEN           14
@@ -105,7 +105,7 @@ MOC_EXTERN const ubyte pkcs5_PBES2_OID[];   /* 1.2.840.113549.1.5.13 */
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS5__
++ \c \__ENABLE_DIGICERT_PKCS5__
 
 @inc_file pkcs5.h
 
@@ -167,7 +167,7 @@ MOC_EXTERN MSTATUS PKCS5_CreateKey_PBKDF1(MOC_HASH(hwAccelDescr hwAccelCtx) cons
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS5__
++ \c \__ENABLE_DIGICERT_PKCS5__
 
 @inc_file pkcs5.h
 
@@ -219,7 +219,7 @@ MOC_EXTERN MSTATUS PKCS5_CreateKey_PBKDF2(MOC_HASH(hwAccelDescr hwAccelCtx) cons
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS5__
++ \c \__ENABLE_DIGICERT_PKCS5__
 
 @inc_file pkcs5.h
 
@@ -255,7 +255,7 @@ MOC_EXTERN MSTATUS PKCS5_decrypt( MOC_SYM(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS5__
++ \c \__ENABLE_DIGICERT_PKCS5__
 
 @inc_file pkcs5.h
 
@@ -300,7 +300,7 @@ MOC_EXTERN MSTATUS PKCS5_decryptV2( MOC_SYM(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS5__
++ \c \__ENABLE_DIGICERT_PKCS5__
 
 @inc_file pkcs5.h
 
@@ -355,7 +355,7 @@ MOC_EXTERN MSTATUS PKCS5_encryptV1( MOC_SYM(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS5__
++ \c \__ENABLE_DIGICERT_PKCS5__
 
 @inc_file pkcs5.h
 

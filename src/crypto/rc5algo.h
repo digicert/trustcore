@@ -24,7 +24,7 @@
 #ifndef __RC5ALGO_H__
 #define __RC5ALGO_H__
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_rc5_priv.h"
 #endif
 
@@ -34,7 +34,7 @@ extern "C" {
 
 /** Create an RC5 context.
  * <p>Note that the RC5 code will not be compiled unless NanoCrypto is built with
- * the __ENABLE_MOCANA_RC5__ build flag set.
+ * the __ENABLE_DIGICERT_RC5__ build flag set.
  * <p>RC5 is a block cipher that can operate on either 8-byte (64-bit) or 16-byte
  * (128-bit) blocks.
  * <p>A context built with this function will be able to perform either RC5-ECB,
@@ -73,7 +73,7 @@ extern "C" {
  * 128-bit key (16 bytes), although many aplications use 256-bit keys (32 bytes).
  * <p>Note that the default compilation of this implementation of RC5 will not
  * allow keys smaller than 8 bytes (64-bits, the same size as DES). However, if
- * compiled with the flag __ENABLE_MOCANA_WEAK_RC5__, the code will be compiled
+ * compiled with the flag __ENABLE_DIGICERT_WEAK_RC5__, the code will be compiled
  * to support any key length greater than 0 in order to be compatible with other
  * implementations, but Mocana strongly recommends using no fewer than 128 bits
  * (16 bytes). Note that this implementation does NOT support 0-length keys.
@@ -84,7 +84,7 @@ extern "C" {
  * and the slower the algorithm runs.
  * <p>Note that the default compilation of this implementation of RC5 will not
  * allow round counts fewer than 12. However, if compiled with the flag
- * __ENABLE_MOCANA_WEAK_RC5__, the code will be compiled to support any round
+ * __ENABLE_DIGICERT_WEAK_RC5__, the code will be compiled to support any round
  * count greater than 0 in order to be compatible with other implementations, but
  * Mocana strongly recommends using no fewer than 20 rounds. Note that this
  * implementation does NOT support a round count of 0.
@@ -114,10 +114,10 @@ extern "C" {
  *
  * @par Flags
  * The implementation will be disabled unless the following conditions are met:
- *   + \c \__ENABLE_MOCANA_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_RC5__ \b must be defined
  * Weak RC5 (small keys and round counts) will be disabled unless the following
  * conditions are met:
- *   + \c \__ENABLE_MOCANA_WEAK_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_WEAK_RC5__ \b must be defined
  *
  * @param  hwAccelCtx  If a hardware acceleration flag is defined, this macro
  * expands to an additional parameter, "hwAccelDescr hwAccelCtx". Otherwise, this
@@ -176,10 +176,10 @@ MOC_EXTERN MSTATUS MocCreateRC5Ctx (
  *
  * @par Flags
  * The implementation will be disabled unless the following conditions are met:
- *   + \c \__ENABLE_MOCANA_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_RC5__ \b must be defined
  * Weak RC5 (small keys and round counts) will be disabled unless the following
  * conditions are met:
- *   + \c \__ENABLE_MOCANA_WEAK_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_WEAK_RC5__ \b must be defined
  *
  * @param  hwAccelCtx  If a hardware acceleration flag is defined, this macro
  * expands to an additional parameter, "hwAccelDescr hwAccelCtx". Otherwise, this
@@ -249,10 +249,10 @@ MOC_EXTERN MSTATUS MocDeleteRC5Ctx (
  *
  * @par Flags
  * The implementation will be disabled unless the following conditions are met:
- *   + \c \__ENABLE_MOCANA_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_RC5__ \b must be defined
  * Weak RC5 (small keys and round counts) will be disabled unless the following
  * conditions are met:
- *   + \c \__ENABLE_MOCANA_WEAK_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_WEAK_RC5__ \b must be defined
  *
  * @param  hwAccelCtx  If a hardware acceleration flag is defined, this macro
  * expands to an additional parameter, "hwAccelDescr hwAccelCtx". Otherwise, this
@@ -334,10 +334,10 @@ MOC_EXTERN MSTATUS MocRC5Update (
  *
  * @par Flags
  * The implementation will be disabled unless the following conditions are met:
- *   + \c \__ENABLE_MOCANA_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_RC5__ \b must be defined
  * Weak RC5 (small keys and round counts) will be disabled unless the following
  * conditions are met:
- *   + \c \__ENABLE_MOCANA_WEAK_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_WEAK_RC5__ \b must be defined
  *
  * @param  hwAccelCtx  If a hardware acceleration flag is defined, this macro
  * expands to an additional parameter, "hwAccelDescr hwAccelCtx". Otherwise, this
@@ -385,10 +385,10 @@ MOC_EXTERN MSTATUS MocRC5Final (
  *
  * @par Flags
  * The implementation will be disabled unless the following conditions are met:
- *   + \c \__ENABLE_MOCANA_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_RC5__ \b must be defined
  * Weak RC5 (small keys and round counts) will be disabled unless the following
  * conditions are met:
- *   + \c \__ENABLE_MOCANA_WEAK_RC5__ \b must be defined
+ *   + \c \__ENABLE_DIGICERT_WEAK_RC5__ \b must be defined
  *
  * @param  hwAccelCtx  If a hardware acceleration flag is defined, this macro
  * expands to an additional parameter, "hwAccelDescr hwAccelCtx". Otherwise, this

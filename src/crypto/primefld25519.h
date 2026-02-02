@@ -23,10 +23,10 @@
  *             field with 2^255 - 19 elements.
  *
  * @flags      To enable the methods in this file one must define
- *             + \c \__ENABLE_MOCANA_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC__
  *             and at least one or more of the following flags
- *             + \c \__ENABLE_MOCANA_ECC_EDDH_25519__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDH_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
  *
  * @filedoc    primefld25519.h
  */

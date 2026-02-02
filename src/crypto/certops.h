@@ -57,9 +57,9 @@ typedef MSTATUS (*MNameType) (
 
 /* Encode the name element as an RDN.
  * The info will be a pointer to an MSymOperatorData struct. The NameType will
- * encode itself, allocating memory using MOC_MALLOC to hold the encoding, and
+ * encode itself, allocating memory using DIGI_MALLOC to hold the encoding, and
  * set the pData field to that encoding and the length field to its length.
- * The caller must free the memory using MOC_FREE.
+ * The caller must free the memory using DIGI_FREE.
  */
 #define MOC_NAME_OP_ENCODE_RDN    0x1002
 
@@ -86,9 +86,9 @@ typedef MSTATUS (*MAttrType) (
 
 /* Encode the cert request attribute.
  * The info will be a pointer to an MSymOperatorData struct. The AttrType will
- * encode itself, allocating memory using MOC_MALLOC to hold the encoding, and
+ * encode itself, allocating memory using DIGI_MALLOC to hold the encoding, and
  * set the pData field to that encoding and the length field to its length.
- * The caller must free the memory using MOC_FREE.
+ * The caller must free the memory using DIGI_FREE.
  * <p>Note that the encoding of an Attribute is
  * <pre>
  * <code>
@@ -131,9 +131,9 @@ typedef MSTATUS (*MExtensionType) (
 
 /* Encode the extension.
  * The info will be a pointer to an MSymOperatorData struct. The ExtensionType
- * will encode itself, allocating memory using MOC_MALLOC to hold the encoding,
+ * will encode itself, allocating memory using DIGI_MALLOC to hold the encoding,
  * and set the pData field to that encoding and the length field to its length.
- * The caller must free the memory using MOC_FREE.
+ * The caller must free the memory using DIGI_FREE.
  */
 #define MOC_EXTENSION_OP_ENCODE   0x3002
 
@@ -203,7 +203,7 @@ typedef struct
  * The Type will decode the encodedValue, and set pDecodedValue to the decoding.
  * That might be just a pointer to a location inside the encodedValue, or it
  * might be allocated memory. If the Type allocated memory, it will set
- * isAllocated to TRUE and the caller must free pDecodedValue using MOC_FREE.
+ * isAllocated to TRUE and the caller must free pDecodedValue using DIGI_FREE.
  * Check each RDN, attribute, and extension for the specific format of the value.
  * The criticality is used only by extensions. RDNs and attributes will ignore
  * that field.
@@ -414,11 +414,11 @@ typedef struct
  * DER.
  * <p>The function will allocate memory for the resulting request and return the
  * buffer created at the address given by ppRequest. It is the responsibility of
- * the caller to free that memory using MOC_FREE.
+ * the caller to free that memory using DIGI_FREE.
  *
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
- *  + \c \__ENABLE_MOCANA_SYM__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_SYM__
  *
  * @param pPubKey The public key that will be placed into the request.
  * @param pPriKey The private key that will be used to sign the request.
@@ -427,7 +427,7 @@ typedef struct
  * @param sigDetails If 0, the function will use the default, or else one of the
  * MOC_ASYM_KEY_ALG_ values define int mocasym.h, such as
  * MOC_ASYM_KEY_ALG_RSA_PSS_PAD.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param pRandom A random object. This can be g_pRandomContext.
@@ -451,7 +451,7 @@ typedef struct
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppRequest and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS PKCS10_buildCertRequestAlloc (
   MocAsymKey pPubKey,
@@ -520,7 +520,7 @@ MOC_EXTERN MSTATUS PKCS10_buildCertRequestAlloc (
  *
  * @param pRequest The cert request to parse, either DER or PEM.
  * @param requestLen The length, in bytes, of the request.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param pRandom An object that can generate random numbers. Likely it will not
@@ -667,11 +667,11 @@ MOC_EXTERN MSTATUS PKCS10_freeRequestObject (
  * function will return the request in the default format, which is DER.
  * <p>The function will allocate memory for the resulting request and return the
  * buffer created at the address given by ppRequest. It is the responsibility of
- * the caller to free that memory using MOC_FREE.
+ * the caller to free that memory using DIGI_FREE.
  *
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
- *  + \c \__ENABLE_MOCANA_SYM__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_SYM__
  *
  * @param pRequestObj The parsed cert request from which the cert will be built.
  * @param pIssuerPriKey The private key that will be used to sign the cert.
@@ -680,7 +680,7 @@ MOC_EXTERN MSTATUS PKCS10_freeRequestObject (
  * @param sigDetails If 0, the function will use the default, or else one of the
  * MOC_ASYM_KEY_ALG_ values define int mocasym.h, such as
  * MOC_ASYM_KEY_ALG_RSA_PSS_PAD.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param pRandom A random object. This can be g_pRandomContext.
@@ -714,7 +714,7 @@ MOC_EXTERN MSTATUS PKCS10_freeRequestObject (
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppRequest and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS X509_buildCertFromRequestAlloc (
   MRequestObj pRequestObj,
@@ -882,7 +882,7 @@ MOC_EXTERN MSTATUS X509_parseCert (
  * mss/src/crypto.crlops.h.
  *
  * @param pCertObj The first cert in the chain to verify.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param pVerifyTime The time against which the function will determine validity.
@@ -989,7 +989,7 @@ MOC_EXTERN MSTATUS X509_verifyCertChain (
  * @param pCertObj The object containing the cert to verify.
  * @param pVerificationKey The public key that will be used to
  * verify the cert's signature.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param pVerifyTime The time against which the function will determine validity.
@@ -1119,7 +1119,7 @@ MOC_EXTERN MSTATUS X509_freeCertObject (
  * data. That is, it is not an error to pass a NULL for that arg.
  *
  * @param pObj The cert or request object.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param ppKeyObj The address where the function will deposit a new object
@@ -2207,7 +2207,7 @@ typedef struct
  * array. Although an RDN is a SET OF, and can have more than one Attribute,
  * common practice has only one Attribute for each RDN.
  * <p>This function will allocate memory for the result, it is the responsibility
- * of the caller to free it using MOC_FREE.
+ * of the caller to free it using DIGI_FREE.
  *
  * @param pNameArray An array of NameType and value structs containing the name
  * information that will be used to build the Name.
@@ -2223,7 +2223,7 @@ typedef struct
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppNameDer and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS MBuildNameDerAlloc (
   MCertNameElement *pNameArray,
@@ -2257,7 +2257,7 @@ MOC_EXTERN MSTATUS MBuildNameDerAlloc (
  * <p>If there are no attributes, this function will set *ppEncoding to NULL and
  * *pEncodingLen to 0.
  * <p>This function will allocate memory for the result, it is the responsibility
- * of the caller to free it using MOC_FREE.
+ * of the caller to free it using DIGI_FREE.
  *
  * @param pAttrArray An array of AttrType and value structs containing the
  * attribute information.
@@ -2276,7 +2276,7 @@ MOC_EXTERN MSTATUS MBuildNameDerAlloc (
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppNameDer and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS MBuildAttributesAlloc (
   MRequestAttribute *pAttrArray,
@@ -2294,7 +2294,7 @@ MOC_EXTERN MSTATUS MBuildAttributesAlloc (
  * AttrType. So this function will find all the AttrTypes in the pAttrArray that
  * are extensions, and put them into a single attribute.
  * <p>This function will allocate memory for the result, it is the responsibility
- * of the caller to free it using MOC_FREE.
+ * of the caller to free it using DIGI_FREE.
  *
  * @param pExtArray An array of ExtensionType and value structs containing the
  * extension information.
@@ -2310,7 +2310,7 @@ MOC_EXTERN MSTATUS MBuildAttributesAlloc (
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppNameDer and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS MBuildExtensionRequestAlloc (
   MCertExtension *pExtArray,
@@ -2432,7 +2432,7 @@ MOC_EXTERN MSTATUS MEncodeSimpleAttrAlloc (
  * <p>The OID must be the OID only, not the tag and length octets.
  * <p>The caller passes in the OID, criticality, and the encoded value. This
  * function will encode the extension, allocating memory for the result. The
- * caller must free that memory using MOC_FREE.
+ * caller must free that memory using DIGI_FREE.
  *
  * @param pOid The OID of the extension.
  * @param oidLen The length, in bytes, of the OID.
@@ -2487,7 +2487,7 @@ MOC_EXTERN MSTATUS MEncodeExtensionAlloc (
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppNameDer and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS MBuildExtensionsAlloc (
   MRequestObj pRequestObj,

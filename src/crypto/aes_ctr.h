@@ -28,7 +28,7 @@
 
 #include "../cap/capdecl.h"
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_aes_ctr_priv.h"
 #endif
 
@@ -371,7 +371,7 @@ MOC_EXTERN MSTATUS  GetCounterBlockAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkC
  */
 MOC_EXTERN MSTATUS CloneAESCTRCtx(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCtx, BulkCtx *ppNewCtx);
 
-#ifdef __ENABLE_MOCANA_IPSEC_SERVICE__
+#ifdef __ENABLE_DIGICERT_IPSEC_SERVICE__
 /**
 @brief      Create a new AES-CTR context data structure and prepare the key
             schedule for using with IPsec Encapsulating Security Payload.

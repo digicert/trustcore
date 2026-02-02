@@ -30,7 +30,7 @@ pkcs1.c.
 #ifndef __PKCS1_HEADER__
 #define __PKCS1_HEADER__
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_PKCS1__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_PKCS1__
 #include "../crypto_interface/crypto_interface_pkcs1_priv.h"
 #endif
 
@@ -70,11 +70,11 @@ typedef MSTATUS (*mgfFunc)(MOC_RSA(hwAccelDescr hwAccelCtx) const ubyte *mgfSeed
 /*------------------------------------------------------------------*/
 
 MOC_EXTERN MSTATUS PKCS1_rsaesOaepEncrypt(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext *pRandomContext, const RSAKey *pRSAKey, ubyte H_rsaAlgoId, mgfFunc MGF, const ubyte *M, ubyte4 mLen, const ubyte *L, ubyte4 lLen, ubyte **ppRetEncrypt, ubyte4 *pRetEncryptLen);
-#if (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__))
+#if (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__))
 MOC_EXTERN MSTATUS PKCS1_rsaesOaepDecrypt(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pRSAKey, ubyte H_rsaAlgoId, mgfFunc MGF, const ubyte *C, ubyte4 cLen, const ubyte *L, ubyte4 lLen, ubyte **ppRetDecrypt, ubyte4 *pRetDecryptLength);
 #endif
 
-#if (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__))
+#if (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__))
 MOC_EXTERN MSTATUS PKCS1_rsassaPssSign(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext *pRandomContext, const RSAKey *pRSAKey, ubyte H_rsaAlgoId, mgfFunc MGF, const ubyte *pMessage, ubyte4 mesgLen, ubyte4 saltLen, ubyte **ppRetSignature, ubyte4 *pRetSignatureLen);
 MOC_EXTERN MSTATUS PKCS1_rsassaFreePssSign(MOC_RSA(hwAccelDescr hwAccelCtx) ubyte **ppSignature);
 #endif

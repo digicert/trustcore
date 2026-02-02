@@ -20,7 +20,7 @@
 @details    Header file for the Nanocrypto FIPS specific functionality.
 @flags      To enable functions in fips.{c,h}, the following flag must 
             be defined in the build environment or in moptions.h:
-            + \c \__ENABLE_MOCANA_FIPS_MODULE__ 
+            + \c \__ENABLE_DIGICERT_FIPS_MODULE__ 
 
 @filedoc    fips.h
 */
@@ -44,13 +44,13 @@ extern "C" {
 #endif /* (defined(__ZEROIZE_TEST__)) */
 
 
-#ifdef __ENABLE_MOCANA_FIPS_MODULE__
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
 
 #include "../common/random.h"
 #include "../common/mrtos.h"
 
 /*-------------------------------------------------------------------*/
-/* MOCANA FIPS AlgoID numbers used to enable/disable FIPS algorithms */
+/* DIGICERT FIPS AlgoID numbers used to enable/disable FIPS algorithms */
 /*-------------------------------------------------------------------*/
 
 /**
@@ -117,7 +117,7 @@ enum FIPSAlgoNames
 
     FIPS_ALGO_EDDSA  = 30,
 
-	/*------------------------------------*/
+    /*------------------------------------*/
     /* EDDH is not yet an approved algo   */
     /* but we are treating it as if       */
     /* it is already approved. (Doing KAT */
@@ -126,9 +126,16 @@ enum FIPSAlgoNames
     FIPS_ALGO_EDDH   = 31,
 
     /*------------------------------------*/
+    /* PQC algorithms                     */
+    /*------------------------------------*/
+    FIPS_ALGO_MLKEM  = 32,
+    FIPS_ALGO_MLDSA  = 33,
+    FIPS_ALGO_SLHDSA = 34,
+
+    /*------------------------------------*/
     /* Used to range check and size arrays*/
     /*------------------------------------*/
-    FIPS_APPROVED_ALGO_END = 32,
+    FIPS_APPROVED_ALGO_END = 35,
 
     /*------------------------------------*/
     /* Used to log events for other algos */
@@ -207,6 +214,16 @@ enum FIPS_EventTypes
 typedef MSTATUS (*FIPS_eventLog)(const enum FIPS_EventTypes eventType,
     const enum FIPSAlgoNames algoId, ubyte4 eventLogId, ubyte4 sessionId);
 
+/**
+@brief   Typedef of the application callback function to log debug lines.
+
+@param   logId  The numerical id for the log;
+
+@return  \c OK (0) if successful, otherwise a negative number error
+         code from merrors.h
+*/
+typedef MSTATUS (*FIPS_debugPrint)(ubyte4 logId, ...);
+
 typedef struct FIPSRuntimeConfig
 {
     enum FIPSAlgoNames randomDefaultAlgo;			/* Must be FIPS_ALGO_DRBG_CTR */
@@ -219,7 +236,25 @@ typedef struct FIPSRuntimeConfig
     FIPS_eventLog      fipsEventLog;
     ubyte4             fipsEventLogId;
     ubyte8             fipsEventSessionId;
+    ubyte4             fipsEventDepthLimit;
+    ubyte4             fipsEventMaxThreads;
+    ubyte4             *fipsEventDepth;
+    RTOS_THREAD        *fipsEventTID;
+    FIPS_debugPrint    fipsDebugPrint;
 } FIPSRuntimeConfig;
+
+/**
+ * FIPS debug log macros
+ */
+#define FIPS_TESTLOG_IMPORT   MOC_EXTERN FIPSRuntimeConfig sCurrRuntimeConfig;
+
+#define FIPS_TESTLOG(ID, VAL) { if(sCurrRuntimeConfig.fipsDebugPrint) \
+	    (*sCurrRuntimeConfig.fipsDebugPrint)(ID,NULL); }
+
+#define FIPS_TESTLOG_FMT(ID, FMT, ...) { if(sCurrRuntimeConfig.fipsDebugPrint) \
+	    (*sCurrRuntimeConfig.fipsDebugPrint)(ID,__VA_ARGS__); }
+
+#define FIPS_TESTLOG_ENABLED (sCurrRuntimeConfig.fipsDebugPrint)
 
 /** 
 @brief      FIPS_TestActions is an enumeration to control FIPS CAST timing 
@@ -284,6 +319,80 @@ MOC_EXTERN MSTATUS FIPS_registerEventLog(FIPS_eventLog eventLog);
          code from merrors.h
 */
 MOC_EXTERN MSTATUS FIPS_unregisterEventLog(void);
+
+/*===============================================================*/
+
+/**
+@brief   Function to register the application debug log callback function.
+
+@details This function will register an application level function to be called for
+         FIPS debug logs.
+
+@param   debugPrint Typedef defined with the signature of the debug print callback function.
+
+@return  \c OK (0) if successful, otherwise a negative number error
+         code from merrors.h
+*/
+MOC_EXTERN MSTATUS FIPS_registerDebugPrint(FIPS_debugPrint debugPrint);
+
+/*===============================================================*/
+
+/**
+@brief   Function to set the "test mode" flag to allow for privileged API calls
+
+@details This function accepts a "token", represented by a byte array, that is
+         checked against a "challenge" value. If the challenge passes, the "test mode"
+	 flag is permanently set. This function will return the status of the
+	 challenge as OK or with an error code.
+
+@return  \c OK (0) if successful, otherwise a negative number error
+         code from merrors.h
+*/
+MOC_EXTERN MSTATUS FIPS_setTestMode(ubyte *pToken, ubyte4 tokenLen);
+
+/**
+@brief   Function to read the "test mode" flag that allows for privileged API calls
+
+@details This function reads the "test mode" flag and returns it.
+
+@return  \c OK (0) if in "test mode", otherwise a negative number error
+         code from merrors.h
+*/
+MOC_EXTERN MSTATUS FIPS_isTestMode(void);
+
+/*===============================================================*/
+
+/**
+@brief   Function to set the EventLog depth limit.
+
+@details This function will set the limit applied to the FIPS related event log. It
+         restricts the "depth" of the function call relative to the initial call to
+         a FIPS function.
+
+@param limit  Integer value. 0  = No limit is applied;
+                             >0 = Only log the events from calls at that "level" or
+                                  earlier. For example, '1' would allow logs only from
+                                  the initial call and not from subsequently called
+                                  FIPS functions.
+
+@return  \c OK (0) if successful, otherwise a negative number error
+         code from merrors.h
+*/
+MOC_EXTERN MSTATUS FIPS_setEventLogDepthLimit(ubyte4 limit);
+
+/**
+@brief   Function to sets the maximum number of parallel threads the event log will handle;
+
+@details This function will set the resources needed to manage FIPS related event log issued
+         by threads. It is set by the user (once) and it represents the maximum number of
+         threads that can run at the same time.
+
+@param max  Integer value that is > 0.
+
+@return  \c OK (0) if successful, otherwise a negative number error
+         code from merrors.h
+*/
+MOC_EXTERN MSTATUS FIPS_setEventLogMaxThreads(ubyte4 max);
 
 /*===============================================================*/
 
@@ -426,7 +535,7 @@ MOC_EXTERN MSTATUS FIPS_resetPAASupport(void);
 
 /*===============================================================*/
 
-#endif /* __ENABLE_MOCANA_FIPS_MODULE__ */
+#endif /* __ENABLE_DIGICERT_FIPS_MODULE__ */
 
 #ifdef __cplusplus
 }

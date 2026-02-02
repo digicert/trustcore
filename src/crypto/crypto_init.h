@@ -24,10 +24,10 @@ extern "C" {
 #endif
 
 /* Performs any initialization that crypto may need (mutex/table creation etc.) */
-MOC_EXTERN MSTATUS CRYPTO_MOC_init(void);
+MOC_EXTERN MSTATUS CRYPTO_DIGI_init(void);
 
 /* Performs any cleanup that crypto may need (freeing tables etc.) */
-MOC_EXTERN MSTATUS CRYPTO_MOC_free(void);
+MOC_EXTERN MSTATUS CRYPTO_DIGI_free(void);
 
 #ifdef __cplusplus
 }

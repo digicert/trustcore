@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 
-#if !defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__)
+#if !defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__)
 
 
 struct ASN1_ITEM;
@@ -56,7 +56,7 @@ CERT_STORE_PKCS7_GetCertificate(const void* arg, CStream cs,
 /* used by PKCS#12 */
 extern struct PKCS7_Callbacks CERT_STORE_PKCS7Callbacks;
 
-#endif /* !defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__) */
+#endif /* !defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__) */
 
 #ifdef __cplusplus
 }

@@ -22,7 +22,7 @@
  * @details    This file documents the APIs used for SHA3 hashing and extenable output.
  *
  * @flags      To enable the methods in this file one must define
- *             + \c \__ENABLE_MOCANA_SHA3__
+ *             + \c \__ENABLE_DIGICERT_SHA3__
  *
  * @filedoc    sha3.h
  */
@@ -32,7 +32,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_sha3_priv.h"
 #endif
 

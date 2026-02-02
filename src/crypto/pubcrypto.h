@@ -32,14 +32,14 @@
 extern "C" {
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 struct ECCKey;
 struct PrimeEllipticCurve;
 #endif
 
 struct RSAKey;
 
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
 struct DSAKey;
 #endif
 struct AsymmetricKey;
@@ -52,10 +52,10 @@ typedef struct AsymmetricKey
     union
     {
         struct RSAKey* pRSA;
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
         struct ECCKey* pECC;
 #endif
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
         struct DSAKey* pDSA;
 #endif
         struct MocAsymmetricKey *pMocAsymKey;
@@ -121,7 +121,7 @@ MOC_EXTERN MSTATUS  CRYPTO_copyAsymmetricKey(AsymmetricKey* pNew, const Asymmetr
  */
 MOC_EXTERN MSTATUS  CRYPTO_matchPublicKey(const AsymmetricKey* pKey1, const AsymmetricKey* pKey2);
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 /**
  * @brief Get the ECC curveId from an AsymmetricKey.
@@ -180,7 +180,7 @@ MOC_EXTERN MSTATUS  CRYPTO_setRSAParameters(MOC_RSA(hwAccelDescr hwAccelCtx)
                                         ubyte4 qLen,
                                         struct vlong **ppVlongQueue);
 /* ECC key */
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 /**
  * @brief Populate a caller allocated AsymmetricKey structure with a
@@ -189,7 +189,7 @@ MOC_EXTERN MSTATUS  CRYPTO_setRSAParameters(MOC_RSA(hwAccelDescr hwAccelCtx)
  *        use CRYPTO_createECCKeyEx instead.
  * @flags
  * To enable this function, the following flag must be defined:
- * + \c \__ENABLE_MOCANA_ECC__
+ * + \c \__ENABLE_DIGICERT_ECC__
  *
  * @param pKey Pointer to a caller allocated AsymmetricKey structure
  *             to be populated.
@@ -204,14 +204,14 @@ MOC_EXTERN MSTATUS CRYPTO_createECCKey(
     PEllipticCurvePtr pEC
     );
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 /**
  * @brief Populate a caller allocated AsymmetricKey structure with a
  *        new empty ECC key.
  * @flags
  * To enable this function, the following flag must be defined:
- * + \c \__ENABLE_MOCANA_ECC__
- * + \c \__ENABLE_MOCANA_CRYPTO_INTERFACE__
+ * + \c \__ENABLE_DIGICERT_ECC__
+ * + \c \__ENABLE_DIGICERT_CRYPTO_INTERFACE__
  *
  * @param pKey        Pointer to a caller allocated AsymmetricKey structure
  *                    to be populated.
@@ -231,7 +231,7 @@ MOC_EXTERN MSTATUS CRYPTO_createECCKeyEx(
  *
  * @flags
  * To enable this function, the following flag must be defined:
- * + \c \__ENABLE_MOCANA_ECC__
+ * + \c \__ENABLE_DIGICERT_ECC__
  *
  * @param pKey      Pointer to a caller allocated AsymmetricKey
  *                  structure to be populated.
@@ -256,8 +256,8 @@ MOC_EXTERN MSTATUS  CRYPTO_setECCParameters(MOC_ECC(hwAccelDescr hwAccelCtx) Asy
  *
  * @flags
  * To enable this function, the following flag must be defined:
- * + \c \__ENABLE_MOCANA_ECC__
- * + \c \__ENABLE_MOCANA_PQC__
+ * + \c \__ENABLE_DIGICERT_ECC__
+ * + \c \__ENABLE_DIGICERT_PQC__
  *
  * @param pKey      Pointer to a caller allocated AsymmetricKey
  *                  structure to be populated.
@@ -278,16 +278,16 @@ MOC_EXTERN MSTATUS CRYPTO_setHybridParameters(
     ubyte *pPubKey,
     ubyte4 pubKeyLen
     );
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
 
 /**
  * @brief Populate an existing AsymmetricKey structure with a new DSA key.
  *
  * @flags
  * To enable this function, the following flag must be defined:
- * + \c \__ENABLE_MOCANA_DSA__
+ * + \c \__ENABLE_DIGICERT_DSA__
  *
  * @param pKey         Pointer to a caller allocated AsymmetricKey structure to be
  *                     populated with a new DSA key. If the structure already contains
@@ -305,7 +305,7 @@ MOC_EXTERN MSTATUS  CRYPTO_createDSAKey( AsymmetricKey* pKey, struct vlong** ppV
  *
  * @flags
  * To enable this function, the following flag must be defined:
- * + \c \__ENABLE_MOCANA_DSA__
+ * + \c \__ENABLE_DIGICERT_DSA__
  *
  * @param pKey         Pointer to a caller allocated AsymmetricKey structure to be
  *                     populated with a new DSA key and its parameters. If the
@@ -503,7 +503,7 @@ MOC_EXTERN MSTATUS KeySerializeTpmRsa (
  * custom. If you want it as a single buffer (rather than a collection of
  * integers and other values), call this function. It will allocate memory to
  * hold the serialized key and return that buffer to you. It is the caller's
- * responsibility to free that memory by calling MOC_FREE.
+ * responsibility to free that memory by calling DIGI_FREE.
  * <p>You specify the format of the serialized key with the format argument. It
  * will be one of the values specified in the serializedKeyFormat enum. Note that
  * not all keys will support all formats. For example, you won't be able to
@@ -533,7 +533,7 @@ MOC_EXTERN MSTATUS KeySerializeTpmRsa (
  *     . . .
  *
  * exit:
- *   MOC_FREE ((void **)&pPubKeyDer);
+ *   DIGI_FREE ((void **)&pPubKeyDer);
  * </code>
  * </pre>
  * <p>Keys will not be able to be serialized into all formats. Certainly a public
@@ -550,7 +550,7 @@ MOC_EXTERN MSTATUS KeySerializeTpmRsa (
  * @param format The format into which you want the key to be serialized.
  * @param ppSerializedKey The address where the function will deposit a pointer
  * to allocated memory containing the serialized key. It is the responsiblity of
- * the caller to free that memory using MOC_FREE.
+ * the caller to free that memory using DIGI_FREE.
  * @param pSerializedKeyLen the address where the function will deposit the
  * length, in bytes, of the serialized key.
  * @return     \c OK (0) if successful; otherwise a negative number error code
@@ -643,7 +643,7 @@ MOC_EXTERN MSTATUS CRYPTO_deserializeKey (
  * custom. If you want it as a single buffer (rather than a collection of
  * integers and other values), call this function. It will allocate memory to
  * hold the serialized key and return that buffer to you. It is the caller's
- * responsibility to free that memory by calling MOC_FREE.
+ * responsibility to free that memory by calling DIGI_FREE.
  * <p>You specify the format of the serialized key with the format argument. It
  * will be one of the values specified in the serializedKeyFormat enum. Note that
  * not all keys will support all formats. For example, you won't be able to
@@ -659,7 +659,7 @@ MOC_EXTERN MSTATUS CRYPTO_deserializeKey (
  * @param format The format into which you want the key to be serialized.
  * @param ppSerializedKey The address where the function will deposit a pointer
  * to allocated memory containing the serialized key. It is the responsiblity of
- * the caller to free that memory using MOC_FREE.
+ * the caller to free that memory using DIGI_FREE.
  * @param pSerializedKeyLen the address where the function will deposit the
  * length, in bytes, of the serialized key.
  * @return     \c OK (0) if successful; otherwise a negative number error code
@@ -711,7 +711,7 @@ MOC_EXTERN MSTATUS CRYPTO_getKeyTapInfo(
  * @param token  The token (ie secure storage application id) to be used.
  * @param ppSerializedKey The address where the function will deposit a pointer
  * to allocated memory containing the serialized key. It is the responsiblity of
- * the caller to free that memory using MOC_FREE.
+ * the caller to free that memory using DIGI_FREE.
  * @param pSerializedKeyLen the address where the function will deposit the
  * length, in bytes, of the serialized key.
  *

@@ -21,7 +21,7 @@
  @details    This file documents the APIs of NanoCrypto DSA.
 
  @flags      To use these APIs one must define
-             + \c \__ENABLE_MOCANA_DSA__
+             + \c \__ENABLE_DIGICERT_DSA__
 
  @filedoc    dsa.h
 */
@@ -34,7 +34,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_dsa_priv.h"
 #endif
 
@@ -118,7 +118,7 @@ typedef struct MDsaKeyTemplate *MDsaKeyTemplatePtr;
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -158,7 +158,7 @@ MOC_EXTERN MSTATUS DSA_createKey(DSAKey **pp_dsaDescr);
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -198,7 +198,7 @@ MOC_EXTERN MSTATUS DSA_cloneKey(MOC_DSA(hwAccelDescr hwAccelCtx) DSAKey** ppNew,
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -243,7 +243,7 @@ MOC_EXTERN MSTATUS DSA_freeKey(DSAKey **pp_dsaDescr, vlong **ppVlongQueue);
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -300,7 +300,7 @@ MOC_EXTERN MSTATUS DSA_generateKey(MOC_DSA(hwAccelDescr hwAccelCtx) randomContex
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -368,7 +368,7 @@ MOC_EXTERN MSTATUS DSA_generateKeyEx(MOC_DSA(hwAccelDescr hwAccelCtx) randomCont
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -406,7 +406,7 @@ MOC_EXTERN MSTATUS DSA_computeKeyPair(MOC_DSA(hwAccelDescr hwAccelCtx) randomCon
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -456,7 +456,7 @@ MOC_EXTERN MSTATUS DSA_computeKeyPairEx(MOC_DSA(hwAccelDescr hwAccelCtx) randomC
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -508,7 +508,7 @@ MOC_EXTERN MSTATUS DSA_computeSignature(MOC_DSA(hwAccelDescr hwAccelCtx) randomC
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -563,7 +563,7 @@ MOC_EXTERN MSTATUS DSA_computeSignatureEx(MOC_DSA(hwAccelDescr hwAccelCtx)
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -603,7 +603,7 @@ MOC_EXTERN MSTATUS DSA_verifySignature(MOC_DSA(hwAccelDescr hwAccelCtx) const DS
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -655,7 +655,7 @@ MOC_EXTERN MSTATUS DSA_verifyKeys(MOC_DSA(hwAccelDescr hwAccelCtx) randomContext
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -772,7 +772,7 @@ MOC_EXTERN MSTATUS DSA_verifyG(MOC_DSA(hwAccelDescr hwAccelCtx) vlong *pP, vlong
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @warning    Before calling this function, be sure that the buffer pointed to
              by the \p pKeyBlob parameter is large enough; otherwise, buffer
@@ -821,7 +821,7 @@ MOC_EXTERN MSTATUS DSA_makeKeyBlob(MOC_DSA(hwAccelDescr hwAccelCtx) const DSAKey
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -862,7 +862,7 @@ MOC_EXTERN MSTATUS DSA_extractKeyBlob(MOC_DSA(hwAccelDescr hwAccelCtx) DSAKey **
 
  @ingroup    dsa_functions
 
- @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
 
  @inc_file dsa.h
 
@@ -908,7 +908,7 @@ MOC_EXTERN MSTATUS DSA_equalKey(MOC_DSA(hwAccelDescr hwAccelCtx) const DSAKey *p
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -945,7 +945,7 @@ MOC_EXTERN MSTATUS DSA_setAllKeyParameters(MOC_DSA(hwAccelDescr hwAccelCtx) DSAK
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -980,7 +980,7 @@ MOC_EXTERN MSTATUS DSA_setPublicKeyParameters(MOC_DSA(hwAccelDescr hwAccelCtx) D
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1003,7 +1003,7 @@ MOC_EXTERN MSTATUS DSA_setKeyParameters (MOC_DSA(hwAccelDescr hwAccelCtx) DSAKey
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1026,7 +1026,7 @@ MOC_EXTERN MSTATUS DSA_getCipherTextLength(MOC_DSA(hwAccelDescr hwAccelCtx) cons
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1071,7 +1071,7 @@ MOC_EXTERN MSTATUS DSA_getSignatureLength (MOC_DSA(hwAccelDescr hwAccelCtx) DSAK
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1107,7 +1107,7 @@ MOC_EXTERN MSTATUS generatePQ(MOC_DSA(hwAccelDescr hwAccelCtx) randomContext* pF
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1141,7 +1141,7 @@ MOC_EXTERN MSTATUS generateG(MOC_DSA(hwAccelDescr hwAccelCtx) DSAKey *p_dsaDescr
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1174,7 +1174,7 @@ MOC_EXTERN MSTATUS DSA_generateRandomG (MOC_DSA(hwAccelDescr hwAccelCtx) DSAKey 
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1209,7 +1209,7 @@ MOC_EXTERN MSTATUS DSA_generateRandomGAux (MOC_DSA(hwAccelDescr hwAccelCtx) DSAK
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1252,7 +1252,7 @@ MOC_EXTERN MSTATUS DSA_generateKeyAux(MOC_DSA(hwAccelDescr hwAccelCtx) randomCon
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1290,7 +1290,7 @@ MOC_EXTERN MSTATUS DSA_generateKeyAux2(MOC_DSA(hwAccelDescr hwAccelCtx) randomCo
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1327,7 +1327,7 @@ MOC_EXTERN MSTATUS DSA_computeSignatureAux(MOC_DSA(hwAccelDescr hwAccelCtx) rand
  *             of \c TRUE before accepting that a signature is valid.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1348,7 +1348,7 @@ MOC_EXTERN MSTATUS DSA_verifySignatureAux(MOC_DSA(hwAccelDescr hwAccelCtx) DSAKe
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1372,7 +1372,7 @@ MOC_EXTERN MSTATUS DSA_setKeyParametersAux(MOC_DSA(hwAccelDescr hwAccelCtx) DSAK
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */
@@ -1392,7 +1392,7 @@ MOC_EXTERN MSTATUS DSA_getKeyParametersAlloc(MOC_DSA(hwAccelDescr hwAccelCtx) DS
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa.h
  * @funcdoc    dsa.h
  */

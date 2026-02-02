@@ -22,7 +22,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_sha384_priv.h"
 #include "../crypto_interface/crypto_interface_sha512_priv.h"
 #endif
@@ -55,7 +55,7 @@ typedef struct SHA512_CTX
     sbyte4  hashBufferIndex;
     ubyte   hashBuffer[SHA512_BLOCK_SIZE];
 
-#ifdef __ENABLE_MOCANA_MINIMUM_STACK__
+#ifdef __ENABLE_DIGICERT_MINIMUM_STACK__
     ubyte8  W[80];
 #endif
 
@@ -67,7 +67,7 @@ typedef SHA512_CTX      sha512Descr;
 /*------------------------------------------------------------------*/
 
 /* single steps */
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
 
 /**
 @brief      Allocate SHA512 operation context data structure.
@@ -99,7 +99,7 @@ recommended that this function be used to ensure future portability.
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA512__
++ \c \__DISABLE_DIGICERT_SHA512__
 
 @inc_file sha512.h
 
@@ -149,7 +149,7 @@ MOC_EXTERN MSTATUS SHA512_allocDigest   (MOC_HASH(hwAccelDescr hwAccelCtx) BulkC
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA512__
++ \c \__DISABLE_DIGICERT_SHA512__
 
 @inc_file sha512.h
 
@@ -203,7 +203,7 @@ MOC_EXTERN MSTATUS SHA512_freeDigest    (MOC_HASH(hwAccelDescr hwAccelCtx) BulkC
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA512__
++ \c \__DISABLE_DIGICERT_SHA512__
 
 @inc_file sha512.h
 
@@ -251,7 +251,7 @@ digest value is stored within the SHA512 context data structure.
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA512__
++ \c \__DISABLE_DIGICERT_SHA512__
 
 @inc_file sha512.h
 
@@ -299,7 +299,7 @@ MOC_EXTERN MSTATUS SHA512_updateDigest  (MOC_HASH(hwAccelDescr hwAccelCtx) SHA51
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA512__
++ \c \__DISABLE_DIGICERT_SHA512__
 
 @warning    Before calling this function, be sure that the buffer pointed to
             by the \p pOutput parameter is large enough (at least
@@ -363,7 +363,7 @@ MOC_EXTERN MSTATUS SHA512_finalDigest   (MOC_HASH(hwAccelDescr hwAccelCtx) SHA51
 
 @flags
 To enable this function, the following flags must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA512__
++ \c \__DISABLE_DIGICERT_SHA512__
 + \c \__SHA512_ONE_STEP_HARDWARE_HASH__
 
 @inc_file sha512.h
@@ -403,7 +403,7 @@ MOC_EXTERN MSTATUS SHA512_completeDigest(MOC_HASH(hwAccelDescr hwAccelCtx) const
 MOC_EXTERN MSTATUS SHA512_cloneCtx(MOC_HASH(hwAccelDescr hwAccelCtx) SHA512_CTX *pDest, SHA512_CTX *pSrc);
 #endif
 
-#ifndef __DISABLE_MOCANA_SHA384__
+#ifndef __DISABLE_DIGICERT_SHA384__
 
 /**
 @brief      Allocate SHA384 operation context data structure.
@@ -434,7 +434,7 @@ this function be used to ensure future portability.
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA384__
++ \c \__DISABLE_DIGICERT_SHA384__
 
 @inc_file sha512.h
 
@@ -487,7 +487,7 @@ not SHA512_freeDigest().
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA384__
++ \c \__DISABLE_DIGICERT_SHA384__
 
 @inc_file sha512.h
 
@@ -543,7 +543,7 @@ not SHA512_updateDigest().
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA384__
++ \c \__DISABLE_DIGICERT_SHA384__
 
 @inc_file sha512.h
 
@@ -618,7 +618,7 @@ MOC_EXTERN MSTATUS SHA512_updateDigest  (MOC_HASH(hwAccelDescr hwAccelCtx) SHA51
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA384__
++ \c \__DISABLE_DIGICERT_SHA384__
 
 @inc_file sha512.h
 
@@ -664,7 +664,7 @@ MOC_EXTERN MSTATUS SHA384_initDigest    (MOC_HASH(hwAccelDescr hwAccelCtx) SHA38
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA384__
++ \c \__DISABLE_DIGICERT_SHA384__
 
 @warning    Before calling this function, be sure that the buffer pointed to
             by the \p pOutput parameter is large enough (at least
@@ -728,7 +728,7 @@ MOC_EXTERN MSTATUS SHA384_finalDigest   (MOC_HASH(hwAccelDescr hwAccelCtx) SHA38
 
 @flags
 To enable this function, the following flags must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA384__
++ \c \__DISABLE_DIGICERT_SHA384__
 + \c \__SHA384_ONE_STEP_HARDWARE_HASH__
 
 @inc_file sha512.h

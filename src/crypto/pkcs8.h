@@ -30,7 +30,7 @@ extern "C" {
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PKCS8__
+#ifdef __ENABLE_DIGICERT_PKCS8__
 /**
 @brief      Extract a private key from a PEM-encoded PKCS&nbsp;\#8 object.
 
@@ -41,8 +41,8 @@ extern "C" {
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS8__
-+ \c \__ENABLE_MOCANA_PEM_CONVERSION__
++ \c \__ENABLE_DIGICERT_PKCS8__
++ \c \__ENABLE_DIGICERT_PEM_CONVERSION__
 
 @inc_file pkcs8.h
 
@@ -86,8 +86,8 @@ MOC_EXTERN MSTATUS PKCS8_decodePrivateKeyPEM(const ubyte* pFilePemPkcs8, ubyte4 
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS8__
-+ \c \__ENABLE_MOCANA_DER_CONVERSION__
++ \c \__ENABLE_DIGICERT_PKCS8__
++ \c \__ENABLE_DIGICERT_DER_CONVERSION__
 
 @inc_file pkcs8.h
 

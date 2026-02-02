@@ -20,7 +20,7 @@
 #ifndef __NIST_RNG_HEADER__
 #define __NIST_RNG_HEADER__
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_nist_ctr_drbg_priv.h"
 #endif
 
@@ -175,23 +175,6 @@ MOC_EXTERN MSTATUS NIST_CTRDRBG_numberGenerator(MOC_SYM(hwAccelDescr hwAccelCtx)
 MOC_EXTERN sbyte4 NIST_CTRDRBG_rngFun(MOC_SYM(hwAccelDescr hwAccelCtx)
                                         void* rngFunArg,
                                         ubyte4 length, ubyte *buffer);
-
-
-#ifdef __FIPS_OPS_TEST__
-
-/**
- * @internal
- * @dontshow
- */
-MOC_EXTERN void triggerDRBGFail(void);
-
-/**
- * @internal
- * @dontshow
- */
-MOC_EXTERN void resetDRBGFail(void);
-
-#endif
 
 #ifdef __cplusplus
 }

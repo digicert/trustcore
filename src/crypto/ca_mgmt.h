@@ -28,11 +28,11 @@
 @flags
 Whether the following flags are defined determines which structures and
 enumerations are defined:
-+ \c \__ENABLE_MOCANA_MULTIPLE_COMMON_NAMES__
-+ \c \__ENABLE_MOCANA_ECC__
++ \c \__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__
++ \c \__ENABLE_DIGICERT_ECC__
 
 Whether the following flags are defined determines which function declarations are enabled:
-+ \c \__ENABLE_MOCANA_EXTRACT_CERT_BLOB__
++ \c \__ENABLE_DIGICERT_EXTRACT_CERT_BLOB__
 + \c \__PUBCRYPTO_HEADER__
 
 @filedoc    ca_mgmt.h
@@ -79,7 +79,7 @@ enum
     akt_hsm_ecc = 0x00010002
 };
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /*
  curveId: they actually match the suffix of the OID
  for these curves or algorithm identifiers
@@ -192,12 +192,12 @@ typedef struct certDescriptor
     */
     struct AsymmetricKey* pKey;
 
-#if !(defined __ENABLE_MOCANA_64_BIT__)
+#if !(defined __ENABLE_DIGICERT_64_BIT__)
     /**
         @brief      Application-specific %cookie.
         @details    Application-specific %cookie.
 
-        @note       If the \c \__ENABLE_MOCANA_64_BIT__ flag is defined, only
+        @note       If the \c \__ENABLE_DIGICERT_64_BIT__ flag is defined, only
                       the \c ubyte4 \c %cookie field (not the \c ubyte8 \c
                       %cookie field) is included in the structure. If the flag
                       is not defined, only the \c ubyte8 \c %cookie (not the
@@ -209,7 +209,7 @@ typedef struct certDescriptor
         @brief      Application-specific %cookie.
         @details    Application-specific %cookie.
 
-        @note       If the \c \__ENABLE_MOCANA_64_BIT__ flag is defined, only
+        @note       If the \c \__ENABLE_DIGICERT_64_BIT__ flag is defined, only
                       the \c ubyte4 \c %cookie field (not the \c ubyte8 \c
                       %cookie field) is included in the structure. If the flag
                       is not defined, only the \c ubyte8 \c %cookie (not the
@@ -723,9 +723,9 @@ MOC_EXTERN sbyte4 CA_MGMT_generateCertificateEx2( certDescriptor *pRetCertificat
  
  @flags
  To enable this function, the following flags must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
- + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
- + \c \__DISABLE_MOCANA_KEY_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
+ + \c \__DISABLE_DIGICERT_KEY_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -801,9 +801,9 @@ MOC_EXTERN sbyte4 CA_MGMT_generateCertificateExType( certDescriptor *pRetCertifi
  @flags
  To enable this function, the following flag must \b not be defined:
  To enable this function, the following flags must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
- + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
- + \c \__DISABLE_MOCANA_KEY_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
+ + \c \__DISABLE_DIGICERT_KEY_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -860,7 +860,7 @@ MOC_EXTERN sbyte4 CA_MGMT_makeSubjectAltNameExtension( extensions* pExtension,
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -884,126 +884,6 @@ MOC_EXTERN sbyte4 CA_MGMT_makeSubjectAltNameExtension( extensions* pExtension,
  @funcdoc    ca_mgmt.h
  */
 MOC_EXTERN sbyte4  CA_MGMT_freeCertificate(certDescriptor *pRetCertificateDescr);
-
-#if 0
-/*
- @cond
- 
- @brief      Get a copy of an SoT Platform key blob's public key.
- 
- @details    This function gets a copy of the public key in an SoT Platform
-             key blob returned by CA_MGMT_generateCertificate().
- 
- @ingroup    cert_mgmt_functions
- 
- @since 1.41
- @version 1.41 and later
- 
- @flags
- To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
- 
- @inc_file ca_mgmt.h
- 
- @param pCertificateDescr    Pointer to the certificate descriptor containing
-                             the X.509 certificate and key blob from which
-                             you want to extract the key.
- @param ppRetPublicKey       On return, pointer to the extracted public key.
- @param pRetPublicKeyLength  On return, pointer to number of bytes in the
-                             generated public key.
- 
- @return     \c OK (0) if successful; otherwise a negative number error code
-             definition from merrors.h. To retrieve a string containing an
-             English text error identifier corresponding to the function's
-             returned error status, use the \c DISPLAY_ERROR macro.
- 
- @remark     This is a convenience function provided for your application's
-             use; it is not used by Mocana SoT Platform internal code.
- 
- @code
- sbyte4 status = 0;
- 
- status = CA_MGMT_returnPublicKey(pCertificateDescr, &pRetPublicKey, &retPublicKeyLength);
- @endcode
- 
- @funcdoc    ca_mgmt.h
- */
-MOC_EXTERN sbyte4  CA_MGMT_returnPublicKey(certDescriptor *pCertificateDescr, ubyte **ppRetPublicKey, ubyte4 *pRetPublicKeyLength);
-
-/*
- @brief      Get number of bytes in a certificate's public key.
- 
- @details    This function gets the number of bytes in a specified
-             certificate's public key.
- 
- @ingroup    cert_mgmt_functions
- 
- @since 1.41
- @version 1.41 and later
- 
- @flags
- To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
- 
- @inc_file ca_mgmt.h
- 
- @param pCertificateDescr            Pointer to the certificate descriptor
-                                     containing the X.509 certificate and
-                                     key blob generated public key whose
-                                     length you want.
- @param pRetPublicKeyLengthInBits    On return, pointer to length (in bits) of
-                                     the generated public key.
- 
- @return     \c OK (0) if successful; otherwise a negative number error code
-             definition from merrors.h. To retrieve a string containing an
-             English text error identifier corresponding to the function's
-             returned error status, use the \c DISPLAY_ERROR macro.
- 
- @remark     This is a convenience function provided for your application's
-             use; it is not used by Mocana SoT Platform internal code.
- 
- @funcdoc    ca_mgmt.h
- */
-MOC_EXTERN sbyte4  CA_MGMT_returnPublicKeyBitLength(certDescriptor *pCertificateDescr, ubyte4 *pRetPublicKeyLengthInBits);
-
-/*
- @brief      Free memory allocated by CA_MGMT_returnPublicKey().
- 
- @details    This function frees the memory in the specified buffer that was
-              previously allocated by a call to CA_MGMT__returnPublicKey().
- 
- @ingroup    cert_mgmt_functions
- 
- @since 1.41
- @version 1.41 and later
- 
- @flags
- To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
- 
- @inc_file ca_mgmt.h
- 
- @param ppRetPublicKey   Pointer to the public key to free.
- 
- @return     \c OK (0) if successful; otherwise a negative number error code
-              definition from merrors.h. To retrieve a string containing an
-              English text error identifier corresponding to the function's
-              returned error status, use the \c DISPLAY_ERROR macro.
- 
- @code
- sbyte4 status = 0;
- 
- status = CA_MGMT_freePublicKey(&pRetPublicKey);
- @endcode
- 
- @funcdoc    ca_mgmt.h
- */
-MOC_EXTERN sbyte4  CA_MGMT_freePublicKey(ubyte **ppRetPublicKey);
-
-/**
- @endcond
- */
-#endif
 
 /**
  @brief      Allocate and initialize a \c pCertificateDesc structure.
@@ -1053,7 +933,7 @@ MOC_EXTERN sbyte4  CA_MGMT_allocCertDistinguishedName(certDistinguishedName **pp
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1099,7 +979,7 @@ MOC_EXTERN sbyte4  CA_MGMT_extractCertDistinguishedName(ubyte *pCertificate, uby
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1209,7 +1089,7 @@ MOC_EXTERN sbyte4  CA_MGMT_freeCertDistinguishedName(certDistinguishedName **ppF
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1296,16 +1176,16 @@ MOC_EXTERN MSTATUS CA_MGMT_keyBlobToPEM(const ubyte *pKeyBlob, ubyte4 keyBlobLen
  * <p>The function will allocate memory. The caller passes in the address of a
  * ubyte pointer, the function will allocate memory to hold the key blob, fill
  * that memory with the key blob and deposit the pointer at the address given. It
- * is the repsonsibility of the caller to free that memory using MOC_FREE.
+ * is the repsonsibility of the caller to free that memory using DIGI_FREE.
  *
  * @memory Make sure you free the buffer returned at the address ppRetKeyBlob
- * using MOC_FREE when you are done with it.
+ * using DIGI_FREE when you are done with it.
  *
  * @ingroup    cert_mgmt_functions
  * @flags
  * To enable this function, at least one of the following flags must be defined in moptions.h:
- * + \c \__ENABLE_MOCANA_DER_CONVERSION__
- * + \c \__ENABLE_MOCANA_PEM_CONVERSION__
+ * + \c \__ENABLE_DIGICERT_DER_CONVERSION__
+ * + \c \__ENABLE_DIGICERT_PEM_CONVERSION__
  *
  * @inc_file ca_mgmt.h
  *
@@ -1366,7 +1246,7 @@ MOC_EXTERN MSTATUS CA_MGMT_tpm12RsaKeyBlobToDer (
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1405,7 +1285,7 @@ MOC_EXTERN MSTATUS CA_MGMT_verifyCertAndKeyPair(
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1445,7 +1325,7 @@ MOC_EXTERN sbyte4  CA_MGMT_verifyCertWithKeyBlob(certDescriptor *pCertificateDes
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_GENERATION__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1473,7 +1353,7 @@ MOC_EXTERN sbyte4  CA_MGMT_extractCertTimes(ubyte *pCertificate, ubyte4 certific
  
  @details    This function converts a PEM-encoded certificate to a DER-encoded
              certificate. This function allocates memory that the caller must free
-             (using MOC_FREE).
+             (using DIGI_FREE).
  
  @ingroup    cert_mgmt_functions
  
@@ -1484,8 +1364,8 @@ MOC_EXTERN sbyte4  CA_MGMT_extractCertTimes(ubyte *pCertificate, ubyte4 certific
  
  @flags
  To enable this function, at least one of the following flags must be defined in moptions.h:
- + \c \__ENABLE_MOCANA_PKCS10__
- + \c \__ENABLE_MOCANA_PEM_CONVERSION__
+ + \c \__ENABLE_DIGICERT_PKCS10__
+ + \c \__ENABLE_DIGICERT_PEM_CONVERSION__
  
  @inc_file ca_mgmt.h
  
@@ -1507,7 +1387,7 @@ MOC_EXTERN sbyte4  CA_MGMT_extractCertTimes(ubyte *pCertificate, ubyte4 certific
  */
 MOC_EXTERN sbyte4  CA_MGMT_decodeCertificate(ubyte* pKeyFile, ubyte4 fileSize, ubyte** ppDecodeFile, ubyte4 *pDecodedLength);
 
-#ifdef __ENABLE_MOCANA_CERTIFICATE_SEARCH_SUPPORT__
+#ifdef __ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__
 MOC_EXTERN sbyte4  CA_MGMT_extractSerialNum (ubyte* pCertificate, ubyte4 certificateLength, ubyte** ppRetSerialNum, ubyte4* pRetSerialNumLength);
 MOC_EXTERN sbyte4  CA_MGMT_freeSearchDetails(ubyte** ppFreeData);
 
@@ -1557,7 +1437,7 @@ typedef sbyte4 (*CA_MGMT_EnumItemCBFun)( const ubyte* pContent, ubyte4 contentLe
  
  @flags
  To enable this function, the following flag must be defined in moptions.h:
- + \c \__ENABLE_MOCANA_CERTIFICATE_SEARCH_SUPPORT__
+ + \c \__ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__
  
  @inc_file ca_mgmt.h
  
@@ -1623,7 +1503,7 @@ MOC_EXTERN sbyte4  CA_MGMT_enumCrl(ubyte* pCertificate, ubyte4 certificateLength
  
  @flags
  To enable this function, the following flag must be defined in moptions.h:
- + \c \__ENABLE_MOCANA_CERTIFICATE_SEARCH_SUPPORT__
+ + \c \__ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__
  
  @inc_file ca_mgmt.h
  
@@ -1679,7 +1559,7 @@ MOC_EXTERN MSTATUS CA_MGMT_extractKeyBlobTypeEx(const ubyte *pKeyBlob, ubyte4 ke
 MOC_EXTERN MSTATUS CA_MGMT_extractPublicKey(const ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRetPublicKeyBlob, ubyte4 *pRetPublicKeyBlobLength, ubyte4 *pRetKeyType);
 #endif /* __PUBCRYPTO_HEADER__ */
 
-#ifdef __ENABLE_MOCANA_EXTRACT_CERT_BLOB__
+#ifdef __ENABLE_DIGICERT_EXTRACT_CERT_BLOB__
 MOC_EXTERN sbyte4 CA_MGMT_findCertDistinguishedName(ubyte *pCertificate, ubyte4 certificateLength, intBoolean isSubject, ubyte **ppRetDistinguishedName, ubyte4 *pRetDistinguishedNameLen);
 #endif
 
@@ -1700,7 +1580,7 @@ MOC_EXTERN sbyte4 CA_MGMT_findCertDistinguishedName(ubyte *pCertificate, ubyte4 
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_KEY_GENERATION__
+ + \c \__DISABLE_DIGICERT_KEY_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1742,11 +1622,11 @@ MOC_EXTERN sbyte4 CA_MGMT_generateNakedKey(ubyte4 keyType, ubyte4 keySize, ubyte
  
  @flags
  To enable this function, the following flags must be defined:
- + \c \__ENABLE_MOCANA_PQC__
- + \c \__ENABLE_MOCANA_ECC__
+ + \c \__ENABLE_DIGICERT_PQC__
+ + \c \__ENABLE_DIGICERT_ECC__
 
  And the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_KEY_GENERATION__
+ + \c \__DISABLE_DIGICERT_KEY_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1808,7 +1688,7 @@ MOC_EXTERN sbyte4 CA_MGMT_generateNakedKeyPQC(ubyte4 keyType, ubyte4 keySizeOrCl
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_KEY_GENERATION__
+ + \c \__DISABLE_DIGICERT_KEY_GENERATION__
  
  @inc_file ca_mgmt.h
  
@@ -1832,7 +1712,7 @@ MOC_EXTERN sbyte4 CA_MGMT_freeNakedKey(ubyte **ppFreeKeyBlob);
              private RSA keyblob.
  
  @note       After you are done with the returned keyblob, be sure to free its
-             memory by calling MOC_FREE() or CA_MGMT_freeNakedKey().
+             memory by calling DIGI_FREE() or CA_MGMT_freeNakedKey().
  
  @ingroup    cert_mgmt_functions
  
@@ -1843,12 +1723,12 @@ MOC_EXTERN sbyte4 CA_MGMT_freeNakedKey(ubyte **ppFreeKeyBlob);
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  
- Additionally, \c \__DISABLE_MOCANA_KEY_GENERATION__ must \b not be defined,
+ Additionally, \c \__DISABLE_DIGICERT_KEY_GENERATION__ must \b not be defined,
  or one of the following flags must be defined:
- + \c \__ENABLE_MOCANA_PEM_CONVERSION__
- + \c \__ENABLE_MOCANA_DER_CONVERSION__
+ + \c \__ENABLE_DIGICERT_PEM_CONVERSION__
+ + \c \__ENABLE_DIGICERT_DER_CONVERSION__
  
  @inc_file ca_mgmt.h
  
@@ -1878,7 +1758,7 @@ MOC_EXTERN sbyte4 CA_MGMT_convertPKCS8KeyToKeyBlob(const ubyte* pPKCS8DER, ubyte
              Mocana SoT Platform unprotected private RSA keyblob.
  
  @note       After you are done with the returned keyblob, be sure to free its
-             memory by calling MOC_FREE() or CA_MGMT_freeNakedKey().
+             memory by calling DIGI_FREE() or CA_MGMT_freeNakedKey().
  
  @ingroup    cert_mgmt_functions
  
@@ -1887,12 +1767,12 @@ MOC_EXTERN sbyte4 CA_MGMT_convertPKCS8KeyToKeyBlob(const ubyte* pPKCS8DER, ubyte
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  
- Additionally, \c \__DISABLE_MOCANA_KEY_GENERATION__ must \b not be defined,
+ Additionally, \c \__DISABLE_DIGICERT_KEY_GENERATION__ must \b not be defined,
  or one of the following flags must be defined:
- + \c \__ENABLE_MOCANA_PEM_CONVERSION__
- + \c \__ENABLE_MOCANA_DER_CONVERSION__
+ + \c \__ENABLE_DIGICERT_PEM_CONVERSION__
+ + \c \__ENABLE_DIGICERT_DER_CONVERSION__
  
  @inc_file ca_mgmt.h
  
@@ -1925,7 +1805,7 @@ MOC_EXTERN sbyte4 CA_MGMT_convertProtectedPKCS8KeyToKeyBlob(const ubyte* pPKCS8D
              protected PKCS&nbsp;\#8 DER-encoded buffer.
  
  @note       After you are done with the returned keyblob, be sure to free its
-             memory by calling MOC_FREE() or CA_MGMT_freeNakedKey().
+             memory by calling DIGI_FREE() or CA_MGMT_freeNakedKey().
  
  @ingroup    cert_mgmt_functions
  
@@ -1934,10 +1814,10 @@ MOC_EXTERN sbyte4 CA_MGMT_convertProtectedPKCS8KeyToKeyBlob(const ubyte* pPKCS8D
  
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  
  Additionally, the following flag must be defined:
- + \c \__ENABLE_MOCANA_DER_CONVERSION__
+ + \c \__ENABLE_DIGICERT_DER_CONVERSION__
  
  @inc_file ca_mgmt.h
  
@@ -1963,7 +1843,7 @@ MOC_EXTERN sbyte4 CA_MGMT_convertProtectedPKCS8KeyToKeyBlob(const ubyte* pPKCS8D
 MOC_EXTERN sbyte4 CA_MGMT_convertKeyBlobToPKCS8Key(const ubyte *pKeyBlob, ubyte4 keyBlobLength, enum PKCS8EncryptionType encType, const ubyte *pPassword, ubyte4 passwordLen, ubyte **ppRetPKCS8DER, ubyte4 *pRetPkcs8DERLen);
 #endif
 
-#if !(defined(__DISABLE_MOCANA_KEY_GENERATION__)) && !(defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__))
+#if !(defined(__DISABLE_DIGICERT_KEY_GENERATION__)) && !(defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__))
 
 /**
  * @brief   Gets the public key from a certificate.

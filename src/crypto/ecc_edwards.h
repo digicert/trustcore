@@ -22,12 +22,12 @@
  * @details    Documentation file for curve25519 and curve448 operations.
  *
  * @flags      To enable the methods in this file one must define
- *             + \c \__ENABLE_MOCANA_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC__
  *             and at least one or more of the following flags
- *             + \c \__ENABLE_MOCANA_ECC_EDDH_25519__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
- *             + \c \__ENABLE_MOCANA_ECC_EDDH_448__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDH_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDH_448__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  *
  * @filedoc    ecc_edwards.h
  */
@@ -69,8 +69,8 @@ typedef struct
  * @param pEncodedInput Buffer holding The exising encoded point. This must be 32 bytes in length.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -88,8 +88,8 @@ MOC_EXTERN MSTATUS CURVE25519_convertEncodedToProjective(projPoint25519 *pResult
  * @param pTemps  Scratch memory space. This must have space for four finite field elements.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
  */
 MOC_EXTERN void CURVE25519_addPoints(projPoint25519 *pResult, const projPoint25519 *pP, const projPoint25519 *pQ, sbyte4 *pTemps);
 
@@ -104,8 +104,8 @@ MOC_EXTERN void CURVE25519_addPoints(projPoint25519 *pResult, const projPoint255
  *                generator will be scaled by the scalar.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -124,8 +124,8 @@ MOC_EXTERN MSTATUS CURVE25519_multiplyPoint(MOC_ECC(hwAccelDescr hwAccelCtx) pro
  * @param pInput   Pointer to the input projective form point.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -139,8 +139,8 @@ MOC_EXTERN MSTATUS CURVE25519_convertProjectiveToEncoded(ubyte *pBuffer, const p
  *          comb for the generator of the large cyclic group on curve25519.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -154,8 +154,8 @@ MOC_EXTERN MSTATUS CURVE25519_createCombMutex(void);
  *          group on curve25519. Also deletes the mutex made for thread safety.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -176,8 +176,8 @@ MOC_EXTERN MSTATUS CURVE25519_deleteCombAndMutex(void);
  * @param pU        Buffer holding the input point.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDH_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDH_25519__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -209,8 +209,8 @@ typedef struct
  * @param pEncodedInput Buffer holding The exising encoded point. This must be 57 bytes in length.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -228,8 +228,8 @@ MOC_EXTERN MSTATUS CURVE448_convertEncodedToProjective(projPoint448 *pResult, co
  * @param pTemps  Scratch memory space. This must have space for seven finite field elements.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  */
 MOC_EXTERN void CURVE448_addPoints(projPoint448 *pResult, const projPoint448 *pP, const projPoint448 *pQ, pf_unit *pTemps);
 
@@ -244,8 +244,8 @@ MOC_EXTERN void CURVE448_addPoints(projPoint448 *pResult, const projPoint448 *pP
  *                generator will be scaled by the scalar.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -264,8 +264,8 @@ MOC_EXTERN MSTATUS CURVE448_multiplyPoint(MOC_ECC(hwAccelDescr hwAccelCtx) projP
  * @param pInput   Pointer to the input projective form point.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -279,8 +279,8 @@ MOC_EXTERN MSTATUS CURVE448_convertProjectiveToEncoded(ubyte *pBuffer, const pro
  *          comb for the generator of the large cyclic group on curve448.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -294,8 +294,8 @@ MOC_EXTERN MSTATUS CURVE448_createCombMutex(void);
  *          group on curve448. Also deletes the mutex made for thread safety.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h
@@ -315,8 +315,8 @@ MOC_EXTERN MSTATUS CURVE448_deleteCombAndMutex(void);
  * @param pU        Buffer holding the input point.
  *
  * @flags      To enable this method one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_EDDH_448__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDH_448__
  *
  * @return    \c OK (0) if successful, otherwise a negative number error
  *            code from merrors.h

@@ -1,0 +1,8 @@
+# this are the commands to use to generate a ECC signed message with OpenSSL
+openssl ecparam -genkey -out ec521_key.pem -name secp521r1
+openssl req -x509 -new -days 7200 -key ec521_key.pem -out ec521_cert.pem -config ~/trunk/src/ssl/testaux/config.ssl
+openssl x509 -in ec521_cert.pem -out ec521_cert.der -outform DER
+openssl ec -inform PEM -in ec521_key.pem -outform DER -out ec521_key.der
+echo 'This is a test message to be signed' > msg.txt
+openssl cms -sign -in msg.txt -nodetach -out ec521_sign.der -outform DER -signer ec521_cert.pem -inkey ec521_key.pem
+ 

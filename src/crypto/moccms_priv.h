@@ -24,8 +24,8 @@
 @filedoc    moccms_priv.h
 */
 
-#ifndef __MOCANA_CMS_PRIV_HEADER__
-#define __MOCANA_CMS_PRIV_HEADER__
+#ifndef __DIGICERT_CMS_PRIV_HEADER__
+#define __DIGICERT_CMS_PRIV_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,4 +56,4 @@ typedef enum MOC_CMS_StreamType
 }
 #endif
 
-#endif  /* __MOCANA_CMS_PRIV_HEADER__ */
+#endif  /* __DIGICERT_CMS_PRIV_HEADER__ */

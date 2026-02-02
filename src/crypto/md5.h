@@ -19,7 +19,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_md5_priv.h"
 #endif
 
@@ -46,7 +46,7 @@ typedef struct MD5_CTX
     sbyte4  hashBufferIndex;
     ubyte   hashBuffer[64];
 
-#ifdef __ENABLE_MOCANA_MINIMUM_STACK__
+#ifdef __ENABLE_DIGICERT_MINIMUM_STACK__
     ubyte4  M[16];
 #endif
 

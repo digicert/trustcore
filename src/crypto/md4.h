@@ -20,7 +20,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_md4_priv.h"
 #endif
 
@@ -48,7 +48,7 @@ typedef struct MD4_CTX {
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_MD4__
+#ifdef __ENABLE_DIGICERT_MD4__
 
 /**
  * Allocate a new MD4 context. It is the callers responsibility to free this

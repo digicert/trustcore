@@ -30,27 +30,27 @@
 
 #include "../cap/capdecl.h"
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_aes_gcm_priv.h"
 #endif
 
-#if defined(__ENABLE_MOCANA_GCM__)
-#if !defined(__ENABLE_MOCANA_GCM_64K__) && !defined(__ENABLE_MOCANA_GCM_4K__) && !defined(__ENABLE_MOCANA_GCM_256B__)
-#define __ENABLE_MOCANA_GCM_256B__   /*default implementation*/
+#if defined(__ENABLE_DIGICERT_GCM__)
+#if !defined(__ENABLE_DIGICERT_GCM_64K__) && !defined(__ENABLE_DIGICERT_GCM_4K__) && !defined(__ENABLE_DIGICERT_GCM_256B__)
+#define __ENABLE_DIGICERT_GCM_256B__   /*default implementation*/
 #endif
 #endif
 
-#if defined(__ENABLE_MOCANA_GCM_64K__) || defined(__ENABLE_MOCANA_GCM_4K__)  || defined(__ENABLE_MOCANA_GCM_256B__)
+#if defined(__ENABLE_DIGICERT_GCM_64K__) || defined(__ENABLE_DIGICERT_GCM_4K__)  || defined(__ENABLE_DIGICERT_GCM_256B__)
 
-#ifndef __ENABLE_MOCANA_GCM__
-#define __ENABLE_MOCANA_GCM__
+#ifndef __ENABLE_DIGICERT_GCM__
+#define __ENABLE_DIGICERT_GCM__
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_GCM_64K__
+#ifdef __ENABLE_DIGICERT_GCM_64K__
 
 /* 64K -> fastest with big memory usage */
 
@@ -106,8 +106,8 @@ context creation).
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_64K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -135,8 +135,8 @@ MOC_EXTERN BulkCtx GCM_createCtx_64k(MOC_SYM(hwAccelDescr hwAccelCtx) ubyte* key
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -163,8 +163,8 @@ MOC_EXTERN MSTATUS GCM_update_nonce_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -192,8 +192,8 @@ MOC_EXTERN MSTATUS GCM_update_aad_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx p
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -224,8 +224,8 @@ MOC_EXTERN MSTATUS GCM_update_data_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx 
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -265,8 +265,8 @@ MOC_EXTERN MSTATUS GCM_final_ex_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCt
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_64K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -301,8 +301,8 @@ MOC_EXTERN MSTATUS GCM_deleteCtx_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx *c
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_64K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -347,8 +347,8 @@ MOC_EXTERN MSTATUS GCM_init_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx,
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_64K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -388,8 +388,8 @@ MOC_EXTERN MSTATUS GCM_update_encrypt_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkC
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_64K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -427,8 +427,8 @@ MOC_EXTERN MSTATUS GCM_update_decrypt_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkC
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_64K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -466,8 +466,8 @@ MOC_EXTERN MSTATUS GCM_final_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, u
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_64K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -506,9 +506,9 @@ MOC_EXTERN MSTATUS GCM_cipher_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx,
  *             error code from merrors.h.
  */
 MOC_EXTERN MSTATUS GCM_clone_64k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCtx, BulkCtx *ppNewCtx);
-#endif /* __ENABLE_MOCANA_GCM_64K__ */
+#endif /* __ENABLE_DIGICERT_GCM_64K__ */
 
-#ifdef __ENABLE_MOCANA_GCM_4K__
+#ifdef __ENABLE_DIGICERT_GCM_4K__
 
 /* 4K -> intermediate */
 typedef struct gcm_ctx_4k {
@@ -560,8 +560,8 @@ context creation).
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_4K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -589,8 +589,8 @@ MOC_EXTERN BulkCtx GCM_createCtx_4k(MOC_SYM(hwAccelDescr hwAccelCtx) ubyte* key,
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -617,8 +617,8 @@ MOC_EXTERN MSTATUS GCM_update_nonce_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx 
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -647,8 +647,8 @@ MOC_EXTERN MSTATUS GCM_update_aad_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pC
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -679,8 +679,8 @@ MOC_EXTERN MSTATUS GCM_update_data_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx p
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -721,8 +721,8 @@ MOC_EXTERN MSTATUS GCM_final_ex_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCtx
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_4K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -757,8 +757,8 @@ MOC_EXTERN MSTATUS GCM_deleteCtx_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx *ct
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_4K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -802,8 +802,8 @@ MOC_EXTERN MSTATUS GCM_init_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx,
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_4K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -843,8 +843,8 @@ MOC_EXTERN MSTATUS GCM_update_encrypt_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCt
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_4K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -882,8 +882,8 @@ MOC_EXTERN MSTATUS GCM_update_decrypt_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCt
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_4K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -921,8 +921,8 @@ MOC_EXTERN MSTATUS GCM_final_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ub
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_4K__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -961,9 +961,9 @@ MOC_EXTERN MSTATUS GCM_cipher_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx,
  */
 MOC_EXTERN MSTATUS GCM_clone_4k(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCtx, BulkCtx *ppNewCtx);
 
-#endif  /* __ENABLE_MOCANA_GCM_4K__ */
+#endif  /* __ENABLE_DIGICERT_GCM_4K__ */
 
-#ifdef __ENABLE_MOCANA_GCM_256B__
+#ifdef __ENABLE_DIGICERT_GCM_256B__
 
 /* 256b -> slowest, less memory usage */
 
@@ -1017,8 +1017,8 @@ context creation).
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_256B__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_256B__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -1046,8 +1046,8 @@ MOC_EXTERN BulkCtx GCM_createCtx_256b(MOC_SYM(hwAccelDescr hwAccelCtx) ubyte* ke
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -1074,8 +1074,8 @@ MOC_EXTERN MSTATUS GCM_update_nonce_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCt
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -1104,8 +1104,8 @@ MOC_EXTERN MSTATUS GCM_update_aad_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx 
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -1136,8 +1136,8 @@ MOC_EXTERN MSTATUS GCM_update_data_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx
  *
  * @flags      To enable this function, at least one of the following flags must be defined
  *             in moptions.h:
- *             + \c \__ENABLE_MOCANA_GCM_64K__
- *             + \c \__ENABLE_MOCANA_GCM__
+ *             + \c \__ENABLE_DIGICERT_GCM_64K__
+ *             + \c \__ENABLE_DIGICERT_GCM__
  *
  * @inc_file   gcm.h
  *
@@ -1178,8 +1178,8 @@ MOC_EXTERN MSTATUS GCM_final_ex_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pC
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_256B__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_256B__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -1214,8 +1214,8 @@ MOC_EXTERN MSTATUS GCM_deleteCtx_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx *
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_256B__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_256B__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -1259,8 +1259,8 @@ MOC_EXTERN MSTATUS GCM_init_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx,
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_256B__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_256B__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -1300,8 +1300,8 @@ MOC_EXTERN MSTATUS GCM_update_encrypt_256b(MOC_SYM(hwAccelDescr hwAccelCtx) Bulk
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_256B__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_256B__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -1339,8 +1339,8 @@ MOC_EXTERN MSTATUS GCM_update_decrypt_256b(MOC_SYM(hwAccelDescr hwAccelCtx) Bulk
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_256B__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_256B__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -1378,8 +1378,8 @@ MOC_EXTERN MSTATUS GCM_final_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, 
 @flags
 To enable this function, at least one of the following flags must be defined
 in moptions.h:
-+ \c \__ENABLE_MOCANA_GCM_256B__
-+ \c \__ENABLE_MOCANA_GCM__
++ \c \__ENABLE_DIGICERT_GCM_256B__
++ \c \__ENABLE_DIGICERT_GCM__
 
 @inc_file   gcm.h
 
@@ -1419,13 +1419,13 @@ MOC_EXTERN MSTATUS GCM_cipher_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx,
  */
 MOC_EXTERN MSTATUS GCM_clone_256b(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCtx, BulkCtx *ppNewCtx);
 
-#endif /* __ENABLE_MOCANA_GCM_256B__ */
+#endif /* __ENABLE_DIGICERT_GCM_256B__ */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* defined(__ENABLE_MOCANA_GCM_64K__) || defined(__ENABLE_MOCANA_GCM_4K__)  || defined(__ENABLE_MOCANA_GCM_256B__) */
+#endif /* defined(__ENABLE_DIGICERT_GCM_64K__) || defined(__ENABLE_DIGICERT_GCM_4K__)  || defined(__ENABLE_DIGICERT_GCM_256B__) */
 
 #endif /* __GCM_HEADER__ */
 

@@ -31,7 +31,7 @@ No flag definitions are required to use this file.
 #ifndef __NIST_RNG_CTR_EX_HEADER__
 #define __NIST_RNG_CTR_EX_HEADER__
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_nist_ctr_drbg_priv.h"
 #endif
 

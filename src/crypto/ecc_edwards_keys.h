@@ -22,12 +22,12 @@
  * @details    Documentation file for curve25519 and curve448 key related methods.
  *
  * @flags      To enable the methods in this file one must define
- *             + \c \__ENABLE_MOCANA_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC__
  *             and at least one or more of the following flags
- *             + \c \__ENABLE_MOCANA_ECC_EDDH_25519__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_25519__
- *             + \c \__ENABLE_MOCANA_ECC_EDDH_448__
- *             + \c \__ENABLE_MOCANA_ECC_EDDSA_448__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDH_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_25519__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDH_448__
+ *             + \c \__ENABLE_DIGICERT_ECC_EDDSA_448__
  *
  * @filedoc    ecc_edwards_keys.h
  */

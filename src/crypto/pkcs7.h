@@ -197,7 +197,7 @@ ubyte* pemKeyFile = FILE_PATH("key.pem");
 ubyte *pPemKey=NULL, *pKeyblob=NULL;
 ubyte4 pemKeyLen, keyblobLen;
 
-if (OK > (status = MOCANA_readFile( pemKeyFile, &pPemKey, &pemKeyLen)))
+if (OK > (status = DIGICERT_readFile( pemKeyFile, &pPemKey, &pemKeyLen)))
     goto exit;   // at exit, handle error
 
 if (OK > (status = CA_MGMT_convertKeyPEM(pPemKey, pemKeyLen, &pKeyblob, &keyblobLen)))
@@ -419,7 +419,7 @@ typedef struct PKCS7_Callbacks
 
 /*------------------------------------------------------------------*/
 /* exported routines */
-#ifdef __ENABLE_MOCANA_PKCS7__
+#ifdef __ENABLE_DIGICERT_PKCS7__
 
 /* this routine takes a pointer to the root item of a parsed PKCS7
     message (by ASN1_Parse) and returns the pointer to the first
@@ -442,7 +442,7 @@ typedef struct PKCS7_Callbacks
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -482,7 +482,7 @@ PKCS7_GetCertificates(struct ASN1_ITEM* pRootItem, CStream s,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -558,7 +558,7 @@ indicates that this function could not verify any of the signatures.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -659,7 +659,7 @@ indicates that this function could not verify any of the signatures.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -759,7 +759,7 @@ The \c EnvelopedData object is defined as follows:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -830,7 +830,7 @@ PKCS7_DecryptEnvelopedDataAux( MOC_HW(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 
 @inc_file pkcs7.h
@@ -905,7 +905,7 @@ RFC&nbsp;2315 defines the \c EnvelopedData object as follows:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -942,7 +942,7 @@ To enable this function, the following flag must be defined in moptions.h:
 @param  rngFun      Pointer to a function that generates random numbers
                       suitable for cryptographic use. To be FIPS-compliant,
                       reference RANDOM_rngFun() (defined in random.c), and make
-                      sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+                      sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
                       moptions.h
 @param  rngFunArg   Pointer to arguments that are required by the function
                       referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -990,7 +990,7 @@ PKCS7_EnvelopData( MOC_HW(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -1027,7 +1027,7 @@ To enable this function, the following flag must be defined in moptions.h:
 @param  rngFun      Pointer to a function that generates random numbers
                       suitable for cryptographic use. To be FIPS-compliant,
                       reference RANDOM_rngFun() (defined in random.c), and make
-                      sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+                      sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
                       moptions.h
 @param  rngFunArg   Pointer to arguments that are required by the function
                       referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -1112,7 +1112,7 @@ As required by RFC&nbsp;2315, you can create a \c SignedData object that does no
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -1181,7 +1181,7 @@ To enable this function, the following flag must be defined in moptions.h:
 @param  rngFun      Pointer to a function that generates random numbers
                       suitable for cryptographic use. To be FIPS-compliant,
                       reference RANDOM_rngFun() (defined in random.c), and make
-                      sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+                      sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
                       moptions.h
 @param  rngFunArg   Pointer to arguments that are required by the function
                       referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -1249,7 +1249,7 @@ RFC&nbsp;2315 defines the \c DigestedData object as follows:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -1339,7 +1339,7 @@ RFC&nbsp;2315 defines the \c SignerInfo object as follows:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -1402,7 +1402,7 @@ RFC&nbsp;2315 defines the \c SignerInfo object as follows:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -1445,7 +1445,7 @@ PKCS7_GetSignerSignatureAlgo( struct ASN1_ITEM* pSignerInfo, CStream cs, ubyte* 
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -1489,7 +1489,7 @@ PKCS7_GetSignerSignedAttributes( struct ASN1_ITEM* pSignerInfo,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
++ \c \__ENABLE_DIGICERT_PKCS7__
 
 @inc_file pkcs7.h
 
@@ -1601,7 +1601,7 @@ CMC_getPKIResponse(ASN1_ITEM* pRootItem, CStream stream, ASN1_ITEM **ppPkiRespon
 
 MOC_EXTERN MSTATUS
 CMC_getPKIData(ASN1_ITEM* pRootItem, CStream stream, ASN1_ITEM **ppPkiRequest);
-#if defined(__ENABLE_MOCANA_AIDE_SERVER__)
+#if defined(__ENABLE_DIGICERT_AIDE_SERVER__)
 MOC_EXTERN MSTATUS
 CMC_addCMCStatusInfoV2(CMCStatus status, sbyte4 referanceIds[], sbyte4 numRefIds, ubyte **ppBuffer, ubyte4 *pBufferLen);
 MOC_EXTERN MSTATUS
@@ -1732,7 +1732,7 @@ As required by RFC&nbsp;2315, you can create a \c SignedData object that does no
 @param  rngFun      Pointer to a function that generates random numbers
                       suitable for cryptographic use. To be FIPS-compliant,
                       reference RANDOM_rngFun() (defined in random.c), and make
-                      sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+                      sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
                       moptions.h
 @param  rngFunArg   Pointer to arguments that are required by the function
                       referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -1770,7 +1770,7 @@ CMC_SignData(MOC_ASYM(hwAccelDescr hwAccelCtx)
                void* rngFunArg,           /* this can be NULL for degenerate SignedData */
                ubyte** ppSigned, ubyte4* pSignedLen);
 
-#endif  /*#ifdef __ENABLE_MOCANA_PKCS7__*/
+#endif  /*#ifdef __ENABLE_DIGICERT_PKCS7__*/
 
 #ifdef __cplusplus
 }
