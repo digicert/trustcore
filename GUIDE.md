@@ -23,6 +23,33 @@
 |---------------- |-----------------------|-------------------------------------------------------|
 | **NanoROOT**    | NanoROOT SMP library  | **[→ Build & Run](samples/nanoroot/BUILD_RUN.md)**    |
 
+### 🔒 Crypto Interface Example
+| Component                    | Description                         | Guide                                                              |
+|-------------------------     |-------------------------------------|--------------------------------------------------------------------|
+| **Crypto Interface Example** | Demonstrates crypto interface usage | **[→ Build & Run](samples/crypto_interface_example/BUILD_RUN.md)** |
+
+### 🛠️ NanoSSL
+| Component       | Description           | Guide                                                 |
+|---------------- |-----------------------|-------------------------------------------------------|
+| **SSL Server**  | SSL server            | **[→ Build & Run](samples/ssl_server/BUILD_RUN.md)**  |
+| **SSL Client**  | SSL client            | **[→ Build & Run](samples/ssl_client/BUILD_RUN.md)**  |
+
+### 🧩 TAP API Example
+| Component          | Description                     | Guide                                                     |
+|--------------------|---------------------------------|-----------------------------------------------------------|
+| **TAP API Example** | Demonstrates TAP API with TPM2 | **[→ Build & Run](samples/tap_api_example/BUILD_RUN.md)** |
+
+### 📜 NanoCert SCEP
+| Component       | Description                                 | Guide                                                    |
+|-----------------|---------------------------------------------|----------------------------------------------------------|
+| **SCEP Sample** | SCEP certificate enrollment sample          | **[→ Build & Run](samples/nanocert_scep/BUILD_RUN.md)**  |
+
+### 🔐 NanoCert EST
+| Component      | Description                                  | Guide                                                   |
+|----------------|----------------------------------------------|---------------------------------------------------------|
+| **EST Sample** | EST certificate enrollment sample            | **[→ Build & Run](samples/nanocert_est/BUILD_RUN.md)**  |
+
+
 ## ⚙️ Commonly Used CMake Options
 
 | Option                            | Description                               | Default |
@@ -33,10 +60,11 @@
 
 ## 📝 Build Notes
 
+- **SSL Library:** Built by default (CM_ENABLE_SSL=ON).
 - **BUILD_SAMPLES:** Builds sample applications only for enabled modules (e.g., SSH client sample requires ENABLE_SSH_CLIENT=ON).
 - **SECURE_PATH:** When set (e.g., `-DSECURE_PATH="/path/to/directory"`), restricts file operations to the specified directory only.
 
-**Note:** For module-specific CMake options, refer to the respective `BUILD_RUN.md` (e.g., `samples/nanoroot/BUILD_RUN.md`) in the `samples/<module>` directories. These may include additional flags tailored to individual components.
+**Note:** For module-specific CMake options, refer to the respective `BUILD_RUN.md` (e.g., `samples/ssh_client/BUILD_RUN.md`) in the `samples/<module>` directories. These may include additional flags tailored to individual components.
 
 ## 🛠️ Build Steps
 

@@ -7,7 +7,7 @@ RESULTS=()
 
 wait_for_server() {
     local port=8818
-    local timeout=20
+    local timeout=30
 
     for i in $(seq 1 $timeout); do
         if ss -tln 2>/dev/null | grep -q ":$port "; then
@@ -172,7 +172,7 @@ verify_test_result()
         *)
             echo "Unknown test number: $TEST_NUM"
             ;;
-    esac 
+    esac
 
     # Return the result
     if [ "$PASS" = true ]; then
@@ -231,7 +231,7 @@ run_test()
         return
     fi
 
-    export LD_LIBRARY_PATH=lib/:crypto_lib/linux-x86_64/:${LD_LIBRARY_PATH:-}
+    export LD_LIBRARY_PATH=lib/:${LD_LIBRARY_PATH:-}
 
     # Start the server
     echo "Starting server..."
@@ -273,7 +273,7 @@ run_test()
     # Verification
     if verify_test_result $TEST_NUM $CLIENT_LOG $SERVER_LOG; then
         PASS=true
-    fi    
+    fi
 
     if [ "$PASS" = true ]; then
         echo "✅ Test $TEST_NUM PASSED"
@@ -363,7 +363,7 @@ run_openssh_test()
         return
     fi
 
-    export LD_LIBRARY_PATH=lib/:crypto_lib/linux-x86_64/:${LD_LIBRARY_PATH:-}
+    export LD_LIBRARY_PATH=lib/:${LD_LIBRARY_PATH:-}
 
     # Start the server
     echo "Starting server..."
@@ -490,47 +490,47 @@ run_openssh_test()
 }
 
 run_test 1 "Password-based authentication - MLDSA" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -B build -S ." \
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -B build -S ." \
     "./samples/bin/ssh_server" "-port 8818" \
     "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -username admin -password secure"
 
 run_test 2 "Public Key-Based Authentication - Pure MLDSA" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT_AUTH=ON -B build -S ." \
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT_AUTH=ON -B build -S ." \
     "./samples/bin/ssh_server" "-port 8818" \
     "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -username admin"
 
 run_test 3 "Public Key-Based Authentication - Composite MLDSA" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT_AUTH=ON -DENABLE_PQC_COMPOSITE=ON -B build -S ." \
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT_AUTH=ON -DENABLE_PQC_COMPOSITE=ON -B build -S ." \
     "./samples/bin/ssh_server" "-port 8818" \
     "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -username admin"
 
 run_test 4 "Certificate based authentication - RSA Client Certificate Authentication" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DDISABLE_SUITEB=ON -DDISABLE_PQC=ON -B build -S ." \
-    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca.der" \
-    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_client_cert keystore/rsa_cert.der -ssh_client_blob keystore/rsa_key.pem"
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DDISABLE_SUITEB=ON -DDISABLE_PQC=ON -DCM_ENABLE_SSL=OFF -B build -S ." \
+    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca/rsa_ca.pem" \
+    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_client_cert keystore/certs/rsa_cert.pem -ssh_client_blob keystore/keys/rsa_key.pem"
 
 run_test 5 "Certificate based authentication - RSA Server Certificate Authentication" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DDISABLE_SUITEB=ON -DDISABLE_PQC=ON -B build -S ." \
-    "./samples/bin/ssh_server" "-port 8818 -ssh_server_cert keystore/rsa_cert.der -ssh_server_blob keystore/rsa_key.pem" \
-    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_ca_cert keystore/ca.der"
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DDISABLE_SUITEB=ON -DDISABLE_PQC=ON -B build -S ." \
+    "./samples/bin/ssh_server" "-port 8818 -ssh_server_cert keystore/certs/rsa_cert.pem -ssh_server_blob keystore/keys/rsa_key.pem" \
+    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_ca_cert keystore/ca/rsa_ca.pem"
 
 run_test 6 "Certificate based authentication - RSA Server and Client Certificate Authentication" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DDISABLE_SUITEB=ON -DDISABLE_PQC=ON -B build -S ." \
-    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca.der -ssh_server_cert keystore/rsa_cert.der -ssh_server_blob keystore/rsa_key.pem" \
-    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_ca_cert keystore/ca.der -ssh_client_cert keystore/rsa_cert.der -ssh_client_blob keystore/rsa_key.pem"
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DDISABLE_SUITEB=ON -DDISABLE_PQC=ON -B build -S ." \
+    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca/rsa_ca.pem -ssh_server_cert keystore/certs/rsa_cert.pem -ssh_server_blob keystore/keys/rsa_key.pem" \
+    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_ca_cert keystore/ca/rsa_ca.pem -ssh_client_cert keystore/certs/rsa_cert.pem -ssh_client_blob keystore/keys/rsa_key.pem"
 
 run_test 7 "Certificate based authentication - ECDSA Client Certificate Authentication" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DDISABLE_PQC=ON -DDISABLE_EDDSA_25519_SUPPORT=ON -DDISABLE_ECDH_25519_SUPPORT=ON -B build -S ." \
-    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca.der" \
-    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_client_cert keystore/ecdsa_cert.der -ssh_client_blob keystore/ecdsa_key.pem"
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DDISABLE_PQC=ON -DDISABLE_EDDSA_25519_SUPPORT=ON -DDISABLE_ECDH_25519_SUPPORT=ON -B build -S ." \
+    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca/ca.der" \
+    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_client_cert keystore/certs/ecdsa_cert.der -ssh_client_blob keystore/keys/ecdsa_key.pem"
 
 run_test 8 "Certificate based authentication - ECDSA Server and Client Certificate Authentication" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DDISABLE_PQC=ON -DDISABLE_EDDSA_25519_SUPPORT=ON -DDISABLE_ECDH_25519_SUPPORT=ON -B build -S ." \
-    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca.der -ssh_server_cert keystore/ecdsa_cert.der -ssh_server_blob keystore/ecdsa_key.pem" \
-    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_ca_cert keystore/ca.der -ssh_client_cert keystore/ecdsa_cert.der -ssh_client_blob keystore/ecdsa_key.pem"
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DDISABLE_PQC=ON -DDISABLE_EDDSA_25519_SUPPORT=ON -DDISABLE_ECDH_25519_SUPPORT=ON -B build -S ." \
+    "./samples/bin/ssh_server" "-port 8818 -ssh_ca_cert keystore/ca/ca.der -ssh_server_cert keystore/certs/ecdsa_cert.der -ssh_server_blob keystore/keys/ecdsa_key.pem" \
+    "./samples/bin/ssh_client" "-ip 127.0.0.1 -port 8818 -ssh_ca_cert keystore/ca/ca.der -ssh_client_cert keystore/certs/ecdsa_cert.der -ssh_client_blob keystore/keys/ecdsa_key.pem"
 
 run_openssh_test 9 "OpenSSH tests" \
-    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -B build -S ." \
+    "cmake -DWITH_LOGGING=ON -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -B build -S ." \
     "./samples/bin/ssh_server" "-port 8818"
 
 # ====================
