@@ -27,6 +27,12 @@ include(${DEFS_FILE})
 message("\nEXTRA_DEFINITIONS = ${EXTRA_DEFINITIONS}")
 add_definitions("${EXTRA_DEFINITIONS}")
 
+# Apply coverage flags for Debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-fprofile-arcs -ftest-coverage)
+    add_link_options(-fprofile-arcs -ftest-coverage)
+endif()
+
 ########################################################################
 #
 # FLAGS

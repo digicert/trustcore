@@ -27,6 +27,12 @@ include(${DEFS_FILE})
 message("\nEXTRA_DEFINITIONS = ${EXTRA_DEFINITIONS}")
 add_definitions("${EXTRA_DEFINITIONS}")
 
+# Apply coverage flags for Debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-fprofile-arcs -ftest-coverage)
+    add_link_options(-fprofile-arcs -ftest-coverage)
+endif()
+
 ########################################################################
 #
 # FLAGS
@@ -106,6 +112,7 @@ if(BUILD_FOR_OSI)
     set(NANOTAP2_COMMON_LIB "${MSS_DIR}/lib/libnanotap2_common.so")
 
     set(COMMON_TEST_LIBS
+        "-Wl,--no-as-needed"
         "-Wl,--start-group"
         ${PLATFORM_LIB}
         ${ASN1_LIB}
@@ -142,21 +149,22 @@ else()
     set(NANOTAP2_COMMON_LIB "${MSS_DIR}/bin/libnanotap2_common.so")
 
     set(COMMON_TEST_LIBS
+        "-Wl,--no-as-needed"
         "-Wl,--start-group"
-        ${NANOTAP2_LIB}
-        ${NANOTAP2_COMMON_LIB}
-        ${SMPTPM2_LIB}
-        ${TPM2_LIB}
-        ${NANOSSL_LIB}
-        ${CERT_ENROLL_LIB}
-        ${NANOCERT_LIB}
+        ${PLATFORM_LIB}
+        ${ASN1_LIB}
+        ${COMMON_LIB}
+        ${INITIALIZE_LIB}
         ${NANOCAP_LIB}
+        ${NANOCERT_LIB}
         ${NANOCRYPTO_LIB}
         ${CRYPTOINTERFACE_LIB}
-        ${INITIALIZE_LIB}
-        ${COMMON_LIB}
-        ${ASN1_LIB}
-        ${PLATFORM_LIB}
+        ${CERT_ENROLL_LIB}
+        ${NANOSSL_LIB}
+        ${SMPTPM2_LIB}
+        ${TPM2_LIB}
+        ${NANOTAP2_LIB}
+        ${NANOTAP2_COMMON_LIB}
         cmocka
         pthread
         "-Wl,--end-group"

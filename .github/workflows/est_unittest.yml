@@ -1,0 +1,69 @@
+name: EST Unit Tests
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/est_unittest.yml
+      - projects/est/**
+      - projects/nanocert/**
+      - projects/cert_enroll/**
+      - src/est/**
+      - src/cmc/**
+      - src/common/**
+      - src/asn1/**
+      - src/crypto/**
+      - src/cert_enroll/**
+
+permissions:
+  contents: read
+env:
+  EST_PASS: ${{ secrets.EST_PASS }}
+  NEXUS_CMAKE_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/cmake/cmake-3.22.1/cmake-3.22.1-linux-x86_64.sh
+
+jobs:
+  UnitTest:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: trustcore-test
+
+      - name: Install dependencies
+        run: |
+          cd trustcore-test
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install lcov libcmocka-dev
+          lcov --version
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O -v
+          export CMAKE_DIR=/opt/cmake
+          sudo mkdir -p $CMAKE_DIR
+          sudo bash cmake-3.22.1-linux-x86_64.sh --skip-license --prefix=$CMAKE_DIR
+          export PATH=$CMAKE_DIR/bin:$PATH
+          cmake --version
+
+      - name: Build and Run Unit Tests
+        run: |
+          cd trustcore-test
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_EST=ON -DENABLE_TPM2=ON -DENABLE_EST_UNITTEST=ON -B build -S .
+          cmake --build build
+          ./projects/est_testunit/run.sh
+
+      - name: Baseline Coverage
+        run: |
+          cd trustcore-test
+          lcov --no-external --capture --initial --directory . --output-file /tmp/est_base.info
+
+      - name: Capture Coverage
+        run: |
+          cd trustcore-test
+          lcov --no-external --capture --directory . --output-file /tmp/est_test.info
+          lcov --ignore-errors inconsistent --add-tracefile /tmp/est_base.info --add-tracefile /tmp/est_test.info --output-file /tmp/est_total.info
+
+      - name: Print Coverage Summary
+        run: |
+          cd trustcore-test
+          echo "Coverage Summary:"
+          lcov --list /tmp/est_total.info
