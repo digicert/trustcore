@@ -22,7 +22,7 @@
 #include "../common/mstdlib.h"
 #include "../common/datetime.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_DATE_TIME_UTILITY__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_DATE_TIME_UTILITY__))
 
 /*-------------------------------------------------------------------------*/
 
@@ -203,7 +203,7 @@ DATETIME_convertFromValidityString2(const ubyte *pTimeString, ubyte4 timeStrLen,
     ubyte4 year = 0;
 
     /* initialize */
-    MOC_MEMSET((ubyte*)pTime, 0x00, sizeof(TimeDate));
+    DIGI_MEMSET((ubyte*)pTime, 0x00, sizeof(TimeDate));
 
     /* year */
     if (timeStrLen == 13)
@@ -265,8 +265,8 @@ extern MSTATUS
 DATETIME_convertFromValidityString(const sbyte *pTimeString, TimeDate *pTime)
 {
     ubyte4 timeStrLen;
-    timeStrLen = MOC_STRLEN(pTimeString);
+    timeStrLen = DIGI_STRLEN(pTimeString);
     return DATETIME_convertFromValidityString2((ubyte *)pTimeString, timeStrLen, pTime);
 }
 
-#endif /* __DISABLE_MOCANA_COMMON_DATE_TIME_UTILITY__ */
+#endif /* __DISABLE_DIGICERT_COMMON_DATE_TIME_UTILITY__ */

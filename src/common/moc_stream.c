@@ -67,7 +67,7 @@ moc_stream_addToBuffer(streamDescr *pStreamDescr,
 
         if (0 < count)
         {
-            if (OK > (status = MOC_MEMCPY(pStreamDescr->pBuffer + head, pBuffer, count)))
+            if (OK > (status = DIGI_MEMCPY(pStreamDescr->pBuffer + head, pBuffer, count)))
                 goto exit;
 
             numBytesWritten += count;
@@ -89,7 +89,7 @@ moc_stream_addToBuffer(streamDescr *pStreamDescr,
 
         count = numBytes;
 
-        if (OK > (status = MOC_MEMCPY(pStreamDescr->pBuffer + head, pBuffer, count)))
+        if (OK > (status = DIGI_MEMCPY(pStreamDescr->pBuffer + head, pBuffer, count)))
             goto exit;
 
         numBytesWritten += count;
@@ -111,7 +111,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_STREAM_open(streamDescr **ppRetStreamDescr,
+DIGI_STREAM_open(streamDescr **ppRetStreamDescr,
                 void* outStream, ubyte4 buflen,
                 funcStreamWriteData pFuncWriteData)
 {
@@ -130,7 +130,7 @@ MOC_STREAM_open(streamDescr **ppRetStreamDescr,
         goto exit;
     }
 
-    status = MOC_MEMSET((ubyte *)pStreamDescr, 0x00, sizeof(streamDescr));
+    status = DIGI_MEMSET((ubyte *)pStreamDescr, 0x00, sizeof(streamDescr));
 
     pStreamDescr->outStream       = outStream;
     pStreamDescr->buflen          = buflen;
@@ -149,7 +149,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_STREAM_close(streamDescr **ppFreeStreamDescr)
+DIGI_STREAM_close(streamDescr **ppFreeStreamDescr)
 {
     MSTATUS status = OK;
 
@@ -175,7 +175,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_STREAM_flush(streamDescr *pStreamDescr,
+DIGI_STREAM_flush(streamDescr *pStreamDescr,
                  ubyte4 *pRetNumBytesPending, intBoolean *pFlushComplete)
 {
 /*
@@ -265,7 +265,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_STREAM_write(streamDescr *pStreamDescr,
+DIGI_STREAM_write(streamDescr *pStreamDescr,
                  ubyte *pBuffer, ubyte4 numBytesToWrite,
                  ubyte4 *pRetNumBytesWritten)
 {
@@ -281,7 +281,7 @@ MOC_STREAM_write(streamDescr *pStreamDescr,
         goto exit;
     }
 
-    if (OK > (status = MOC_STREAM_flush(pStreamDescr, &bytesVacant, &flushComplete)))
+    if (OK > (status = DIGI_STREAM_flush(pStreamDescr, &bytesVacant, &flushComplete)))
         goto exit;
 
     if (FALSE == flushComplete)

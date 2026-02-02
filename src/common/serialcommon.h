@@ -16,8 +16,8 @@
 
 #include "../crypto/mocasym.h"
 
-#ifndef __MOCANA_SERIALIZE_HEADER__
-#define __MOCANA_SERIALIZE_HEADER__
+#ifndef __DIGICERT_SERIALIZE_HEADER__
+#define __DIGICERT_SERIALIZE_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,4 +74,4 @@ MOC_EXTERN MSTATUS SerializeCommon (
 }
 #endif
 
-#endif /* __MOCANA_SERIALIZE_HEADER__ */
+#endif /* __DIGICERT_SERIALIZE_HEADER__ */

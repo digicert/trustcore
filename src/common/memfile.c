@@ -24,7 +24,7 @@
 #include "../common/absstream.h"
 #include "../common/memfile.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_MEM_FS_ABS_LAYER__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_MEM_FS_ABS_LAYER__))
 
 /*------------------------------------------------------------------*/
 
@@ -207,7 +207,7 @@ static sbyte4 MF_read(void* buffer, sbyte4 size, sbyte4 count, AbsStream as)
             numRead = count;
         }
 
-        MOC_MEMCPY( dest, pMF->buff + pMF->pos, numRead*size);
+        DIGI_MEMCPY( dest, pMF->buff + pMF->pos, numRead*size);
         pMF->pos += numRead*size;
     }
 
@@ -261,4 +261,4 @@ const AbsStreamFuncs gMemFileAbsStreamFuncs =
     MF_stopaccess
 };
 
-#endif /* (!defined(__DISABLE_MOCANA_COMMON_MEM_FS_ABS_LAYER__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_COMMON_MEM_FS_ABS_LAYER__)) */

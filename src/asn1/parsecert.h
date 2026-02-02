@@ -29,11 +29,11 @@
 #ifndef __PARSECERT_HEADER__
 #define __PARSECERT_HEADER__
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 #include "../crypto/cvcert.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 #include "../crypto_interface/crypto_interface_qs.h"
 #endif
 
@@ -58,10 +58,10 @@ enum
 };
 
 struct RSAKey;
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 struct ECCKey;
 #endif
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
 struct DSAKey;
 #endif
 
@@ -86,7 +86,7 @@ X509_decryptRSASignatureBuffer(MOC_RSA(hwAccelDescr hwAccelCtx)
                                ubyte hash[64 /*CERT_MAXDIGESTSIZE*/], sbyte4 *pHashLen,
                                ubyte4* rsaAlgoIdSubType);
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
 MOC_EXTERN MSTATUS
 X509_decryptRSASignatureBufferEx(MOC_RSA(hwAccelDescr hwAccelCtx)
                                struct RSAKey* pRSAKey,
@@ -100,7 +100,7 @@ X509_extractRSAKey(MOC_RSA(hwAccelDescr hwAccelCtx)
                    struct ASN1_ITEM* pSubjectKeyInfo, CStream s,
                    struct AsymmetricKey* pKey);
 
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
 MOC_EXTERN MSTATUS
 X509_verifyDSASignature(MOC_DSA(hwAccelDescr hwAccelCtx)
                         struct ASN1_ITEM* pSequenceSignature, CStream s,
@@ -112,15 +112,15 @@ X509_extractDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx)
                    struct AsymmetricKey* pKey);
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
 MOC_EXTERN MSTATUS
 X509_verifyECDSASignatureEx( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSequenceSignature, CStream s,
                           struct ECCKey* pECCKey,
                           sbyte4 computedHashLen,
                           const ubyte computedHash[/*computedHashLen*/],
                           ubyte4 keyType);
-#endif /*__ENABLE_MOCANA_CRYPTO_INTERFACE__*/
+#endif /*__ENABLE_DIGICERT_CRYPTO_INTERFACE__*/
 
 MOC_EXTERN MSTATUS
 X509_verifyECDSASignature( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSequenceSignature, CStream s,
@@ -128,7 +128,7 @@ X509_verifyECDSASignature( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pS
                           sbyte4 computedHashLen,
                           const ubyte computedHash[/*computedHashLen*/]);
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 MOC_EXTERN MSTATUS
 X509_verifyQsSignature(MOC_ASYM(hwAccelDescr hwAccelCtx)
                        ASN1_ITEMPTR pBitString,
@@ -142,7 +142,7 @@ MOC_EXTERN MSTATUS
 X509_extractECCKey( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSubjectKeyInfo, CStream s,
                    struct AsymmetricKey* pKey);
     
-#if defined(__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__)
+#if defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__) || defined(__ENABLE_DIGICERT_ECC_EDDSA_448__)
 MOC_EXTERN MSTATUS
 X509_extractECCEdKey( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSubjectKeyInfo, CStream s,
                      struct AsymmetricKey* pKey);
@@ -150,7 +150,7 @@ X509_extractECCEdKey( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSubjec
 
 MOC_EXTERN MSTATUS
 X509_extractHybridKey( MOC_ASYM(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSubjectKeyInfo, CStream s, struct AsymmetricKey* pKey);
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
 MOC_EXTERN MSTATUS
 X509_setKeyFromSubjectPublicKeyInfo(MOC_ASYM(hwAccelDescr hwAccelCtx)
@@ -171,7 +171,7 @@ X509_compSubjectAltNamesEx( struct ASN1_ITEM* pCertificate, CStream s,
                             const struct CNMatchInfo* namesToMatch,
                             ubyte4 tagMask);
 
-#if (defined(__ENABLE_MOCANA_MULTIPLE_COMMON_NAMES__))
+#if (defined(__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__))
 MOC_EXTERN MSTATUS
 X509_compSubjectCommonNameEx(struct ASN1_ITEM* pCertificate, CStream s,
                              const struct CNMatchInfo* namesToMatch);
@@ -401,7 +401,7 @@ X509_getRSASignatureAlgo( struct ASN1_ITEM* pCertificate, CStream certStream,
 MOC_EXTERN MSTATUS
 X509_isRootCertificate(struct ASN1_ITEM* pCertificate, CStream s);
 
-#ifdef __ENABLE_MOCANA_EXTRACT_CERT_BLOB__
+#ifdef __ENABLE_DIGICERT_EXTRACT_CERT_BLOB__
 MOC_EXTERN MSTATUS
 X509_extractDistinguishedNamesBlob(struct ASN1_ITEM* pCertificate,
                                    CStream s,
@@ -506,7 +506,7 @@ X509_printCertificateOrCsr(ubyte *pCertOrCsr, ubyte4 certOrCsrLen);
 MOC_EXTERN MSTATUS
 X509_decodeRS(ubyte *pSer, ubyte4 serLen, ubyte *pR, ubyte *pS, ubyte4 elemLen);
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 MOC_EXTERN MSTATUS
 PARSE_CV_CERT_checkCertificateIssuer(CV_CERT *pCertificate,
                                      CV_CERT *pParentCertificate);

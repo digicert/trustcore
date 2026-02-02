@@ -31,7 +31,7 @@
 #include "../asn1/parseasn1.h"
 #include "../crypto/crypto.h"
 
-#if (!defined(__DISABLE_MOCANA_ASN1_GET_DIGEST_FLAG__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_GET_DIGEST_FLAG__))
 
 extern MSTATUS ASN1_getDigestFlagFromOid (
   const ubyte *pDigestOid,
@@ -275,7 +275,7 @@ extern MSTATUS ASN1_getDigestAlgIdFromFlag (
   if (bufferSize < algIdLen)
     goto exit;
 
-  status = MOC_MEMCPY (
+  status = DIGI_MEMCPY (
     (void *)pDigestAlgId, (void *)pAlgId, algIdLen);
   if (OK != status)
     goto exit;
@@ -293,4 +293,4 @@ exit:
   return (status);
 }
 
-#endif /* (!defined(__DISABLE_MOCANA_ASN1_GET_DIGEST_FLAG__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_ASN1_GET_DIGEST_FLAG__)) */

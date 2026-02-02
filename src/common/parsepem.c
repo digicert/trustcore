@@ -81,7 +81,7 @@ MOC_EXTERN MSTATUS BASE64_decodePemMessageAlloc (
   /* The Base64 decoder cannot handle new line characters, we'll need to copy the
    * Base64 characters into a continuous buffer.
    */
-  status = MOC_MALLOC ((void **)&pTemp, inputPemLen);
+  status = DIGI_MALLOC ((void **)&pTemp, inputPemLen);
   if (OK != status)
     goto exit;
 
@@ -107,7 +107,7 @@ MOC_EXTERN MSTATUS BASE64_decodePemMessageAlloc (
         if (count != pHeaderLen[index])
           continue;
 
-        status = MOC_MEMCMP (
+        status = DIGI_MEMCMP (
           (void *)pInputPem, (void *)(ppHeaders[index]), pHeaderLen[index],
           &cmpResult);
         if (OK != status)
@@ -124,7 +124,7 @@ MOC_EXTERN MSTATUS BASE64_decodePemMessageAlloc (
     {
       /* Copy this line into the temp buffer.
        */
-      status = MOC_MEMCPY (
+      status = DIGI_MEMCPY (
         (void *)(pTemp + newCount), (void *)(pInputPem + offset), count);
       if (OK != status)
         goto exit;
@@ -150,7 +150,7 @@ exit:
 
   if (NULL != pTemp)
   {
-    MOC_FREE ((void **)&pTemp);
+    DIGI_FREE ((void **)&pTemp);
   }
 
   return (status);

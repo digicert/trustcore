@@ -71,13 +71,13 @@ extern "C" {
 
 /**
  * @ingroup common_nanotap_definitions
- * @brief Enum containing Mocana defined error codes and readable names for each error
- * @details Enum containing Mocana defined error codes and readable names for each error
+ * @brief Enum containing Digicert defined error codes and readable names for each error
+ * @details Enum containing Digicert defined error codes and readable names for each error
  * @note Due to the large number of error codes, they are not listed here.  Please refer to the header file merrors.h for the complete list of error codes.
  */
 typedef struct
 {
-    /*! @brief Mocana defined error codes. 0 = OK; Negative value = error */
+    /*! @brief Digicert defined error codes. 0 = OK; Negative value = error */
     MSTATUS     errorCode;
     /*! @brief Meaningful representation of error code, which should be used in code for clarity */
     ubyte*      pErrorMesg;
@@ -2057,6 +2057,13 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_FIPS_FIRST_USE,                               -16532)
     ERROR_DEF       (ERR_FIPS_MUTEX_LOCK_FAILED,                       -16533)
     ERROR_DEF       (ERR_FIPS_EDDH_FAILED,                             -16534)
+    ERROR_DEF       (ERR_FIPS_MLKEM_KAT_FAILED,                        -16535)
+    ERROR_DEF       (ERR_FIPS_MLDSA_KAT_FAILED,                        -16536)
+    ERROR_DEF       (ERR_FIPS_SLHDSA_KAT_FAILED,                       -16537)
+    ERROR_DEF       (ERR_FIPS_MLDSA_SIGN_VERIFY_FAIL,                  -16538)
+    ERROR_DEF       (ERR_FIPS_SLHDSA_SIGN_VERIFY_FAIL,                 -16539)
+    ERROR_DEF       (ERR_FIPS_SLHDSA_FAIL,                             -16540)
+    ERROR_DEF       (ERR_FIPS_MLKEM_ENCAPS_DECAPS_FAIL,                -16541)
 
 
     ERROR_DEF       (ERR_LDAP_RES_CODE,                                -16600)
@@ -2276,8 +2283,9 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_CERT_ENROLL_INVALID_NAME_ATTR,                -17511)
     ERROR_DEF       (ERR_CERT_ENROLL_INVALID_COMMON_NAME,              -17512)
     ERROR_DEF       (ERR_CERT_ENROLL_INVALID_SERIAL_NUMBER,            -17513)
+    ERROR_DEF       (ERR_CERT_ENROLL_NO_DEFAULT,                       -17514)
 
-#ifdef __ENABLE_MOCANA_PKCS11_CRYPTO__
+#ifdef __ENABLE_DIGICERT_PKCS11_CRYPTO__
 #include "../crypto/pkcs11e.h"          /* PKCS11 reserves -17500 to -18012 */
 #endif
 
@@ -2677,7 +2685,7 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_MIME_FORMAT_INVALID,                           -24005)
     ERROR_DEF       (ERR_MIME_CONTENT_LENGTH_MISMATCH,                  -24006)
 
-    /* Mocana Application error code */
+    /* Digicert Application error code */
     ERROR_DEF       (ERR_APP,                                           -50000)
     ERROR_DEF       (ERR_APP_VOIP,                                      -51000)
     ERROR_DEF       (ERR_APP_VOIP_SESSION_CANCELLED,                    -51001)
@@ -3130,7 +3138,7 @@ MOC_EXTERN const ubyte *MERROR_lookUpErrorCode(MSTATUS errorCode);
  * To enable this macro, all the following conditions must be met:
  *   1. The following flags \b must be defined:
  *     + \c __ENABLE_LOOKUP_TABLE__
- *     + \c __ENABLE_MOCANA_DEBUG_CONSOLE__
+ *     + \c __ENABLE_DIGICERT_DEBUG_CONSOLE__
  *     .
  *   2. The following flags must \b not be defined:
  *     + \c __ERROR_LOOKUP_TABLE__
@@ -3140,7 +3148,7 @@ MOC_EXTERN const ubyte *MERROR_lookUpErrorCode(MSTATUS errorCode);
  * @note     The debug console must be set up and initialized for any error
  *           output to display properly. If you are not sure how to use the
  *           full debug console and just want errors to print to standard out
- *           instead, ensure the \c __MOCANA_DUMP_CONSOLE_TO_STDOUT__ build
+ *           instead, ensure the \c __DIGICERT_DUMP_CONSOLE_TO_STDOUT__ build
  *           flag is defined in moptions.h.
  *
  * @note     For additional information on how flag usage was derived please see

@@ -27,6 +27,7 @@
 #define MAX_DER_STORAGE (5) /* 5 is useful to store INTEGER */
 
 struct DER_ITEM;
+struct vlong;
 
 typedef struct DER_ITEM *DER_ITEMPTR;
 
@@ -41,7 +42,7 @@ MOC_EXTERN MSTATUS DER_AddItem( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
                           const ubyte* value, DER_ITEMPTR* ppNewDERItem);
 /* this version stores the data in the tree item (max MAX_DER_STORAGE bytes) */
 MOC_EXTERN MSTATUS DER_AddItemCopyData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
-                                    const ubyte value[MAX_DER_STORAGE], DER_ITEMPTR* ppNewDERItem);
+                                    const ubyte *pValue, DER_ITEMPTR* ppNewDERItem);
 /* this version transfers data ownership to the tree item */
 MOC_EXTERN MSTATUS DER_AddItemOwnData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
                                     ubyte** value, DER_ITEMPTR* ppNewDERItem);
@@ -76,7 +77,7 @@ MOC_EXTERN MSTATUS DER_AddIntegerEx( DER_ITEMPTR pParent, ubyte4 value,
  */
 MOC_EXTERN MSTATUS DER_AddVlongInteger (
   DER_ITEMPTR pParent,
-  struct vlong *pValue,
+  vlong *pValue,
   DER_ITEMPTR* ppNewDERItem
   );
 

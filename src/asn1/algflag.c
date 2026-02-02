@@ -32,7 +32,7 @@
 #include "../crypto/crypto.h"
 #include "../crypto/ca_mgmt.h"
 
-#if (!defined(__DISABLE_MOCANA_ASN1_GET_FLAG_FROM_ALG_ID_OID__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_GET_FLAG_FROM_ALG_ID_OID__))
 
 extern MSTATUS ASN1_getPublicKeyAlgFlagFromOid (
   ubyte *pAlgOid,
@@ -116,4 +116,4 @@ exit:
   return (status);
 }
 
-#endif /* (!defined(__DISABLE_MOCANA_ASN1_GET_FLAG_FROM_ALG_ID_OID__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_ASN1_GET_FLAG_FROM_ALG_ID_OID__)) */

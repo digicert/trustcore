@@ -27,7 +27,7 @@
 #include "../common/vlong.h"
 #include "../common/jacobi.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_JACOBI__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_JACOBI__))
 
 /*------------------------------------------------------------------*/
 
@@ -139,4 +139,4 @@ exit:
 
 } /* JACOBI_jacobiSymbol */
 
-#endif /* __DISABLE_MOCANA_COMMON_JACOBI__ */
+#endif /* __DISABLE_DIGICERT_COMMON_JACOBI__ */

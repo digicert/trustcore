@@ -44,7 +44,7 @@
 
 #include "../common/moptions.h"
 
-#ifndef __DISABLE_MOCANA_CERTIFICATE_PARSING__
+#ifndef __DISABLE_DIGICERT_CERTIFICATE_PARSING__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -193,7 +193,7 @@ getItem(CStream as, ASN1_ITEM **newItem, intBoolean isStrictTest)
         goto exit;
     }
 
-    MOC_MEMSET((ubyte*)item, 0, sizeof(ASN1_ITEM));
+    DIGI_MEMSET((ubyte*)item, 0, sizeof(ASN1_ITEM));
 
     item->indefinite = FALSE;
 
@@ -429,7 +429,7 @@ zeroLengthOK(const ASN1_ITEM *item)
         return FALSE;
     }
 
-#ifndef __DISABLE_MOCANA_ASN1_ZERO_LENGTH_ALLOWED__
+#ifndef __DISABLE_DIGICERT_ASN1_ZERO_LENGTH_ALLOWED__
     if((item->id & CLASS_MASK) == CONTEXT)
     {
         return(TRUE);
@@ -454,7 +454,7 @@ zeroLengthOK(const ASN1_ITEM *item)
         return(TRUE);
     }
 
-#ifndef __DISABLE_MOCANA_ASN1_ZERO_LENGTH_ALLOWED__
+#ifndef __DISABLE_DIGICERT_ASN1_ZERO_LENGTH_ALLOWED__
     /* An integer value of zero can have zero length. Though this is
        technically not allowed according to the ASN1 spec, there are
        CSRs in the wild that exhibit this quirk */
@@ -481,7 +481,7 @@ zeroLengthOK(const ASN1_ITEM *item)
     /* Everything after this point requires input from the user to say that
        zero-length data is OK (usually it's not, so we flag it as a
        problem) */
-#ifdef __DISABLE_MOCANA_ASN1_ZERO_LENGTH_ALLOWED__
+#ifdef __DISABLE_DIGICERT_ASN1_ZERO_LENGTH_ALLOWED__
         return(FALSE);
 #else
     /* SEQUENCE and MOC_SET can be zero if there are absent optional/default
@@ -570,7 +570,7 @@ ASN1_ParseASN1object(CStream as, ASN1_ITEM *item, intBoolean* pIsPrimitive)
 
         case INTEGER:
         case ENUMERATED:
-#ifndef __DISABLE_MOCANA_ASN1_ZERO_LENGTH_ALLOWED__
+#ifndef __DISABLE_DIGICERT_ASN1_ZERO_LENGTH_ALLOWED__
             if(item->length > 4 || item->length == 0)
 #else
             if(item->length > 4)
@@ -1399,7 +1399,7 @@ ASN1_GetData( const ASN1_ParseState* pState, CStream cs, ubyte4 streamSize,
 
             if (src && dest && copySize)
             {
-                MOC_MEMCPY( dest, src + start, (/*FSL*/sbyte4)copySize);
+                DIGI_MEMCPY( dest, src + start, (/*FSL*/sbyte4)copySize);
             }
             /* update the state */
             (*pOffset) = start + copySize;
@@ -1485,8 +1485,8 @@ ASN1_CompareItems( ASN1_ITEM* pItem1, CStream s1, ASN1_ITEM* pItem2, CStream s2)
     item1Data = (const ubyte*) CS_memaccess( s1, pItem1->dataOffset, (/*FSL*/sbyte4)pItem1->length);
     item2Data = (const ubyte*) CS_memaccess( s2, pItem2->dataOffset, (/*FSL*/sbyte4)pItem2->length);
 
-    /* MOC_CTIME_MATCH will check for null pointer */
-    status = MOC_CTIME_MATCH( item1Data, item2Data, pItem1->length, &cmpRes);
+    /* DIGI_CTIME_MATCH will check for null pointer */
+    status = DIGI_CTIME_MATCH( item1Data, item2Data, pItem1->length, &cmpRes);
 
     if (item1Data)
     {
@@ -2016,4 +2016,4 @@ exit:
     return status;
 }
 
-#endif /* __DISABLE_MOCANA_CERTIFICATE_PARSING__ */
+#endif /* __DISABLE_DIGICERT_CERTIFICATE_PARSING__ */

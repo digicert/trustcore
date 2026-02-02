@@ -18,7 +18,7 @@
 #define __VLONG_PRIV_HEADER__
 
 /* Build dependent macros to use the fastest available implementation */
-#if !defined( __ALTIVEC__) && !defined(__DISABLE_MOCANA_KARATSUBA__) && !defined(__ENABLE_MOCANA_BI_MUL_ASM__)
+#if !defined( __ALTIVEC__) && !defined(__DISABLE_DIGICERT_KARATSUBA__) && !defined(__ENABLE_DIGICERT_BI_MUL_ASM__)
 #define VLONG_FAST_MULT   fasterUnsignedMultiplyVlongs
 #define VLONG_FAST_SQR     fasterUnsignedSqrVlong
 #else

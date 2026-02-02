@@ -23,7 +23,7 @@
 #include "../common/mrtos.h"
 #include "../common/tree.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_TREE_ABS_LAYER__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_TREE_ABS_LAYER__))
 
 /*------------------------------------------------------------------*/
 
@@ -241,4 +241,4 @@ TREE_VisitTree(TreeItem* start, VisitTreeFunc visitTreeFunc, void* arg)
     return NULL;
 }
 
-#endif /* __DISABLE_MOCANA_COMMON_TREE_ABS_LAYER__ */
+#endif /* __DISABLE_DIGICERT_COMMON_TREE_ABS_LAYER__ */

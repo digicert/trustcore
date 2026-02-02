@@ -23,7 +23,7 @@ MOC_EXTERN MSTATUS RNG_SEED_freeDepotState(void);
 
 /* Zeroize the bit depot, This is required to meet FIPS 140-3 requirements. */
 /* Internally called from fips.c interface function. */
-#ifdef __ENABLE_MOCANA_FIPS_MODULE__
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
 MOC_EXTERN MSTATUS RNG_SEED_zeroizeDepotBits(void);
 #endif
 
@@ -46,8 +46,8 @@ MOC_EXTERN MSTATUS RNG_SEED_zeroizeDepotBits(void);
  *
  * @par Flags
  * To enable this function, the following flags must \b not be defined:
- *  + \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
- *  + \c \__DISABLE_MOCANA_RAND_SEED__
+ *  + \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
+ *  + \c \__DISABLE_DIGICERT_RAND_SEED__
  *  .
  */
 MOC_EXTERN MSTATUS RNG_SEED_extractInitialDepotBits(ubyte *pDstCloneEntropyBytes, ubyte4 numEntropyBytes);
@@ -93,11 +93,11 @@ MOC_EXTERN MSTATUS RNG_SEED_extractInitialDepotBits(ubyte *pDstCloneEntropyBytes
  *
  * @par Flags
  * To enable this function, the following flags must \b not be defined:
- *  + \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
- *  + \c \__DISABLE_MOCANA_RAND_SEED__
+ *  + \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
+ *  + \c \__DISABLE_DIGICERT_RAND_SEED__
  *  .
  *
- * @note  If the \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__ flag is defined,
+ * @note  If the \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__ flag is defined,
  *        this function acts as a wrapper to RNG_SEED_extractInitialDepotBits.
  */
 MOC_EXTERN MSTATUS RNG_SEED_extractDepotBits(ubyte *pDstCloneEntropyBytes, ubyte4 numEntropyBytes);

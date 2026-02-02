@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-#if !defined(__DISABLE_MOCANA_BARRETT__) && !defined(__DISABLE_MOCANA_VLONG_MATH__)
+#if !defined(__DISABLE_DIGICERT_BARRETT__) && !defined(__DISABLE_DIGICERT_VLONG_MATH__)
 
 static MSTATUS VLONG_barrettReduction ( 
   vlong* pResult, 
@@ -134,7 +134,7 @@ static MSTATUS VLONG_barrettReduction (
   /* r2 = (q3 * m) mod b^(k+1) <=> multiply and keep only the k+1 least significant units */
   /* reuse q1. */
 
-#ifdef __ENABLE_MOCANA_BI_MUL_ASM__
+#ifdef __ENABLE_DIGICERT_BI_MUL_ASM__
   if (OK > (status = fastUnsignedMultiplyVlongs(q1, q2, pM, 2*(k + 1))))
 #else
   if (OK > (status = fastUnsignedMultiplyVlongs(q1, q2, pM, k + 1)))
@@ -301,10 +301,10 @@ exit:
   VLONG_freeVlong(&S, ppVlongQueue);
   VLONG_freeVlong(&mu, ppVlongQueue);
 
-  MOCANA_YIELD_PROCESSOR();
+  DIGICERT_YIELD_PROCESSOR();
 
   return status;
 
 } /* VLONG_modexp_barrett */
 
-#endif /* ifndef __DISABLE_MOCANA_BARRETT__ */
+#endif /* ifndef __DISABLE_DIGICERT_BARRETT__ */

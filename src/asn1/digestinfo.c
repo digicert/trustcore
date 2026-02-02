@@ -32,7 +32,7 @@
 #include "../asn1/mocasn1.h"
 #include "../crypto/crypto.h"
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DIGEST_INFO__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DIGEST_INFO__))
 
 MOC_EXTERN MSTATUS ASN1_buildDigestInfoAlloc (
   const ubyte *pDigest,
@@ -96,7 +96,7 @@ MOC_EXTERN MSTATUS ASN1_buildDigestInfoAlloc (
   if (ERR_BUFFER_TOO_SMALL != status)
     goto exit;
 
-  status = MOC_MALLOC ((void **)&pNewBuf, encodingLen);
+  status = DIGI_MALLOC ((void **)&pNewBuf, encodingLen);
   if (OK != status)
     goto exit;
 
@@ -116,7 +116,7 @@ exit:
   }
   if (NULL != pNewBuf)
   {
-    MOC_FREE ((void **)&pNewBuf);
+    DIGI_FREE ((void **)&pNewBuf);
   }
 
   return (status);
@@ -181,4 +181,4 @@ exit:
   return (status);
 }
 
-#endif /* (!defined(__DISABLE_MOCANA_ASN1_DIGEST_INFO__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_ASN1_DIGEST_INFO__)) */

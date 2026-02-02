@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_DEBUG_MEMORY__
+#ifdef __ENABLE_DIGICERT_DEBUG_MEMORY__
 #define DEBUG_RELABEL_MEMORY(PTR)       dbg_relabel_memory(PTR,(ubyte *)__FILE__,__LINE__)
 #define DEBUG_CHECK_MEMORY(PTR)         dbg_check_memory  (PTR,(ubyte *)__FILE__,__LINE__)
 #else

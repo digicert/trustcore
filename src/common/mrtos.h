@@ -169,7 +169,7 @@ typedef void*                       RTOS_THREAD;
 #endif
 typedef void*                       RTOS_TIMEVAL;
 typedef void*                       RTOS_RWLOCK;
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 #define MAX_MUTEX_WAIT_RETRY_COUNT  3
 typedef void*                       RTOS_GLOBAL_MUTEX;
 #endif
@@ -212,7 +212,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_mutexRelease           LINUX_mutexRelease
 #define RTOS_mutexFree              LINUX_mutexFree
 
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 #define RTOS_globalMutexCreate      LINUX_globalMutexCreate
 #define RTOS_globalMutexWait        LINUX_globalMutexWait
 #define RTOS_globalMutexRelease     LINUX_globalMutexRelease
@@ -238,7 +238,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_processExecuteWithArg  LINUX_processExecuteWithArg
 #endif
 #if defined(__MOC_PLATFORM_MODULE__)
-#define RTOS_deltaMS                MOC_deltaMS
+#define RTOS_deltaMS                DIGI_deltaMS
 #else
 #define RTOS_deltaMS                LINUX_deltaMS
 #endif
@@ -251,6 +251,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_destroyThread          LINUX_destroyThread
 #define RTOS_exitThread             LINUX_exitThread
 #define RTOS_joinThread             LINUX_joinThread
+#define RTOS_killThread             LINUX_killThread
 #define RTOS_currentThreadId        LINUX_currentThreadId
 #define RTOS_sameThreadId           LINUX_sameThreadId
 #define RTOS_timeGMT                LINUX_timeGMT
@@ -288,8 +289,8 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 
 #ifdef __KERNEL__
 #if defined(__MOC_PLATFORM_MODULE__)
-#define RTOS_malloc  				MOC_malloc
-#define RTOS_free    				MOC_ffree
+#define RTOS_malloc  				DIGI_malloc
+#define RTOS_free    				DIGI_ffree
 #else
 #define RTOS_malloc                 LINUX_malloc
 #define RTOS_free                   LINUX_free
@@ -326,7 +327,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_mutexWait              WIN32_mutexWait
 #define RTOS_mutexRelease           WIN32_mutexRelease
 #define RTOS_mutexFree              WIN32_mutexFree
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 #define RTOS_globalMutexCreate      WIN32_globalMutexCreate
 #define RTOS_globalMutexWait        WIN32_globalMutexWait
 #define RTOS_globalMutexRelease     WIN32_globalMutexRelease
@@ -465,7 +466,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_mutexRelease           OSX_mutexRelease
 #define RTOS_mutexFree              OSX_mutexFree
 
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 #define RTOS_globalMutexCreate      OSX_globalMutexCreate
 #define RTOS_globalMutexWait        OSX_globalMutexWait
 #define RTOS_globalMutexRelease     OSX_globalMutexRelease
@@ -498,7 +499,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
  * The startup checks use memory allocation which is not initialized before RTOS_rtosInit is called
  */
 #ifndef __RTOS_AZURE__
-#define __DISABLE_MOCANA_STARTUP_GUARD__
+#define __DISABLE_DIGICERT_STARTUP_GUARD__
 #endif
 
 #define RTOS_rtosInit               THREADX_rtosInit
@@ -943,7 +944,7 @@ typedef ubyte4 RTOS_THREAD;
 #define RTOS_deltaConstMS           DUMMY_deltaConstMS
 #define RTOS_timerAddMS             DUMMY_timerAddMS
 
-#elif defined (__ENABLE_MOCANA_SEC_BOOT__)
+#elif defined (__ENABLE_DIGICERT_SEC_BOOT__)
 
 /* Nanoboot does not require any OS */
 
@@ -955,17 +956,17 @@ typedef ubyte4 RTOS_THREAD;
 #endif /* !RTOS_CUSTOM */
 
 #if defined (__MOC_PLATFORM_MODULE__)
-MOC_EXTERN int      MOC_rtosInit(void);
-MOC_EXTERN int      MOC_rtosShutdown(void);
-MOC_EXTERN int      MOC_mutexCreate2(RTOS_MUTEX* pMutex, int mutexCount);
-MOC_EXTERN int      MOC_mutexWait(RTOS_MUTEX mutex);
-MOC_EXTERN int      MOC_mutexRelease(RTOS_MUTEX mutex);
-MOC_EXTERN int      MOC_mutexFree(RTOS_MUTEX* pMutex);
-MOC_EXTERN ubyte4   MOC_getUpTimeInMS(void);
-MOC_EXTERN ubyte4   MOC_deltaMS(const moctime_t *pPrevTime, moctime_t *pRetCurrentTime);
-MOC_EXTERN void     MOC_sleepMS(ubyte4 sleepTimeInMS);
-MOC_EXTERN int      MOC_timeGMT(TimeDate* td);
-MOC_EXTERN sbyte4   MOC_readVFS(void *f, char *b, ubyte4 bLen, ubyte8 *off);
+MOC_EXTERN int      DIGI_rtosInit(void);
+MOC_EXTERN int      DIGI_rtosShutdown(void);
+MOC_EXTERN int      DIGI_mutexCreate2(RTOS_MUTEX* pMutex, int mutexCount);
+MOC_EXTERN int      DIGI_mutexWait(RTOS_MUTEX mutex);
+MOC_EXTERN int      DIGI_mutexRelease(RTOS_MUTEX mutex);
+MOC_EXTERN int      DIGI_mutexFree(RTOS_MUTEX* pMutex);
+MOC_EXTERN ubyte4   DIGI_getUpTimeInMS(void);
+MOC_EXTERN ubyte4   DIGI_deltaMS(const moctime_t *pPrevTime, moctime_t *pRetCurrentTime);
+MOC_EXTERN void     DIGI_sleepMS(ubyte4 sleepTimeInMS);
+MOC_EXTERN int      DIGI_timeGMT(TimeDate* td);
+MOC_EXTERN sbyte4   DIGI_readVFS(void *f, char *b, ubyte4 bLen, ubyte8 *off);
 #endif
 
 MOC_EXTERN MSTATUS      RTOS_rtosInit               (void);
@@ -983,7 +984,7 @@ MOC_EXTERN MSTATUS      RTOS_semTryWait             (RTOS_SEM sem);
 MOC_EXTERN MSTATUS      RTOS_semSignal              (RTOS_SEM sem);
 MOC_EXTERN MSTATUS      RTOS_semFree                (RTOS_SEM *pSem);
 
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 MOC_EXTERN MSTATUS      RTOS_globalMutexCreate      (char *mutexName, RTOS_GLOBAL_MUTEX* pMutex);
 MOC_EXTERN MSTATUS      RTOS_globalMutexWait        (RTOS_GLOBAL_MUTEX mutex, ubyte4 timeout);
 MOC_EXTERN MSTATUS      RTOS_globalMutexRelease     (RTOS_GLOBAL_MUTEX mutex);
@@ -997,7 +998,7 @@ MOC_EXTERN MSTATUS      RTOS_lockFileFree           (RTOS_LOCK *ppLock);
 
 MOC_EXTERN MSTATUS      RTOS_condCreate             (RTOS_COND* pcond, enum mutexTypes mutexType, int mutexCount);
 MOC_EXTERN MSTATUS      RTOS_condWait               (RTOS_COND  cond,RTOS_MUTEX mutex);
-MOC_EXTERN MSTATUS      RTOS_condTimedWait          (RTOS_COND  cond,RTOS_MUTEX mutex, ubyte4 timeoutMS, byteBoolean *pTimeout);
+MOC_EXTERN MSTATUS      RTOS_condTimedWait          (RTOS_COND  cond,RTOS_MUTEX mutex, ubyte8 timeoutMS, byteBoolean *pTimeout, ubyte8 *remainingTimeMS);
 MOC_EXTERN MSTATUS      RTOS_condSignal             (RTOS_COND mutex);
 MOC_EXTERN MSTATUS      RTOS_condFree               (RTOS_MUTEX* pCond);
 MOC_EXTERN ubyte4       RTOS_getUpTimeInMS          (void);
@@ -1011,6 +1012,7 @@ MOC_EXTERN MSTATUS      RTOS_createThread           (void(*threadEntry)(void*), 
 MOC_EXTERN void         RTOS_destroyThread          (RTOS_THREAD tid);
 MOC_EXTERN void         RTOS_exitThread             (void *pRetVal);
 MOC_EXTERN MSTATUS      RTOS_joinThread             (RTOS_THREAD tid, void **ppRetVal);
+MOC_EXTERN MSTATUS      RTOS_killThread             (RTOS_THREAD tid, sbyte4 signum);
 MOC_EXTERN MSTATUS      RTOS_timeGMT                (TimeDate* td);
 MOC_EXTERN void         RTOS_setTimeGMT(TimeDate* td);
 
@@ -1071,13 +1073,13 @@ MOC_EXTERN void         RTOS_free                   (void *p);
 MOC_EXTERN MSTATUS MRTOS_mutexWait(RTOS_MUTEX mutex, intBoolean *pIsMutexSet);
 MOC_EXTERN MSTATUS MRTOS_mutexRelease(RTOS_MUTEX mutex, intBoolean *pIsMutexSet);
 
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 MOC_EXTERN MSTATUS MRTOS_globalMutexWait(RTOS_GLOBAL_MUTEX mutex,
         intBoolean *pIsMutexSet, ubyte4 timeoutInSecs);
 MOC_EXTERN MSTATUS MRTOS_globalMutexRelease(RTOS_GLOBAL_MUTEX mutex, intBoolean *pIsMutexSet);
 #endif
 
-#ifdef __ENABLE_MOCANA_DEBUG_MEMORY__
+#ifdef __ENABLE_DIGICERT_DEBUG_MEMORY__
 
 #define MALLOC(X)       CONVERT_MALLOC((X))
 #define FREE(X)         CONVERT_FREE((X))
@@ -1105,11 +1107,11 @@ MOC_EXTERN void  dbg_free(void *pBlockToFree, ubyte *pFile, ubyte4 lineNum);
     #include <linux/types.h>
     void *malloc(size_t size);
     void free(void *ptr);
-#elif defined(__ENABLE_MOCANA_IPSEC_SERVICE__) && defined(__WIN32_RTOS__) && (defined(_NTDDK_) || defined(_NTIFS_) || defined(_NDIS_))
+#elif defined(__ENABLE_DIGICERT_IPSEC_SERVICE__) && defined(__WIN32_RTOS__) && (defined(_NTDDK_) || defined(_NTIFS_) || defined(_NDIS_))
     MOC_EXTERN void* malloc(unsigned int);
     MOC_EXTERN void free(void *);
 #elif defined(__MOC_IPV4_STACK__) || defined(__QNX_RTOS__)
-#elif defined(__ENABLE_MOCANA_FREESTANDING__)
+#elif defined(__ENABLE_DIGICERT_FREESTANDING__)
 #elif defined(__GNUC__) || defined(_MSC_VER)
     #include <stdlib.h>
 #endif
@@ -1125,7 +1127,7 @@ MOC_EXTERN void  dbg_free(void *pBlockToFree, ubyte *pFile, ubyte4 lineNum);
 #else
 #define MALLOC                      CONVERT_MALLOC
 #if defined(__ENABLE_DIGICERT_CUSTOM_MALLOC__) && defined(__RTOS_ZEPHYR__)
-#define MC_MALLOC                   MOCANA_customMalloc
+#define MC_MALLOC                   DIGICERT_customMalloc
 #elif defined(__ENABLE_DIGICERT_K_MALLOC__) && defined(__RTOS_ZEPHYR__)
 #define MC_MALLOC                   k_malloc
 #else
@@ -1141,7 +1143,7 @@ MOC_EXTERN void  dbg_free(void *pBlockToFree, ubyte *pFile, ubyte4 lineNum);
 #else
 #define FREE                        CONVERT_FREE
 #if defined(__ENABLE_DIGICERT_CUSTOM_MALLOC__) && defined(__RTOS_ZEPHYR__)
-#define MC_FREE                     MOCANA_customFree
+#define MC_FREE                     DIGICERT_customFree
 #elif defined(__ENABLE_DIGICERT_K_MALLOC__) && defined(__RTOS_ZEPHYR__)
 #define MC_FREE                     k_free
 #else
@@ -1170,16 +1172,16 @@ MOC_EXTERN void  dbg_free(void *pBlockToFree, ubyte *pFile, ubyte4 lineNum);
     #include <linux/types.h>
     void *malloc(size_t size);
     void free(void *ptr);
-#elif defined(__ENABLE_MOCANA_IPSEC_SERVICE__) && defined(__WIN32_RTOS__) && (defined(_NTDDK_) || defined(_NTIFS_) || defined(_NDIS_))
+#elif defined(__ENABLE_DIGICERT_IPSEC_SERVICE__) && defined(__WIN32_RTOS__) && (defined(_NTDDK_) || defined(_NTIFS_) || defined(_NDIS_))
     MOC_EXTERN void* malloc(unsigned int);
     MOC_EXTERN void free(void *);
 #elif defined(__MOC_IPV4_STACK__) || defined(__QNX_RTOS__)
-#elif defined(__ENABLE_MOCANA_FREESTANDING__)
+#elif defined(__ENABLE_DIGICERT_FREESTANDING__)
 #elif defined(__GNUC__) || defined(_MSC_VER)
     #include <stdlib.h>
 #endif
 
-#endif /* __ENABLE_MOCANA_DEBUG_MEMORY__ */
+#endif /* __ENABLE_DIGICERT_DEBUG_MEMORY__ */
 
 /*----------------------------------------------------------------------------*/
 

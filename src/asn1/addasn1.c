@@ -16,8 +16,8 @@
 
 #include "../asn1/mocasn1.h"
 
-#if ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_BY_PARTS__)) && \
-     (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ALL_OPERATIONS__)))
+#if ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_BY_PARTS__)) && \
+     (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ALL_OPERATIONS__)))
 
 MSTATUS MAsn1SetValueLenSpecial (
   MAsn1Element *pElement,
@@ -251,4 +251,4 @@ exit:
   return (status);
 }
 
-#endif /* ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_BY_PARTS__)) etc */
+#endif /* ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_BY_PARTS__)) etc */

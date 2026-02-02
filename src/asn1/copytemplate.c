@@ -16,7 +16,7 @@
 
 #include "../asn1/mocasn1.h"
 
-#if (!defined(__DISABLE_MOCANA_ASN1_COPY_TEMPLATE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_COPY_TEMPLATE__))
 
 /* A helper function to add a new entry to an Of link list.
  */
@@ -151,7 +151,7 @@ MSTATUS MAsn1AddOfEntry (
 
   /* Build a new OfEntry.
    */
-  status = MOC_CALLOC ((void **)&pNewEntry, sizeof (MAsn1OfEntry), 1);
+  status = DIGI_CALLOC ((void **)&pNewEntry, sizeof (MAsn1OfEntry), 1);
   if (OK != status)
     goto exit;
 
@@ -176,7 +176,7 @@ exit:
 
   if (NULL != pNewEntry)
   {
-    MOC_FREE ((void **)&pNewEntry);
+    DIGI_FREE ((void **)&pNewEntry);
   }
 
   return (status);
@@ -208,7 +208,7 @@ MSTATUS MAsn1CopyTemplate (
    * CreateElementArray so that we build an Element array with the extra space
    * for pBuf.
    */
-  status = MOC_CALLOC (
+  status = DIGI_CALLOC (
     (void **)&pDefinition, count * sizeof (MAsn1TypeAndCount), 1);
   if (OK != status)
     goto exit;
@@ -238,7 +238,7 @@ exit:
 
   if (NULL != pDefinition)
   {
-    MOC_FREE ((void **)&pDefinition);
+    DIGI_FREE ((void **)&pDefinition);
   }
   if (NULL != pNewTemplate)
   {
@@ -311,4 +311,4 @@ exit:
   return (status);
 }
 
-#endif /* (!defined(__DISABLE_MOCANA_ASN1_COPY_TEMPLATE__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_ASN1_COPY_TEMPLATE__)) */

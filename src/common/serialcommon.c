@@ -18,7 +18,7 @@
 #include "../common/base64.h"
 #include "../common/serialcommon.h"
 
-#if (defined(__ENABLE_MOCANA_SERIALIZE__))
+#if (defined(__ENABLE_DIGICERT_SERIALIZE__))
 
 MOC_EXTERN MSTATUS SerializeCommonInit (
   MSerializeInfo *pInfo,
@@ -118,14 +118,14 @@ MOC_EXTERN MSTATUS SerializeCommon (
   totalSize = 2 + ((b64Len + 63) / 64);
   totalSize = totalSize + headerLen + footerLen + b64Len;
 
-  status = MOC_MALLOC ((void **)&pNewBuf, totalSize);
+  status = DIGI_MALLOC ((void **)&pNewBuf, totalSize);
   if (OK != status)
     goto exit;
 
   /* Header + new line
    */
   index = 0;
-  status = MOC_MEMCPY ((void *)pNewBuf, pHeader, headerLen);
+  status = DIGI_MEMCPY ((void *)pNewBuf, pHeader, headerLen);
   if (OK != status)
     goto exit;
 
@@ -142,7 +142,7 @@ MOC_EXTERN MSTATUS SerializeCommon (
     if (64 <= b64Len)
       nextLen = 64;
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
       (void *)(pNewBuf + index), (void *)pCurrent, nextLen);
     if (OK != status)
       goto exit;
@@ -155,7 +155,7 @@ MOC_EXTERN MSTATUS SerializeCommon (
 
   /* Now put in the footer.
    */
-  status = MOC_MEMCPY (
+  status = DIGI_MEMCPY (
     (void *)(pNewBuf + index), (void *)pFooter, footerLen);
   if (OK != status)
     goto exit;
@@ -170,15 +170,15 @@ exit:
 
   if (NULL != pNewBuf)
   {
-    MOC_FREE ((void **)&pNewBuf);
+    DIGI_FREE ((void **)&pNewBuf);
   }
   if (NULL != pB64)
   {
-    MOC_FREE ((void **)&pB64);
+    DIGI_FREE ((void **)&pB64);
   }
 
   return status;
 
 } /* SerializeCommon */
 
-#endif /* (defined(__ENABLE_MOCANA_SERIALIZE__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SERIALIZE__)) */

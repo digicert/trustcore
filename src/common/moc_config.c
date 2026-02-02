@@ -3,8 +3,14 @@
  *
  * Update Message - Configuration Parser
  *
- * Copyright Mocana Corp 2012. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -14,7 +20,7 @@
 \version 6.0 and later
 
 ! Flags
-Do not have __DISABLE_MOCANA_COMMON_CONFIG_PARSER__ defined
+Do not have __DISABLE_DIGICERT_COMMON_CONFIG_PARSER__ defined
 
 ! External Functions
 This file contains the following public ($extern$) functions:
@@ -39,7 +45,7 @@ This file contains the following public ($extern$) functions:
 
 #include "../common/moc_config.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_CONFIG_PARSER__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_CONFIG_PARSER__))
 
 /*--------------------------------------------------------------------------*/
 
@@ -50,7 +56,7 @@ CONFIG_skipSpace(ubyte* data, ubyte4 dataLeft)
 
     while ( offset < dataLeft)
     {
-        if ( !MOC_ISSPACE(data[offset]))
+        if ( !DIGI_ISSPACE(data[offset]))
         {
             break;
         }
@@ -113,8 +119,8 @@ MSTATUS CONFIG_getValue(sbyte* line, ubyte4 bytesLeft, const sbyte* fieldName,
     *valueOffset = 0;
     MOC_CHECK(CONFIG_gotoValue((ubyte*) line,bytesLeft,fieldName,delimChar,valueOffset));
     MOC_CHECK(CONFIG_readToEOL(line+*valueOffset,bytesLeft - *valueOffset,valueLen));
-    MOC_CHECK(MOC_MALLOC((void**) value,*valueLen+1));
-    MOC_CHECK(MOC_MEMCPY(*value,line+*valueOffset,*valueLen));
+    MOC_CHECK(DIGI_MALLOC((void**) value,*valueLen+1));
+    MOC_CHECK(DIGI_MEMCPY(*value,line+*valueOffset,*valueLen));
 
     (*value)[*valueLen] = '\0';
 
@@ -130,7 +136,7 @@ CONFIG_gotoValue(ubyte* line, ubyte4 dataLeft, const sbyte* fieldName,
 {
     /* jumps over the <white space> = <white space> */
     MSTATUS retVal = ERR_CONFIG_PARSER;
-    ubyte4 offset = *bytesUsed ? *bytesUsed : MOC_STRLEN(fieldName);
+    ubyte4 offset = *bytesUsed ? *bytesUsed : DIGI_STRLEN(fieldName);
     offset += CONFIG_skipSpace( line+offset, dataLeft-offset);
 
     if ( offset == dataLeft )
@@ -172,7 +178,7 @@ CONFIG_gotoSection(ubyte* line, ubyte4 dataLeft, const sbyte* fieldName,
 {
     /* jumps over the <white space> = <white space> */
     MSTATUS retVal = ERR_CONFIG_PARSER;
-    ubyte4 offset = *bytesUsed ? *bytesUsed : MOC_STRLEN(fieldName); 
+    ubyte4 offset = *bytesUsed ? *bytesUsed : DIGI_STRLEN(fieldName); 
     ubyte4 eolOffset = 0;
 
     retVal = CONFIG_readToEOL((sbyte *)line+offset, dataLeft-offset, &eolOffset);
@@ -206,7 +212,7 @@ CONFIG_parseData(ubyte* data, ubyte4 dataLen, CONFIG_ConfigItem* configs)
   ubyte found;
 
   /* jump over white space */
-  while ( MOC_ISSPACE( *data))
+  while ( DIGI_ISSPACE( *data))
   {
     ++data;
     --dataLen;
@@ -223,9 +229,9 @@ CONFIG_parseData(ubyte* data, ubyte4 dataLen, CONFIG_ConfigItem* configs)
 	  '\n' == *(data+offset))
 	break;
 
-      if ( 0 == MOC_STRNICMP( (sbyte*)data+offset, configs[index].key, MOC_STRLEN(configs[index].key )))
+      if ( 0 == DIGI_STRNICMP( (sbyte*)data+offset, configs[index].key, DIGI_STRLEN(configs[index].key )))
       {
-	ubyte4 used = MOC_STRLEN(configs[index].key);
+	ubyte4 used = DIGI_STRLEN(configs[index].key);
 
 	/* Only call the callback if it's not-NULL */
 	if (configs[index].callback)
@@ -282,7 +288,7 @@ CONFIG_copyString(ubyte* line, ubyte4 bytesLeft, void* arg, ubyte4 *bytesUsed)
     }
 
     /* go back and look for space */
-    for ( --i; i >= offset && MOC_ISSPACE(line[i]); --i)
+    for ( --i; i >= offset && DIGI_ISSPACE(line[i]); --i)
     {
     }
 
@@ -296,7 +302,7 @@ CONFIG_copyString(ubyte* line, ubyte4 bytesLeft, void* arg, ubyte4 *bytesUsed)
         /* Memory allocation failure for parameter string. */
 	    return ERR_MEM_ALLOC_FAIL;
     }
-    MOC_MEMCPY( param, line+offset, pathLen-1);
+    DIGI_MEMCPY( param, line+offset, pathLen-1);
     param[pathLen-1] = 0;
 
     *targetString = param;
@@ -323,9 +329,9 @@ CONFIG_copyUByte4(ubyte* line, ubyte4 bytesLeft, void* arg, ubyte4 *bytesUsed)
     if (OK != (status = CONFIG_gotoValue(line, bytesLeft, (const sbyte*)"<configfile>", '=', &offset)))
         return status;
 
-    *targetInt = MOC_ATOL( (sbyte*)(line+offset), NULL);
+    *targetInt = DIGI_ATOL( (sbyte*)(line+offset), NULL);
 
     return OK;
 }
 
-#endif /* __DISABLE_MOCANA_COMMON_CONFIG_PARSER__ */
+#endif /* __DISABLE_DIGICERT_COMMON_CONFIG_PARSER__ */

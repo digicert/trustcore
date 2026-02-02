@@ -17,14 +17,14 @@
 
 /*------------------------------------------------------------------*/
 
-#ifndef __MOCANA_BASE64_HEADER__
-#define __MOCANA_BASE64_HEADER__
+#ifndef __DIGICERT_BASE64_HEADER__
+#define __DIGICERT_BASE64_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef __IN_MOCANA_C__
+#ifdef __IN_DIGICERT_C__
 /* these two functions should only be called from mocana.c */
 MOC_EXTERN MSTATUS BASE64_initializeContext(void);
 MOC_EXTERN MSTATUS BASE64_freeContext(void);
@@ -58,7 +58,7 @@ MOC_EXTERN MSTATUS BASE64_freeMessage(ubyte **ppMessage);
  * see a 0. So the function allocated 351 bytes, placed 350 bytes of PEM into the
  * buuuffer, then placed a NULL-terminating character.
  * <p>This function allocates memory for the result, it is the responsibility of
- * the caller to free that memory using MOC_FREE.
+ * the caller to free that memory using DIGI_FREE.
  *
  * @param pemType What type of PEM value is this? It must be one of the
  * MOC_PEM_TYPE_ values define in bsafe64.h.
@@ -76,7 +76,7 @@ MOC_EXTERN MSTATUS BASE64_freeMessage(ubyte **ppMessage);
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppPemResult and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS BASE64_makePemMessageAlloc (
   ubyte4 pemType,
@@ -89,7 +89,7 @@ MOC_EXTERN MSTATUS BASE64_makePemMessageAlloc (
 /** Decode a PEM message.
  * <p>This will strip the header and footer, then Base64 decode the contents. It
  * will allocate a buffer for the result and return it, the caller must free that
- * memory using MOC_FREE.
+ * memory using DIGI_FREE.
  * <p>The function will also determine what header was on the message and return
  * a flag indicating the type. The value returned will be one of the
  * MOC_PEM_TYPE_ values defined. If the header is unknown, the function will set
@@ -111,7 +111,7 @@ MOC_EXTERN MSTATUS BASE64_makePemMessageAlloc (
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppDerResult and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS BASE64_decodePemMessageAlloc (
   ubyte *pInputPem,
@@ -160,4 +160,4 @@ MOC_EXTERN MSTATUS BASE64_decodePemMessageAlloc (
 }
 #endif
 
-#endif /* __MOCANA_BASE64_HEADER__ */
+#endif /* __DIGICERT_BASE64_HEADER__ */

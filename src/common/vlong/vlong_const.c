@@ -18,7 +18,7 @@
 #include "../../common/moptions.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_VLONG_CONST_TIME__
+#ifdef __ENABLE_DIGICERT_VLONG_CONST_TIME__
 
 #if defined(__RTOS_THREADX__) && !defined(__RTOS_AZURE__)
 #include "common/vlong.h"
@@ -52,7 +52,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef __MOCANA_ENABLE_LONG_LONG__
+#ifndef __DIGICERT_ENABLE_LONG_LONG__
 #define MULT_ADDCX(a,b,index0,index1,result0,result1,result2) \
     {   vlong_unit a0, a1, b0, b1;                               \
     a0=LO_HUNIT(a[index0]); a1=HI_HUNIT(a[index0]);          \
@@ -75,11 +75,11 @@
       result1 += (ubyte4)(result >> BPU); \
       result2 += (result1 < temp_result); \
     }
-#endif /* ifndef __MOCANA_ENABLE_LONG_LONG__ */
+#endif /* ifndef __DIGICERT_ENABLE_LONG_LONG__ */
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef __MOCANA_ENABLE_LONG_LONG__
+#ifndef __DIGICERT_ENABLE_LONG_LONG__
 #define MULT_ADDC1(a,b,index0,index1,result0,result1) \
     { vlong_unit a0,a1,b0,b1;                         \
     a0=LO_HUNIT(a[index0]); a1=HI_HUNIT(a[index0]);   \
@@ -99,7 +99,7 @@
       result1 += (result0 < temp_result); \
       result1 += (ubyte4)(result >> 32); \
     }
-#endif /* ifndef __MOCANA_ENABLE_LONG_LONG__ */
+#endif /* ifndef __DIGICERT_ENABLE_LONG_LONG__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -209,7 +209,7 @@ MOC_EXTERN vlong_unit VLONG_constTimeAdd (
   vlong_unit temp1, temp2, carry = ZERO_UNIT;
 
   /* For typical RSA uses the number of units will be divisible by 8 */
-#ifndef __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__
+#ifndef __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__
   while (numUnits & ~0x7)
   {
     temp1 = pA[0];
@@ -305,7 +305,7 @@ MOC_EXTERN vlong_unit VLONG_constTimeSubtract (
   vlong_unit temp1, temp2, borrow = ZERO_UNIT;
 
   /* For typical RSA uses the number of units will be divisible by 8 */
-#ifndef __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__
+#ifndef __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__
   while (numUnits & ~0x7)
   {
     temp1 = pA[0];
@@ -495,7 +495,7 @@ static ubyte4 VLONG_constTimeBitlen(vlong_unit in)
     vlong_unit temp, mask;
     ubyte4 bits = (in != 0);
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
     temp = in >> 32;
     mask = (0 - temp) & FULL_MASK;
     mask = (0 - (mask >> (BPU - 1)));
@@ -698,7 +698,7 @@ MOC_EXTERN MSTATUS VLONG_constTimeDiv(
 
   vlong_unit divisorMSU, divisorNMSU;
 
-  status = MOC_MALLOC((void **) &pScratch, scratchLen * sizeof(vlong_unit));
+  status = DIGI_MALLOC((void **) &pScratch, scratchLen * sizeof(vlong_unit));
   if (OK != status)
     goto exit;
     
@@ -706,7 +706,7 @@ MOC_EXTERN MSTATUS VLONG_constTimeDiv(
   pDividendShift = pScratch + divisorLen;
   pTemp = pScratch + divisorLen + dividendLen + 1;
   
-  (void) MOC_MEMCPY((ubyte *) pDivisorShift, (ubyte *) pDivisor, divisorLen * sizeof(vlong_unit));
+  (void) DIGI_MEMCPY((ubyte *) pDivisorShift, (ubyte *) pDivisor, divisorLen * sizeof(vlong_unit));
 
   shift = VLONG_leftAlign(pDivisorShift, divisorLen);
   VLONG_constTimeLeftShift(pDividendShift, pDividend, dividendLen, shift);
@@ -745,7 +745,7 @@ MOC_EXTERN MSTATUS VLONG_constTimeDiv(
   VLONG_constTimeRightShift(pRemainder, pDividendPtr, divisorLen, shift);
 
   /* Only goto exit is on MALLOC, ok to free before exit block */
-  (void) MOC_MEMSET_FREE((ubyte **) &pScratch, scratchLen * sizeof(vlong_unit));
+  (void) DIGI_MEMSET_FREE((ubyte **) &pScratch, scratchLen * sizeof(vlong_unit));
 
 exit:
 
@@ -930,7 +930,7 @@ MOC_EXTERN MSTATUS VLONG_constTimeMontExp (
   tmpLen = MONTY_R(pMonty)->numUnitsUsed + pBase->numUnitsUsed;
 
   /* Allocate the entire table, extra temp space, and pTUnits in one-shot */
-  if (OK > (status = MOC_MALLOC((void **) &pG, (unsigned long)(tableSize + 2) * modByteLen + (1 + tmpLen) * sizeof(vlong_unit))))
+  if (OK > (status = DIGI_MALLOC((void **) &pG, (unsigned long)(tableSize + 2) * modByteLen + (1 + tmpLen) * sizeof(vlong_unit))))
   {
     goto cleanup;
   }
@@ -939,12 +939,12 @@ MOC_EXTERN MSTATUS VLONG_constTimeMontExp (
   pTUnits = pTemp + tmpLen;
   
   /* result begins as an augmented 1, ie R */
-  (void) MOC_MEMCPY((ubyte *) pResult, (ubyte *) (MONTY_R(pMonty)->pUnits), MONTY_R(pMonty)->numUnitsUsed * sizeof(vlong_unit));
+  (void) DIGI_MEMCPY((ubyte *) pResult, (ubyte *) (MONTY_R(pMonty)->pUnits), MONTY_R(pMonty)->numUnitsUsed * sizeof(vlong_unit));
 
   /* pad result if necc (almost never will be needed) */
   if (MONTY_R(pMonty)->numUnitsUsed < modLen)
   {
-    (void) MOC_MEMSET((ubyte *) (pResult + MONTY_R(pMonty)->numUnitsUsed), 0x00, (modLen - MONTY_R(pMonty)->numUnitsUsed) * sizeof(vlong_unit));
+    (void) DIGI_MEMSET((ubyte *) (pResult + MONTY_R(pMonty)->numUnitsUsed), 0x00, (modLen - MONTY_R(pMonty)->numUnitsUsed) * sizeof(vlong_unit));
   }
 
   /* g[0] = (x * R) % m */
@@ -957,14 +957,14 @@ MOC_EXTERN MSTATUS VLONG_constTimeMontExp (
   }
 
   /* tmp = g[0] * g[0] */
-  (void) MOC_MEMCPY((ubyte *)pTemp, (ubyte *)pG, modByteLen);
+  (void) DIGI_MEMCPY((ubyte *)pTemp, (ubyte *)pG, modByteLen);
 
   VLONG_constTimeMontySqr(pMonty, pTemp, pTUnits);
 
   for (i = 1; i < (sbyte4) tableSize; i++)
   {
     /* copy g[i - 1] to g[i] */
-    (void) MOC_MEMCPY((ubyte *) pG + i * modByteLen, (ubyte *) pG + (i - 1) * modByteLen, modByteLen);
+    (void) DIGI_MEMCPY((ubyte *) pG + i * modByteLen, (ubyte *) pG + (i - 1) * modByteLen, modByteLen);
     VLONG_constTimeMontyMultiply(pMonty, pG + i * modLen, pTemp, pTUnits);
   }
 
@@ -1027,9 +1027,9 @@ cleanup:
 
   if (NULL != pG)
   {
-    (void) MOC_MEMSET_FREE((ubyte **) &pG, (unsigned long)(tableSize + 2) * modByteLen + (tmpLen + 1) * sizeof(vlong_unit));
+    (void) DIGI_MEMSET_FREE((ubyte **) &pG, (unsigned long)(tableSize + 2) * modByteLen + (tmpLen + 1) * sizeof(vlong_unit));
   }
 
   return status;
 }
-#endif /* __ENABLE_MOCANA_VLONG_CONST_TIME__ */
+#endif /* __ENABLE_DIGICERT_VLONG_CONST_TIME__ */

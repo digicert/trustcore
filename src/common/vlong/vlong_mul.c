@@ -15,9 +15,9 @@
 #include "../../common/vlong.h"
 #include "../../common/vlong_priv.h"
 
-#ifndef __DISABLE_MOCANA_VLONG_MATH__
+#ifndef __DISABLE_DIGICERT_VLONG_MATH__
 
-#ifdef __ENABLE_MOCANA_BI_MUL_ASM__
+#ifdef __ENABLE_DIGICERT_BI_MUL_ASM__
 #include "../../common/bn_mul.h"
 
 #if defined(__arm__) && !defined(__OPTIMIZE__)
@@ -147,7 +147,7 @@ void VLONG_mul_assembly( ubyte4 i, vlong_unit *s, vlong_unit *d, vlong_unit b )
     }
     while( c );
 }
-#endif /* __ENABLE_MOCANA_BI_MUL_ASM__ */
+#endif /* __ENABLE_DIGICERT_BI_MUL_ASM__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -218,7 +218,7 @@ MOC_EXTERN MSTATUS fastUnsignedMultiplyVlongs (
 {
   MSTATUS status = OK;
   
-#ifndef __ENABLE_MOCANA_BI_MUL_ASM__
+#ifndef __ENABLE_DIGICERT_BI_MUL_ASM__
   
 #ifndef MACRO_MULTIPLICATION_LOOP
   vlong_unit result0, result1, result2;
@@ -303,7 +303,7 @@ MOC_EXTERN MSTATUS fastUnsignedMultiplyVlongs (
   
   pProduct->numUnitsUsed = x_limit;
 
-#else /* __ENABLE_MOCANA_BI_MUL_ASM__ */
+#else /* __ENABLE_DIGICERT_BI_MUL_ASM__ */
   
   ubyte4 j;
 
@@ -350,7 +350,7 @@ MOC_EXTERN MSTATUS fastUnsignedSqrVlong (
   ubyte4 x_limit
   )
 {
-#ifndef __ENABLE_MOCANA_BI_MUL_ASM__
+#ifndef __ENABLE_DIGICERT_BI_MUL_ASM__
   
 #ifndef MACRO_SQR_LOOP
   vlong_unit result0, result1, result2;
@@ -431,7 +431,7 @@ exit:
 #else
   /* No assembly squaring method, multiply by itself */
   return fastUnsignedMultiplyVlongs(pProduct, pFactorSqrX, pFactorSqrX, x_limit);
-#endif /* __ENABLE_MOCANA_BI_MUL_ASM__ */
+#endif /* __ENABLE_DIGICERT_BI_MUL_ASM__ */
   
 } /* fastUnsignedSqrVlong */
 

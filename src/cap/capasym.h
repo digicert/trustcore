@@ -176,7 +176,7 @@ typedef ubyte4 keyOperation;
  * should deposit the buffer it allocates and the length. The Mocana code will
  * call the KeyOperator with those addresses inside the MKeyOperatorDataReturn
  * struct.
- * <p>The Operator must use MOC_MALLOC to allocate the returned data.
+ * <p>The Operator must use DIGI_MALLOC to allocate the returned data.
  * <pre>
  * <code>
  *   inputInfo   serializedKeyFormat *
@@ -375,8 +375,8 @@ typedef ubyte4 keyOperation;
  * it is the appropriate algorithm (mask localType with MOC_LOCAL_KEY_COM_MASK
  * to get the algorithm which will be MOC_LOCAL_KEY_DSA, _DH, _ECC, or _RSA).
  * <p>The Operator will allocate memory for the struct itself and the data, if
- * there is any. The Operator must allocate one buffer using MOC_MALLOC. The
- * caller will free the memory (using MOC_FREE) when done with the params.
+ * there is any. The Operator must allocate one buffer using DIGI_MALLOC. The
+ * caller will free the memory (using DIGI_FREE) when done with the params.
  * <p>The Operator will never set the pPublicKey field of any params struct.
  * <p>For ECC, only standard params are allowed, so set that field in the
  * output. If the params are DSA, set the prime, subprime, and base, along with
@@ -400,7 +400,7 @@ typedef ubyte4 keyOperation;
  *
  * exit:
  *   // Free the memory returned from the Get, it will be one buffer.
- *   MOC_FREE ((void **)&pGetParams);
+ *   DIGI_FREE ((void **)&pGetParams);
  * </code>
  * </pre>
  */
@@ -429,7 +429,7 @@ typedef ubyte4 keyOperation;
  * to get the algorithm which will be MOC_LOCAL_KEY_DH, or _ECC).
  * <p>The Operator will allocate memory for the data (deposited at the address
  * given by the ppData field of the outputInfo). The Operator must allocate the
- * buffer using MOC_MALLOC. The caller will free the memory (using MOC_FREE)
+ * buffer using DIGI_MALLOC. The caller will free the memory (using DIGI_FREE)
  * when done with the value.
  * <p>For example,
  * <pre>
@@ -453,7 +453,7 @@ typedef ubyte4 keyOperation;
  *
  * exit:
  *   // Free the memory returned from the Get, it will be one buffer.
- *   MOC_FREE ((void **)&pPubVal);
+ *   DIGI_FREE ((void **)&pPubVal);
  * </code>
  * </pre>
  */
@@ -721,7 +721,7 @@ typedef struct
  * with the data. It must return the buffer and its length at addresses provided
  * by the caller. This is how we can pass around those addresses as a single
  * element.
- * <p>The Operator must allocate any memory returned using MOC_MALLOC.
+ * <p>The Operator must allocate any memory returned using DIGI_MALLOC.
  */
 typedef struct
 {
@@ -937,7 +937,7 @@ typedef struct
  * <p>Note the callback is primarily for the reciever, originators can still
  * use this or update the data manually with CRYPTO_updateOperatorData.
  *
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize.
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize.
  * @param keyOp The op code for the operation currently being performed.
  * @param pOperatorData A pointer to the MocAsymKeys internal data structure.
  * @return     \c OK (0) if successful; otherwise a negative number error code
@@ -1171,7 +1171,7 @@ MOC_EXTERN_CAPASYM_H const ubyte4 pSupportedAsymAlgos[MOC_NUM_SUPPORTED_ASYM_ALG
  * you will get an error. There is no algId for this so you cannot call
  * asymEncrypt or Decrypt with an algId and get raw RSA, you must use the flag.
  * <p>If you use this flag, you do not need any supporting symmetric operators.
- * <p>One of the args to MOCANA_initialize is a list of symmetric operators,
+ * <p>One of the args to DIGICERT_initialize is a list of symmetric operators,
  * containing implementations of algorithms you are willing to support and can be
  * used as a resource for the RSA encryption function when it needs to perform
  * supporting operations.
@@ -1183,7 +1183,7 @@ MOC_EXTERN_CAPASYM_H const ubyte4 pSupportedAsymAlgos[MOC_NUM_SUPPORTED_ASYM_ALG
  * encrypt the data using RSA and pad following PKCS 1 version 1.5. Use this flag
  * in asymDecrypt to unpad the data using PKCS 1 version 1.5.
  * <p>If you use this flag, you do not need any supporting symmetric operators.
- * <p>One of the args to MOCANA_initialize is a list of symmetric operators,
+ * <p>One of the args to DIGICERT_initialize is a list of symmetric operators,
  * containing implementations of algorithms you are willing to support and can be
  * used as a resource for the RSA encryption function when it needs to perform
  * supporting operations.
@@ -1666,7 +1666,7 @@ typedef enum {
  * @param pOperatorInfo If the operator function needs some info in order to
  * work, pass it in here. See the documentation for each Operator to determine
  * what info it needs.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param RngFun A function pointer used to generate random bytes. To use a
@@ -1746,7 +1746,7 @@ MOC_EXTERN MSTATUS CRYPTO_getSecuritySize (
  * operation other than a digest, such as a mask generating function. To perform
  * any supporting operation needed, the Encrypt function will build an object
  * using the array of supported Operators found in the MocCtx (built during the
- * call to MOCANA_initialize, the key object contains a reference to the MocCtx).
+ * call to DIGICERT_initialize, the key object contains a reference to the MocCtx).
  * Make sure your arrays of supporting Operators contains the digest Operators of
  * algorithms needed by the encryption processes you support.
  * <p>Some encryption functions require random bytes, so the caller passes in a
@@ -1820,7 +1820,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymEncrypt (
  * operation other than a digest, such as a mask generating function. To perform
  * any supporting operation needed, the Encrypt function will build an object
  * using the array of supported Operators found in the MocCtx (built during the
- * call to MOCANA_initialize, the key object contains a reference to the MocCtx).
+ * call to DIGICERT_initialize, the key object contains a reference to the MocCtx).
  * Make sure your arrays of supporting Operators contains the digest Operators of
  * algorithms needed by the encryption processes you support.
  * <p>Some encryption functions require random bytes, so the caller passes in a
@@ -1923,7 +1923,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymDecrypt (
  * operation other than a digest, such as a mask generating function. To perform
  * any supporting operation needed, the Sign function will build an object
  * using the array of supported Operators found in the MocCtx (built during the
- * call to MOCANA_initialize, the key object contains a reference to the MocCtx).
+ * call to DIGICERT_initialize, the key object contains a reference to the MocCtx).
  * Make sure your arrays of supporting Operators contains the digest Operators of
  * algorithms needed by the encryption processes you support.
  * <p>The caller supplies the buffer into which the result will be placed. If the
@@ -2013,7 +2013,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymSignDigestInfo (
  * operation other than a digest, such as a mask generating function. To perform
  * any supporting operation needed, the Sign function will build an object
  * using the array of supported Operators found in the MocCtx (built during the
- * call to MOCANA_initialize, the key object contains a reference to the MocCtx).
+ * call to DIGICERT_initialize, the key object contains a reference to the MocCtx).
  * Make sure your arrays of supporting Operators contains the digest Operators of
  * algorithms needed by the encryption processes you support.
  * <p>The caller supplies the buffer into which the result will be placed. If the
@@ -2088,7 +2088,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymSignDigest (
  * operation other than a digest, such as a mask generating function. To perform
  * any supporting operation needed, the Sign function will build an object
  * using the array of supported Operators found in the MocCtx (built during the
- * call to MOCANA_initialize, the key object contains a reference to the MocCtx).
+ * call to DIGICERT_initialize, the key object contains a reference to the MocCtx).
  * Make sure your arrays of supporting Operators contains the digest Operators of
  * algorithms needed by the encryption processes you support.
  * <p>The caller supplies the buffer into which the result will be placed. If the
@@ -2179,7 +2179,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymSignMessage (
  * supporting operation other than a digest, such as a mask generating function.
  * To perform any supporting operation needed, the Verify function will build an
  * object using the array of supported Operators found in the MocCtx (built
- * during the call to MOCANA_initialize, the key object contains a reference to
+ * during the call to DIGICERT_initialize, the key object contains a reference to
  * the MocCtx). Make sure your arrays of supporting Operators contains the digest
  * Operators of algorithms needed by the signing processes you support.
  * <p>The caller passes in the address of a ubyte4, the function will deposit the
@@ -2271,7 +2271,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymVerifyDigestInfo (
  * supporting operation other than a digest, such as a mask generating function.
  * To perform any supporting operation needed, the Verify function will build an
  * object using the array of supported Operators found in the MocCtx (built
- * during the call to MOCANA_initialize, the key object contains a reference to
+ * during the call to DIGICERT_initialize, the key object contains a reference to
  * the MocCtx). Make sure your arrays of supporting Operators contains the digest
  * Operators of algorithms needed by the signing processes you support.
  * <p>The caller passes in the address of a ubyte4, the function will deposit the
@@ -2351,7 +2351,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymVerifyDigest (
  * supporting operation other than a digest, such as a mask generating function.
  * To perform any supporting operation needed, the Verify function will build an
  * object using the array of supported Operators found in the MocCtx (built
- * during the call to MOCANA_initialize, the key object contains a reference to
+ * during the call to DIGICERT_initialize, the key object contains a reference to
  * the MocCtx). Make sure your arrays of supporting Operators contains the digest
  * Operators of algorithms needed by the signing processes you support.
  * <p>The caller passes in the address of a ubyte4, the function will deposit the
@@ -2521,7 +2521,7 @@ MOC_EXTERN MSTATUS CRYPTO_asymVerifyMessage (
  *     // 1(a) Generate a key pair using standard params
  *
  *     MDhParams dhParams;
- *     MOC_MEMSET (&dhParams, 0, sizeof (dhParams);
+ *     DIGI_MEMSET (&dhParams, 0, sizeof (dhParams);
  *
  *     dhParams.StandardParams = DhParamsGroup14;
  *     status = CRYPTO_generateKeyPair (
@@ -2669,7 +2669,7 @@ MOC_EXTERN MSTATUS CRYPTO_keyDecapsulate (
  *     goto exit;
  *
  * exit:
- *   MOC_FREE ((void **)&pSerializedKey);
+ *   DIGI_FREE ((void **)&pSerializedKey);
  * </code>
  * </pre>
  *
@@ -2677,7 +2677,7 @@ MOC_EXTERN MSTATUS CRYPTO_keyDecapsulate (
  * @param format The format into which you want the key to be serialized.
  * @param ppSerializedKey The address where the function will deposit a pointer
  * to allocated memory containing the serialized key. It is the responsiblity of
- * the caller to free that memory using MOC_FREE.
+ * the caller to free that memory using DIGI_FREE.
  * @param pSerializedKeyLen the address where the function will deposit the
  * length, in bytes, of the serialized key.
  * @return     \c OK (0) if successful; otherwise a negative number error code
@@ -2716,7 +2716,7 @@ MOC_EXTERN MSTATUS CRYPTO_serializeMocAsymKeyAlloc (
  *
  * @param pSerializedKey The input data.
  * @param serializedKeyLen The length, in bytes, of the input data.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param ppDeserializedKey The location that will recieve the deserialized key.
@@ -2837,7 +2837,7 @@ MOC_EXTERN MSTATUS CRYPTO_getAsymAlgId (
  * @param pOperatorInfo If the operator function needs some info in order to
  * work, pass it in here. See the documentation for each Operator to determine
  * what info it needs.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param ppNewKey The address where the function will deposit the newly

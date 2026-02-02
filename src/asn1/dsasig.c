@@ -82,7 +82,7 @@ MOC_EXTERN MSTATUS ASN1_buildDsaSignature (
   /* Convert the values into canonical ints.
    */
   byteCount = (rLen * intSize) + (sLen * intSize);
-  status = MOC_MALLOC ((void **)&pBuf, byteCount);
+  status = DIGI_MALLOC ((void **)&pBuf, byteCount);
   if (OK != status)
     goto exit;
 
@@ -129,7 +129,7 @@ exit:
   }
   if (NULL != pBuf)
   {
-    MOC_FREE ((void **)&pBuf);
+    DIGI_FREE ((void **)&pBuf);
   }
 
   return (status);
@@ -248,7 +248,7 @@ MSTATUS DsaSigConvertArray8 (
     indexB = 0;
     for (indexV = len; indexV > 0; --indexV)
     {
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
       current = pVal[indexV - 1];
       pBuf[indexB]     = (ubyte)(current >> 56);
       pBuf[indexB + 1] = (ubyte)(current >> 48);

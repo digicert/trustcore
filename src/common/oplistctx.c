@@ -61,7 +61,7 @@ extern MSTATUS MBuildOpListCtx (
   if (0 < opCount)
   {
     /* Allocate a list to keep track of which indexes contain active operators */
-    status = MOC_CALLOC((void **)&pActiveList, 1, opCount);
+    status = DIGI_CALLOC((void **)&pActiveList, 1, opCount);
     if (OK != status)
       goto exit;
 
@@ -152,7 +152,7 @@ extern MSTATUS MBuildOpListCtx (
     }
   }
 
-  status = MOC_CALLOC ((void **)&pBuffer, totalSize, 1);
+  status = DIGI_CALLOC ((void **)&pBuffer, totalSize, 1);
   if (OK != status)
     goto exit;
 
@@ -229,11 +229,11 @@ exit:
 
   if (NULL != pBuffer)
   {
-    MOC_FREE ((void **)&pBuffer);
+    DIGI_FREE ((void **)&pBuffer);
   }
   if (NULL != pActiveList)
   {
-    MOC_FREE ((void **)&pActiveList);
+    DIGI_FREE ((void **)&pActiveList);
   }
 
   return (status);
@@ -259,7 +259,7 @@ MOC_EXTERN MSTATUS MSubCtxOpListFree (
 
   /* For the OpList, we created a single buffer to hold the LibCtx and OpList.
    */
-  status = MOC_MEMSET_FREE ((ubyte **)ppMocSubCtx, pOpList->totalSize);
+  status = DIGI_MEMSET_FREE ((ubyte **)ppMocSubCtx, pOpList->totalSize);
 
 exit:
 

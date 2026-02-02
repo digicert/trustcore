@@ -1,0 +1,199 @@
+0x0101010101: exponent units
+
+Running test vlong_test_perf_modexp in file vlong_test.c
+exponent 32 bits, modulus 1024 bits : 137.344 modexp/second (Montgomery) (CPU ti
+me)
+exponent 32 bits, modulus 1024 bits : 652.742 modexp/second (Classic) (CPU time)
+
+exponent 64 bits, modulus 1024 bits : 117.22 modexp/second (Montgomery) (CPU tim
+e)
+exponent 64 bits, modulus 1024 bits : 279.486 modexp/second (Classic) (CPU time)
+
+exponent 96 bits, modulus 1024 bits : 99.5322 modexp/second (Montgomery) (CPU ti
+me)
+exponent 96 bits, modulus 1024 bits : 177.778 modexp/second (Classic) (CPU time)
+
+exponent 128 bits, modulus 1024 bits : 88.2768 modexp/second (Montgomery) (CPU t
+ime)
+exponent 128 bits, modulus 1024 bits : 130.361 modexp/second (Classic) (CPU time
+)
+exponent 160 bits, modulus 1024 bits : 79.1077 modexp/second (Montgomery) (CPU t
+ime)
+exponent 160 bits, modulus 1024 bits : 103.061 modexp/second (Classic) (CPU time
+)
+exponent 192 bits, modulus 1024 bits : 71.5871 modexp/second (Montgomery) (CPU t
+ime)
+exponent 192 bits, modulus 1024 bits : 84.8824 modexp/second (Classic) (CPU time
+)
+exponent 224 bits, modulus 1024 bits : 65.4407 modexp/second (Montgomery) (CPU t
+ime)
+exponent 224 bits, modulus 1024 bits : 72.4795 modexp/second (Classic) (CPU time
+)
+exponent 256 bits, modulus 1024 bits : 59.2031 modexp/second (Montgomery) (CPU t
+ime)
+exponent 256 bits, modulus 1024 bits : 63.1154 modexp/second (Classic) (CPU time
+)
+exponent 288 bits, modulus 1024 bits : 54.9843 modexp/second (Montgomery) (CPU t
+ime)
+exponent 288 bits, modulus 1024 bits : 55.9441 modexp/second (Classic) (CPU time
+)
+exponent 320 bits, modulus 1024 bits : 51.2821 modexp/second (Montgomery) (CPU t
+ime)
+exponent 320 bits, modulus 1024 bits : 50.274 modexp/second (Classic) (CPU time)
+
+exponent 352 bits, modulus 1024 bits : 48.0839 modexp/second (Montgomery) (CPU t
+ime)
+exponent 352 bits, modulus 1024 bits : 45.5519 modexp/second (Classic) (CPU time
+)
+exponent 384 bits, modulus 1024 bits : 45.2304 modexp/second (Montgomery) (CPU t
+ime)
+exponent 384 bits, modulus 1024 bits : 41.6389 modexp/second (Classic) (CPU time
+)
+exponent 416 bits, modulus 1024 bits : 42.7807 modexp/second (Montgomery) (CPU t
+ime)
+exponent 416 bits, modulus 1024 bits : 38.4394 modexp/second (Classic) (CPU time
+)
+exponent 448 bits, modulus 1024 bits : 40.4793 modexp/second (Montgomery) (CPU t
+ime)
+exponent 448 bits, modulus 1024 bits : 35.5758 modexp/second (Classic) (CPU time
+)
+exponent 480 bits, modulus 1024 bits : 38.4615 modexp/second (Montgomery) (CPU t
+ime)
+exponent 480 bits, modulus 1024 bits : 33.2127 modexp/second (Classic) (CPU time
+)
+exponent 512 bits, modulus 1024 bits : 36.6126 modexp/second (Montgomery) (CPU t
+ime)
+exponent 512 bits, modulus 1024 bits : 31.174 modexp/second (Classic) (CPU time)
+
+exponent 544 bits, modulus 1024 bits : 34.8967 modexp/second (Montgomery) (CPU t
+ime)
+exponent 544 bits, modulus 1024 bits : 29.2107 modexp/second (Classic) (CPU time
+)
+exponent 576 bits, modulus 1024 bits : 33.4024 modexp/second (Montgomery) (CPU t
+ime)
+exponent 576 bits, modulus 1024 bits : 27.5505 modexp/second (Classic) (CPU time
+)
+exponent 608 bits, modulus 1024 bits : 31.9683 modexp/second (Montgomery) (CPU t
+ime)
+exponent 608 bits, modulus 1024 bits : 26.1117 modexp/second (Classic) (CPU time
+)
+exponent 640 bits, modulus 1024 bits : 30.6513 modexp/second (Montgomery) (CPU t
+ime)
+exponent 640 bits, modulus 1024 bits : 24.7776 modexp/second (Classic) (CPU time
+)
+exponent 672 bits, modulus 1024 bits : 29.5342 modexp/second (Montgomery) (CPU t
+ime)
+exponent 672 bits, modulus 1024 bits : 23.5899 modexp/second (Classic) (CPU time
+)
+exponent 704 bits, modulus 1024 bits : 27.9111 modexp/second (Montgomery) (CPU t
+ime)
+exponent 704 bits, modulus 1024 bits : 22.3774 modexp/second (Classic) (CPU time
+)
+exponent 736 bits, modulus 1024 bits : 26.8572 modexp/second (Montgomery) (CPU t
+ime)
+exponent 736 bits, modulus 1024 bits : 21.4694 modexp/second (Classic) (CPU time
+)
+exponent 768 bits, modulus 1024 bits : 25.9841 modexp/second (Montgomery) (CPU t
+ime)
+exponent 768 bits, modulus 1024 bits : 20.5723 modexp/second (Classic) (CPU time
+)
+exponent 800 bits, modulus 1024 bits : 25.0979 modexp/second (Montgomery) (CPU t
+ime)
+exponent 800 bits, modulus 1024 bits : 19.7773 modexp/second (Classic) (CPU time
+)
+exponent 832 bits, modulus 1024 bits : 24.3072 modexp/second (Montgomery) (CPU t
+ime)
+exponent 832 bits, modulus 1024 bits : 18.9908 modexp/second (Classic) (CPU time
+)
+exponent 864 bits, modulus 1024 bits : 23.5727 modexp/second (Montgomery) (CPU t
+ime)
+exponent 864 bits, modulus 1024 bits : 18.2912 modexp/second (Classic) (CPU time
+)
+exponent 896 bits, modulus 1024 bits : 22.865 modexp/second (Montgomery) (CPU ti
+me)
+exponent 896 bits, modulus 1024 bits : 17.6454 modexp/second (Classic) (CPU time
+)
+exponent 928 bits, modulus 1024 bits : 22.2148 modexp/second (Montgomery) (CPU t
+ime)
+exponent 928 bits, modulus 1024 bits : 17.012 modexp/second (Classic) (CPU time)
+
+exponent 960 bits, modulus 1024 bits : 21.5782 modexp/second (Montgomery) (CPU t
+ime)
+exponent 960 bits, modulus 1024 bits : 16.4482 modexp/second (Classic) (CPU time
+)
+exponent 992 bits, modulus 1024 bits : 21.0111 modexp/second (Montgomery) (CPU t
+ime)
+exponent 992 bits, modulus 1024 bits : 15.9205 modexp/second (Classic) (CPU time
+)
+exponent 1024 bits, modulus 1024 bits : 20.4537 modexp/second (Montgomery) (CPU
+time)
+exponent 1024 bits, modulus 1024 bits : 15.3808 modexp/second (Classic) (CPU tim
+e)
+exponent 32 bits, modulus 2048 bits : 39.6542 modexp/second (Montgomery) (CPU ti
+me)
+exponent 32 bits, modulus 2048 bits : 178.763 modexp/second (Classic) (CPU time)
+
+exponent 64 bits, modulus 2048 bits : 33.4896 modexp/second (Montgomery) (CPU ti
+me)
+exponent 64 bits, modulus 2048 bits : 74.2501 modexp/second (Classic) (CPU time)
+
+exponent 96 bits, modulus 2048 bits : 27.9111 modexp/second (Montgomery) (CPU ti
+me)
+exponent 96 bits, modulus 2048 bits : 47.3709 modexp/second (Classic) (CPU time)
+
+exponent 128 bits, modulus 2048 bits : 24.8447 modexp/second (Montgomery) (CPU t
+ime)
+exponent 128 bits, modulus 2048 bits : 35.03 modexp/second (Classic) (CPU time)
+exponent 160 bits, modulus 2048 bits : 22.3544 modexp/second (Montgomery) (CPU t
+ime)
+exponent 160 bits, modulus 2048 bits : 27.5383 modexp/second (Classic) (CPU time
+)
+exponent 192 bits, modulus 2048 bits : 20.2597 modexp/second (Montgomery) (CPU t
+ime)
+exponent 192 bits, modulus 2048 bits : 22.7676 modexp/second (Classic) (CPU time
+)
+exponent 224 bits, modulus 2048 bits : 18.7628 modexp/second (Montgomery) (CPU t
+ime)
+exponent 224 bits, modulus 2048 bits : 19.6379 modexp/second (Classic) (CPU time
+)
+exponent 256 bits, modulus 2048 bits : 16.798 modexp/second (Montgomery) (CPU ti
+me)
+exponent 256 bits, modulus 2048 bits : 17.1353 modexp/second (Classic) (CPU time
+)
+exponent 288 bits, modulus 2048 bits : 15.7055 modexp/second (Montgomery) (CPU t
+ime)
+exponent 288 bits, modulus 2048 bits : 15.1552 modexp/second (Classic) (CPU time
+)
+exponent 320 bits, modulus 2048 bits : 14.6619 modexp/second (Montgomery) (CPU t
+ime)
+exponent 320 bits, modulus 2048 bits : 13.6141 modexp/second (Classic) (CPU time
+)
+exponent 352 bits, modulus 2048 bits : 13.7046 modexp/second (Montgomery) (CPU t
+ime)
+exponent 352 bits, modulus 2048 bits : 12.3408 modexp/second (Classic) (CPU time
+)
+exponent 384 bits, modulus 2048 bits : 12.9189 modexp/second (Montgomery) (CPU t
+ime)
+exponent 384 bits, modulus 2048 bits : 11.2715 modexp/second (Classic) (CPU time
+)
+exponent 416 bits, modulus 2048 bits : 12.1327 modexp/second (Montgomery) (CPU t
+ime)
+exponent 416 bits, modulus 2048 bits : 10.3594 modexp/second (Classic) (CPU time
+)
+exponent 448 bits, modulus 2048 bits : 11.4818 modexp/second (Montgomery) (CPU t
+ime)
+exponent 448 bits, modulus 2048 bits : 9.54089 modexp/second (Classic) (CPU time
+)
+exponent 480 bits, modulus 2048 bits : 10.9346 modexp/second (Montgomery) (CPU t
+ime)
+exponent 480 bits, modulus 2048 bits : 8.95103 modexp/second (Classic) (CPU time
+)
+exponent 512 bits, modulus 2048 bits : 10.4439 modexp/second (Montgomery) (CPU t
+ime)
+exponent 512 bits, modulus 2048 bits : 8.38687 modexp/second (Classic) (CPU time
+)
+exponent 544 bits, modulus 2048 bits : 9.96413 modexp/second (Montgomery) (CPU t
+ime)
+exponent 544 bits, modulus 2048 bits : 7.86825 modexp/second (Classic) (CPU time
+)
+

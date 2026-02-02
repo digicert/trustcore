@@ -14,7 +14,7 @@
 #include  "../common/mtypes.h"
 #include  "../common/mrtos.h"
 
-#ifndef __DISABLE_MOCANA_STDINT__
+#ifndef __DISABLE_DIGICERT_STDINT__
 
 #include <stdint.h>
 #include <stddef.h>

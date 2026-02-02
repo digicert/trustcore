@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_JSON_PARSER__
+#ifdef __ENABLE_DIGICERT_JSON_PARSER__
 
 #include "../common/mdefs.h"
 #include "../common/mtypes.h"
@@ -189,7 +189,7 @@ JSON_releaseInternalParserMemory(MJSON_Ctx *jsonctx)
     {
         if (NULL != jsonctx->tokens)
         {
-            MOC_FREE((void **)&jsonctx->tokens);
+            DIGI_FREE((void **)&jsonctx->tokens);
         }
     }
 }
@@ -209,7 +209,7 @@ JSON_acquireContext(JSON_ContextType **ppCxt)
         goto exit;
     }
 
-    status = MOC_MALLOC((void**)&jsonCxt, sizeof(MJSON_Ctx));
+    status = DIGI_MALLOC((void**)&jsonCxt, sizeof(MJSON_Ctx));
     if (OK != status)
         goto exit;
 
@@ -241,7 +241,7 @@ JSON_releaseContext(JSON_ContextType **ppCtx)
     if (NULL != jsonctx)
     {
     	JSON_releaseInternalParserMemory(jsonctx);
-        MOC_FREE((void**)&jsonctx);
+        DIGI_FREE((void**)&jsonctx);
         *ppCtx = NULL;
     }
 
@@ -269,7 +269,7 @@ allocateToken(MJSON_Ctx* jsonctx, JSON_TokenType **token)
     }
 
     *token = &(jsonctx->tokens[jsonctx->tokenNext++]);
-    status = MOC_MEMSET((ubyte *)*token, 0x0, sizeof(JSON_TokenType));
+    status = DIGI_MEMSET((ubyte *)*token, 0x0, sizeof(JSON_TokenType));
 
 exit:
     return status;
@@ -305,31 +305,31 @@ fillPrimitiveToken(JSON_TokenType *token, const sbyte *parseString,
     /* Look for exact match of 'primitive type' names (ignoring case),
      * or try to read it as a valid number. */
     if ((4 == len) &&
-        (0 == MOC_STRNICMP((const sbyte *)"true",
+        (0 == DIGI_STRNICMP((const sbyte *)"true",
                            (const sbyte *)parseString + start, 4)) )
     {
     	token->type = JSON_True;
-#ifndef __DISABLE_MOCANA_JSON_FLOAT_PARSER__
+#ifndef __DISABLE_DIGICERT_JSON_FLOAT_PARSER__
         token->num.floatVal = 0.0f;
 #endif
         goto exit;
     }
     else if ((5 == len) &&
-             (0 == MOC_STRNICMP((const sbyte *)"false",
+             (0 == DIGI_STRNICMP((const sbyte *)"false",
                                 (const sbyte *)parseString + start, 5)) )
     {
         token->type = JSON_False;
-#ifndef __DISABLE_MOCANA_JSON_FLOAT_PARSER__
+#ifndef __DISABLE_DIGICERT_JSON_FLOAT_PARSER__
         token->num.floatVal = 0;
 #endif
         goto exit;
     }
     else if ((4 == len) &&
-             (0 == MOC_STRNICMP((const sbyte *)"null",
+             (0 == DIGI_STRNICMP((const sbyte *)"null",
                                 (const sbyte *)parseString + start, 4)) )
     {
         token->type = JSON_Null;
-#ifndef __DISABLE_MOCANA_JSON_FLOAT_PARSER__
+#ifndef __DISABLE_DIGICERT_JSON_FLOAT_PARSER__
         token->num.floatVal = 0;
 #endif
         goto exit;
@@ -345,7 +345,7 @@ fillPrimitiveToken(JSON_TokenType *token, const sbyte *parseString,
             {
                 continue;
             }
-            else if (FALSE != MOC_ISDIGIT(parseString[start + i]))
+            else if (FALSE != DIGI_ISDIGIT(parseString[start + i]))
             {
                 if (0 == dots)
                 {
@@ -388,7 +388,7 @@ fillPrimitiveToken(JSON_TokenType *token, const sbyte *parseString,
 
         if (0 < dots)
         {
-#ifndef __DISABLE_MOCANA_JSON_FLOAT_PARSER__
+#ifndef __DISABLE_DIGICERT_JSON_FLOAT_PARSER__
             token->type = JSON_Float;
             dots = sscanf((const char*)number, "%lf", &token->num.floatVal);
 #else
@@ -400,7 +400,7 @@ fillPrimitiveToken(JSON_TokenType *token, const sbyte *parseString,
         else
         {
             token->type = JSON_Integer;
-            token->num.intVal = MOC_ATOL((const sbyte *)number,NULL);
+            token->num.intVal = DIGI_ATOL((const sbyte *)number,NULL);
             dots = 1;
          /*   dots = sscanf((const char*)number, "%lld", &token->num.intVal); */
         }
@@ -940,7 +940,7 @@ JSON_parse(JSON_ContextType *pCtx,
     if (OK != status)
     	goto exit;
 
-#ifdef __MOCANA_JSON_HUGE_FILE__
+#ifdef __DIGICERT_JSON_HUGE_FILE__
     /* Use unlimited malloc() when it is expected that a very large JSON
      * text needs a large number of tokens
      */
@@ -949,12 +949,12 @@ JSON_parse(JSON_ContextType *pCtx,
     if ((void *)0 == jsonctx->tokens)
         goto exit;
 #else
-    status = MOC_MALLOC((void**)&jsonctx->tokens, count1*sizeof(JSON_TokenType));
+    status = DIGI_MALLOC((void**)&jsonctx->tokens, count1*sizeof(JSON_TokenType));
     if (OK != status)
     	goto exit;
 #endif
 
-    MOC_MEMSET((ubyte*)jsonctx->tokens, 0, count1*sizeof(JSON_TokenType));
+    DIGI_MEMSET((ubyte*)jsonctx->tokens, 0, count1*sizeof(JSON_TokenType));
     jsonctx->tokenCount = count1;
     jsonctx->parserBuf = parseString;
     jsonctx->parserBufLen = parseStringLen;
@@ -1030,9 +1030,9 @@ JSON_getObjectIndex(JSON_ContextType *pCtx,
         }
 
         if ((JSON_String == ptoken->type) && (0 < ptoken->len) &&
-            (MOC_STRLEN((const sbyte*)name) == ptoken->len))
+            (DIGI_STRLEN((const sbyte*)name) == ptoken->len))
         {
-            if (0 == MOC_STRNICMP(name,
+            if (0 == DIGI_STRNICMP(name,
                                   (const sbyte *)ptoken->pStart,
                                   ptoken->len))
             {
@@ -1134,7 +1134,7 @@ JSON_getToken(JSON_ContextType *pCtx, ubyte4 ndx, JSON_TokenType *outputToken)
     }
     else if (JSON_Float == ptok->type)
     {
-#ifndef __DISABLE_MOCANA_JSON_FLOAT_PARSER__
+#ifndef __DISABLE_DIGICERT_JSON_FLOAT_PARSER__
     	outputToken->num.floatVal = ptok->num.floatVal;
 #else
     	/* Floats are not supported */
@@ -1180,6 +1180,7 @@ JSON_utilReadJsonString(
     sbyte *valueName = NULL;
     ubyte4 index = 0;
     JSON_TokenType token = {0};
+    MOC_UNUSED(parentKeyName);
 
     status = JSON_getObjectIndex(pJCtx, (sbyte*) keyName,
             jsonIndex + 1, &index, boundedSearch);
@@ -1191,14 +1192,14 @@ JSON_utilReadJsonString(
     status = JSON_getToken(pJCtx, index + 1, &token);
     if (JSON_String == token.type)
     {
-        MOC_FREE ((void**)ppvalueName);
-        status = MOC_CALLOC ((void**)&valueName, 1, token.len + 1);
+        DIGI_FREE ((void**)ppvalueName);
+        status = DIGI_CALLOC ((void**)&valueName, 1, token.len + 1);
         if (OK != status)
         {
             goto exit;
         }
 
-        MOC_MEMCPY ( valueName, token.pStart, token.len);
+        DIGI_MEMCPY ( valueName, token.pStart, token.len);
         valueName[token.len] = '\0';
         *ppvalueName = valueName;
     }
@@ -1222,6 +1223,7 @@ JSON_utilReadJsonInt(
     MSTATUS status = OK;
     ubyte4 index = 0;
     JSON_TokenType token = {0};
+    MOC_UNUSED(parentKeyName);
 
     status = JSON_getObjectIndex(pJCtx, (sbyte*) keyName,
             jsonIndex + 1, &index, boundedSearch);
@@ -1255,6 +1257,7 @@ JSON_utilReadJsonBoolean(
     MSTATUS status = OK;
     ubyte4 index = 0;
     JSON_TokenType token = {0};
+    MOC_UNUSED(parentKeyName);
 
     status = JSON_getObjectIndex(pJCtx, (sbyte *) keyName,
             jsonIndex + 1, &index, boundedSearch);
@@ -1309,12 +1312,12 @@ MOC_EXTERN MSTATUS JSON_getJsonString(
         goto exit;
     }
 
-    status = MOC_MALLOC((void **) ppValue, token.len + 1);
+    status = DIGI_MALLOC((void **) ppValue, token.len + 1);
     if (OK != status)
     {
         goto exit;
     }
-    MOC_MEMCPY(*ppValue, token.pStart, token.len);
+    DIGI_MEMCPY(*ppValue, token.pStart, token.len);
     (*ppValue)[token.len] = '\0';
 
 exit:
@@ -1470,12 +1473,12 @@ MOC_EXTERN MSTATUS JSON_getJsonStringValue(
         goto exit;
     }
 
-    status = MOC_MALLOC((void **) ppValue, token.len + 1);
+    status = DIGI_MALLOC((void **) ppValue, token.len + 1);
     if (OK != status)
     {
         goto exit;
     }
-    MOC_MEMCPY(*ppValue, token.pStart, token.len);
+    DIGI_MEMCPY(*ppValue, token.pStart, token.len);
     (*ppValue)[token.len] = '\0';
 
 exit:
@@ -1679,7 +1682,7 @@ JSON_DBG_dumpToken(JSON_ContextType *pCtx,
     }
     else if (JSON_Float == ptok->type)
     {
-#ifndef __DISABLE_MOCANA_JSON_FLOAT_PARSER__
+#ifndef __DISABLE_DIGICERT_JSON_FLOAT_PARSER__
         DBG_PRINT("Token[%d].num.floatVal = %f\n", ndx, ptok->num.floatVal);
 #else
         /* Floats are not supported */
@@ -1696,7 +1699,7 @@ JSON_DBG_dumpToken(JSON_ContextType *pCtx,
         {
             len = (MAX_LINE_LEN > ptok->len) ? ptok->len : MAX_LINE_LEN - 1;
             smallprintbuf[len] = '\0';
-            MOC_MEMCPY(smallprintbuf, ptok->pStart, len);
+            DIGI_MEMCPY(smallprintbuf, ptok->pStart, len);
             smallprintbuf[MAX_LINE_LEN - 1] = '\0';
             DBG_PRINT("Token[%d].string = \"%s\"\n", ndx, smallprintbuf);
         }
@@ -1752,4 +1755,4 @@ JSON_stringifyType(ubyte type, sbyte **stringType)
     return status;
 }
 
-#endif /* __ENABLE_MOCANA_JSON_PARSER__ */
+#endif /* __ENABLE_DIGICERT_JSON_PARSER__ */

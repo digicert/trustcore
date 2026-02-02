@@ -34,21 +34,21 @@
 #include "../crypto/crypto.h"
 #include "../crypto/crypto_init.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_priv.h"
 #include "../crypto_interface/crypto_interface_random.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
 #include "../common/mem_profiler.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_DATA_PROTECTION__
+#ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
 
 #include "../data_protection/file_protect.h"
 #include "../data_protection/tools/fp_example_seed_callback.h"
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 #include "../tap/tap_api.h"
 
 #undef MOC_FP_SEED_CB
@@ -60,19 +60,19 @@
 #undef MOC_FP_FREE_FINGERPRINT_CB
 #define MOC_FP_FREE_FINGERPRINT_CB TAP_DP_freeFingerprintCallback
 
-#endif /* __ENABLE_MOCANA_TAP__ */
-#endif /* __ENABLE_MOCANA_DATA_PROTECTION__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
+#endif /* __ENABLE_DIGICERT_DATA_PROTECTION__ */
 
 MOC_EXTERN_DATA_DEF moctime_t gStartTime;
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
 
-#ifdef __DISABLE_MOCANA_STARTUP_GUARD__
+#ifdef __DISABLE_DIGICERT_STARTUP_GUARD__
 #define MOC_REF_CHECK(_status)
 #define MOC_INIT_CHECK(_status, _pSetupInfo)
 #define MOC_INIT_CLEANUP(_status, _pSetupInfo)
-#define MOC_FREE_CHECK(_status)
-#define MOC_FREE_CLEANUP(_status, _pSetupInfo)
+#define DIGI_FREE_CHECK(_status)
+#define DIGI_FREE_CLEANUP(_status, _pSetupInfo)
 
 #define MOC_INIT_CRYPTO_INTERFACE_CORE(_status, _isMultiThreaded)
 #define MOC_UNINIT_CRYPTO_INTERFACE_CORE(_status, _dStatus)
@@ -80,12 +80,12 @@ MOC_EXTERN_DATA_DEF moctime_t gStartTime;
 #else
 /**
  * @var initMutex  Global mutex to ensure multiple nested calls to
- *                 MOCANA_initialize are thread safe
+ *                 DIGICERT_initialize are thread safe
  */
 static RTOS_MUTEX initMutex = NULL;
 /**
  * @var refCount   Reference count to ensure multiple nested calls to
- *                 MOCANA_initialize are thread safe
+ *                 DIGICERT_initialize are thread safe
  */
 static sbyte4 refCount = 0;
 
@@ -95,14 +95,14 @@ MOC_EXTERN_MOCANA_H ShutdownHandler g_sslShutdownHandler = NULL;
 ShutdownHandler g_sslShutdownHandler = NULL;
 #endif
 
-#ifdef __ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__
-MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
+#ifdef __ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__
+MOC_EXTERN sbyte4 DIGICERT_addCustomEntropyInjection(void);
 #endif
 
 /*----------------------------------------------------------------------------*/
 
 /* If the Crypto Interface is enabled, initialize the core */
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #define MOC_INIT_CRYPTO_INTERFACE_CORE(_status, _isMultiThreaded)              \
     _status = CRYPTO_INTERFACE_initializeCore(_isMultiThreaded);               \
     if (OK != _status)                                                         \
@@ -114,7 +114,7 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
 /*----------------------------------------------------------------------------*/
 
 /* If the Crypto Interface is enabled, uninitialize the core */
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #define MOC_UNINIT_CRYPTO_INTERFACE_CORE(_status, _dStatus)                    \
     _dStatus = CRYPTO_INTERFACE_uninitializeCore();                            \
     if (OK == _status)                                                         \
@@ -125,7 +125,7 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_DATA_PROTECTION__)
+#if defined(__ENABLE_DIGICERT_DATA_PROTECTION__)
 #define MOC_INIT_FP_CALLBACKS(_status)                                         \
     _status = FP_registerSeedCallback(MOC_FP_SEED_CB, NULL);                   \
     if (OK != _status)                                                         \
@@ -143,18 +143,18 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_DATA_PROTECTION__)
-#define MOC_FREE_FP_CALLBACKS(_status, _dStatus)                               \
+#if defined(__ENABLE_DIGICERT_DATA_PROTECTION__)
+#define DIGI_FREE_FP_CALLBACKS(_status, _dStatus)                               \
     _dStatus = FP_shutdown();                                                  \
     if (OK == _status)                                                         \
       _status = _dStatus;
 #else
-#define MOC_FREE_FP_CALLBACKS(_status, _dStatus)
+#define DIGI_FREE_FP_CALLBACKS(_status, _dStatus)
 #endif
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #define MOC_INIT_TAP_EXTERN(_status)                                           \
     _status = CRYPTO_INTERFACE_initializeTAPExtern();                          \
     if (OK != _status)                                                         \
@@ -165,13 +165,13 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
-#define MOC_FREE_TAP_EXTERN(_status, _dStatus)                                 \
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+#define DIGI_FREE_TAP_EXTERN(_status, _dStatus)                                 \
     _dStatus = CRYPTO_INTERFACE_freeTAPExtern();                               \
     if (OK == _status)                                                         \
       _status = _dStatus;
 #else
-#define MOC_FREE_TAP_EXTERN(_status, _dStatus)
+#define DIGI_FREE_TAP_EXTERN(_status, _dStatus)
 #endif
 
 /*----------------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_STARTUP_GUARD__
+ *   + \c \__DISABLE_DIGICERT_STARTUP_GUARD__
  *   .
  * @sa MOC_INIT_CLEANUP
  */
@@ -247,7 +247,7 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_STARTUP_GUARD__
+ *   + \c \__DISABLE_DIGICERT_STARTUP_GUARD__
  *   .
  * @sa MOC_INIT_CHECK
  */
@@ -259,7 +259,7 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
         _status = _dStatus;                                                    \
     }
 /**
- * @def      MOC_FREE_CHECK(_status)
+ * @def      DIGI_FREE_CHECK(_status)
  * @details  This macro will wait if necessary to get a handle on the global
  *           mutex, then decrement the reference count. If the count is zero
  *           then the uninitialization code is executed, else return \c OK.
@@ -268,11 +268,11 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_STARTUP_GUARD__
+ *   + \c \__DISABLE_DIGICERT_STARTUP_GUARD__
  *   .
- * @sa MOC_FREE_CLEANUP
+ * @sa DIGI_FREE_CLEANUP
  */
-#define MOC_FREE_CHECK(_status)                                                \
+#define DIGI_FREE_CHECK(_status)                                                \
     if (NULL == initMutex)                                                     \
       goto exit;                                                               \
     status = RTOS_mutexWait(initMutex);                                        \
@@ -282,7 +282,7 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
       goto exit;
 
 /**
- * @def      MOC_FREE_CLEANUP(_status, _dStatus)
+ * @def      DIGI_FREE_CLEANUP(_status, _dStatus)
  * @details  This macro will free the global mutex if the reference count is
  *           zero, otherwise it will release the mutex and return \c OK.
  *
@@ -291,11 +291,11 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_STARTUP_GUARD__
+ *   + \c \__DISABLE_DIGICERT_STARTUP_GUARD__
  *   .
- * @sa MOC_FREE_CHECK
+ * @sa DIGI_FREE_CHECK
  */
-#define MOC_FREE_CLEANUP(_status, _dStatus)                                    \
+#define DIGI_FREE_CLEANUP(_status, _dStatus)                                    \
     if (NULL != initMutex)                                                     \
     {                                                                          \
       _dStatus = RTOS_mutexFree(&initMutex);                                   \
@@ -303,12 +303,12 @@ MOC_EXTERN sbyte4 MOCANA_addCustomEntropyInjection(void);
         _status = _dStatus;                                                    \
     }
 
-#endif /* defined (__DISABLE_MOCANA_STARTUP_GUARD__) */
+#endif /* defined (__DISABLE_DIGICERT_STARTUP_GUARD__) */
 
 /*----------------------------------------------------------------------------*/
 
 extern MSTATUS
-MOCANA_initialize(
+DIGICERT_initialize(
   InitMocanaSetupInfo *pSetupInfo,
   MocCtx *ppCtx
   )
@@ -327,7 +327,7 @@ MOCANA_initialize(
     *ppCtx = NULL;
 
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
   if (OK > (status = MEM_PROFILER_init()))
     goto exit;
 #endif
@@ -400,7 +400,7 @@ MOCANA_initialize(
   /* Initialize the Crypto Interface Core */
   MOC_INIT_CRYPTO_INTERFACE_CORE(status, isMultiThreaded)
 
-  status = CRYPTO_MOC_init();
+  status = CRYPTO_DIGI_init();
   if (OK != status)
     goto exit;
 
@@ -443,7 +443,7 @@ exit:
 
 /*----------------------------------------------------------------------------*/
 
-extern MSTATUS MOCANA_free (
+extern MSTATUS DIGICERT_free(
   MocCtx *ppCtx
   )
 {
@@ -466,18 +466,18 @@ extern MSTATUS MOCANA_free (
    */
 
   /* Manage threads using safe reference counting */
-  MOC_FREE_CHECK(status)
+  DIGI_FREE_CHECK(status)
 
-  MOC_FREE_TAP_EXTERN(status, dStatus)
+  DIGI_FREE_TAP_EXTERN(status, dStatus)
 
   /* Free global random number generator */
   {
   MOC_GRNG_FREE(status, dStatus)
   }
 
-  MOC_FREE_FP_CALLBACKS(status, dStatus)
+  DIGI_FREE_FP_CALLBACKS(status, dStatus)
 
-  dStatus = CRYPTO_MOC_free();
+  dStatus = CRYPTO_DIGI_free();
   if (OK == status)
     status = dStatus;
 
@@ -490,8 +490,8 @@ extern MSTATUS MOCANA_free (
   }
   RTOS_sleepMS(100);
 
-#ifndef __DISABLE_MOCANA_RNG__
-#if ((!defined(__DISABLE_MOCANA_RAND_ENTROPY_THREADS__)) && (!defined(__DISABLE_MOCANA_RAND_SEED__)))
+#ifndef __DISABLE_DIGICERT_RNG__
+#if ((!defined(__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__)) && (!defined(__DISABLE_DIGICERT_RAND_SEED__)))
   if (ENTROPY_SRC_EXTERNAL != RANDOM_getEntropySource())
   {
     RNG_SEED_DestroyEntropyThreads();
@@ -521,12 +521,12 @@ exit:
 #endif
 
   /* Manage threads using safe reference counting */
-  MOC_FREE_CLEANUP(status, dStatus)
+  DIGI_FREE_CLEANUP(status, dStatus)
 
   /* Free memory partitions, including static ones set up during initialization */
   MOC_MEM_PART_UNINIT(status, dStatus)
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
   dStatus = MEM_PROFILER_done();
   if (OK == status)
     status = dStatus;
@@ -535,4 +535,4 @@ exit:
   return (sbyte4)status;
 }
 
-#endif /* __DISABLE_MOCANA_INIT__ */
+#endif /* __DISABLE_DIGICERT_INIT__ */

@@ -75,7 +75,7 @@ MOC_EXTERN const ubyte sha384withRSAEncryption_OID[];      /* 1.2.840.113549.1.1
 MOC_EXTERN const ubyte sha512withRSAEncryption_OID[];      /* 1.2.840.113549.1.1.13 (repeat for convenience)*/
 MOC_EXTERN const ubyte sha224withRSAEncryption_OID[];      /* 1.2.840.113549.1.1.14 (repeat for convenience)*/
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 MOC_EXTERN const ubyte cvc_rsaWithSha1_OID[]; /* 0.4.0.127.0.7.2.2.2.1.1 */
 
 MOC_EXTERN const ubyte cvc_rsaWithSha256_OID[]; /* 0.4.0.127.0.7.2.2.2.1.2 */
@@ -229,7 +229,7 @@ MOC_EXTERN const ubyte pkcs9_localKeyId_OID[];    /* 1.2.840.113549.1.9.21 */
 MOC_EXTERN const ubyte x509_description_OID[];    /* 2.5.4.13 */
 MOC_EXTERN const ubyte x509_uniqueIdentifier_OID[];    /* 2.5.4.45 */
 
-#if (defined(__ENABLE_MOCANA_CMS__))
+#if (defined(__ENABLE_DIGICERT_CMS__))
 /* S/MIME */
 MOC_EXTERN const ubyte smime_capabilities_OID[]; /* 1.2.840.113549.1.9.15 */
 /* S/MIME content types */
@@ -240,7 +240,7 @@ MOC_EXTERN const ubyte smime_msgSigDigest_OID[];   /* 1.2.840.113549.1.9.16.2.5 
 #endif
 
 /* ECDSA */
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 MOC_EXTERN const ubyte ecPublicKey_OID[];       /* 1 2 840 10045 2 1 */
 MOC_EXTERN const ubyte ecdsaWithSHA1_OID[];     /* 1 2 840 10045 4 1 */
@@ -264,7 +264,7 @@ MOC_EXTERN const ubyte secp224r1_OID[];        /* 1 3 132 0 33 */
 MOC_EXTERN const ubyte secp384r1_OID[];        /* 1 3 132 0 34 */
 MOC_EXTERN const ubyte secp521r1_OID[];        /* 1 3 132 0 35 */
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 MOC_EXTERN const ubyte cvc_ecdsaWithSha1_OID[]; /* 0.4.0.127.0.7.2.2.2.2.1 */
 
 MOC_EXTERN const ubyte cvc_ecdsaWithSha224_OID[]; /* 0.4.0.127.0.7.2.2.2.2.2 */
@@ -276,7 +276,7 @@ MOC_EXTERN const ubyte cvc_ecdsaWithSha384_OID[]; /* 0.4.0.127.0.7.2.2.2.2.4 */
 MOC_EXTERN const ubyte cvc_ecdsaWithSha512_OID[]; /* 0.4.0.127.0.7.2.2.2.2.5 */
 #endif
     
-#if (defined(__ENABLE_MOCANA_PKCS7__)||defined(__ENABLE_MOCANA_CMS__))
+#if (defined(__ENABLE_DIGICERT_PKCS7__)||defined(__ENABLE_DIGICERT_CMS__))
 /* for the moment, these are only used for PKCS7/CMS */
 
 MOC_EXTERN const ubyte dhSinglePassStdDHSha1KDF_OID[]; /* 1 3 133 16 840 63 0 2 */
@@ -358,7 +358,7 @@ MOC_EXTERN const ubyte id_kp_secureShellServer[]; /* 1.3.6.1.5.5.7.3.22 */
  *   mocana-quantum-safe-hybrid-key   OBJECT IDENTIFIER ::= {mocana-quantum-safe classical-alg quantum-alg }
  */
 
-/* Mocana Proprietary User Privilege Extension */
+/* Digicert Proprietary User Privilege Extension */
 MOC_EXTERN const ubyte mocana_cert_extension_OID[]; /* 1.3.6.1.4.1.14421.1 */
 MOC_EXTERN const ubyte mocana_voip_OID[];           /* 1.3.6.1.4.1.14421.2 */
 
@@ -379,7 +379,7 @@ MOC_EXTERN const ubyte tcg_on_ekPermIdSha256_OID[]; /* 2.23.133.12.1 */
 MOC_EXTERN const ubyte id_on_permanentIdentifier_OID[]; /* 1.3.6.1.5.5.7.8.3 */
 MOC_EXTERN const ubyte id_on_hardwareModuleName_OID[]; /* 1.3.6.1.5.5.7.8.4 */
 
-/* Mocana Proprietary NetworkLinker Host/Port Extension */
+/* Digicert Proprietary NetworkLinker Host/Port Extension */
 MOC_EXTERN const ubyte mocana_networkLinker_OID[];  /* 1.3.6.1.4.1.14421.3 */
 
 MOC_EXTERN const ubyte pure_pqc_sig_OID[];    /* 2.16.840.1.101.3.4.3.x      for x=17 to 31 */

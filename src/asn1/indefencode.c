@@ -117,7 +117,7 @@ MSTATUS MAsn1EncodeIndefUpdate (
       goto exit;
     }
 
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
       (void *)pEncoding, (void *)(pElement->buffer.pBuf), pElement->bufLen);
     if (OK != status)
       goto exit;
@@ -204,7 +204,7 @@ MSTATUS MAsn1EncodeIndefUpdate (
    */
   if (0 != pElement->valueLen)
   {
-    status = MOC_MEMCPY (
+    status = DIGI_MEMCPY (
       (void *)(pEncoding + offset), (void *)(pElement->value.pValue),
       pElement->valueLen);
     if (OK != status)

@@ -1029,7 +1029,7 @@ asm ( \
 
 #ifndef MOC_MULADDC_INIT
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 
 #define MOC_MULADDC_INIT                    \
 {                                       \
@@ -1075,7 +1075,7 @@ asm ( \
     r0 += *d; r1 += (r0 < *d);          \
     c = r1; *(d++) = r0;
 
-#endif /* __ENABLE_MOCANA_64_BIT__ */
+#endif /* __ENABLE_DIGICERT_64_BIT__ */
 
 #define MOC_MULADDC_STOP                    \
 }

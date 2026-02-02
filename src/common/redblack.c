@@ -23,7 +23,7 @@
 #include "../common/mrtos.h"
 #include "../common/redblack.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_REDBLACK_TREE__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_REDBLACK_TREE__))
 
 /*--------------------------------------------------------------------------*/
 
@@ -621,7 +621,7 @@ REDBLACK_defaultGetNode(void *pAllocCookie, void **ppNewNode)
 {
     MOC_UNUSED(pAllocCookie);
 
-    return MOC_MALLOC((void **)ppNewNode, sizeof(redBlackNodeDescr));
+    return DIGI_MALLOC((void **)ppNewNode, sizeof(redBlackNodeDescr));
 }
 
 
@@ -632,7 +632,7 @@ REDBLACK_defaultPutNode(void *pAllocCookie, void **ppFreeNode)
 {
     MOC_UNUSED(pAllocCookie);
 
-    return MOC_FREE((void **)ppFreeNode);
+    return DIGI_FREE((void **)ppFreeNode);
 }
 
 
@@ -655,7 +655,7 @@ REDBLACK_allocTree(redBlackTreeDescr **ppRetNewTree,
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)pNewTree, 0x00, sizeof(redBlackTreeDescr));
+    DIGI_MEMSET((ubyte *)pNewTree, 0x00, sizeof(redBlackTreeDescr));
 
     if (NULL == (pNewTree->func_redBlackGetNode = func_redBlackGetNode))
         pNewTree->func_redBlackGetNode = REDBLACK_defaultGetNode;
@@ -870,11 +870,11 @@ REDBLACK_traverseListInit(redBlackTreeDescr *pTree, redBlackListDescr **ppRetLis
     MSTATUS             status;
 
     /* allocate memory for the list tracker */
-    if (OK != (status = MOC_MALLOC((void **)ppRetListTracker, sizeof(redBlackListDescr))))
+    if (OK != (status = DIGI_MALLOC((void **)ppRetListTracker, sizeof(redBlackListDescr))))
         goto exit;
 
     /* clear it out */
-    MOC_MEMSET((ubyte *)(*ppRetListTracker), 0x00, sizeof(redBlackListDescr));
+    DIGI_MEMSET((ubyte *)(*ppRetListTracker), 0x00, sizeof(redBlackListDescr));
 
     /* setup for traverse */
     if (RB_NULL != (pNode = pTree->pRoot))
@@ -924,7 +924,7 @@ exit:
 extern MSTATUS
 REDBLACK_traverseListFree(redBlackListDescr **ppFreeListTracker)
 {
-    return MOC_FREE((void **)ppFreeListTracker);
+    return DIGI_FREE((void **)ppFreeListTracker);
 }
 
 
@@ -1005,4 +1005,4 @@ exit:
     return status;
 }
 
-#endif /* __DISABLE_MOCANA_COMMON_REDBLACK_TREE__ */
+#endif /* __DISABLE_DIGICERT_COMMON_REDBLACK_TREE__ */

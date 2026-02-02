@@ -36,7 +36,7 @@ SORT_shellSort(void *pItmArray, ubyte4 itemSize, sbyte4 leftIndex, sbyte4 rightI
     intBoolean  isLess;
     MSTATUS     status;
 
-    if (OK != (status = MOC_MALLOC(&pTempItem, itemSize)))
+    if (OK != (status = DIGI_MALLOC(&pTempItem, itemSize)))
         goto exit;
 
     /* find the appropriate increment sequence for the range using Knuth's method */
@@ -49,7 +49,7 @@ SORT_shellSort(void *pItmArray, ubyte4 itemSize, sbyte4 leftIndex, sbyte4 rightI
     {
         for (outerIndex = leftIndex + increment; outerIndex <= rightIndex; outerIndex++)
         {
-            MOC_MEMCPY(pTempItem, pItemArray + (itemSize * outerIndex), itemSize);
+            DIGI_MEMCPY(pTempItem, pItemArray + (itemSize * outerIndex), itemSize);
 
             for (innerIndex = outerIndex; innerIndex >= leftIndex + increment; innerIndex -= increment)
             {
@@ -59,10 +59,10 @@ SORT_shellSort(void *pItmArray, ubyte4 itemSize, sbyte4 leftIndex, sbyte4 rightI
                 if (TRUE != isLess)
                     break;
 
-                MOC_MEMCPY(pItemArray + (itemSize * innerIndex), pItemArray + (itemSize * (innerIndex - increment)), itemSize);
+                DIGI_MEMCPY(pItemArray + (itemSize * innerIndex), pItemArray + (itemSize * (innerIndex - increment)), itemSize);
             }
 
-            MOC_MEMCPY(pItemArray + (itemSize * innerIndex), pTempItem, itemSize);
+            DIGI_MEMCPY(pItemArray + (itemSize * innerIndex), pTempItem, itemSize);
         }
 
         increment = increment / 3;
@@ -70,7 +70,7 @@ SORT_shellSort(void *pItmArray, ubyte4 itemSize, sbyte4 leftIndex, sbyte4 rightI
     while (0 < increment);
 
 exit:
-    MOC_FREE(&pTempItem);
+    DIGI_FREE(&pTempItem);
 
     return status;
 

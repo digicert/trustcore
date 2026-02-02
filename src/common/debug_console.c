@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
 
 #include "../common/mdefs.h"
 #include "../common/mtypes.h"
@@ -27,7 +27,7 @@
 #if defined (__RTOS_THREADX__) && defined(_RENESAS_SYNERGY_)
 #include <app_common.h>
 #endif
-#if !defined(__KERNEL__) && defined(__ENABLE_MOCANA_PRINTF__)
+#if !defined(__KERNEL__) && defined(__ENABLE_DIGICERT_PRINTF__)
 /* jic - vprintf, vfprintf, vsnprintf not supported */
 #include "../common/moc_segment.h"
 #include "../common/mprintf.h"
@@ -54,7 +54,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifdef __ENABLE_MOCANA_PRINTF__
+#ifdef __ENABLE_DIGICERT_PRINTF__
 #define MOC_VA_START(a,f) va_start(a.ap, f)
 #define MOC_VA_END(a) va_end(a.ap)
 #else
@@ -73,7 +73,7 @@ typedef va_list moc_va_list;
 
 /*------------------------------------------------------------------*/
 
-#if !(defined(__KERNEL__) || defined(__MOCANA_DUMP_CONSOLE_TO_STDOUT__))
+#if !(defined(__KERNEL__) || defined(__DIGICERT_DUMP_CONSOLE_TO_STDOUT__))
 static intBoolean mBreakServer;
 static TCP_SOCKET mSocketConsole;
 #endif
@@ -89,7 +89,7 @@ moctime_t gDbgStartTime;
 static ubyte4
 getUpTime(void)
 {
-#if !defined(__ENABLE_MOCANA_SPLIT_DRIVER__)
+#if !defined(__ENABLE_DIGICERT_SPLIT_DRIVER__)
     return (RTOS_deltaMS(&gDbgStartTime, NULL));
 #else
     return 0;
@@ -134,7 +134,7 @@ static char *getcurrtime()
     return g_currtimestring;
 }
 
-void MOC_logTime(const char *inmsg)
+void DIGI_logTime(const char *inmsg)
 {
     const char *msg = (inmsg == NULL) ? "" : inmsg;
     DEBUG_CONSOLE_printf("MOC TIME - [%s]:%s\n",
@@ -571,7 +571,7 @@ DEBUG_CONSOLE_hexDump(sbyte4 errorClass, ubyte *pMesg, ubyte4 mesgLen)
 
 /*------------------------------------------------------------------*/
 
-#ifndef __MOCANA_DUMP_CONSOLE_TO_STDOUT__
+#ifndef __DIGICERT_DUMP_CONSOLE_TO_STDOUT__
 static void
 debugConsoleServer(void* tempListenPort)
 {
@@ -638,7 +638,7 @@ DEBUG_CONSOLE_start(ubyte2 listenPort)
 {
     MSTATUS     status;
 
-#ifndef __MOCANA_DUMP_CONSOLE_TO_STDOUT__
+#ifndef __DIGICERT_DUMP_CONSOLE_TO_STDOUT__
     RTOS_THREAD tid;
 
     mBreakServer   = FALSE;
@@ -665,11 +665,11 @@ DEBUG_CONSOLE_start(ubyte2 listenPort)
 extern void
 DEBUG_CONSOLE_init(void)
 {
-#ifndef __MOCANA_DUMP_CONSOLE_TO_STDOUT__
+#ifndef __DIGICERT_DUMP_CONSOLE_TO_STDOUT__
     mBreakServer   = FALSE;
     mSocketConsole = (TCP_SOCKET)(-1);
 #endif
-#if !defined(__ENABLE_MOCANA_SPLIT_DRIVER__)
+#if !defined(__ENABLE_DIGICERT_SPLIT_DRIVER__)
     (void) RTOS_deltaMS(NULL, &gDbgStartTime);
 #endif
     return;
@@ -681,7 +681,7 @@ DEBUG_CONSOLE_init(void)
 extern void
 DEBUG_CONSOLE_stop(void)
 {
-#ifndef __MOCANA_DUMP_CONSOLE_TO_STDOUT__
+#ifndef __DIGICERT_DUMP_CONSOLE_TO_STDOUT__
     mBreakServer   = TRUE;
     mSocketConsole = (TCP_SOCKET)(-1);
 #endif
@@ -691,8 +691,8 @@ DEBUG_CONSOLE_stop(void)
 
 /*------------------------------------------------------------------*/
 
-#if defined(__MOCANA_DUMP_CONSOLE_TO_STDOUT__) && \
-    !defined(__DISABLE_MOCANA_FILE_SYSTEM_HELPER__) /* jic FILE * not supported */
+#if defined(__DIGICERT_DUMP_CONSOLE_TO_STDOUT__) && \
+    !defined(__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__) /* jic FILE * not supported */
 static FILE *dboutput = NULL;
 
 extern sbyte4
@@ -842,7 +842,7 @@ DEBUG_CONSOLE_dump_data(ubyte *address, int size, int limit, int wsize,
     }
 }
 
-#ifdef __ENABLE_MOCANA_DEBUG_FORWARD__
+#ifdef __ENABLE_DIGICERT_DEBUG_FORWARD__
 static DEBUG_FORWARD_callback dbForwardCallback = NULL;
 
 MOC_EXTERN void DEBUG_FORWARD_set(DEBUG_FORWARD_callback forwardCallback)
@@ -852,11 +852,11 @@ MOC_EXTERN void DEBUG_FORWARD_set(DEBUG_FORWARD_callback forwardCallback)
         dbForwardCallback = forwardCallback;
     }
 }
-#endif /* __ENABLE_MOCANA_DEBUG_FORWARD__ */
+#endif /* __ENABLE_DIGICERT_DEBUG_FORWARD__ */
 
 /*------------------------------------------------------------------*/
 
-#if !defined(__MOCANA_DUMP_CONSOLE_TO_STDOUT__)
+#if !defined(__DIGICERT_DUMP_CONSOLE_TO_STDOUT__)
 extern void
 DEBUG_CONSOLE_printf(const char *format, ...)
 {
@@ -868,8 +868,8 @@ DEBUG_CONSOLE_printf(const char *format, ...)
     {
         sbyte4 numBytesWritten;
         sbyte printString[LOG_BUFSZ + 1] = { 0 };
-#ifdef __ENABLE_MOCANA_PRINTF__
-        sbyte4 stringLength = MOC_VSNPRINTF(printString, LOG_BUFSZ, (const ubyte *)format, &valist);
+#ifdef __ENABLE_DIGICERT_PRINTF__
+        sbyte4 stringLength = DIGI_VSNPRINTF(printString, LOG_BUFSZ, (const ubyte *)format, &valist);
 #else
         int stringLength = vsnprintf((char *)printString, LOG_BUFSZ, format, valist);
 #endif
@@ -969,22 +969,6 @@ DEBUG_CONSOLE_printf(const char *format, ...)
             {
                 k[7] = '\0'; /* don't print keying materials and keys */
             }
-#if 0
-            else if (NULL != (k = strstr(logBuf, "socket on ")))
-                k[9] = '\0';
-            else if (NULL != (k = strstr(logBuf, "dest=")))
-                k[4] = '\0';
-            else if (NULL != (k = strstr(logBuf, "laddr ")))
-                k[5] = '\0';
-            else if (NULL != (k = strstr(logBuf, "TSi: ")))
-                k[4] = '\0';
-            else if (NULL != (k = strstr(logBuf, "ESP ")))
-                k[3] = '\0';
-            else if (NULL != (k = strstr(logBuf, "add_ip_interface:")))
-                k[16] = '\0';
-            else if (NULL != (k = strstr(logBuf, "IPV4_ADDRESS(")))
-                k[12] = '\0';
-#endif
             LOGD("%s", (char*)logBuf);
             count -= (eol - logBuf);
             if (0 < count)
@@ -1056,21 +1040,21 @@ DEBUG_CONSOLE_printf(const char *format, ...)
 
 extern void DEBUG_CONSOLE_printfVarList(const char *format, moc_va_list valist)
 {
-#ifdef __ENABLE_MOCANA_PRINTF__
+#ifdef __ENABLE_DIGICERT_PRINTF__
     sbyte printString[LOG_BUFSZ + 1] = { 0 };
 #endif
-#ifdef __ENABLE_MOCANA_DEBUG_FORWARD__
+#ifdef __ENABLE_DIGICERT_DEBUG_FORWARD__
     sbyte dbgFwdMsgString[LOG_BUFSZ + 1] = { 0 };
 #endif
 
-#ifdef __ENABLE_MOCANA_PRINTF__
-    MOC_VSNPRINTF(printString, LOG_BUFSZ, (const ubyte *)format, &valist);
+#ifdef __ENABLE_DIGICERT_PRINTF__
+    DIGI_VSNPRINTF(printString, LOG_BUFSZ, (const ubyte *)format, &valist);
 #endif
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
     if (dboutput)
     {
-#ifdef __ENABLE_MOCANA_PRINTF__
+#ifdef __ENABLE_DIGICERT_PRINTF__
         fprintf(dboutput, (char *)printString);
 #else
         (void) vfprintf(dboutput, format, valist);
@@ -1078,16 +1062,16 @@ extern void DEBUG_CONSOLE_printfVarList(const char *format, moc_va_list valist)
         (void) fflush(dboutput);
     }
     else
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
     {
-#ifdef __ENABLE_MOCANA_PRINTF__
+#ifdef __ENABLE_DIGICERT_PRINTF__
         printf((char *)printString);
 #else
         (void) vprintf(format, valist);
 #endif
     }
 
-#ifdef __ENABLE_MOCANA_DEBUG_FORWARD__
+#ifdef __ENABLE_DIGICERT_DEBUG_FORWARD__
     if (NULL != dbForwardCallback)
     {
         vsprintf_s(dbgFwdMsgString, LOG_BUFSZ, (const char *)format, valist);
@@ -1105,10 +1089,10 @@ extern void
 DEBUG_CONSOLE_printf(const char *format, ...)
 {
     moc_va_list valist;
-#ifdef __ENABLE_MOCANA_PRINTF__
+#ifdef __ENABLE_DIGICERT_PRINTF__
     sbyte printString[LOG_BUFSZ + 1] = { 0 };
 #endif
-#ifdef __ENABLE_MOCANA_DEBUG_FORWARD__
+#ifdef __ENABLE_DIGICERT_DEBUG_FORWARD__
     sbyte dbgFwdMsgString[LOG_BUFSZ + 1] = { 0 };
 #endif
     MOC_VA_START(valist, format);
@@ -1119,5 +1103,5 @@ DEBUG_CONSOLE_printf(const char *format, ...)
 }
 #endif
 
-#endif /* __ENABLE_MOCANA_DEBUG_CONSOLE__ */
+#endif /* __ENABLE_DIGICERT_DEBUG_CONSOLE__ */
 

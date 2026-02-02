@@ -21,9 +21,9 @@
 #include "../common/int128.h"
 
 /* only used for SHA 512 and SHA 384 for the moment */
-#if !defined(__DISABLE_MOCANA_SHA512__) || !defined(__DISABLE_MOCANA_SHA384__)
+#if !defined(__DISABLE_DIGICERT_SHA512__) || !defined(__DISABLE_DIGICERT_SHA384__)
 
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
 
 ubyte16 u16_Shl( ubyte16 a, ubyte4 n)
 {
@@ -133,6 +133,6 @@ void u16_Incr32( ubyte16* pa, ubyte4 b)
     }
 }
 
-#endif /* __ENABLE_MOCANA_64_BIT__ */
+#endif /* __ENABLE_DIGICERT_64_BIT__ */
 
-#endif /* __DISABLE_MOCANA_SHA512__ */
+#endif /* __DISABLE_DIGICERT_SHA512__ */

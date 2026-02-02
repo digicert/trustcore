@@ -24,7 +24,7 @@
 #define __MTYPES_HEADER__
 
 
-#ifndef __ENABLE_MOCANA_BASIC_TYPES_OVERRIDE__
+#ifndef __ENABLE_DIGICERT_BASIC_TYPES_OVERRIDE__
 /*! @brief Default unsigned 1-byte type */
 typedef unsigned char           ubyte;
 /*! @brief Default unsigned 2-byte type */
@@ -73,12 +73,12 @@ not seem to work (__LONG_LONG_MAX__ is still undefined) */
 
 #endif /* __GNUC__ */
 
-#if defined(__ARMCC_VERSION) || defined (__RTOS_WIN32__) || defined (__RTOS_VXWORKS__) || defined( __ENABLE_MOCANA_64_BIT__) || defined(__LP64__) || (defined(__LONG_LONG_MAX__) && __LONG_LONG_MAX__ > __LONG_MAX__ && !defined(__MOCANA_MAX_INT_32__) ) || (defined(_INTEGRAL_MAX_BITS) && _INTEGRAL_MAX_BITS >= 64)
+#if defined(__ARMCC_VERSION) || defined (__RTOS_WIN32__) || defined (__RTOS_VXWORKS__) || defined( __ENABLE_DIGICERT_64_BIT__) || defined(__LP64__) || (defined(__LONG_LONG_MAX__) && __LONG_LONG_MAX__ > __LONG_MAX__ && !defined(__DIGICERT_MAX_INT_32__) ) || (defined(_INTEGRAL_MAX_BITS) && _INTEGRAL_MAX_BITS >= 64)
 
 /**
  * @cond __DOXYGEN_DONT_SHOW__
  */
-#define __MOCANA_MAX_INT__ (64)
+#define __DIGICERT_MAX_INT__ (64)
 /**
  * @endcond
  */
@@ -112,7 +112,7 @@ typedef struct ubyte16
 /**
  * @cond __DOXYGEN_DONT_SHOW__
  */
-#define __MOCANA_MAX_INT__ (32)
+#define __DIGICERT_MAX_INT__ (32)
 /**
  * @endcond
  */
@@ -142,7 +142,7 @@ typedef struct ubyte16
     ubyte4 w4;
 } ubyte16;
 
-#endif /* __ENABLE_MOCANA_64_BIT__ */
+#endif /* __ENABLE_DIGICERT_64_BIT__ */
 
 /**
  * @cond __DOXYGEN_DONT_SHOW__
@@ -185,7 +185,7 @@ typedef usize               uintptr;
 /**
  * @cond __DOXYGEN_DONT_SHOW__
  */
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 typedef struct moc_ipaddr
 {
     ubyte2 family;          /* AF_INET or AF_INET6 */
@@ -198,7 +198,7 @@ typedef struct moc_ipaddr
 
 } *MOC_IP_ADDRESS, MOC_IP_ADDRESS_S;
 #else
-#ifndef __ENABLE_MOCANA_NETWORK_TYPES_OVERRIDE__
+#ifndef __ENABLE_DIGICERT_NETWORK_TYPES_OVERRIDE__
 /* KJW - Make 64-bit safe, avoid 'long' */
 typedef ubyte4              MOC_IP_ADDRESS;
 #endif
@@ -253,5 +253,16 @@ typedef enum dataEncoding
 typedef SSIZE_T ssize_t;
 #endif /* !__MINGW32__ */
 #endif /* __RTOS_WIN32__ */
+
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
+/* Types to access 'hidden' functions via privileged call */
+typedef void (s_fct)(void);
+
+typedef struct
+{
+    int ID;
+    s_fct *fct;
+} FIPS_entry_fct;
+#endif /* __ENABLE_DIGICERT_FIPS_MODULE__ */
 
 #endif /* __MTYPES_HEADER__ */

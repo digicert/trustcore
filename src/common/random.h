@@ -25,7 +25,7 @@
  @flags
  Whether the following flag is defined determines which functions
  are declared:
- + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
 
  @filedoc    random.h
  */
@@ -37,7 +37,7 @@
 
 #include "../crypto/hw_accel.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_RANDOM__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_RANDOM__
 #include "../crypto_interface/crypto_interface_random_priv.h"
 #endif
 
@@ -126,7 +126,7 @@ typedef struct MocRandCtx
  * a pointers worth of bytes. Just to be safe there is a little extra space to
  * alleviate any potential alignment issues. */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
 #define MOC_RAND_CTX_WRAPPER_STORAGE_SIZE 16
 #else
 #define MOC_RAND_CTX_WRAPPER_STORAGE_SIZE 900
@@ -162,7 +162,7 @@ typedef struct RandomCtxWrapper
 #define ENTROPY_SRC_INTERNAL 0         /* Internal entropy threads will be used */
 #define ENTROPY_SRC_EXTERNAL 1         /* External entropy will be added to Random contexts */
 
-#if (defined(__DISABLE_MOCANA_RAND_ENTROPY_THREADS__) || defined(__ENABLE_MOCANA_FIPS_MODULE__))
+#if (defined(__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__) || defined(__ENABLE_DIGICERT_FIPS_MODULE__))
 #define ENTROPY_DEFAULT_SRC  ENTROPY_SRC_EXTERNAL
 #else
 #define ENTROPY_DEFAULT_SRC  ENTROPY_SRC_INTERNAL
@@ -173,7 +173,7 @@ typedef struct RandomCtxWrapper
 #define MOC_NO_AUTOSEED MOC_INIT_FLAG_NO_AUTOSEED    /* Simple entropy collection for autoseed */
 #define MOC_SEED_FROM_DEV_URANDOM MOC_INIT_FLAG_SEED_FROM_DEV_URANDOM  /* Seed from /dev/urandom */
 
-#ifdef __DISABLE_MOCANA_RAND_ENTROPY_THREADS__
+#ifdef __DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
 #define MOC_SEED_DEFAULT MOC_NO_AUTOSEED
 #else
 #define MOC_SEED_DEFAULT MOC_AUTOSEED
@@ -184,8 +184,8 @@ typedef struct RandomCtxWrapper
 
 /* personalization string used by some DRBG. Can be NULL (default)
 or set up to be a function */
-#ifndef MOCANA_RNG_GET_PERSONALIZATION_STRING
-#define MOCANA_RNG_GET_PERSONALIZATION_STRING  GetNullPersonalizationString
+#ifndef DIGICERT_RNG_GET_PERSONALIZATION_STRING
+#define DIGICERT_RNG_GET_PERSONALIZATION_STRING  GetNullPersonalizationString
 #endif
 
 #define NIST_CTRDRBG_DEFAULT_KEY_LEN_BYTES 32
@@ -254,7 +254,7 @@ MOC_EXTERN MSTATUS RANDOM_releaseContext (randomContext **pp_randomContext);
 
 MOC_EXTERN MSTATUS RANDOM_releaseContextEx (randomContext **pp_randomContext);
 
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 
 /**
  @brief      Add entropy to the RNG (random number generator) module.
@@ -268,7 +268,7 @@ MOC_EXTERN MSTATUS RANDOM_releaseContextEx (randomContext **pp_randomContext);
 
  @flags
  To enable this function, the following flag must \b not be defined:
- + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
 
  @param pRandomContext   Pointer to RNG context.
  @param entropyBit       Entropy to add.
@@ -283,7 +283,7 @@ MOC_EXTERN MSTATUS RANDOM_releaseContextEx (randomContext **pp_randomContext);
 MOC_EXTERN MSTATUS RANDOM_addEntropyBit(randomContext *pRandomContext, ubyte entropyBit);
 
 MOC_EXTERN MSTATUS RANDOM_addEntropyBitEx(randomContext *pRandomContext, ubyte entropyBit);
-#endif /*__DISABLE_MOCANA_ADD_ENTROPY__*/
+#endif /*__DISABLE_DIGICERT_ADD_ENTROPY__*/
 
 
 /**
@@ -333,10 +333,10 @@ MOC_EXTERN MSTATUS RANDOM_numberGenerator(randomContext *pRandomContext, ubyte *
  *
  * @par Flags
  * To enable this function, the following flag \b must be defined
- *   + \c \__ENABLE_MOCANA_SYM__
+ *   + \c \__ENABLE_DIGICERT_SYM__
  *   .
  * To enable this function, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  *   .
  *
  * @par Example
@@ -378,7 +378,7 @@ MOC_EXTERN MSTATUS RANDOM_isMocSymContext(
  *
  * @par Flags
  * To enable this function, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  *   .
  */
 MOC_EXTERN MSTATUS RANDOM_launchAutoSeed(
@@ -400,7 +400,7 @@ MOC_EXTERN MSTATUS RANDOM_launchAutoSeed(
  *                    \c DISPLAY_ERROR macro.
  * @par Flags
  * To enable this function, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  *   .
  *
  * @par Example
@@ -444,8 +444,8 @@ MOC_EXTERN MSTATUS RANDOM_getAutoSeedBytes(
  * characters. If you call this function on an EBCDIC platform, you must convert
  * the result to get the actual EBCDIC characters (i.e., map 0x30 to 0xF0, 0x41
  * to 0xC1, and so on).
- * <p>The caller supplies a randomContext. If you called MOCANA_initMocana, you
- * can pass in g_pRandomContext. If you did not call MOCANA_initMocana, you can
+ * <p>The caller supplies a randomContext. If you called DIGICERT_initDigicert, you
+ * can pass in g_pRandomContext. If you did not call DIGICERT_initDigicert, you can
  * call RANDOM_acquireContext to get one.
  * <p>The caller provides the buffer into which the function will place the
  * random characters. The caller also specifies how many random ASCII bytes to
@@ -503,7 +503,7 @@ MOC_EXTERN sbyte4 RANDOM_rngFun(void* rngFunArg, ubyte4 length, ubyte *buffer);
  @inc_file random.h
 
  @flags      There are no flag dependencies to enable this function
-             but if + \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__ is
+             but if + \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__ is
              defined then only the \c ENTROPY_SRC_EXTERNAL flag is allowed.
 
  @param  EntropySrc  The input flag. This is either \c ENTROPY_SRC_EXTERNAL,
@@ -754,7 +754,7 @@ MOC_EXTERN void resetRNGFail(void);
 /*----------------------------------------------------------------------------*/
 /* Macro Function Definitions */
 
-#ifdef __ENABLE_MOCANA_DEV_URANDOM__
+#ifdef __ENABLE_DIGICERT_DEV_URANDOM__
 
 /**
  * @def
@@ -763,7 +763,7 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- * + \c \__ENABLE_MOCANA_DEV_URANDOM__
+ * + \c \__ENABLE_DIGICERT_DEV_URANDOM__
  */
 #define MOC_SEED_FROM_DEV_URAND(_status, _randCtx, _numBytes)                  \
     _status = RANDOM_seedFromDevURandom (_randCtx, _numBytes);                 \
@@ -776,17 +776,17 @@ MOC_EXTERN void resetRNGFail(void);
     _status = ERR_RAND_SEED_METHOD_NOT_SUPPORTED;                              \
     goto exit;
 
-#endif /* ifdef __ENABLE_MOCANA_DEV_URANDOM__ */
+#endif /* ifdef __ENABLE_DIGICERT_DEV_URANDOM__ */
 
 /*----------------------------------------------------------------------------*/
 
-#ifdef __DISABLE_MOCANA_RAND_ENTROPY_THREADS__
+#ifdef __DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
 
 /**
  * @def      MOC_VERIFY_AUTOSEED_ENABLED(_status)
  * @details  This macro determines if the autoseed functionality is enabled
  *           by the current build flags. If the
- *           \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__ flag is defined then
+ *           \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__ flag is defined then
  *           this will expand to set the status to an error, otherwise it
  *           will expand to nothing.
  *
@@ -794,7 +794,7 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
+ *   + \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
  */
 #define MOC_VERIFY_AUTOSEED_ENABLED(_status)                                   \
     _status = ERR_RAND_SEED_METHOD_NOT_SUPPORTED;                              \
@@ -802,12 +802,12 @@ MOC_EXTERN void resetRNGFail(void);
 #else
 #define MOC_VERIFY_AUTOSEED_ENABLED(_status)
 
-#endif /* ifdef __DISABLE_MOCANA_RAND_ENTROPY_THREADS__ */
+#endif /* ifdef __DISABLE_DIGICERT_RAND_ENTROPY_THREADS__ */
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__MOCANA_FORCE_ENTROPY__) || defined(__ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__)
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#if defined(__DIGICERT_FORCE_ENTROPY__) || defined(__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__)
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 
 /**
  * @def      MOC_ADD_ENTROPY_PRE_INIT(_status)
@@ -818,10 +818,10 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__MOCANA_FORCE_ENTROPY__
+ *   + \c \__DIGICERT_FORCE_ENTROPY__
  *   .
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ *   + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
  *   .
  */
 #define MOC_ADD_ENTROPY_PRE_INIT(_status)                                     \
@@ -829,11 +829,11 @@ MOC_EXTERN void resetRNGFail(void);
     if (OK != _status)                                                        \
       goto exit;
 
-#endif /* ifndef __DISABLE_MOCANA_ADD_ENTROPY__ */
+#endif /* ifndef __DISABLE_DIGICERT_ADD_ENTROPY__ */
 #endif
 
-#if defined(__ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__)
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#if defined(__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__)
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 
 /**
  * @def      MOC_ADD_ENTROPY_INIT(_status)
@@ -844,23 +844,23 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__
+ *   + \c \__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__
  *   .
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ *   + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
  *   .
  * @sa MOC_ADD_ENTROPY_UNINIT
  */
 #define MOC_ADD_ENTROPY_INIT(_status, _pSetupInfo)                             \
-    _status = MOCANA_addCustomEntropyInjection();                              \
+    _status = DIGICERT_addCustomEntropyInjection();                              \
     if (OK != _status)                                                         \
       goto exit;
 
-#endif /* ifndef __DISABLE_MOCANA_ADD_ENTROPY__ */
-#endif /* if defined(__ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__) */
+#endif /* ifndef __DISABLE_DIGICERT_ADD_ENTROPY__ */
+#endif /* if defined(__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__) */
 
-#if defined(__MOCANA_FORCE_ENTROPY__) && !defined(__ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__)
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#if defined(__DIGICERT_FORCE_ENTROPY__) && !defined(__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__)
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 
 /**
  * @def      MOC_ADD_ENTROPY_INIT(_status)
@@ -871,10 +871,10 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__MOCANA_FORCE_ENTROPY__
+ *   + \c \__DIGICERT_FORCE_ENTROPY__
  *   .
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ *   + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
  *   .
  * @sa MOC_ADD_ENTROPY_UNINIT
  */
@@ -888,7 +888,7 @@ MOC_EXTERN void resetRNGFail(void);
           goto exit;                                                           \
       }                                                                        \
     }                                                                          \
-    _status = MOCANA_addExternalEntropy(1);                                    \
+    _status = DIGICERT_addExternalEntropy(1);                                    \
     if (OK != _status)                                                         \
       goto exit;
 
@@ -899,21 +899,21 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__MOCANA_FORCE_ENTROPY__
+ *   + \c \__DIGICERT_FORCE_ENTROPY__
  *   .
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ *   + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
  *   .
  *
- * @note MOCANA_cancelExternalEntropy always returns \c OK so there is no need
+ * @note DIGICERT_cancelExternalEntropy always returns \c OK so there is no need
  *       to look at the return value.
  * @sa MOC_ADD_ENTROPY_INIT
  */
 #define MOC_ADD_ENTROPY_UNINIT() \
-    MOCANA_cancelExternalEntropy();
+    DIGICERT_cancelExternalEntropy();
 
-#endif /* ifndef __DISABLE_MOCANA_ADD_ENTROPY__ */
-#endif /* ifdef __MOCANA_FORCE_ENTROPY__ */
+#endif /* ifndef __DISABLE_DIGICERT_ADD_ENTROPY__ */
+#endif /* ifdef __DIGICERT_FORCE_ENTROPY__ */
 
 #ifndef MOC_ADD_ENTROPY_INIT
 #define MOC_ADD_ENTROPY_INIT(_status, _pSetupInfo)
@@ -927,9 +927,9 @@ MOC_EXTERN void resetRNGFail(void);
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_RNG__
+#ifndef __DISABLE_DIGICERT_RNG__
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 
 /**
  * @def      MOC_GRNG_DEFAULT_INIT(_status)
@@ -939,7 +939,7 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_DEFAULT_INIT(_status)                                         \
     if (NULL == g_pRandomContext)                                              \
@@ -959,7 +959,7 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_DEFAULT_FREE(_status, _dStatus)                               \
     _dStatus = CRYPTO_INTERFACE_RANDOM_releaseContextEx(&g_pRandomContext);    \
@@ -976,7 +976,7 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_DEFAULT_INIT(_status)                                         \
     if (NULL == g_pRandomContext)                                              \
@@ -995,14 +995,14 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_DEFAULT_FREE(_status, _dStatus)                               \
     _dStatus = RANDOM_releaseContext(&g_pRandomContext);                       \
     if (OK != dStatus)                                                         \
       _status = _dStatus;
 
-#endif /* ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
 /**
  * @def      MOC_GRNG_DEPOT_INIT(_status)
@@ -1014,7 +1014,7 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_DEPOT_INIT(_status)                                           \
     _status = RNG_SEED_initDepotState();                                       \
@@ -1030,14 +1030,14 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_DEPOT_FREE() \
     RNG_SEED_freeDepotState();
 
 /*----------------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SYM__
+#ifdef __ENABLE_DIGICERT_SYM__
 
 /**
  * @def      MOC_GRNG_FULL_INIT(_status, _pSetupInfo, _pMocCtx)
@@ -1050,7 +1050,7 @@ MOC_EXTERN void resetRNGFail(void);
  *           Either way the result is a newly instantiated global random context
  *           at the location pointed to by \c g_pRandomContext.
  *
- * @note     If this macro is enabled and the \c \__ENABLE_MOCANA_SYM__
+ * @note     If this macro is enabled and the \c \__ENABLE_DIGICERT_SYM__
  *           build flag is \b not defined then this macro will be equal to the
  *           macro MOC_GRNG_DEFAULT_INIT.
  *
@@ -1060,14 +1060,14 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  *   .
  *
  * To set this macro to the value of MOC_GRNG_DEFAULT_INIT, the following flag
  * \b must be defined
- *   + \c \__ENABLE_MOCANA_SYM__
+ *   + \c \__ENABLE_DIGICERT_SYM__
  *   .
- * @sa MOCANA_initialize
+ * @sa DIGICERT_initialize
  */
 #define MOC_GRNG_FULL_INIT(_status, _pSetupInfo, _pMocCtx)                     \
     if (NULL != _pSetupInfo)                                                   \
@@ -1133,7 +1133,7 @@ MOC_EXTERN void resetRNGFail(void);
                                              NULL,                             \
                                              entropy,                          \
                                              MOC_DEFAULT_NUM_ENTROPY_BYTES);   \
-            MOC_MEMSET(entropy, 0, MOC_DEFAULT_NUM_ENTROPY_BYTES);             \
+            DIGI_MEMSET(entropy, 0, MOC_DEFAULT_NUM_ENTROPY_BYTES);             \
           }                                                                    \
           if (OK != _status)                                                   \
             goto exit;                                                         \
@@ -1160,7 +1160,7 @@ MOC_EXTERN void resetRNGFail(void);
  * @details  If the context is MocSym then the respective free function will be
  *           called, otherwise the default free will be called.
  *
- * @note     If this macro is enabled and the \c \__ENABLE_MOCANA_SYM__
+ * @note     If this macro is enabled and the \c \__ENABLE_DIGICERT_SYM__
  *           build flag is \b not defined then this macro will be equal to the
  *           macro MOC_GRNG_DEFAULT_FREE.
  *
@@ -1169,12 +1169,12 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  *   .
  *
  * To set this macro to the value of MOC_GRNG_DEFAULT_FREE, the following flag
  * \b must be defined
- *   + \c \__ENABLE_MOCANA_SYM__
+ *   + \c \__ENABLE_DIGICERT_SYM__
  */
 #define MOC_GRNG_FULL_FREE(_status, _dStatus)                                  \
     intBoolean isMocSymRand = FALSE;                                           \
@@ -1192,7 +1192,7 @@ MOC_EXTERN void resetRNGFail(void);
       MOC_GRNG_DEFAULT_FREE(_status, _dStatus)                                 \
     }
 
-#else /* ifdef __ENABLE_MOCANA_SYM__ */
+#else /* ifdef __ENABLE_DIGICERT_SYM__ */
 
 /* If MocSym is disabled, define macros to handle default RNG only */
 #define MOC_GRNG_FULL_INIT(_status, _pSetupInfo, _pMocCtx) \
@@ -1200,7 +1200,7 @@ MOC_EXTERN void resetRNGFail(void);
 #define MOC_GRNG_FULL_FREE(_status, _dStatus) \
     MOC_GRNG_DEFAULT_FREE(_status, _dStatus)
 
-#endif /* ifdef __ENABLE_MOCANA_SYM__ */
+#endif /* ifdef __ENABLE_DIGICERT_SYM__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -1215,7 +1215,7 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_INIT(_status, _pSetupInfo, _pMocCtx)                          \
     MOC_ADD_ENTROPY_PRE_INIT(_status)                                          \
@@ -1233,14 +1233,14 @@ MOC_EXTERN void resetRNGFail(void);
  *
  * @par Flags
  * To enable this macro, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_RNG__
+ *   + \c \__DISABLE_DIGICERT_RNG__
  */
 #define MOC_GRNG_FREE(_status, _dStatus)                                       \
     MOC_GRNG_FULL_FREE(_status, _dStatus)                                      \
     MOC_GRNG_DEPOT_FREE()                                                      \
     MOC_ADD_ENTROPY_UNINIT()
 
-#else /* ifndef __DISABLE_MOCANA_RNG__ */
+#else /* ifndef __DISABLE_DIGICERT_RNG__ */
 
 /* If RNG is disabled, define macros to be empty */
 #ifndef MOC_GRNG_INIT
@@ -1250,7 +1250,7 @@ MOC_EXTERN void resetRNGFail(void);
 #define MOC_GRNG_FREE(_status, _dStatus)
 #endif
 
-#endif /* ifndef __DISABLE_MOCANA_RNG__ */
+#endif /* ifndef __DISABLE_DIGICERT_RNG__ */
 
 /*----------------------------------------------------------------------------*/
 

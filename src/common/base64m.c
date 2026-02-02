@@ -81,7 +81,7 @@ BASE64_initializeContext(void)
         goto exit;
     }
 
-    MOC_MEMSET(mp_decBase64, 0x00, 256);
+    DIGI_MEMSET(mp_decBase64, 0x00, 256);
 
     for (index = 0; index < sizeof(m_encBase64) - 1; index++)
         mp_decBase64[m_encBase64[index]] = (ubyte)(index + 1);

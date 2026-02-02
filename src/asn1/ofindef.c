@@ -118,7 +118,7 @@ MSTATUS MAsn1OfFree (
     if (0 != (pEntry->entryFlag & MASN1_OF_FREE_ENTRY))
     {
       pTemp = pEntry;
-      fStatus = MOC_FREE ((void **)&pTemp);
+      fStatus = DIGI_FREE ((void **)&pTemp);
       if (OK == status)
         status = fStatus;
     }

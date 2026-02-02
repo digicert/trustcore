@@ -22,7 +22,7 @@
 #include "../common/mrtos.h"
 #include "../common/mem_pool.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_MEM_POOL__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_MEM_POOL__))
 
 /*------------------------------------------------------------------*/
 
@@ -89,7 +89,7 @@ MEM_POOL_createPool(poolHeaderDescr **ppRetPool, void *pMemPoolBase,
     }
 
     /* clear out memory pool head */
-    MOC_MEMSET((ubyte *)pNewPool, 0x00, sizeof(poolHeaderDescr));
+    DIGI_MEMSET((ubyte *)pNewPool, 0x00, sizeof(poolHeaderDescr));
 
     pNewPool->pStartOfPool    = pMemPoolBase;
     pNewPool->poolObjectSize  = poolObjectSize;
@@ -133,7 +133,7 @@ MEM_POOL_initPool(poolHeaderDescr *pInitPool, void *pMemPoolBase,
     }
 
     /* clear out memory pool head */
-    MOC_MEMSET((ubyte *)pInitPool, 0x00, sizeof(poolHeaderDescr));
+    DIGI_MEMSET((ubyte *)pInitPool, 0x00, sizeof(poolHeaderDescr));
 
     pInitPool->pStartOfPool    = pMemPoolBase;
     pInitPool->poolObjectSize  = poolObjectSize;
@@ -193,7 +193,7 @@ MEM_POOL_uninitPool(poolHeaderDescr *pUninitPool, void **ppRetOrigMemPoolBase)
 
     *ppRetOrigMemPoolBase = pUninitPool->pStartOfPool;
 
-    status = MOC_MEMSET((ubyte *)pUninitPool, 0x00, sizeof(poolHeaderDescr));
+    status = DIGI_MEMSET((ubyte *)pUninitPool, 0x00, sizeof(poolHeaderDescr));
 
 exit:
     return status;
@@ -327,4 +327,4 @@ exit:
     return status;
 } /* MEM_POOL_getIndexForObject */
 
-#endif /* __DISABLE_MOCANA_COMMON_MEM_POOL__ */
+#endif /* __DISABLE_DIGICERT_COMMON_MEM_POOL__ */

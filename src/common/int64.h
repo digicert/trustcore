@@ -21,7 +21,7 @@
 
 
 
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
 #define ZERO_U8(a) (a) = 0
 #define ISZERO_U8(a) (0 == (a))
 #define INCR_U8(a) (++(a))
@@ -67,7 +67,7 @@ MOC_EXTERN ubyte8 u8_And( ubyte8 a, ubyte8 b);
 MOC_EXTERN ubyte8 u8_Or( ubyte8 a, ubyte8 b);
 MOC_EXTERN ubyte8 u8_Xor( ubyte8 a, ubyte8 b);
 
-#endif /* __ENABLE_MOCANA_64_BIT__ */
+#endif /* __ENABLE_DIGICERT_64_BIT__ */
 
 
 #endif

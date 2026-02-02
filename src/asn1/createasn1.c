@@ -19,7 +19,7 @@
 #define MASN1_MAX_SUB_COUNT   0xffff
 #define MASN1_SUB_COUNT_MASK  0xffff
 
-#if (!defined(__DISABLE_MOCANA_ASN1_CREATE_ELEMENT_ARRAY__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_CREATE_ELEMENT_ARRAY__))
 
 /* How much extra space does this Element need.
  * The last field in the Element is pBuf, which generally holds the tag and
@@ -154,7 +154,7 @@ MOC_EXTERN MSTATUS MAsn1CreateElementArray (
     totalExtra += extra;
   }
 
-  status = MOC_CALLOC (
+  status = DIGI_CALLOC (
     (void **)&pBuf, (count * sizeof (MAsn1Element)) + totalExtra, 1);
   if (OK != status)
     goto exit;
@@ -260,7 +260,7 @@ exit:
 
   if (NULL != pBuf)
   {
-    MOC_FREE ((void **)&pBuf);
+    DIGI_FREE ((void **)&pBuf);
   }
 
   return (status);
@@ -313,7 +313,7 @@ MOC_EXTERN MSTATUS MAsn1FreeElementArray (
 
     if (0 != (pCurrent->bufFlag & MASN1_BUF_FLAG_FREE))
     {
-      fStatus = MOC_MEMSET_FREE (
+      fStatus = DIGI_MEMSET_FREE (
         (ubyte **)&(pCurrent->buffer.pBuf), pCurrent->bufLen);
       if (OK == status)
         status = fStatus;
@@ -322,7 +322,7 @@ MOC_EXTERN MSTATUS MAsn1FreeElementArray (
 
   /* Now free the entire buffer.
    */
-  fStatus = MOC_FREE ((void **)ppArray);
+  fStatus = DIGI_FREE ((void **)ppArray);
   if (OK == status)
     status = fStatus;
 
@@ -559,4 +559,4 @@ exit:
   return (status);
 }
 
-#endif /* (!defined(__DISABLE_MOCANA_ASN1_CREATE_ELEMENT_ARRAY__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_ASN1_CREATE_ELEMENT_ARRAY__)) */

@@ -25,7 +25,7 @@
 
 #define DEF_INCREMENT_SIZE  (10)
 
-#if (!defined(__DISABLE_MOCANA_COMMON_DYNAMIC_ARRAY__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_DYNAMIC_ARRAY__))
 
 /*------------------------------------------------------------------*/
 
@@ -163,14 +163,14 @@ DYNARR_AppendEx( DynArray* pArr, const void* pElement, ubyte4 incrementSize)
             return ERR_MEM_ALLOC_FAIL;
         }
 
-        MOC_MEMCPY( newArr, pArr->array, (pArr->numAllocated * pArr->elementSize));
+        DIGI_MEMCPY( newArr, pArr->array, (pArr->numAllocated * pArr->elementSize));
         FREE( pArr->array);
         pArr->array = newArr;
         pArr->numAllocated += incrementSize;
     }
 
     pDest = (void*) ( ((ubyte*)pArr->array) + (pArr->numUsed * pArr->elementSize));
-    MOC_MEMCPY( pDest, pElement, pArr->elementSize);
+    DIGI_MEMCPY( pDest, pElement, pArr->elementSize);
     ++(pArr->numUsed);
 
     return OK;
@@ -220,14 +220,14 @@ DYNARR_AppendMultiple( DynArray* pArr, const void* pElements, ubyte4 numElems, u
             return ERR_MEM_ALLOC_FAIL;
         }
 
-        MOC_MEMCPY( newArr, pArr->array, (pArr->numAllocated * pArr->elementSize));
+        DIGI_MEMCPY( newArr, pArr->array, (pArr->numAllocated * pArr->elementSize));
         FREE( pArr->array);
         pArr->array = newArr;
         pArr->numAllocated = numBlocks * incrementSize;
     }
 
     pDest = (void*) ( ((ubyte*)pArr->array) + (pArr->numUsed * pArr->elementSize));
-    MOC_MEMCPY( pDest, pElements, (numElems * pArr->elementSize));
+    DIGI_MEMCPY( pDest, pElements, (numElems * pArr->elementSize));
     pArr->numUsed += numElems;
     return OK;
 }
@@ -256,7 +256,7 @@ DYNARR_Get( const DynArray* pArr, sbyte4 index, void* pElement)
     }
 
     pSrc = (void*) ( ((ubyte*)pArr->array) + (index * pArr->elementSize));
-    MOC_MEMCPY( pElement, pSrc, pArr->elementSize);
+    DIGI_MEMCPY( pElement, pSrc, pArr->elementSize);
 
     return OK;
 }
@@ -371,4 +371,4 @@ int DynArrTests()
 
 #endif
 
-#endif /* __DISABLE_MOCANA_COMMON_DYNAMIC_ARRAY__ */
+#endif /* __DISABLE_DIGICERT_COMMON_DYNAMIC_ARRAY__ */
