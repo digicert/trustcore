@@ -1,0 +1,13 @@
+sslcli -c=0xc007 -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc008 -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc009 -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc00a -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc00c -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc00d -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc00e -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc00f -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc011 -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc012 -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc013 -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+sslcli -c=0xc014 -a=209.132.176.186 -n=ecc.fedora.redhat.com ""
+

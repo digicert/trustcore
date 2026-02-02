@@ -146,7 +146,7 @@ MOC_EXTERN_DATA_DEF const ubyte sha224withRSAEncryption_OID[] =
 MOC_EXTERN_DATA_DEF const ubyte noSignature_OID[] =
     { 8, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x06, 0x02 };
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 MOC_EXTERN_DATA_DEF const ubyte cvc_rsaWithSha1_OID[] =
 {0x0A, 0x04, 0x00, 0x7F, 0x00, 0x07, 0x02, 0x02, 0x02, 0x01, 0x01}; /* 0.4.0.127.0.7.2.2.2.1.1 */
 
@@ -302,7 +302,7 @@ MOC_EXTERN_DATA_DEF const ubyte aes128CBC_OID[] = {9, 0x60, 0x86, 0x48, 0x01, 0x
 MOC_EXTERN_DATA_DEF const ubyte aes192CBC_OID[] = {9, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x16};     /* 2.16.840.1.101.3.4.1.22 */
 MOC_EXTERN_DATA_DEF const ubyte aes256CBC_OID[] = {9, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x2a};     /* 2.16.840.1.101.3.4.1.42 */
 
-#if (defined(__ENABLE_MOCANA_SYM_GCM__))
+#if (defined(__ENABLE_DIGICERT_SYM_GCM__))
 
 MOC_EXTERN_DATA_DEF const ubyte aes128GCM_OID[] = {9, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x06};     /* 2.16.840.1.101.3.4.1.6 */
 MOC_EXTERN_DATA_DEF const ubyte aes192GCM_OID[] = {9, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x1a};     /* 2.16.840.1.101.3.4.1.26 */
@@ -434,7 +434,7 @@ MOC_EXTERN_DATA_DEF const ubyte x509_description_OID[] =
 MOC_EXTERN_DATA_DEF const ubyte x509_uniqueIdentifier_OID[] =
     { 3, 0x55, 0x04, 0x2D };   /* 2.5.4.45 */
 
-#if (defined(__ENABLE_MOCANA_CMS__))
+#if (defined(__ENABLE_DIGICERT_CMS__))
 
 MOC_EXTERN_DATA_DEF const ubyte smime_capabilities_OID[] =
     { 9, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x09, 0x0F }; /* 1.2.840.113549.1.9.15 */
@@ -480,7 +480,7 @@ MOC_EXTERN_DATA_DEF const ubyte id_aa_signingCertificate[] = {0x0b, 0x2a, 0x86, 
 MOC_EXTERN_DATA_DEF const ubyte id_kp_secureShellClient[] = {8, 0x2B, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03, 0x15};
 MOC_EXTERN_DATA_DEF const ubyte id_kp_secureShellServer[] = {8, 0x2B, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03, 0x16};
 
-/* Mocana Proprietary Certificate Extensions */
+/* Digicert Proprietary Certificate Extensions */
 MOC_EXTERN_DATA_DEF const ubyte mocana_cert_extension_OID[]   =   /* 1.3.6.1.4.1.14421.1 */
 {8, 0x2B, 0x06, 0x01, 0x04, 0x01, 0xF0, 0x55, 0x01};
 
@@ -528,7 +528,7 @@ MOC_EXTERN_DATA_DEF const ubyte id_on_permanentIdentifier_OID[] =
 MOC_EXTERN_DATA_DEF const ubyte id_on_hardwareModuleName_OID[] =
 { 0x08, 0x2B, 0x06, 0x01, 0x05, 0x05, 0x07, 0x08, 0x04 };
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 MOC_EXTERN_DATA_DEF const ubyte ecdsaWithSHA1_OID[] =               /* 1 2 840 10045 4 1 */
 {7, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x04, 0x01};
@@ -569,7 +569,7 @@ MOC_EXTERN_DATA_DEF const ubyte secp384r1_OID[] =
 MOC_EXTERN_DATA_DEF const ubyte secp521r1_OID[] =
 {5, 0x2B, 0x81, 0x04, 0x00, 0x23 };         /* 1 3 132 0 35 */
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 MOC_EXTERN_DATA_DEF const ubyte cvc_ecdsaWithSha1_OID[] =
 {0x0A, 0x04, 0x00, 0x7F, 0x00, 0x07, 0x02, 0x02, 0x02, 0x02, 0x01}; /* 0.4.0.127.0.7.2.2.2.2.1 */
 
@@ -586,7 +586,7 @@ MOC_EXTERN_DATA_DEF const ubyte cvc_ecdsaWithSha512_OID[] =
 {0x0A, 0x04, 0x00, 0x7F, 0x00, 0x07, 0x02, 0x02, 0x02, 0x02, 0x05}; /* 0.4.0.127.0.7.2.2.2.2.5 */
 #endif
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 
 MOC_EXTERN_DATA_DEF const ubyte pure_pqc_sig_OID[] =
 { 8, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03};              /* 2.16.840.1.101.3.4.3.x      for x=17 to 31 */
@@ -600,7 +600,7 @@ MOC_EXTERN_DATA_DEF const ubyte fndsa_1024_OID[] =
 
 #endif
 
-#if (defined(__ENABLE_MOCANA_PKCS7__)||defined(__ENABLE_MOCANA_CMS__))
+#if (defined(__ENABLE_DIGICERT_PKCS7__)||defined(__ENABLE_DIGICERT_CMS__))
 
 MOC_EXTERN_DATA_DEF const ubyte dhSinglePassStdDHSha1KDF_OID[] = { 9, 0x2b, 0x81, 0x05, 0x10, 0x86, 0x48, 0x3f, 0x00, 0x02 }; /* 1 3 133 16 840 63 0 2  */
 MOC_EXTERN_DATA_DEF const ubyte dhSinglePassStdDHSha256KDF_OID[] = { 6, 0x2b, 0x81, 0x04, 0x01, 0x0b, 0x01 }; /* 1.3.132.1.11.1 */

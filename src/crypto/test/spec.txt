@@ -1,0 +1,11 @@
+#
+# This file is used by testmonkey.rb. It specifies
+# a list of tests to run for each makefile build.
+# If not specified, all tests will run.
+#
+makefile_64_noasm: dh ec rsa
+makefile_altivec: dh ec rsa
+makefile_noasm: dh ec rsa
+makefile_small_size: dh ec rsa
+makefile_sse2: dh ec rsa
+makefile_openssl_pubkey: ca_mgmt

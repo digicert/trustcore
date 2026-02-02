@@ -21,7 +21,7 @@
                implemented by the NanoROOT NanoSMP.
  */
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 #include "smp_nanoroot_api.h"
 #include "smp_nanoroot.h"
 #include "smp_nanoroot_device_protect.h"
@@ -101,7 +101,7 @@ static MSTATUS NanoROOT_getCredential(TAP_SealAttributes *pRequestTemplate, ubyt
                     goto exit;
                 }
                 *pCredLen = pCredential->credentialData.bufferLen;
-                MOC_MEMCPY(pCredBuf, pCredential->credentialData.pBuffer, pCredential->credentialData.bufferLen);
+                DIGI_MEMCPY(pCredBuf, pCredential->credentialData.pBuffer, pCredential->credentialData.bufferLen);
             }
             else
             {
@@ -206,7 +206,7 @@ static MSTATUS NanoROOT_setECCSignature(TAP_Signature *pSignature, ubyte *pSignB
     pRData = NULL;
     pSData = NULL;
 
-    status = MOC_CALLOC((void **)&pRData, 1, elementLen);
+    status = DIGI_CALLOC((void **)&pRData, 1, elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for pRData, status = %d\n",
@@ -214,7 +214,7 @@ static MSTATUS NanoROOT_setECCSignature(TAP_Signature *pSignature, ubyte *pSignB
         goto exit;
     }
 
-    status = MOC_CALLOC((void **)&pSData, 1, elementLen);
+    status = DIGI_CALLOC((void **)&pSData, 1, elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for pSData, status = %d\n",
@@ -222,7 +222,7 @@ static MSTATUS NanoROOT_setECCSignature(TAP_Signature *pSignature, ubyte *pSignB
         goto exit;
     }
 
-    status = MOC_MEMCPY(pRData, pSignBuf, elementLen);
+    status = DIGI_MEMCPY(pRData, pSignBuf, elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Failed to copy %d bytes of pRData, status = %d\n",
@@ -230,7 +230,7 @@ static MSTATUS NanoROOT_setECCSignature(TAP_Signature *pSignature, ubyte *pSignB
         goto exit;
     }
 
-    status = MOC_MEMCPY(pSData, pSignBuf + elementLen, elementLen);
+    status = DIGI_MEMCPY(pSData, pSignBuf + elementLen, elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Failed to copy %d bytes of pSData, status = %d\n",
@@ -243,14 +243,13 @@ static MSTATUS NanoROOT_setECCSignature(TAP_Signature *pSignature, ubyte *pSignB
     pSignature->signature.eccSignature.pRData = pRData;
     pSignature->signature.eccSignature.sDataLen = elementLen;
     pSignature->signature.eccSignature.pSData = pSData;
-    (void) MOC_FREE((void **) &pSignBuf);
-    pSignBuf = NULL;
+    (void) DIGI_FREE((void **) &pSignBuf);
 
 exit:
     if(OK != status)
     {
-        (void) MOC_FREE((void **) &pRData);
-        (void) MOC_FREE((void **) &pSData);
+        (void) DIGI_FREE((void **) &pRData);
+        (void) DIGI_FREE((void **) &pSData);
         if (NULL != pSignature)
         {
             pSignature->signature.eccSignature.pRData = NULL;
@@ -306,7 +305,7 @@ static MSTATUS NanoROOT_getRSAPublicKey(RSAKey *pRSAKey, TAP_PublicKey *publicKe
         goto exit;
     }
 
-    status = MOC_MALLOC_MEMCPY ((void **)&pModulus, template.nLen, (void *)template.pN, template.nLen);
+    status = DIGI_MALLOC_MEMCPY ((void **)&pModulus, template.nLen, (void *)template.pN, template.nLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for modulus, status = %d\n",
@@ -314,7 +313,7 @@ static MSTATUS NanoROOT_getRSAPublicKey(RSAKey *pRSAKey, TAP_PublicKey *publicKe
         goto exit;
     }
 
-    status = MOC_MALLOC_MEMCPY ((void **)&pExponent, template.eLen, (void *)template.pE, template.eLen);
+    status = DIGI_MALLOC_MEMCPY ((void **)&pExponent, template.eLen, (void *)template.pE, template.eLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for exponent, status = %d\n",
@@ -332,8 +331,8 @@ exit:
     (void) CRYPTO_INTERFACE_RSA_freeKeyTemplateAux(NULL, &template);
     if(OK != status)
     {
-        (void) MOC_FREE((void **) &pModulus);
-        (void) MOC_FREE((void **) &pExponent);
+        (void) DIGI_FREE((void **) &pModulus);
+        (void) DIGI_FREE((void **) &pExponent);
     }
     return status;
 }
@@ -377,7 +376,7 @@ static MSTATUS NanoROOT_getECCPublicKey(ECCKey *pECCKey, TAP_PublicKey *publicKe
         goto exit;
     }
 
-    status = MOC_CALLOC((void **)&(publicKey->publicKey.eccKey.pPubX), 1, elementLen);
+    status = DIGI_CALLOC((void **)&(publicKey->publicKey.eccKey.pPubX), 1, elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for eccKey.pPubX, status = %d\n",
@@ -385,7 +384,7 @@ static MSTATUS NanoROOT_getECCPublicKey(ECCKey *pECCKey, TAP_PublicKey *publicKe
         goto exit;
     }
 
-    status = MOC_CALLOC((void **)&(publicKey->publicKey.eccKey.pPubY), 1, elementLen);
+    status = DIGI_CALLOC((void **)&(publicKey->publicKey.eccKey.pPubY), 1, elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for eccKey.pPubY, status = %d\n",
@@ -393,7 +392,7 @@ static MSTATUS NanoROOT_getECCPublicKey(ECCKey *pECCKey, TAP_PublicKey *publicKe
         goto exit;
     }
 
-    status = MOC_MEMCPY(&(publicKey->publicKey.eccKey.pPubX[0]), &pPubBuf[1], elementLen);
+    status = DIGI_MEMCPY(&(publicKey->publicKey.eccKey.pPubX[0]), &pPubBuf[1], elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Failed to copy %d bytes of pPubX, status = %d\n",
@@ -401,7 +400,7 @@ static MSTATUS NanoROOT_getECCPublicKey(ECCKey *pECCKey, TAP_PublicKey *publicKe
         goto exit;
     }
 
-    status = MOC_MEMCPY(&(publicKey->publicKey.eccKey.pPubY[0]), &pPubBuf[1+elementLen], elementLen);
+    status = DIGI_MEMCPY(&(publicKey->publicKey.eccKey.pPubY[0]), &pPubBuf[1+elementLen], elementLen);
     if (OK != status)
     {
         DB_PRINT("%s.%d Failed to copy %d bytes of pPubY, status = %d\n",
@@ -416,10 +415,10 @@ static MSTATUS NanoROOT_getECCPublicKey(ECCKey *pECCKey, TAP_PublicKey *publicKe
 exit:
     if(OK != status)
     {
-        (void) MOC_FREE((void **) &(publicKey->publicKey.eccKey.pPubX));
-        (void) MOC_FREE((void **) &(publicKey->publicKey.eccKey.pPubY));
+        (void) DIGI_FREE((void **) &(publicKey->publicKey.eccKey.pPubX));
+        (void) DIGI_FREE((void **) &(publicKey->publicKey.eccKey.pPubY));
     }
-    (void) MOC_FREE((void **) &pPubBuf);
+    (void) DIGI_FREE((void **) &pPubBuf);
     return status;
 }
 
@@ -479,7 +478,7 @@ MSTATUS SMP_API(NanoROOT, getModuleList,
 
     pModuleIdList->entityType = TAP_ENTITY_TYPE_MODULE;
 
-    status = MOC_CALLOC((void **)&pModuleIdList->entityIdList.pEntityIdList, 1, sizeof(TAP_EntityId));
+    status = DIGI_CALLOC((void **)&pModuleIdList->entityIdList.pEntityIdList, 1, sizeof(TAP_EntityId));
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for Module list, status = %d\n",
@@ -549,7 +548,7 @@ MSTATUS SMP_API(NanoROOT, getTokenList,
 
     pTokenIdList->entityType = TAP_ENTITY_TYPE_TOKEN;
     pTokenIdList->entityIdList.numEntities = 0;
-    status = MOC_CALLOC((void *)&(pTokenIdList->entityIdList.pEntityIdList), 1, sizeof(TAP_EntityId));
+    status = DIGI_CALLOC((void *)&(pTokenIdList->entityIdList.pEntityIdList), 1, sizeof(TAP_EntityId));
     if (OK != status)
     {
         DB_PRINT("%s.%d Unable to allocate memory for Token EntityIdList, status = %d\n",
@@ -566,7 +565,7 @@ exit:
     {
         if(NULL != pTokenIdList->entityIdList.pEntityIdList)
         {
-            MOC_FREE((void **)&pTokenIdList->entityIdList.pEntityIdList);
+            DIGI_FREE((void **)&pTokenIdList->entityIdList.pEntityIdList);
         }
     }
     return status;
@@ -611,7 +610,7 @@ MSTATUS SMP_API(NanoROOT, initModule,
 
     isMutexLocked = TRUE;
 
-    status = MOC_CALLOC((void **)&pNanoRootModule, 1, sizeof(NanoROOT_Module));
+    status = DIGI_CALLOC((void **)&pNanoRootModule, 1, sizeof(NanoROOT_Module));
     if (OK != status)
     {
         status = ERR_MEM_ALLOC_FAIL;
@@ -620,8 +619,8 @@ MSTATUS SMP_API(NanoROOT, initModule,
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)&pNanoRootModule->error, 0, sizeof(pNanoRootModule->error));
-    status = MOC_CALLOC((void**) &pNanoRootModule->error.tapErrorString.pBuffer, 1, NanoROOTMAX_ERROR_BUFFER);
+    DIGI_MEMSET((ubyte *)&pNanoRootModule->error, 0, sizeof(pNanoRootModule->error));
+    status = DIGI_MALLOC((void**) &pNanoRootModule->error.tapErrorString.pBuffer, NanoROOTMAX_ERROR_BUFFER);
     if (OK != status)
     {
         status = ERR_MEM_ALLOC_FAIL;
@@ -819,7 +818,7 @@ MSTATUS SMP_API(NanoROOT, uninitToken,
 
     isMutexLocked = TRUE;
 
-    MOC_MEMSET((ubyte *)pNanoRootToken, 0, sizeof(*pNanoRootToken));
+    DIGI_MEMSET((ubyte *)pNanoRootToken, 0, sizeof(*pNanoRootToken));
 
 exit:
     if (TRUE == isMutexLocked)
@@ -964,7 +963,7 @@ MSTATUS SMP_API(NanoROOT, signDigest,
                 }
 
                 /* Allocate the signature buffer */
-                status = MOC_CALLOC((void **)&pSignBuf, 1, signLen);
+                status = DIGI_CALLOC((void **)&pSignBuf, 1, signLen);
                 if (OK != status)
                     goto exit;
 
@@ -1016,7 +1015,7 @@ MSTATUS SMP_API(NanoROOT, signDigest,
                 signatureLen = 2 * elementLen;
 
                 /* Allocate the signature buffer */
-                status = MOC_CALLOC((void **)&pSignBuf, 1, signatureLen);
+                status = DIGI_CALLOC((void **)&pSignBuf, 1, signatureLen);
                 if (OK != status)
                     goto exit;
 
@@ -1053,7 +1052,7 @@ MSTATUS SMP_API(NanoROOT, signDigest,
     }
 
 
-    if (OK != (status = MOC_CALLOC((void **)ppSignature, 1, sizeof(**ppSignature))))
+    if (OK != (status = DIGI_CALLOC((void **)ppSignature, 1, sizeof(**ppSignature))))
     {
         DB_PRINT("%s.%d Unable to allocate memory for "
                  "signature structure, status = %d\n",
@@ -1094,12 +1093,12 @@ exit:
     {
         if(ppSignature)
         {
-            MOC_FREE((void **)ppSignature);
+            DIGI_FREE((void **)ppSignature);
         }
     }
     if (NULL != pDigestInfo)
     {
-        MOC_FREE((void **)&pDigestInfo);
+        DIGI_FREE((void **)&pDigestInfo);
     }
     return status;
 }
@@ -1185,7 +1184,7 @@ MSTATUS SMP_API(NanoROOT, signBuffer,
                 hashType = (signLen >= RSA_4096_SIGN_LENGTH) ? ht_sha512 : ht_sha256;
 
                 /* Allocate the signature buffer */
-                status = MOC_CALLOC((void **)&pSignature, 1, signLen);
+                status = DIGI_CALLOC((void **)&pSignature, 1, signLen);
                 if (OK != status)
                     goto exit;
 
@@ -1246,7 +1245,7 @@ MSTATUS SMP_API(NanoROOT, signBuffer,
                 signatureLen = 2 * elementLen;
 
                 /* Allocate the signature buffer */
-                status = MOC_CALLOC((void **)&pSignature, 1, signatureLen);
+                status = DIGI_CALLOC((void **)&pSignature, 1, signatureLen);
                 if (OK != status)
                     goto exit;
 
@@ -1300,7 +1299,7 @@ MSTATUS SMP_API(NanoROOT, signBuffer,
             }
     }
 
-    if (OK != (status = MOC_CALLOC((void **)ppSignature, 1, sizeof(**ppSignature))))
+    if (OK != (status = DIGI_CALLOC((void **)ppSignature, 1, sizeof(**ppSignature))))
     {
         DB_PRINT("%s.%d Unable to allocate memory for "
                  "signature structure, status = %d\n",
@@ -1349,7 +1348,7 @@ exit:
     {
         if(ppSignature)
         {
-            MOC_FREE((void **)ppSignature);
+            DIGI_FREE((void **)ppSignature);
         }
     }
     return status;
@@ -1431,7 +1430,7 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, sealWithTrustedData,
         goto exit;
     }
 
-    MOC_MEMCPY(pHashedCred + SHA256_RESULT_SIZE, pHashedCred, SHA256_RESULT_SIZE);
+    DIGI_MEMCPY(pHashedCred + SHA256_RESULT_SIZE, pHashedCred, SHA256_RESULT_SIZE);
     DB_PRINT("sha256 hash\n");
     DEBUG_HEXDUMP(DEBUG_MEMORY, pHashedCred, SHA256_RESULT_SIZE * 2);
 
@@ -1439,7 +1438,7 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, sealWithTrustedData,
     {
         pDataOut->bufferLen = pDataToSeal->bufferLen;
 
-        status = MOC_CALLOC((void **)&pDataOut->pBuffer, 1, pDataOut->bufferLen);
+        status = DIGI_CALLOC((void **)&pDataOut->pBuffer, 1, pDataOut->bufferLen);
         if (OK != status)
         {
             DB_PRINT("%s.%d Unable to allocate memory for output buffer, status = %d\n",
@@ -1540,7 +1539,7 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, unsealWithTrustedData,
         goto exit;
     }
 
-    MOC_MEMCPY(pHashedCred + SHA256_RESULT_SIZE, pHashedCred, SHA256_RESULT_SIZE);
+    DIGI_MEMCPY(pHashedCred + SHA256_RESULT_SIZE, pHashedCred, SHA256_RESULT_SIZE);
     DB_PRINT("sha256 hash\n");
     DEBUG_HEXDUMP(DEBUG_MEMORY, pHashedCred, SHA256_RESULT_SIZE * 2);
 
@@ -1549,7 +1548,7 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, unsealWithTrustedData,
     {
         pDataOut->bufferLen = pDataToUnseal->bufferLen;
 
-        status = MOC_CALLOC((void **)&pDataOut->pBuffer, 1, pDataOut->bufferLen);
+        status = DIGI_CALLOC((void **)&pDataOut->pBuffer, 1, pDataOut->bufferLen);
         if (OK != status)
         {
             DB_PRINT("%s.%d Unable to allocate memory for output buffer, status = %d\n",
@@ -1646,7 +1645,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
     TAP_Attribute *pAttribute = NULL;
     ubyte4 numCreatedKeyAttributes = 0;
     TAP_Attribute *pCreatedKeyAttributes = NULL;
-    NanoROOT_Object *pObject = &pNanoRootToken->object;
+    NanoROOT_Object *pObject = NULL;
     TAP_Buffer objectId = {0};
     ubyte8 keyId = 0;
     ubyte4 count = 0;
@@ -1654,17 +1653,26 @@ MSTATUS SMP_API(NanoROOT, initObject,
     ubyte4 subKeyType = 0;
 
     MOC_UNUSED(objectIdIn);
+    MOC_UNUSED(pObjectIdOut);
 
     DB_PRINT("Begins %s()..\n", __FUNCTION__);
 
     if (NULL == pNanoRootModule || NULL == pNanoRootToken)
     {
-        status = ERR_NULL_POINTER;
+        status = ERR_TAP_INVALID_INPUT;
         NanoROOT_FillError(NULL, &status, ERR_TAP_INVALID_INPUT, "ERR_TAP_INVALID_INPUT");
         DB_PRINT("%s.%d Error : NULL arguemtns.\n", __FUNCTION__,__LINE__);
         return status;
     }
 
+    pObject = &pNanoRootToken->object;
+    if (NULL == pObject || NULL == pObjectHandle)
+    {
+        status = ERR_TAP_INVALID_INPUT;
+        NanoROOT_FillError(NULL, &status, ERR_TAP_INVALID_INPUT, "ERR_TAP_INVALID_INPUT");
+        DB_PRINT("%s.%d Error : NULL arguemtns.\n", __FUNCTION__,__LINE__);
+        return status;
+    }
     pPrivKey = &pObject->privKey;
 
     if (pKeyAttributeList && pKeyAttributeList->listLen)
@@ -1829,7 +1837,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
         numCreatedKeyAttributes = 6;
         pObjectAttributesOut->listLen = numCreatedKeyAttributes;
 
-        status = MOC_CALLOC((void **)&pObjectAttributesOut->pAttributeList, 1,
+        status = DIGI_CALLOC((void **)&pObjectAttributesOut->pAttributeList, 1,
                 sizeof(TAP_Attribute) * numCreatedKeyAttributes);
         if (OK != status)
         {
@@ -1844,7 +1852,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
 
         pCreatedKeyAttributes->type = TAP_ATTR_KEY_USAGE;
         pCreatedKeyAttributes->length = sizeof(keyUsage);
-        status = MOC_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
+        status = DIGI_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
                 sizeof(keyUsage));
         if (OK != status)
         {
@@ -1853,7 +1861,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
                     __FUNCTION__,__LINE__, status);
             goto exit;
         }
-        status = MOC_MEMCPY(pCreatedKeyAttributes->pStructOfType, &keyUsage,
+        status = DIGI_MEMCPY(pCreatedKeyAttributes->pStructOfType, &keyUsage,
                 sizeof(keyUsage));
         if (OK != status)
         {
@@ -1867,7 +1875,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
 
         pCreatedKeyAttributes->type = TAP_ATTR_KEY_ALGORITHM;
         pCreatedKeyAttributes->length = sizeof(keyAlgorithm);
-        status = MOC_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
+        status = DIGI_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
                 sizeof(keyAlgorithm));
         if (OK != status)
         {
@@ -1876,7 +1884,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
                     __FUNCTION__,__LINE__, status);
             goto exit;
         }
-        status = MOC_MEMCPY(pCreatedKeyAttributes->pStructOfType, &keyAlgorithm,
+        status = DIGI_MEMCPY(pCreatedKeyAttributes->pStructOfType, &keyAlgorithm,
                 sizeof(keyAlgorithm));
         if (OK != status)
         {
@@ -1890,7 +1898,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
 
         pCreatedKeyAttributes->type = TAP_ATTR_ENC_SCHEME;
         pCreatedKeyAttributes->length = sizeof(encScheme);
-        status = MOC_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
+        status = DIGI_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
                 sizeof(encScheme));
         if (OK != status)
         {
@@ -1899,7 +1907,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
                     __FUNCTION__,__LINE__, status);
             goto exit;
         }
-        status = MOC_MEMCPY(pCreatedKeyAttributes->pStructOfType, &encScheme,
+        status = DIGI_MEMCPY(pCreatedKeyAttributes->pStructOfType, &encScheme,
                 sizeof(encScheme));
         if (OK != status)
         {
@@ -1913,7 +1921,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
 
         pCreatedKeyAttributes->type = TAP_ATTR_SIG_SCHEME;
         pCreatedKeyAttributes->length = sizeof(sigScheme);
-        status = MOC_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
+        status = DIGI_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
                 sizeof(sigScheme));
         if (OK != status)
         {
@@ -1922,7 +1930,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
                     __FUNCTION__,__LINE__, status);
             goto exit;
         }
-        status = MOC_MEMCPY(pCreatedKeyAttributes->pStructOfType, &sigScheme,
+        status = DIGI_MEMCPY(pCreatedKeyAttributes->pStructOfType, &sigScheme,
                 sizeof(sigScheme));
         if (OK != status)
         {
@@ -1938,7 +1946,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
         {
             pCreatedKeyAttributes->type = TAP_ATTR_KEY_SIZE;
             pCreatedKeyAttributes->length = sizeof(keySize);
-            status = MOC_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
+            status = DIGI_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
                     sizeof(keySize));
             if (OK != status)
             {
@@ -1947,7 +1955,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
                         __FUNCTION__,__LINE__, status);
                 goto exit;
             }
-            status = MOC_MEMCPY(pCreatedKeyAttributes->pStructOfType, &keySize,
+            status = DIGI_MEMCPY(pCreatedKeyAttributes->pStructOfType, &keySize,
                     sizeof(keySize));
             if (OK != status)
             {
@@ -1961,7 +1969,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
         {
             pCreatedKeyAttributes->type = TAP_ATTR_CURVE;
             pCreatedKeyAttributes->length = sizeof(eccCurve);
-            status = MOC_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
+            status = DIGI_MALLOC((void **)&pCreatedKeyAttributes->pStructOfType,
                     sizeof(eccCurve));
             if (OK != status)
             {
@@ -1970,7 +1978,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
                         __FUNCTION__,__LINE__, status);
                 goto exit;
             }
-            status = MOC_MEMCPY(pCreatedKeyAttributes->pStructOfType, &eccCurve,
+            status = DIGI_MEMCPY(pCreatedKeyAttributes->pStructOfType, &eccCurve,
                     sizeof(eccCurve));
             if (OK != status)
             {
@@ -2055,7 +2063,7 @@ MSTATUS SMP_API(NanoROOT, getPublicKey,
     }
     keyType = pNanoRootObject->privKey.type;
 
-    if (OK != (status = MOC_CALLOC((void**)ppublicKey, 1, sizeof(**ppublicKey))))
+    if (OK != (status = DIGI_CALLOC((void**)ppublicKey, 1, sizeof(**ppublicKey))))
     {
         NanoROOT_FillError(&pNanoRootModule->error, &status, ERR_MEM_ALLOC_FAIL, "ERR_MEM_ALLOC_FAIL");
         DB_PRINT("%s.%d Error : NULL arguemtns.\n", __FUNCTION__,__LINE__);
@@ -2112,7 +2120,7 @@ exit:
     {
         if(NULL != *ppublicKey)
         {
-            MOC_FREE((void **)ppublicKey);
+            DIGI_FREE((void **)ppublicKey);
         }
     }
     DB_PRINT("End %s() status=%d\n", __FUNCTION__, status);
@@ -2130,4 +2138,4 @@ MSTATUS SMP_API(NanoROOT, getPublicKeyBlob,
 }
 #endif
 
-#endif /* #if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__)) */
+#endif /* #if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__)) */

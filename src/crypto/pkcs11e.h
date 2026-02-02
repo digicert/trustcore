@@ -19,7 +19,7 @@
 #ifndef __PKCS11E_H__
 #define __PKCS11E_H__
 
-#ifdef __ENABLE_MOCANA_PKCS11_CRYPTO__
+#ifdef __ENABLE_DIGICERT_PKCS11_CRYPTO__
 
 /* CK_RV is a value that identifies the return value of a Cryptoki function
  * CK_RV was changed from CK_USHORT to CK_ULONG for v2.0
@@ -141,5 +141,5 @@
 #define CONVERT_ERRNO_CKR_TO_MOC(ckr)    ((ERR_PKCS11_CKR_BASE)-(ckr))
 #define ERR_PKCS11_END                   ERR_PKCS11_CKR_FUNCTION_REJECTED
 
-#endif /* __ENABLE_MOCANA_PKCS11_CRYPTO__ */
+#endif /* __ENABLE_DIGICERT_PKCS11_CRYPTO__ */
 #endif /* __PKCS11E_H__ */

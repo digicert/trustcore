@@ -1,7 +1,7 @@
 /*
  * crypto_interface_ansix9_63_kdf_priv.h
  *
- * Mocana Cryptographic Interface specification for ANSIX9_63-KDF.
+ * Cryptographic Interface specification for ANSIX9_63-KDF.
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 
@@ -30,8 +30,8 @@ extern "C" {
 #endif
 
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_ANSIX9_63_KDF_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_ANSIX9_63_KDF_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_ANSIX9_63_KDF_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_ANSIX9_63_KDF_INTERNAL__))
 
 #define ANSIX963KDF_generate CRYPTO_INTERFACE_ANSIX963KDF_generate
 

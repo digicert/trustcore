@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -88,15 +88,15 @@
 #include "../ssh/ssh_cert.h"
 #include "../ssh/ssh_mpint.h"
 
-#ifdef __ENABLE_MOCANA_PQC__ 
+#ifdef __ENABLE_DIGICERT_PQC__ 
 #include "../ssh/ssh_qs.h"
 #include "../crypto_interface/crypto_interface_qs_kem.h"
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
 #include "../ssh/ssh_hybrid.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/cryptointerface.h"
 #include "../crypto_interface/crypto_interface_aes.h"
 #include "../crypto_interface/crypto_interface_aes_ctr.h"
@@ -105,7 +105,7 @@
 #include "../crypto_interface/crypto_interface_dh.h"
 #include "../crypto_interface/crypto_interface_rsa.h"
 #include "../crypto_interface/crypto_interface_dsa.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
 #endif
@@ -126,45 +126,45 @@
 static MSTATUS SSH_TRANS_allocClassicDH(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_freeClassicDH(struct sshContext *pContextSSH);
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 static MSTATUS SSH_TRANS_allocGroupDH(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_freeGroupDH(struct sshContext *pContextSSH);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS SSH_TRANS_allocRSA(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_freeRSA(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_sendKexRsaPubKey(struct sshContext *pContextSSH);
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 static MSTATUS SSH_TRANS_allocECDH(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_freeECDH(struct sshContext *pContextSSH);
 #endif
 
-#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
+#if (defined(__ENABLE_DIGICERT_PQC_COMPOSITE__))
 static MSTATUS SSH_TRANS_buildHybridKey(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength);
 static MSTATUS SSH_TRANS_buildHybridSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__))
 static MSTATUS SSH_TRANS_buildDsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
 static MSTATUS SSH_TRANS_buildRsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey);
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 static MSTATUS SSH_TRANS_buildEcdsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey);
 #endif
 
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_DIGICERT_PQC__))
 static MSTATUS SSH_TRANS_buildQsKey(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength);
 static MSTATUS SSH_TRANS_buildQsSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__))    /*!!!! eliminate? */
+#if (defined(__ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__))    /*!!!! eliminate? */
 extern MSTATUS SSH_TRANS_buildRawX509v3Cert(sshContext *pContextSSH, ubyte **ppRetCert, ubyte4 *pRetCertLen, certDescriptor *pKey); /*!!!!*/
 #endif
 
@@ -174,8 +174,8 @@ static BulkCtx SSH_TRANS_createAESCTRCtx(MOC_SYM(hwAccelDescr hwAccelCtx) const 
 static MSTATUS SSH_TRANS_doAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data, sbyte4 dataLength, sbyte4 encrypt, ubyte* iv);
 #endif
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
 static MSTATUS SSH_TRANS_doChaCha20(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data, sbyte4 dataLength, sbyte4 encrypt, ubyte* iv);
 #endif
 #endif
@@ -213,20 +213,20 @@ static sshStringBuffer *ssh_algorithmMethods[] =
 /* key exchange alloc/free methods */
 static sshKeyExCtxMethods dhClassicMethods = { SSH_TRANS_allocClassicDH, SSH_TRANS_freeClassicDH, NULL };
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 static sshKeyExCtxMethods dhGroupMethods   = { SSH_TRANS_allocGroupDH,   SSH_TRANS_freeGroupDH,   NULL };
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static sshKeyExCtxMethods rsaMethods       = { SSH_TRANS_allocRSA,       SSH_TRANS_freeRSA,       SSH_TRANS_sendKexRsaPubKey };
 #endif
 
 /* there are no pure pqc keyEx algs so these are always defined as
    long as PQC and ECC are defined */
-#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_PQC__) && defined(__ENABLE_DIGICERT_ECC__))
 static sshKeyExCtxMethods hybridMethods    = { SSH_TRANS_allocECDH,      SSH_TRANS_freeECDH,      NULL };
 #endif
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 static sshKeyExCtxMethods ecdhMethods      = { SSH_TRANS_allocECDH,      SSH_TRANS_freeECDH,      NULL };
 #endif
 
@@ -236,13 +236,13 @@ static sshKeyExCtxMethods ecdhMethods      = { SSH_TRANS_allocECDH,      SSH_TRA
 /* handshake hash algorithms */
 static sshHashHandshake sshHandshakeSHA1   = { SHA1_allocDigest,   SHA1_freeDigest,   (BulkCtxInitFunc)SHA1_initDigest,   (BulkCtxUpdateFunc)SHA1_updateDigest,   (BulkCtxFinalFunc)SHA1_finalDigest,   SHA1_RESULT_SIZE };
 
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
 static sshHashHandshake sshHandshakeSHA256 = { SHA256_allocDigest, SHA256_freeDigest, (BulkCtxInitFunc)SHA256_initDigest, (BulkCtxUpdateFunc)SHA256_updateDigest, (BulkCtxFinalFunc)SHA256_finalDigest, SHA256_RESULT_SIZE };
 #endif
-#ifndef __DISABLE_MOCANA_SHA384__
+#ifndef __DISABLE_DIGICERT_SHA384__
 static sshHashHandshake sshHandshakeSHA384 = { SHA384_allocDigest, SHA384_freeDigest, (BulkCtxInitFunc)SHA384_initDigest, (BulkCtxUpdateFunc)SHA384_updateDigest, (BulkCtxFinalFunc)SHA384_finalDigest, SHA384_RESULT_SIZE };
 #endif
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
 static sshHashHandshake sshHandshakeSHA512 = { SHA512_allocDigest, SHA512_freeDigest, (BulkCtxInitFunc)SHA512_initDigest, (BulkCtxUpdateFunc)SHA512_updateDigest, (BulkCtxFinalFunc)SHA512_finalDigest, SHA512_RESULT_SIZE };
 #endif
 
@@ -250,7 +250,7 @@ static sshHashHandshake sshHandshakeSHA512 = { SHA512_allocDigest, SHA512_freeDi
 
 static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuites[] =
 {   /* debugString keyExName keyExNameLength hintForKeyExAlgo kexExCtx hashAlgo ec_oid nextState rekeyNextState */
-#if defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_DIGICERT_PQC__) && defined(__ENABLE_DIGICERT_ECC__)
     { (sbyte *)"mlkem768nistp256-sha256",        (sbyte *)"mlkem768nistp256-sha256",         23,
         cid_EC_P256,   cid_PQC_MLKEM_768,        &hybridMethods, &sshHandshakeSHA256, NULL, kTransReceiveHybrid, kReduxTransReceiveHybrid },
     { (sbyte *)"mlkem1024nistp384-sha384",       (sbyte *)"mlkem1024nistp384-sha384",        24,
@@ -258,63 +258,63 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuites[] =
     { (sbyte *)"mlkem768x25519-sha256",          (sbyte *)"mlkem768x25519-sha256",           21,
         cid_EC_X25519, cid_PQC_MLKEM_768,        &hybridMethods, &sshHandshakeSHA256, NULL, kTransReceiveHybrid, kReduxTransReceiveHybrid },
 #endif
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_ECC_EDDH_25519__) && !defined(__DISABLE_MOCANA_SHA256__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC_EDDH_25519__) && !defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"curve25519-sha256", (sbyte *)"curve25519-sha256",                      17, cid_EC_X25519,
         0, &ecdhMethods,      &sshHandshakeSHA256, ecdh25519_OID, kTransReceiveECDH,                 kReduxTransReceiveECDH },
     { (sbyte *)"curve25519-sha256@libssh.org", (sbyte *)"curve25519-sha256@libssh.org", 28, cid_EC_X25519,
         0, &ecdhMethods,      &sshHandshakeSHA256, ecdh25519_OID, kTransReceiveECDH,                 kReduxTransReceiveECDH },
 #endif
-#if (defined(__ENABLE_MOCANA_ECC_EDDH_448__) && !defined(__DISABLE_MOCANA_SHA512__))
+#if (defined(__ENABLE_DIGICERT_ECC_EDDH_448__) && !defined(__DISABLE_DIGICERT_SHA512__))
     { (sbyte *)"curve448-sha512", (sbyte *)"curve448-sha512",                          15, cid_EC_X448,
         0, &ecdhMethods,      &sshHandshakeSHA512, ecdh448_OID, kTransReceiveECDH,                 kReduxTransReceiveECDH },
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P521__) && !defined(__DISABLE_MOCANA_SHA512__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P521__) && !defined(__DISABLE_DIGICERT_SHA512__))
     { (sbyte *)"ecdh-sha2-nistp521", (sbyte *)"ecdh-sha2-nistp521",                    18, cid_EC_P521,
         0, &ecdhMethods,      &sshHandshakeSHA512, secp521r1_OID, kTransReceiveECDH,                 kReduxTransReceiveECDH },
 #endif
 
-#if (!defined(__DISABLE_MOCANA_ECC_P384__) && !defined(__DISABLE_MOCANA_SHA384__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P384__) && !defined(__DISABLE_DIGICERT_SHA384__))
     { (sbyte *)"ecdh-sha2-nistp384", (sbyte *)"ecdh-sha2-nistp384",                    18, cid_EC_P384,
         0, &ecdhMethods,      &sshHandshakeSHA384, secp384r1_OID, kTransReceiveECDH,                 kReduxTransReceiveECDH },
 #endif
 
-#if (!defined(__DISABLE_MOCANA_ECC_P256__) && !defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P256__) && !defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"ecdh-sha2-nistp256", (sbyte *)"ecdh-sha2-nistp256",                    18, cid_EC_P256,
         0, &ecdhMethods,      &sshHandshakeSHA256, secp256r1_OID, kTransReceiveECDH,                 kReduxTransReceiveECDH },
 #endif
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
-#if (!defined(__DISABLE_MOCANA_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"rsa2048-sha256",      (sbyte *)"rsa2048-sha256",                       14, 2048,
         0, &rsaMethods,       &sshHandshakeSHA256, NULL,          kTransReceiveRSA,                  kReduxTransReceiveRSA },
 #endif
-#ifndef __ENABLE_MOCANA_FIPS_MODULE__
-#ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
+#ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"rsa1024-sha1",        (sbyte *)"rsa1024-sha1",                         12, 1024,
         0, &rsaMethods,       &sshHandshakeSHA1,   NULL,          kTransReceiveRSA,                  kReduxTransReceiveRSA },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
 #endif
 #endif
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"dh-group-ex-256",     (sbyte *)"diffie-hellman-group-exchange-sha256", 36, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA256, NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group-ex-1",       (sbyte *)"diffie-hellman-group-exchange-sha1",   34, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"diffie-hellman-group14-sha256",    (sbyte *)"diffie-hellman-group14-sha256",          29, DH_GROUP_14,
         0, &dhClassicMethods, &sshHandshakeSHA256,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA512__))
+#if (!defined(__DISABLE_DIGICERT_SHA512__))
     { (sbyte *)"diffie-hellman-group15-sha512",    (sbyte *)"diffie-hellman-group15-sha512",          29, DH_GROUP_15,
         0, &dhClassicMethods, &sshHandshakeSHA512,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
     { (sbyte *)"diffie-hellman-group16-sha512",    (sbyte *)"diffie-hellman-group16-sha512",          29, DH_GROUP_16,
@@ -324,14 +324,14 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuites[] =
     { (sbyte *)"diffie-hellman-group18-sha512",    (sbyte *)"diffie-hellman-group18-sha512",          29, DH_GROUP_18,
         0, &dhClassicMethods, &sshHandshakeSHA512,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group14",          (sbyte *)"diffie-hellman-group14-sha1",          27, DH_GROUP_14,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
-#ifndef __ENABLE_MOCANA_FIPS_MODULE__
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     { (sbyte *)"dh-group2",           (sbyte *)"diffie-hellman-group1-sha1",           26, DH_GROUP_2,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic }
 #endif
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 };
 
 #define NUM_SSH_KEYEX_SUITES    (sizeof(mKeyExSuites)/sizeof(SSH_keyExSuiteInfo))
@@ -342,36 +342,36 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuites[] =
 static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuitesNoEcc[] =
 {   /* debugString keyExName keyExNameLength hintForKeyExAlgo kexExCtx hashAlgo ec_oid nextState rekeyNextState */
 
-#if (!defined(__DISABLE_MOCANA_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"rsa2048-sha256",      (sbyte *)"rsa2048-sha256",                       14, 2048,
         0, &rsaMethods,       &sshHandshakeSHA256, NULL,          kTransReceiveRSA,                  kReduxTransReceiveRSA },
 #endif
-#ifndef __ENABLE_MOCANA_FIPS_MODULE__
-#ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
+#ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"rsa1024-sha1",        (sbyte *)"rsa1024-sha1",                         12, 1024,
         0, &rsaMethods,       &sshHandshakeSHA1,   NULL,          kTransReceiveRSA,                  kReduxTransReceiveRSA },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
 #endif
 #endif
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"dh-group-ex-256",     (sbyte *)"diffie-hellman-group-exchange-sha256", 36, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA256, NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group-ex-1",       (sbyte *)"diffie-hellman-group-exchange-sha1",   34, DH_GROUP_14,
         0, &dhGroupMethods,   &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanGroup1,  kReduxTransReceiveDiffieHellmanGroup1 },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"diffie-hellman-group14-sha256",    (sbyte *)"diffie-hellman-group14-sha256",          29, DH_GROUP_14,
         0, &dhClassicMethods, &sshHandshakeSHA256,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA512__))
+#if (!defined(__DISABLE_DIGICERT_SHA512__))
     { (sbyte *)"diffie-hellman-group15-sha512",    (sbyte *)"diffie-hellman-group15-sha512",          29, DH_GROUP_15,
         0, &dhClassicMethods, &sshHandshakeSHA512,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
     { (sbyte *)"diffie-hellman-group16-sha512",    (sbyte *)"diffie-hellman-group16-sha512",          29, DH_GROUP_16,
@@ -381,21 +381,21 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuitesNoEcc[] =
     { (sbyte *)"diffie-hellman-group18-sha512",    (sbyte *)"diffie-hellman-group18-sha512",          29, DH_GROUP_18,
         0, &dhClassicMethods, &sshHandshakeSHA512,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"dh-group14",          (sbyte *)"diffie-hellman-group14-sha1",          27, DH_GROUP_14,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic },
-#ifndef __ENABLE_MOCANA_FIPS_MODULE__
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     { (sbyte *)"dh-group2",           (sbyte *)"diffie-hellman-group1-sha1",           26, DH_GROUP_2,
         0, &dhClassicMethods, &sshHandshakeSHA1,   NULL,          kTransReceiveDiffieHellmanClassic, kReduxTransReceiveDiffieHellmanClassic }
 #endif
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 };
 
 #define NUM_SSH_NO_ECC_KEYEX_SUITES    (sizeof(mKeyExSuitesNoEcc)/sizeof(SSH_keyExSuiteInfo))
 
 /*------------------------------------------------------------------*/
 
-#if (!defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__) && !defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && !defined(__ENABLE_MOCANA_ECC__))
+#if (!defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__) && !defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && !defined(__ENABLE_DIGICERT_ECC__))
 #error SSH Server configuration error (host key)
 #endif
 
@@ -416,100 +416,100 @@ static PATCH_CONST SSH_keyExSuiteInfo mKeyExSuitesNoEcc[] =
 
 static PATCH_CONST SSH_hostKeySuiteInfo mHostKeySuites[] =
 {   /* pHostKeyName hostKeyNameLength pSignatureName signatureNameLength pFuncCreateKey, pFuncBuildCert pFuncBuildSig */
-#if (defined(__ENABLE_MOCANA_SSH_SERVER_CERT_AUTH__))
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__)))
-#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
-#ifdef __ENABLE_MOCANA_PQC__
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER_CERT_AUTH__))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__)))
+#ifdef __ENABLE_DIGICERT_PRE_DRAFT_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     { (sbyte *)"x509v3-mldsa44",             14, (sbyte *)"x509v3-mldsa44",             14, CERT_STORE_AUTH_TYPE_QS,     0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildQsSignature,     SSH_CERT_buildCertQs },
     { (sbyte *)"x509v3-mldsa65",             14, (sbyte *)"x509v3-mldsa65",             14, CERT_STORE_AUTH_TYPE_QS,     0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildQsSignature,     SSH_CERT_buildCertQs },
     { (sbyte *)"x509v3-mldsa87",             14, (sbyte *)"x509v3-mldsa87",             14, CERT_STORE_AUTH_TYPE_QS,     0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildQsSignature,     SSH_CERT_buildCertQs },
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
-#if (!defined(__DISABLE_MOCANA_ECC_P256__) && !defined(__DISABLE_MOCANA_SHA256__))
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
+#if (!defined(__DISABLE_DIGICERT_ECC_P256__) && !defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"x509v3-mldsa44-es256",       20, (sbyte *)"x509v3-mldsa44-es256",       20, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildHybridSignature, SSH_CERT_buildCertHybrid },
     { (sbyte *)"x509v3-mldsa65-es256",       20, (sbyte *)"x509v3-mldsa65-es256",       20, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildHybridSignature, SSH_CERT_buildCertHybrid },     
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P384__) && !defined(__DISABLE_MOCANA_SHA384__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P384__) && !defined(__DISABLE_DIGICERT_SHA384__))
     { (sbyte *)"x509v3-mldsa87-es384",       20, (sbyte *)"x509v3-mldsa87-es384",       20, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildHybridSignature, SSH_CERT_buildCertHybrid },
 #endif
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__))
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__))
     { (sbyte *)"x509v3-mldsa44-ed25519",     22, (sbyte *)"x509v3-mldsa44-ed25519",     22, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildHybridSignature, SSH_CERT_buildCertHybrid },
     { (sbyte *)"x509v3-mldsa65-ed25519",     22, (sbyte *)"x509v3-mldsa65-ed25519",     22, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildHybridSignature, SSH_CERT_buildCertHybrid },
 #endif
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_448__))
     { (sbyte *)"x509v3-mldsa87-ed448",       20, (sbyte *)"x509v3-mldsa87-ed448",       20, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildHybridSignature, SSH_CERT_buildCertHybrid },
 #endif
-#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
-#endif /* __ENABLE_MOCANA_PRE_DRAFT_PQC__ */
+#endif /* __ENABLE_DIGICERT_PQC_COMPOSITE__ */
+#endif /* __ENABLE_DIGICERT_PRE_DRAFT_PQC__ */
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (!defined(__DISABLE_MOCANA_ECC_P256__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P256__))
     { (sbyte *)"x509v3-ecdsa-sha2-nistp256", 26, (sbyte *)"x509v3-ecdsa-sha2-nistp256", 26, CERT_STORE_AUTH_TYPE_ECDSA, SHA256_RESULT_SIZE, 256, 256, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildEcdsaSignature, SSH_CERT_buildCertECDSAP256 },
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P384__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P384__))
     { (sbyte *)"x509v3-ecdsa-sha2-nistp384", 26, (sbyte *)"x509v3-ecdsa-sha2-nistp384", 26, CERT_STORE_AUTH_TYPE_ECDSA, SHA384_RESULT_SIZE, 384, 384, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildEcdsaSignature, SSH_CERT_buildCertECDSAP384 },
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P521__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P521__))
     { (sbyte *)"x509v3-ecdsa-sha2-nistp521", 26, (sbyte *)"x509v3-ecdsa-sha2-nistp521", 26, CERT_STORE_AUTH_TYPE_ECDSA, SHA512_RESULT_SIZE, 521, 521, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildEcdsaSignature, SSH_CERT_buildCertECDSAP521 },
 #endif
 #endif
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"x509v3-rsa2048-sha256",      21, (sbyte *)"x509v3-rsa2048-sha256",      21, CERT_STORE_AUTH_TYPE_RSA,   SHA256_RESULT_SIZE, SSH_RSA_2048_SIZE, SSH_RSA_2048_SIZE, CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildRsaSignature, SSH_CERT_buildCertRSA2048 },
 #endif
     { (sbyte *)"x509v3-ssh-rsa",             14, (sbyte *)"x509v3-ssh-rsa",             14, CERT_STORE_AUTH_TYPE_RSA,   SHA_HASH_RESULT_SIZE,   SSH_RSA_MIN_SIZE,  SSH_RSA_MAX_SIZE,  CERT_STORE_IDENTITY_TYPE_CERT_X509_V3, NULL, SSH_TRANS_buildRsaSignature, SSH_CERT_buildCertRSA },
-#endif/* __ENABLE_MOCANA_SSH_RSA_SUPPORT__ */
-#endif/* __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__ && __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__ */
-#endif/* __ENABLE_MOCANA_SSH_SERVER_CERT_AUTH__ */
+#endif/* __ENABLE_DIGICERT_SSH_RSA_SUPPORT__ */
+#endif/* __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__ && __ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__ */
+#endif/* __ENABLE_DIGICERT_SSH_SERVER_CERT_AUTH__ */
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     { (sbyte *)"ssh-mldsa44",                11, (sbyte *)"ssh-mldsa44",                11, CERT_STORE_AUTH_TYPE_QS,     0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildQsKey,   SSH_TRANS_buildQsSignature, NULL },
     { (sbyte *)"ssh-mldsa65",                11, (sbyte *)"ssh-mldsa65",                11, CERT_STORE_AUTH_TYPE_QS,     0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildQsKey,   SSH_TRANS_buildQsSignature, NULL },
     { (sbyte *)"ssh-mldsa87",                11, (sbyte *)"ssh-mldsa87",                11, CERT_STORE_AUTH_TYPE_QS,     0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildQsKey,   SSH_TRANS_buildQsSignature, NULL },
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
-#if (!defined(__DISABLE_MOCANA_ECC_P256__) && !defined(__DISABLE_MOCANA_SHA256__))
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
+#if (!defined(__DISABLE_DIGICERT_ECC_P256__) && !defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"ssh-mldsa44-es256",          17, (sbyte *)"ssh-mldsa44-es256",          17, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildHybridKey, SSH_TRANS_buildHybridSignature, NULL },
     { (sbyte *)"ssh-mldsa65-es256",          17, (sbyte *)"ssh-mldsa65-es256",          17, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildHybridKey, SSH_TRANS_buildHybridSignature, NULL },     
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P384__) && !defined(__DISABLE_MOCANA_SHA384__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P384__) && !defined(__DISABLE_DIGICERT_SHA384__))
     { (sbyte *)"ssh-mldsa87-es384",          17, (sbyte *)"ssh-mldsa87-es384",          17, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildHybridKey, SSH_TRANS_buildHybridSignature, NULL },
 #endif
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__))
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__))
     { (sbyte *)"ssh-mldsa44-ed25519",        19, (sbyte *)"ssh-mldsa44-ed25519",        19, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildHybridKey, SSH_TRANS_buildHybridSignature, NULL },
     { (sbyte *)"ssh-mldsa65-ed25519",        19, (sbyte *)"ssh-mldsa65-ed25519",        19, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildHybridKey, SSH_TRANS_buildHybridSignature, NULL },
 #endif
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_448__))
     { (sbyte *)"ssh-mldsa87-ed448",          17, (sbyte *)"ssh-mldsa87-ed448",          17, CERT_STORE_AUTH_TYPE_HYBRID, 0, 0, 0, CERT_STORE_IDENTITY_TYPE_NAKED, SSH_TRANS_buildHybridKey, SSH_TRANS_buildHybridSignature, NULL },
 #endif
-#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__))
+#endif /* __ENABLE_DIGICERT_PQC_COMPOSITE__ */
+#if (defined(__ENABLE_DIGICERT_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__))
     { (sbyte *)"ssh-ed25519",                11,         (sbyte *)"ssh-ed25519",        11, CERT_STORE_AUTH_TYPE_EDDSA, SHA256_RESULT_SIZE, 256,               256,               CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_TRANS_buildRawEcdsaCert, SSH_TRANS_buildEcdsaSignature, NULL },
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P256__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P256__))
     { (sbyte *)"ecdsa-sha2-nistp256",        19, (sbyte *)"ecdsa-sha2-nistp256",        19, CERT_STORE_AUTH_TYPE_ECDSA, SHA256_RESULT_SIZE, 256,               256,               CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_TRANS_buildRawEcdsaCert, SSH_TRANS_buildEcdsaSignature, NULL },
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P384__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P384__))
     { (sbyte *)"ecdsa-sha2-nistp384",        19, (sbyte *)"ecdsa-sha2-nistp384",        19, CERT_STORE_AUTH_TYPE_ECDSA, SHA384_RESULT_SIZE, 384,               384,               CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_TRANS_buildRawEcdsaCert, SSH_TRANS_buildEcdsaSignature, NULL },
 #endif
-#if (!defined(__DISABLE_MOCANA_ECC_P521__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P521__))
     { (sbyte *)"ecdsa-sha2-nistp521",        19, (sbyte *)"ecdsa-sha2-nistp521",        19, CERT_STORE_AUTH_TYPE_ECDSA, SHA512_RESULT_SIZE, 521,               521,               CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_TRANS_buildRawEcdsaCert, SSH_TRANS_buildEcdsaSignature, NULL },
 #endif
 #endif
-#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__))
     { (sbyte *)"ssh-dss",                     7, (sbyte *)"ssh-dss", 7, CERT_STORE_AUTH_TYPE_DSA,   SHA_HASH_RESULT_SIZE,   SSH_RFC_DSA_SIZE,  SSH_RFC_DSA_SIZE,  CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_CERT_buildRawDsaCert,    SSH_TRANS_buildDsaSignature,   NULL },
 #endif
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
-#if (!defined(__DISABLE_MOCANA_SHA512__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
+#if (!defined(__DISABLE_DIGICERT_SHA512__))
     { (sbyte *)"rsa-sha2-512",               12, (sbyte *)"ssh-rsa", 7, CERT_STORE_AUTH_TYPE_RSA,   SHA512_RESULT_SIZE,     SSH_RSA_2048_SIZE, SSH_RSA_2048_SIZE, CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_CERT_buildRawRsaCert,    SSH_TRANS_buildRsaSignature,   NULL },
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
     { (sbyte *)"rsa-sha2-256",               12, (sbyte *)"ssh-rsa", 7, CERT_STORE_AUTH_TYPE_RSA,   SHA256_RESULT_SIZE,     SSH_RSA_2048_SIZE, SSH_RSA_2048_SIZE, CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_CERT_buildRawRsaCert,    SSH_TRANS_buildRsaSignature,   NULL },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"ssh-rsa",                     7, (sbyte *)"ssh-rsa", 7, CERT_STORE_AUTH_TYPE_RSA,   SHA_HASH_RESULT_SIZE,   SSH_RSA_MIN_SIZE,  SSH_RSA_MAX_SIZE,  CERT_STORE_IDENTITY_TYPE_NAKED,        SSH_CERT_buildRawRsaCert,    SSH_TRANS_buildRsaSignature,   NULL },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
     { (sbyte *)"placeholder",                11, (sbyte *)"dummy",   5, 0,                          0,                      0,                 0,                 0,                                     NULL,                        NULL,                          NULL }
 };
@@ -520,7 +520,7 @@ static PATCH_CONST SSH_hostKeySuiteInfo mHostKeySuites[] =
 /*------------------------------------------------------------------*/
 
 #ifndef __DISABLE_AES_CIPHERS__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static BulkEncryptionAlgo AESCTRSuite =
     { 16, (CreateBulkCtxFunc)SSH_TRANS_createAESCTRCtx, CRYPTO_INTERFACE_DeleteAESCTRCtx, SSH_TRANS_doAESCTR, CRYPTO_INTERFACE_CloneAESCTRCtx };
 #else
@@ -528,17 +528,17 @@ static BulkEncryptionAlgo AESCTRSuite =
     { 16, (CreateBulkCtxFunc)SSH_TRANS_createAESCTRCtx, DeleteAESCTRCtx, SSH_TRANS_doAESCTR, CloneAESCTRCtx };
 #endif
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static BulkEncryptionAlgo AESSuite =
     { 16, CRYPTO_INTERFACE_CreateAESCtx, CRYPTO_INTERFACE_DeleteAESCtx, CRYPTO_INTERFACE_DoAES, CRYPTO_INTERFACE_CloneAESCtx };
 #else
 static BulkEncryptionAlgo AESSuite =
     { 16, CreateAESCtx, DeleteAESCtx, DoAES, CloneAESCtx };
-#endif /*__ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /*__ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 #endif /* __DISABLE_AES_CIPHERS__ */
 
 #ifdef __ENABLE_BLOWFISH_CIPHERS__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static BulkEncryptionAlgo BlowfishSuite =
     { 8, CRYPTO_INTERFACE_CreateBlowfishCtx, CRYPTO_INTERFACE_DeleteBlowfishCtx, CRYPTO_INTERFACE_DoBlowfish, CRYPTO_INTERFACE_CloneBlowfishCtx };
 #else
@@ -553,105 +553,105 @@ static BulkEncryptionAlgo TripleDESSuite =
 #endif
 
 
-#ifdef __ENABLE_MOCANA_SP800_135_ACVP__
+#ifdef __ENABLE_DIGICERT_SP800_135_ACVP__
 #include "../ssh/nist/ssh_nist_cs_defs.inc"
 #endif
 
-#if defined(__ENABLE_MOCANA_GCM__)
+#if defined(__ENABLE_DIGICERT_GCM__)
 
 #define GCM_FIXED_IV_LENGTH     (4)
 #define GCM_RECORD_IV_LENGTH    (8)
 
-#ifdef __ENABLE_MOCANA_GCM_64K__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_GCM_64K__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static sshAeadAlgo GCMAeadSuite =
     { GCM_FIXED_IV_LENGTH, GCM_RECORD_IV_LENGTH, AES_BLOCK_SIZE, CRYPTO_INTERFACE_GCM_cipher_64k };
 #else
 static sshAeadAlgo GCMAeadSuite =
     { GCM_FIXED_IV_LENGTH, GCM_RECORD_IV_LENGTH, AES_BLOCK_SIZE, GCM_cipher_64k };
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static BulkEncryptionAlgo GCMSuite =
     { 16, CRYPTO_INTERFACE_GCM_createCtx_64k, CRYPTO_INTERFACE_GCM_deleteCtx_64k, NULL, CRYPTO_INTERFACE_GCM_clone_64k};
 #else
 static BulkEncryptionAlgo GCMSuite =
     { 16, GCM_createCtx_64k, GCM_deleteCtx_64k, NULL, GCM_clone_64k};
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
-#endif /* __ENABLE_MOCANA_GCM_64K__ */
-#ifdef __ENABLE_MOCANA_GCM_4K__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_GCM_64K__ */
+#ifdef __ENABLE_DIGICERT_GCM_4K__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static sshAeadAlgo GCMAeadSuite =
     { GCM_FIXED_IV_LENGTH, GCM_RECORD_IV_LENGTH, AES_BLOCK_SIZE, CRYPTO_INTERFACE_GCM_cipher_4k };
 #else
 static sshAeadAlgo GCMAeadSuite =
     { GCM_FIXED_IV_LENGTH, GCM_RECORD_IV_LENGTH, AES_BLOCK_SIZE, GCM_cipher_4k };
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static BulkEncryptionAlgo GCMSuite =
     { 16, CRYPTO_INTERFACE_GCM_createCtx_4k, CRYPTO_INTERFACE_GCM_deleteCtx_4k, NULL, CRYPTO_INTERFACE_GCM_clone_4k};
 #else
 static BulkEncryptionAlgo GCMSuite =
     { 16, GCM_createCtx_4k, GCM_deleteCtx_4k, NULL, GCM_clone_4k};
-#endif /*__ENABLE_MOCANA_CRYPTO_INTERFACE__  */
-#endif /* __ENABLE_MOCANA_GCM_4K__ */
+#endif /*__ENABLE_DIGICERT_CRYPTO_INTERFACE__  */
+#endif /* __ENABLE_DIGICERT_GCM_4K__ */
 
-#ifdef __ENABLE_MOCANA_GCM_256B__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_GCM_256B__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static sshAeadAlgo GCMAeadSuite =
     { GCM_FIXED_IV_LENGTH, GCM_RECORD_IV_LENGTH, AES_BLOCK_SIZE, CRYPTO_INTERFACE_GCM_cipher_256b };
 #else
 static sshAeadAlgo GCMAeadSuite =
     { GCM_FIXED_IV_LENGTH, GCM_RECORD_IV_LENGTH, AES_BLOCK_SIZE, GCM_cipher_256b };
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static BulkEncryptionAlgo GCMSuite =
     { 16, CRYPTO_INTERFACE_GCM_createCtx_256b, CRYPTO_INTERFACE_GCM_deleteCtx_256b, NULL, CRYPTO_INTERFACE_GCM_clone_256b};
 #else
 static BulkEncryptionAlgo GCMSuite =
     { 16, GCM_createCtx_256b, GCM_deleteCtx_256b, NULL, GCM_clone_256b};
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
-#endif /* __ENABLE_MOCANA_GCM_256B__ */
-#endif /* __ENABLE_MOCANA_GCM__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_GCM_256B__ */
+#endif /* __ENABLE_DIGICERT_GCM__ */
 
-#if (defined(__ENABLE_MOCANA_POLY1305__) && defined(__ENABLE_MOCANA_CHACHA20__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_POLY1305__) && defined(__ENABLE_DIGICERT_CHACHA20__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
 static sshAeadAlgo ChaChaPolyAeadSuite =
     /* first two values are used for GCM, can be 0 for chacha20-poly1305, 128 bit tag  */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     { 0, 0, 16, CRYPTO_INTERFACE_ChaCha20Poly1305_cipherSSH };
 #else
     { 0, 0, 16, ChaCha20Poly1305_cipherSSH };
 #endif
 static BulkEncryptionAlgo ChaChaPolySuite =
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     { 64, CRYPTO_INTERFACE_ChaCha20Poly1305_createCtx, CRYPTO_INTERFACE_ChaCha20Poly1305_deleteCtx, SSH_TRANS_doChaCha20, CRYPTO_INTERFACE_ChaCha20Poly1305_cloneCtx };
 #else
     { 64, ChaCha20Poly1305_createCtx, ChaCha20Poly1305_deleteCtx, SSH_TRANS_doChaCha20, ChaCha20Poly1305_cloneCtx };
 #endif
 #endif
-#endif /* (defined(__ENABLE_MOCANA_POLY1305__) && defined(__ENABLE_MOCANA_CHACHA20__)) */
+#endif /* (defined(__ENABLE_DIGICERT_POLY1305__) && defined(__ENABLE_DIGICERT_CHACHA20__)) */
 
 static PATCH_CONST SSH_CipherSuiteInfo mCipherSuites[] =
 {     /* cipherName cipherNameLength keysize ivsize cipherSuiteDescr aeadCipherSuiteDescr */
-#if (defined(__ENABLE_MOCANA_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES128_CIPHER__))
+#if (defined(__ENABLE_DIGICERT_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES128_CIPHER__))
     { (sbyte *)"AEAD_AES_128_GCM",      16, 16, 16, &GCMSuite,          &GCMAeadSuite },
 #ifndef __DISABLE_OPEN_SSH_AES_GCM__
     { (sbyte *)"aes128-gcm@openssh.com",      22, 16, 16, &GCMSuite,          &GCMAeadSuite },
 #endif
 #endif
 
-#if (defined(__ENABLE_MOCANA_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES256_CIPHER__))
+#if (defined(__ENABLE_DIGICERT_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES256_CIPHER__))
     { (sbyte *)"AEAD_AES_256_GCM",      16, 32, 16, &GCMSuite,          &GCMAeadSuite },
 #ifndef __DISABLE_OPEN_SSH_AES_GCM__
     { (sbyte *)"aes256-gcm@openssh.com",      22, 32, 16, &GCMSuite,          &GCMAeadSuite },
 #endif
 #endif
 
-#if defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"chacha20-poly1305@openssh.com", 29, 32, 8, &ChaChaPolySuite, &ChaChaPolyAeadSuite },
 #endif
 #endif
@@ -659,41 +659,41 @@ static PATCH_CONST SSH_CipherSuiteInfo mCipherSuites[] =
 #if (!defined(__DISABLE_AES_CIPHERS__))
 #if (!defined(__DISABLE_AES128_CIPHER__))
     { (sbyte *)"aes128-ctr",            10, 16, 16, &AESCTRSuite,       NULL },
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"aes128-cbc",            10, 16, 16, &AESSuite,          NULL },
     { (sbyte *)"rijndael128-cbc",       15, 16, 16, &AESSuite,          NULL },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif /* __DISABLE_AES128_CIPHER__ */
 
 #if (!defined(__DISABLE_AES256_CIPHER__))
     { (sbyte *)"aes256-ctr",            10, 32, 16, &AESCTRSuite,       NULL },
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"aes256-cbc",            10, 32, 16, &AESSuite,          NULL },
     { (sbyte *)"rijndael256-cbc",       15, 32, 16, &AESSuite,          NULL },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif /* __DISABLE_AES256_CIPHER__ */
 
 #ifndef __DISABLE_AES192_CIPHER__
     { (sbyte *)"aes192-ctr",            10, 24, 16, &AESCTRSuite,       NULL },
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"aes192-cbc",            10, 24, 16, &AESSuite,          NULL },
     { (sbyte *)"rijndael192-cbc",       15, 24, 16, &AESSuite,          NULL },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
 #endif /* __DISABLE_AES_CIPHERS__ */
 
 #ifdef __ENABLE_BLOWFISH_CIPHERS__
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"blowfish-cbc",          12, 16,  8, &BlowfishSuite,     NULL },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
 
 #ifndef __DISABLE_3DES_CIPHERS__
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"3des-cbc",               8, 24,  8, &TripleDESSuite,    NULL },
-#endif /* __ENABLE_MOCANA_SSH_WEAK_CIPHERS__ */
+#endif /* __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__ */
 #endif
-#ifdef __ENABLE_MOCANA_SP800_135_ACVP__
+#ifdef __ENABLE_DIGICERT_SP800_135_ACVP__
 #include "../ssh/nist/ssh_nist_cs_list.inc"
 #endif
 
@@ -707,13 +707,13 @@ static PATCH_CONST SSH_CipherSuiteInfo mCipherSuites[] =
 
 static PATCH_CONST SSH_hmacSuiteInfo mHmacSuites[] =
 {   /* hmacName hmacNameLength keyLength digestLength hmacSuiteDescr */
-#if (defined(__ENABLE_MOCANA_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES128_CIPHER__))
+#if (defined(__ENABLE_DIGICERT_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES128_CIPHER__))
     { (sbyte *)"AEAD_AES_128_GCM",      16,  0, 16, NULL,           &GCMAeadSuite, FALSE },
 #ifndef __DISABLE_OPEN_SSH_AES_GCM__
     { (sbyte *)"aes128-gcm@openssh.com",      22, 0, 16, NULL,          &GCMAeadSuite, FALSE },
 #endif
 #endif
-#if (defined(__ENABLE_MOCANA_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES256_CIPHER__))
+#if (defined(__ENABLE_DIGICERT_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES256_CIPHER__))
     { (sbyte *)"AEAD_AES_256_GCM",      16,  0, 16, NULL,           &GCMAeadSuite, FALSE },
 
 #ifndef __DISABLE_OPEN_SSH_AES_GCM__
@@ -721,21 +721,21 @@ static PATCH_CONST SSH_hmacSuiteInfo mHmacSuites[] =
 #endif
 #endif
 
-#if defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"chacha20-poly1305@openssh.com", 29, 0, 16, NULL, &ChaChaPolyAeadSuite, FALSE },
 #endif
 #endif
 
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
     { (sbyte *)"hmac-sha2-256",         13, SHA256_RESULT_SIZE, SHA256_RESULT_SIZE, HMAC_SHA256,    NULL, FALSE },
     { (sbyte *)"hmac-sha2-256-etm@openssh.com", 29, SHA256_RESULT_SIZE, SHA256_RESULT_SIZE, HMAC_SHA256,    NULL, TRUE },
 #endif
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
     { (sbyte *)"hmac-sha2-512",         13, SHA512_RESULT_SIZE, SHA512_RESULT_SIZE, HMAC_SHA512,    NULL, FALSE },
     { (sbyte *)"hmac-sha2-512-etm@openssh.com", 29, SHA512_RESULT_SIZE, SHA512_RESULT_SIZE, HMAC_SHA512,    NULL, TRUE },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     { (sbyte *)"hmac-sha1",              9, 20, 20, HMAC_SHA1,      NULL, FALSE },
     { (sbyte *)"hmac-sha1-etm@openssh.com", 25, 20, 20, HMAC_SHA1,      NULL, TRUE },
     { (sbyte *)"hmac-sha1-96",          12, 20, 12, HMAC_SHA1,      NULL, FALSE },
@@ -750,7 +750,7 @@ static PATCH_CONST SSH_hmacSuiteInfo mHmacSuites[] =
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 
 /* Per RFC 4419, 1024 <= prime group <= 8192 bits */
 #if (!defined(SSH_DHG_PRIME_MIN_BIT_LENGTH))
@@ -773,8 +773,8 @@ static PATCH_CONST SSH_hmacSuiteInfo mHmacSuites[] =
 #define SSH_DHG_PRIME_STEP_BIT_LENGTH           (1024)
 #endif
 
-#if (((SSH_DHG_PRIME_MAX_BIT_LENGTH - SSH_DHG_PRIME_MIN_BIT_LENGTH) < SSH_DHG_PRIME_STEP_BIT_LENGTH) && !(defined(__DISABLE_MOCANA_DHG_STEP_WARNING__)))
-#error WARNING: SSH_DHG_PRIME_STEP_BIT_LENGTH is too long to have any affect, to ignore define __DISABLE_MOCANA_DHG_STEP_WARNING__
+#if (((SSH_DHG_PRIME_MAX_BIT_LENGTH - SSH_DHG_PRIME_MIN_BIT_LENGTH) < SSH_DHG_PRIME_STEP_BIT_LENGTH) && !(defined(__DISABLE_DIGICERT_DHG_STEP_WARNING__)))
+#error WARNING: SSH_DHG_PRIME_STEP_BIT_LENGTH is too long to have any affect, to ignore define __DISABLE_DIGICERT_DHG_STEP_WARNING__
 #endif
 
 #if (!defined(SSH_DHG_PRIME_NUM_GEN_EACH_STEP))
@@ -789,10 +789,10 @@ static PATCH_CONST SSH_hmacSuiteInfo mHmacSuites[] =
 
 static vlong *mp_dhSafePrimes[SSH_DHG_ARRAY_SIZE];
 
-#endif /* (!defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__)) */
+#endif /* (!defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) */
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
-#ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
 static AsymmetricKey m_transientRsaKey1024;
 #endif
 static AsymmetricKey m_transientRsaKey2048;
@@ -801,7 +801,7 @@ static AsymmetricKey m_transientRsaKey2048;
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_TRANS_HANDSHAKE_DATA__))
+#if (defined(__ENABLE_DIGICERT_SSH_TRANS_HANDSHAKE_DATA__))
 static void
 DUMP(ubyte *pString, ubyte *pMesg, ubyte4 mesgLen)
 {
@@ -814,23 +814,23 @@ DUMP(ubyte *pString, ubyte *pMesg, ubyte4 mesgLen)
 
 
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 static MSTATUS
 makeSafePrimesDHG(MOC_PRIME(hwAccelDescr hwAccelCtx) vlong **ppRetPrimeP, ubyte4 bitLength, vlong **ppVlongQueue)
 {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     return OK;
 #else
     return DH_getP(DH_GROUP_14, ppRetPrimeP);
 #endif
 }
-#endif /* (!defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__)) */
+#endif /* (!defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) */
 
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 extern MSTATUS
 SSH_TRANS_initSafePrimesDHG(hwAccelDescr hwAccelCtx)
 {
@@ -866,30 +866,30 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
-#endif /* (!defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__)) */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* (!defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) */
 
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 extern MSTATUS
 SSH_TRANS_initRsaKeyExchange(hwAccelDescr hwAccelCtx)
 {
     vlong*  pVlongQueue = NULL;
     MSTATUS status;
 
-#ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
+#ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
     CRYPTO_initAsymmetricKey(&m_transientRsaKey1024);
 #endif
     CRYPTO_initAsymmetricKey(&m_transientRsaKey2048);
 
     /* set default RSA transient key for keyex */
-#ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
+#ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
     if (OK > (status = CRYPTO_createRSAKey(&m_transientRsaKey1024, &pVlongQueue)))
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_generateKey(MOC_RSA(hwAccelCtx) g_pRandomContext,
                                        m_transientRsaKey1024.key.pRSA, 1024, &pVlongQueue)))
     {
@@ -901,13 +901,13 @@ SSH_TRANS_initRsaKeyExchange(hwAccelDescr hwAccelCtx)
     {
         goto exit;
     }
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
-#endif /* __ENABLE_MOCANA_RSA_ALL_KEYSIZE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__ */
 
     if (OK > (status = CRYPTO_createRSAKey(&m_transientRsaKey2048, &pVlongQueue)))
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_generateKey(MOC_RSA(hwAccelCtx) g_pRandomContext,
                                        m_transientRsaKey2048.key.pRSA, 2048, &pVlongQueue)))
     {
@@ -919,7 +919,7 @@ SSH_TRANS_initRsaKeyExchange(hwAccelDescr hwAccelCtx)
     {
         goto exit;
     }
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
 exit:
     VLONG_freeVlongQueue(&pVlongQueue);
@@ -934,18 +934,18 @@ exit:
 extern MSTATUS
 SSH_TRANS_releaseStaticKeys(void)
 {
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
     ubyte4  index;
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
-#ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
     CRYPTO_uninitAsymmetricKey(&m_transientRsaKey1024, 0);
 #endif
     CRYPTO_uninitAsymmetricKey(&m_transientRsaKey2048, 0);
 #endif
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
     for (index = 0; index < SSH_DHG_ARRAY_SIZE; index++)
         VLONG_freeVlong(&mp_dhSafePrimes[index], 0);
 #endif
@@ -956,8 +956,8 @@ SSH_TRANS_releaseStaticKeys(void)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 SSH_TRANS_findSafePrimesDHG(const ubyte4 min, const ubyte4 max, const ubyte4 preferred,
                             vlong **ppRetP, vlong **ppRetG)
@@ -1010,8 +1010,8 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
-#endif /* (!defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__)) */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* (!defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -1115,7 +1115,7 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
         if ((OK > CERT_STORE_findIdentityByTypeFirst(pCookie, mHostKeySuites[index].authType, mHostKeySuites[index].identityType, (const AsymmetricKey **)&pKey, NULL, NULL, NULL)) || (NULL == pKey))
             return NULL;
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         /* We want to make sure that the Host Key suite corresponds to the qs alg of the key extracted */
         if (akt_qs == pKey->type)
         {
@@ -1131,14 +1131,14 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
             if (OK > SSH_QS_getQsAlgorithmName(qsAlgoId, FALSE, &pAlgoName))
                 return NULL;
 
-            if (OK > MOC_MEMCMP(mHostKeySuites[index].pHostKeyName, pAlgoName->pString + 4, pAlgoName->stringLen - 4, &cmpRes))
+            if (OK > DIGI_MEMCMP(mHostKeySuites[index].pHostKeyName, pAlgoName->pString + 4, pAlgoName->stringLen - 4, &cmpRes))
                 return NULL;
 
             if (0 != cmpRes)
                 return NULL;
         }
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
         else if (akt_hybrid == pKey->type)
         {
             ubyte4 qsAlgoId = 0;
@@ -1153,21 +1153,21 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
             if (OK > SSH_HYBRID_getHybridAlgorithmName(pKey->clAlg, qsAlgoId, FALSE, &pAlgoName))
                 return NULL;
 
-            if (OK > MOC_MEMCMP(mHostKeySuites[index].pHostKeyName, pAlgoName->pString + 4, pAlgoName->stringLen - 4, &cmpRes))
+            if (OK > DIGI_MEMCMP(mHostKeySuites[index].pHostKeyName, pAlgoName->pString + 4, pAlgoName->stringLen - 4, &cmpRes))
                 return NULL;
 
             if (0 != cmpRes)
                 return NULL;
         }
-#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
+#endif /* __ENABLE_DIGICERT_PQC_COMPOSITE__ */
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
         /* We want to make sure that the Host Key suite corresponds to the curve of the key extracted */
         if (akt_ecc == pKey->type)
         {
             ubyte4 curveId;
             ubyte4 expectedKeyLength;
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
             if (OK > CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pKey->key.pECC, &curveId))
 #else
             if (OK > EC_getCurveIdFromKey(pKey->key.pECC, &curveId))
@@ -1205,17 +1205,13 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
         ubyte4              pubKeyType = 0;
         const SizedBuffer*  pRetCertificates = NULL;
         ubyte4              numberCertificates = 0;
-
-#ifdef __ENABLE_MOCANA_PQC__
-        sshStringBuffer*    pName = NULL;
-#endif
-
-        ubyte4              curveId;
         ubyte4              qsAlgoId = 0;
         ubyte4              *pAlgoIdList = NULL;
         ubyte4              algoIdListLen = 0;
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
+        sshStringBuffer*    pName = NULL;
+
         if (CERT_STORE_AUTH_TYPE_QS == mHostKeySuites[index].authType)
         {
             status = SSH_STR_makeStringBuffer(&pName, mHostKeySuites[index].hostKeyNameLength + 4);
@@ -1224,7 +1220,7 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
 
             BIGEND32(pName->pString, pName->stringLen - 4);
 
-            status = MOC_MEMCPY(pName->pString + 4, mHostKeySuites[index].pHostKeyName, pName->stringLen - 4);
+            status = DIGI_MEMCPY(pName->pString + 4, mHostKeySuites[index].pHostKeyName, pName->stringLen - 4);
             if (OK != status)
                 return NULL;
 
@@ -1233,16 +1229,18 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
                 return NULL;
         }
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
         else if (CERT_STORE_AUTH_TYPE_HYBRID == mHostKeySuites[index].authType)
         {
+            ubyte4 curveId;
+
             status = SSH_STR_makeStringBuffer(&pName, mHostKeySuites[index].hostKeyNameLength + 4);
             if (OK != status)
                 return NULL;
 
             BIGEND32(pName->pString, pName->stringLen - 4);
 
-            status = MOC_MEMCPY(pName->pString + 4, mHostKeySuites[index].pHostKeyName, pName->stringLen - 4);
+            status = DIGI_MEMCPY(pName->pString + 4, mHostKeySuites[index].pHostKeyName, pName->stringLen - 4);
             if (OK != status)
                 return NULL;
 
@@ -1261,7 +1259,7 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
         status = CERT_STORE_findIdentityCertChainFirstFromList(pCookie, pubKeyType, 0, pAlgoIdList, algoIdListLen, NULL, 0,
                                                         (const AsymmetricKey **)&pKey, &pRetCertificates, &numberCertificates, NULL);
         /* done with pAlgoIdList, free now so we can cleanly return on errors */
-        (void) MOC_FREE((void **) &pAlgoIdList);
+        (void) DIGI_FREE((void **) &pAlgoIdList);
 
         if (OK != status)
             return NULL;
@@ -1283,7 +1281,7 @@ SSH_TRANS_hostKeyList1(ubyte4 index, ubyte4 *pRetStringLength, void *pCookie)
 static MSTATUS
 SSH_TRANS_allocClassicDH(struct sshContext *pContextSSH)
 {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     return CRYPTO_INTERFACE_DH_allocateServer(MOC_DH(pContextSSH->hwAccelCookie) g_pRandomContext, &SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), pContextSSH->pKeyExSuiteInfo->keyExHint);
 #else
     return DH_allocateServer(MOC_DH(pContextSSH->hwAccelCookie) g_pRandomContext, &SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), pContextSSH->pKeyExSuiteInfo->keyExHint);
@@ -1296,7 +1294,7 @@ SSH_TRANS_allocClassicDH(struct sshContext *pContextSSH)
 static MSTATUS
 SSH_TRANS_freeClassicDH(struct sshContext *pContextSSH)
 {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     return CRYPTO_INTERFACE_DH_freeDhContext(&SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), NULL);
 #else
     return DH_freeDhContext(&SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), NULL);
@@ -1306,11 +1304,11 @@ SSH_TRANS_freeClassicDH(struct sshContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 static MSTATUS
 SSH_TRANS_allocGroupDH(struct sshContext *pContextSSH)
 {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     return CRYPTO_INTERFACE_DH_allocate(&pContextSSH->sshKeyExCtx.p_dhContext);
 #else
     return DH_allocate(&pContextSSH->sshKeyExCtx.p_dhContext);
@@ -1321,11 +1319,11 @@ SSH_TRANS_allocGroupDH(struct sshContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 static MSTATUS
 SSH_TRANS_freeGroupDH(struct sshContext *pContextSSH)
 {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     return CRYPTO_INTERFACE_DH_freeDhContext(&pContextSSH->sshKeyExCtx.p_dhContext, NULL);
 #else
     return DH_freeDhContext(&pContextSSH->sshKeyExCtx.p_dhContext, NULL);
@@ -1336,7 +1334,7 @@ SSH_TRANS_freeGroupDH(struct sshContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS
 SSH_TRANS_allocRSA(struct sshContext *pContextSSH)
 {
@@ -1346,14 +1344,14 @@ SSH_TRANS_allocRSA(struct sshContext *pContextSSH)
     if ((NULL == pContextSSH) || (NULL == pContextSSH->pKeyExSuiteInfo))
         return ERR_NULL_POINTER;
 
-#ifdef __ENABLE_MOCANA_RSA_ALL_KEYSIZE__
+#ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
     if (1024 == pContextSSH->pKeyExSuiteInfo->keyExHint)
         srcKey = &m_transientRsaKey1024;
     else
 #endif
         srcKey = &m_transientRsaKey2048;
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
     status = CRYPTO_INTERFACE_copyAsymmetricKey(&pContextSSH->sshKeyExCtx.transientKey, srcKey);
 #else
     status = CRYPTO_copyAsymmetricKey(&pContextSSH->sshKeyExCtx.transientKey, srcKey);
@@ -1368,7 +1366,7 @@ SSH_TRANS_allocRSA(struct sshContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS
 SSH_TRANS_freeRSA(struct sshContext *pContextSSH)
 {
@@ -1379,18 +1377,18 @@ SSH_TRANS_freeRSA(struct sshContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 static MSTATUS
 SSH_TRANS_allocECDH(struct sshContext *pContextSSH)
 {
     return CRYPTO_initAsymmetricKey(&pContextSSH->sshKeyExCtx.transientKey);
 }
-#endif /* (defined(__ENABLE_MOCANA_ECC__)) */
+#endif /* (defined(__ENABLE_DIGICERT_ECC__)) */
 
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 static MSTATUS
 SSH_TRANS_freeECDH(struct sshContext *pContextSSH)
 {
@@ -1410,10 +1408,10 @@ SSH_TRANS_createAESCTRCtx(MOC_SYM(hwAccelDescr hwAccelCtx) const ubyte* keyMater
     ubyte   tempKeyMaterial[32 + AES_BLOCK_SIZE];
     BulkCtx pRetCtx = NULL;
 
-    if ((OK <= MOC_MEMCPY(tempKeyMaterial, keyMaterial, keyLength)) &&              /* copy key material to larger buffer */
-        (OK <= MOC_MEMSET(keyLength + tempKeyMaterial, 0x00, AES_BLOCK_SIZE)) )     /* zero counter portion */
+    if ((OK <= DIGI_MEMCPY(tempKeyMaterial, keyMaterial, keyLength)) &&              /* copy key material to larger buffer */
+        (OK <= DIGI_MEMSET(keyLength + tempKeyMaterial, 0x00, AES_BLOCK_SIZE)) )     /* zero counter portion */
     {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         pRetCtx = CRYPTO_INTERFACE_CreateAESCTRCtx(MOC_SYM(hwAccelCtx) keyMaterial, keyLength + AES_BLOCK_SIZE, encrypt);
 #else
         pRetCtx = CreateAESCTRCtx(MOC_SYM(hwAccelCtx) keyMaterial, keyLength + AES_BLOCK_SIZE, encrypt);
@@ -1432,7 +1430,7 @@ SSH_TRANS_doAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data,
 {
     MSTATUS                 status;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK <= (status = CRYPTO_INTERFACE_DoAESCTR(MOC_SYM(hwAccelCtx) ctx, data, dataLength, encrypt, iv)))
     {
         /* save counter for next run */
@@ -1444,7 +1442,7 @@ SSH_TRANS_doAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data,
         /* save counter for next run */
         status = GetCounterBlockAESCTR(MOC_SYM(hwAccelCtx) ctx, iv);
     }
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
 
     return status;
@@ -1454,8 +1452,8 @@ SSH_TRANS_doAESCTR(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data,
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
 /* IV is used as the nonce for chacha20, for SSH protocol, the nonce is the sequence number
  * of the packet */
 static MSTATUS
@@ -1469,7 +1467,7 @@ SSH_TRANS_doChaCha20(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data,
 
     /* set nonce before calling DoChaCha20 */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_CHACHA20_setNonceAndCounterSSH(MOC_SYM(hwAccelCtx) ctx, iv, 8, NULL, 0);
 #else
     status = CHACHA20_setNonceAndCounterSSH(MOC_SYM(hwAccelCtx) ctx, iv, 8, NULL, 0);
@@ -1478,7 +1476,7 @@ SSH_TRANS_doChaCha20(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx ctx, ubyte* data,
         goto exit;
 
     /* DoChaCha20 does not use encrypt or iv argument */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DoChaCha20(MOC_SYM(hwAccelCtx) ctx, data, dataLength, 0, NULL);
 #else
     status = DoChaCha20(MOC_SYM(hwAccelCtx) ctx, data, dataLength, 0, NULL);
@@ -1512,7 +1510,7 @@ SSH_TRANS_setMessageTimer(sshContext *pContextSSH, ubyte4 msTimeToExpire)
     DEBUG_ERROR(DEBUG_SSH_TRANSPORT, ", time to expire = ", msTimeToExpire);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
     if (NULL != SSH_sshSettings()->funcPtrStartTimer)
     {
         if (kOpenState <= SSH_UPPER_STATE(pContextSSH))
@@ -1520,7 +1518,7 @@ SSH_TRANS_setMessageTimer(sshContext *pContextSSH, ubyte4 msTimeToExpire)
         else
             SSH_sshSettings()->funcPtrStartTimer(CONNECTION_INSTANCE(pContextSSH), msTimeToExpire, 0);  /* authentication not completed */
     }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 exit:
     return status;
@@ -1535,10 +1533,10 @@ tcpWrite(sshContext *pContextSSH, ubyte *pData, ubyte4 dataLen)
     ubyte4  numBytesWritten = 0;
     MSTATUS status;
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
     status = TCP_WRITE(SOCKET(pContextSSH), (sbyte *)pData, dataLen, &numBytesWritten);
 #else
-    status = MOC_STREAM_write(pContextSSH->pSocketOutStreamDescr, pData, dataLen, &numBytesWritten);
+    status = DIGI_STREAM_write(pContextSSH->pSocketOutStreamDescr, pData, dataLen, &numBytesWritten);
 #endif
 
     if ((OK <= status) && (dataLen != numBytesWritten))
@@ -1612,7 +1610,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 digestMpint(sshContext *pContextSSH, BulkCtx *pKeyExHash, vlong *pRawVlong)
 {
@@ -1629,7 +1627,7 @@ digestMpint(sshContext *pContextSSH, BulkCtx *pKeyExHash, vlong *pRawVlong)
     if (OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, asciiLength, TRUE, &pAsciiVlongClone)))
         goto exit;
 
-    MOC_MEMCPY(pAsciiVlongClone, pAsciiVlong, asciiLength);
+    DIGI_MEMCPY(pAsciiVlongClone, pAsciiVlong, asciiLength);
 
     status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pUpdateFunc(MOC_HASH(pContextSSH->hwAccelCookie) pKeyExHash, pAsciiVlongClone, (ubyte4)asciiLength);
 
@@ -1644,7 +1642,7 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
 
 /*------------------------------------------------------------------*/
@@ -1689,19 +1687,19 @@ SSH_TRANS_sendDisconnectMesg(sshContext *pContextSSH, ubyte4 sshError)
     pPayload[3] = (ubyte)(sshError >>  8);
     pPayload[4] = (ubyte)(sshError);
 
-    MOC_MEMCPY(pPayload + 5, pErrorMesg, errorMesgLen);
-    MOC_MEMCPY(pPayload + 5 + errorMesgLen, ssh_languageTag.pString, ssh_languageTag.stringLen);
+    DIGI_MEMCPY(pPayload + 5, pErrorMesg, errorMesgLen);
+    DIGI_MEMCPY(pPayload + 5 + errorMesgLen, ssh_languageTag.pString, ssh_languageTag.stringLen);
 
     SSH_OUT_MESG_sendMessage(pContextSSH, pPayload, payloadLength, &dummy);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DH_freeDhContext(&(pContextSSH->sshKeyExCtx.p_dhContext), NULL);
 #else
     DH_freeDhContext(&(pContextSSH->sshKeyExCtx.p_dhContext), NULL);
 #endif
 
-    MOC_MEMSET(pContextSSH->sshKeyExCtx.pBytesSharedSecret, 0x00, pContextSSH->sshKeyExCtx.bytesSharedSecretLen);
-    MOC_FREE((void**)&(pContextSSH->sshKeyExCtx.pBytesSharedSecret));
+    DIGI_MEMSET(pContextSSH->sshKeyExCtx.pBytesSharedSecret, 0x00, pContextSSH->sshKeyExCtx.bytesSharedSecretLen);
+    DIGI_FREE((void**)&(pContextSSH->sshKeyExCtx.pBytesSharedSecret));
 
     pContextSSH->sshKeyExCtx.bytesSharedSecretLen = 0;
 
@@ -1721,18 +1719,18 @@ SSH_TRANS_sendServerHello(sshContext *pContextSSH)
     ubyte*  pHelloString = NULL;
     MSTATUS status;
 
-    if (OK != (status = MOC_MALLOC((void **)(&pHelloString), SERVER_HELLO_COMMENT_LEN(pContextSSH) + sizeof(CRLF))))
+    if (OK != (status = DIGI_MALLOC((void **)(&pHelloString), SERVER_HELLO_COMMENT_LEN(pContextSSH) + sizeof(CRLF))))
         goto exit;
 
-    MOC_MEMCPY(pHelloString, (ubyte *)SERVER_HELLO_COMMENT(pContextSSH), SERVER_HELLO_COMMENT_LEN(pContextSSH));
-    MOC_MEMCPY(pHelloString + SERVER_HELLO_COMMENT_LEN(pContextSSH), (ubyte *)CRLF, sizeof(CRLF)-1);
+    DIGI_MEMCPY(pHelloString, (ubyte *)SERVER_HELLO_COMMENT(pContextSSH), SERVER_HELLO_COMMENT_LEN(pContextSSH));
+    DIGI_MEMCPY(pHelloString + SERVER_HELLO_COMMENT_LEN(pContextSSH), (ubyte *)CRLF, sizeof(CRLF)-1);
 
     /* send server hello message to client */
     if (OK > (status = tcpWrite(pContextSSH, pHelloString, (SERVER_HELLO_COMMENT_LEN(pContextSSH) + sizeof(CRLF)-1))))
         goto exit;
 
 exit:
-    MOC_FREE((void **)(&pHelloString));
+    DIGI_FREE((void **)(&pHelloString));
 
     return status;
 }
@@ -1812,7 +1810,7 @@ SSH_TRANS_sendServerAlgorithms(sshContext *pContextSSH)
     pPayload[index] = '\0';                         /* first kex packet follow is FALSE */
     index++;
 
-    MOC_MEMSET(pPayload+index, 0x00, sizeof(ubyte4));   /* 0 --- reserved for future extension */
+    DIGI_MEMSET(pPayload+index, 0x00, sizeof(ubyte4));   /* 0 --- reserved for future extension */
     index += sizeof(ubyte4);
 
     status = SSH_OUT_MESG_sendMessage(pContextSSH, pPayload, index, &numBytesWritten);
@@ -1875,7 +1873,7 @@ generateHostCert(sshContext *pContextSSH)
         goto exit;
     }
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
     status = CRYPTO_INTERFACE_copyAsymmetricKey(&pContextSSH->hostKey, pTempKey);
 #else
     status = CRYPTO_copyAsymmetricKey(&pContextSSH->hostKey, pTempKey);
@@ -1908,8 +1906,12 @@ generateHostNewCert(sshContext *pContextSSH)
     SizedBuffer*    pCertificates = NULL;
     ubyte4          numCertificates;
     void*           pDummyHint = NULL;
+#ifdef __ENABLE_DIGICERT_PQC__
     sshStringBuffer *pName = NULL;
+#endif
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
     ubyte4          curveId;
+#endif
     ubyte4          qsAlgoId = 0;
     MSTATUS         status;
     ubyte4          *pAlgoIdList = NULL;
@@ -1926,12 +1928,7 @@ generateHostNewCert(sshContext *pContextSSH)
         goto exit;
     }
 
-#if 0
-    if (OK > (status = CERT_STORE_convertCertStoreKeyTypeToPubKeyType(pContextSSH->pHostKeySuites->authType, &pubKeyType)))
-        goto exit;
-#endif
-
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     if (CERT_STORE_AUTH_TYPE_QS == pContextSSH->pHostKeySuites->authType)
     {
         status = SSH_STR_makeStringBuffer(&pName, pContextSSH->pHostKeySuites->hostKeyNameLength + 4);
@@ -1940,7 +1937,7 @@ generateHostNewCert(sshContext *pContextSSH)
 
         BIGEND32(pName->pString, pName->stringLen - 4);
 
-        status = MOC_MEMCPY(pName->pString + 4, pContextSSH->pHostKeySuites->pHostKeyName, pName->stringLen - 4);
+        status = DIGI_MEMCPY(pName->pString + 4, pContextSSH->pHostKeySuites->pHostKeyName, pName->stringLen - 4);
         if (OK != status)
             goto exit;
 
@@ -1949,7 +1946,7 @@ generateHostNewCert(sshContext *pContextSSH)
             goto exit;
     }
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
     else if (CERT_STORE_AUTH_TYPE_HYBRID == pContextSSH->pHostKeySuites->authType)
     {
         status = SSH_STR_makeStringBuffer(&pName, pContextSSH->pHostKeySuites->hostKeyNameLength + 4);
@@ -1958,7 +1955,7 @@ generateHostNewCert(sshContext *pContextSSH)
 
         BIGEND32(pName->pString, pName->stringLen - 4);
 
-        status = MOC_MEMCPY(pName->pString + 4, pContextSSH->pHostKeySuites->pHostKeyName, pName->stringLen - 4);
+        status = DIGI_MEMCPY(pName->pString + 4, pContextSSH->pHostKeySuites->pHostKeyName, pName->stringLen - 4);
         if (OK != status)
             goto exit;
 
@@ -1994,7 +1991,7 @@ generateHostNewCert(sshContext *pContextSSH)
         goto exit;
     }
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
     status = CRYPTO_INTERFACE_copyAsymmetricKey(&pContextSSH->hostKey, pTempKey);
 #else
     status = CRYPTO_copyAsymmetricKey(&pContextSSH->hostKey, pTempKey);
@@ -2015,7 +2012,7 @@ exit:
 
     if(NULL != pAlgoIdList)
     {
-        (void) MOC_FREE((void **) &pAlgoIdList);
+        (void) DIGI_FREE((void **) &pAlgoIdList);
     }
 
     return status;
@@ -2053,7 +2050,7 @@ rematchAeadAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
 
         if (FALSE == inString)
         {
-            /* not able to match aead algorithm 1) custom option is misconfigured, or 2) mocana code modified */
+            /* not able to match aead algorithm 1) custom option is misconfigured, or 2) digicert code modified */
             status = ERR_SSH_MISMATCH_AEAD_ALGO;
             goto exit;
         }
@@ -2070,7 +2067,7 @@ rematchAeadAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
             }
             if (FALSE == inString)
             {
-              /* not able to match aead algorithm 1) custom option is misconfigured, or 2) mocana code modified */
+              /* not able to match aead algorithm 1) custom option is misconfigured, or 2) digicert code modified */
               status = ERR_SSH_MISMATCH_AEAD_ALGO;
               goto exit;
             }
@@ -2097,7 +2094,7 @@ rematchAeadAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
 
         if (FALSE == inString)
         {
-            /* not able to match aead algorithm 1) custom option is misconfigured, or 2) mocana code modified */
+            /* not able to match aead algorithm 1) custom option is misconfigured, or 2) digicert code modified */
             status = ERR_SSH_MISMATCH_AEAD_ALGO;
             goto exit;
         }
@@ -2114,7 +2111,7 @@ rematchAeadAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
             }
             if (FALSE == inString)
             {
-              /* not able to match aead algorithm 1) custom option is misconfigured, or 2) mocana code modified */
+              /* not able to match aead algorithm 1) custom option is misconfigured, or 2) digicert code modified */
               status = ERR_SSH_MISMATCH_AEAD_ALGO;
               goto exit;
             }
@@ -2152,8 +2149,8 @@ handleGcmAtOpenssh(sbyte4 cipherIndex, sbyte4 macIndex, ubyte *pOptionsSelected)
     if (0 >= pOptionsSelected[cipherIndex])
         return 0;
 
-    if (0 == MOC_STRCMP("aes128-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName) ||
-        0 == MOC_STRCMP("aes256-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName))
+    if (0 == DIGI_STRCMP("aes128-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName) ||
+        0 == DIGI_STRCMP("aes256-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName))
     {
         /* corresponding mac algorithm list for selected cipher is always 2 entries ahead. */
         status = SSH_STR_findOption(ssh_algorithmMethods[macIndex],
@@ -2321,7 +2318,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
 
 #ifndef __DISABLE_DIGICERT_RFC_8308__
                     status = SSH_STR_findOption(pClientAlgorithm[i],
-                        "ext-info-s", MOC_STRLEN("ext-info-s"), &inString, &wordIndex);
+                        "ext-info-s", DIGI_STRLEN("ext-info-s"), &inString, &wordIndex);
                     if (OK != status)
                         goto exit;
 
@@ -2345,7 +2342,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
                       required to do so.
                     */
                     status = SSH_STR_findOption(pClientAlgorithm[i],
-                        "ext-info-c", MOC_STRLEN("ext-info-c"), &inString, &wordIndex);
+                        "ext-info-c", DIGI_STRLEN("ext-info-c"), &inString, &wordIndex);
                     if (OK != status)
                         goto exit;
 
@@ -2376,7 +2373,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
     if (OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, newMesgLen, TRUE, &pClonedMesg)))
         goto exit;
 
-    if (OK > (status = MOC_MEMCPY(pClonedMesg, pNewMesg, (sbyte4)newMesgLen)))
+    if (OK > (status = DIGI_MEMCPY(pClonedMesg, pNewMesg, (sbyte4)newMesgLen)))
         goto exit;
 
     CLIENT_KEX_INIT_PAYLOAD(pContextSSH)     = pClonedMesg;
@@ -2481,7 +2478,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
     {
         /* AEAD algorithms MUST match their HMAC algorithm */
         if ((mCipherSuites[pOptionsSelected[2] - 1].cipherNameLength != mHmacSuites[pOptionsSelected[4] - 1].hmacNameLength) ||
-            (0 != MOC_STRCMP(mCipherSuites[pOptionsSelected[2] - 1].pCipherName, mHmacSuites[pOptionsSelected[4] - 1].pHmacName)) )
+            (0 != DIGI_STRCMP(mCipherSuites[pOptionsSelected[2] - 1].pCipherName, mHmacSuites[pOptionsSelected[4] - 1].pHmacName)) )
         {
             if (OK > (status = rematchAeadAlgorithms(pContextSSH, pOptionsSelected, 2, 4)))
                 goto exit;
@@ -2493,7 +2490,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
     {
         /* AEAD algorithms MUST match their HMAC algorithm */
         if ((mCipherSuites[pOptionsSelected[3] - 1].cipherNameLength != mHmacSuites[pOptionsSelected[5] - 1].hmacNameLength) ||
-            (0 != MOC_STRCMP(mCipherSuites[pOptionsSelected[3] - 1].pCipherName, mHmacSuites[pOptionsSelected[5] - 1].pHmacName)) )
+            (0 != DIGI_STRCMP(mCipherSuites[pOptionsSelected[3] - 1].pCipherName, mHmacSuites[pOptionsSelected[5] - 1].pHmacName)) )
         {
             if (OK > (status = rematchAeadAlgorithms(pContextSSH, pOptionsSelected, 3, 5)))
                 goto exit;
@@ -2565,7 +2562,7 @@ receiveClientKeyExchange(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMes
     while ((offset < bytesUsed) && (0x00 == pE[offset])) offset++;
 
     /* Perform DH computations, based on the incoming e */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DH_computeKeyExchangeEx(MOC_DH(pContextSSH->hwAccelCookie) SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), g_pRandomContext, pE + offset, bytesUsed - offset, &pSharedSecret, &sharedSecretLen);
     if (OK != status)
         goto exit;
@@ -2581,23 +2578,23 @@ receiveClientKeyExchange(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMes
 
     /* store shared secret (K) for later consumption */
     pKeyEx->bytesSharedSecretLen = sharedSecretLen - offset;
-    status = MOC_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
+    status = DIGI_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY(pKeyEx->pBytesSharedSecret, pSharedSecret + offset, pKeyEx->bytesSharedSecretLen);
+    status = DIGI_MEMCPY(pKeyEx->pBytesSharedSecret, pSharedSecret + offset, pKeyEx->bytesSharedSecretLen);
     if (OK != status)
         goto exit;
 exit:
     VLONG_freeVlongQueue(&pVlongQueue);
 
     if (NULL != pE)
-        MOC_FREE((void**)&pE);
+        DIGI_FREE((void**)&pE);
 
     if (NULL != pSharedSecret)
     {
-        MOC_MEMSET(pSharedSecret, 0x00, sharedSecretLen);
-        MOC_FREE((void**)&pSharedSecret);
+        DIGI_MEMSET(pSharedSecret, 0x00, sharedSecretLen);
+        DIGI_FREE((void**)&pSharedSecret);
     }
 
     return status;
@@ -2607,7 +2604,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 
 static MSTATUS
 receiveClientDHGKeyExchangeRequest(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
@@ -2642,14 +2639,14 @@ receiveClientDHGKeyExchangeRequest(sshContext *pContextSSH, ubyte *pNewMesg, uby
 
     if (13 == newMesgLen)
     {
-        min =       MOC_NTOHL(1 + pNewMesg);
-        preferred = MOC_NTOHL(5 + pNewMesg);
-        max =       MOC_NTOHL(9 + pNewMesg);
+        min =       DIGI_NTOHL(1 + pNewMesg);
+        preferred = DIGI_NTOHL(5 + pNewMesg);
+        max =       DIGI_NTOHL(9 + pNewMesg);
     }
     else
     {
         min =       1024;
-        preferred = MOC_NTOHL(1 + pNewMesg);
+        preferred = DIGI_NTOHL(1 + pNewMesg);
         max =       8192;
     }
 
@@ -2663,7 +2660,7 @@ receiveClientDHGKeyExchangeRequest(sshContext *pContextSSH, ubyte *pNewMesg, uby
      * and use that to set values for diffie hellman context.
      * Using mapping functions we generate P and G at allocation time. */
     /* set P and G, then generate the the key */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DH_freeDhContext(&SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), NULL);
 #else
     status = DH_freeDhContext(&SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), NULL);
@@ -2671,7 +2668,7 @@ receiveClientDHGKeyExchangeRequest(sshContext *pContextSSH, ubyte *pNewMesg, uby
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DH_allocateServer(MOC_DH(pContextSSH->hwAccelCookie) g_pRandomContext, &SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), DH_GROUP_14);
 #else
     status = DH_allocateServer(MOC_DH(pContextSSH->hwAccelCookie) g_pRandomContext, &SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), DH_GROUP_14);
@@ -2682,7 +2679,7 @@ receiveClientDHGKeyExchangeRequest(sshContext *pContextSSH, ubyte *pNewMesg, uby
     if (13 == newMesgLen)
     {
         /* save variables here */
-        MOC_MEMCPY(pTempClone, 1 + pNewMesg, 12);
+        DIGI_MEMCPY(pTempClone, 1 + pNewMesg, 12);
 
         /* add min, n(preferred), max to the hash */
         if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pUpdateFunc(MOC_HASH(pContextSSH->hwAccelCookie) pContextSSH->sshKeyExCtx.pKeyExHash, pTempClone, 12)))
@@ -2693,7 +2690,7 @@ receiveClientDHGKeyExchangeRequest(sshContext *pContextSSH, ubyte *pNewMesg, uby
     else
     {
         /* save variables here */
-        MOC_MEMCPY(pTempClone, 1 + pNewMesg, 4);
+        DIGI_MEMCPY(pTempClone, 1 + pNewMesg, 4);
 
         /* add min, n(preferred), max to the hash */
         if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pUpdateFunc(MOC_HASH(pContextSSH->hwAccelCookie) pContextSSH->sshKeyExCtx.pKeyExHash, pTempClone, 4)))
@@ -2709,12 +2706,12 @@ exit:
 
 } /* receiveClientDHGKeyExchangeRequest */
 
-#endif /* (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__)) */
+#endif /* (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) */
 
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 
 static MSTATUS
 sendDHGSafePrimeKeyExchange(sshContext *pContextSSH)
@@ -2729,7 +2726,7 @@ sendDHGSafePrimeKeyExchange(sshContext *pContextSSH)
     MSTATUS status;
     MDhKeyTemplate  template = {0};
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DH_getKeyParametersAlloc(MOC_DH(pContextSSH->hwAccelCookie) &template, SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), MOC_GET_PUBLIC_KEY_DATA);
 #else
     status = DH_getKeyParametersAlloc(MOC_DH(pContextSSH->hwAccelCookie) &template, SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), MOC_GET_PUBLIC_KEY_DATA);
@@ -2750,8 +2747,8 @@ sendDHGSafePrimeKeyExchange(sshContext *pContextSSH)
 
     /* form message */
     *pReplyMesg = SSH_MSG_KEX_DH_GEX_GROUP;
-    MOC_MEMCPY(1 + pReplyMesg, pBufP, LenP);
-    MOC_MEMCPY(1 + LenP + pReplyMesg, pBufG, LenG);
+    DIGI_MEMCPY(1 + pReplyMesg, pBufP, LenP);
+    DIGI_MEMCPY(1 + LenP + pReplyMesg, pBufG, LenG);
 
     /* add p(safe prime) and g (generator) to the hash */
     if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pUpdateFunc(MOC_HASH(pContextSSH->hwAccelCookie) pContextSSH->sshKeyExCtx.pKeyExHash, 1 + pReplyMesg, replyMesgLen - 1)))
@@ -2776,7 +2773,7 @@ exit:
     if (NULL != pBufP)
         FREE(pBufP);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DH_freeKeyTemplate(NULL, &template);
 #else
     DH_freeKeyTemplate(NULL, &template);
@@ -2790,7 +2787,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 
 static MSTATUS
 receiveClientDHGKeyExchangeInit(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
@@ -2845,7 +2842,7 @@ receiveClientDHGKeyExchangeInit(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4
     if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pUpdateFunc(MOC_HASH(pContextSSH->hwAccelCookie) pContextSSH->sshKeyExCtx.pKeyExHash, pNewMesg+1, newMesgLen-1)))
         goto exit;
     DUMP((ubyte *)"update:", 1 + pNewMesg, newMesgLen - 1);
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DH_computeKeyExchangeEx(MOC_DH(pContextSSH->hwAccelCookie) SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), g_pRandomContext, pE + offset, bytesUsed - offset, &pSharedSecret, &sharedSecretLen);
 #else
     status = DH_computeKeyExchangeEx(MOC_DH(pContextSSH->hwAccelCookie) SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), g_pRandomContext, pE, bytesUsed, &pSharedSecret, &sharedSecretLen);
@@ -2857,23 +2854,23 @@ receiveClientDHGKeyExchangeInit(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4
     offset = 0;
     while ((offset < sharedSecretLen) && (0x00 == pSharedSecret[offset])) offset++;
     pKeyEx->bytesSharedSecretLen = sharedSecretLen - offset;
-    status = MOC_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
+    status = DIGI_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY(pKeyEx->pBytesSharedSecret, pSharedSecret + offset, pKeyEx->bytesSharedSecretLen);
+    status = DIGI_MEMCPY(pKeyEx->pBytesSharedSecret, pSharedSecret + offset, pKeyEx->bytesSharedSecretLen);
     if (OK != status)
         goto exit;
 exit:
 
     if (NULL != pSharedSecret)
     {
-        MOC_MEMSET(pSharedSecret, 0x00, sharedSecretLen);
-        MOC_FREE((void**)&pSharedSecret);
+        DIGI_MEMSET(pSharedSecret, 0x00, sharedSecretLen);
+        DIGI_FREE((void**)&pSharedSecret);
     }
 
     if (NULL != pE)
-        MOC_FREE((void**)&pE);
+        DIGI_FREE((void**)&pE);
 
     return status;
 
@@ -2884,7 +2881,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 
 static MSTATUS
 SSH_TRANS_sendKexRsaPubKey(struct sshContext *pContextSSH)
@@ -2921,12 +2918,12 @@ SSH_TRANS_sendKexRsaPubKey(struct sshContext *pContextSSH)
     index = 1;
 
     /* store certificate & public host key length */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
         goto exit;
     index += pContextSSH->hostBlobLength;
 
     /* store transient public RSA key (K_T) */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, K_T, K_Tlen)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, K_T, K_Tlen)))
         goto exit;
 
     /* add K_T to the hash */
@@ -2957,9 +2954,9 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 SSH_TRANS_receiveKexRsaSecret(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
 {
@@ -3037,14 +3034,14 @@ exit:
     return status;
 
 } /* SSH_TRANS_receiveKexRsaSecret */
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
 #endif
 
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 
 static MSTATUS
 SSH_TRANS_sendKexRsaDone(sshContext *pContextSSH)
@@ -3078,7 +3075,7 @@ SSH_TRANS_sendKexRsaDone(sshContext *pContextSSH)
 
         DEBUG_RELABEL_MEMORY(SSH_SESSION_ID(pContextSSH));
 
-        MOC_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
+        DIGI_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
 
         pContextSSH->sessionIdLength = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize;
     }
@@ -3104,7 +3101,7 @@ SSH_TRANS_sendKexRsaDone(sshContext *pContextSSH)
     index = 1;
 
     /* store signature blob */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
         goto exit;
     index += signatureLength;
 
@@ -3153,7 +3150,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_PQC__) && defined(__ENABLE_DIGICERT_ECC__))
 static MSTATUS
 SSH_TRANS_receiveClientKexHybridInit(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
 {
@@ -3206,7 +3203,7 @@ SSH_TRANS_receiveClientKexHybridInit(sshContext *pContextSSH, ubyte *pNewMesg, u
     if (OK != status)
         goto exit;
     
-    pubKeyLen = MOC_NTOHL(pEphemeralKey->pString);
+    pubKeyLen = DIGI_NTOHL(pEphemeralKey->pString);
 
     /* validate we have at least more than a qs pub*/
     if (pubKeyLen <= qsPubLen)
@@ -3318,7 +3315,7 @@ SSH_TRANS_sendClientKexHybridReply(sshContext *pContextSSH)
     pCombinedKey[2] = (((ephemeralEccKeyLen + cipherSSLen) >>  8) & 0xff);
     pCombinedKey[3] = ((ephemeralEccKeyLen + cipherSSLen)       & 0xff);
 
-    status = MOC_MEMCPY(pCombinedKey + 4, pCipherSS, cipherSSLen);
+    status = DIGI_MEMCPY(pCombinedKey + 4, pCipherSS, cipherSSLen);
     if (OK != status)
         goto exit;
 
@@ -3356,7 +3353,7 @@ SSH_TRANS_sendClientKexHybridReply(sshContext *pContextSSH)
 
     /* alloc space for the shared secret, ie the hash result */
     pKeyEx->bytesSharedSecretLen = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize;
-    status = MOC_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
+    status = DIGI_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
     if (OK != status)
         goto exit;
 
@@ -3390,7 +3387,7 @@ SSH_TRANS_sendClientKexHybridReply(sshContext *pContextSSH)
 
         DEBUG_RELABEL_MEMORY(SSH_SESSION_ID(pContextSSH));
 
-        MOC_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
+        DIGI_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
 
         pContextSSH->sessionIdLength = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize;
     }
@@ -3405,7 +3402,7 @@ SSH_TRANS_sendClientKexHybridReply(sshContext *pContextSSH)
     /* Send SSH_MSG_KEX_ECDH_REPLY message */
     replyMesgLen = 1 + pContextSSH->hostBlobLength + combinedKeyLen + signatureLength;
 
-    status = MOC_MALLOC((void **) &pReplyMesg, replyMesgLen);
+    status = DIGI_MALLOC((void **) &pReplyMesg, replyMesgLen);
     if (OK != status)
         goto exit;
 
@@ -3414,18 +3411,18 @@ SSH_TRANS_sendClientKexHybridReply(sshContext *pContextSSH)
     index = 1;
 
     /* store certificate (K_S) & public host key length */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
         goto exit;
     index += pContextSSH->hostBlobLength;
     start = index;
 
     /* store ephemeral public key */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pCombinedKey, combinedKeyLen)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pCombinedKey, combinedKeyLen)))
         goto exit;
 
     index += combinedKeyLen;
     /* store signature blob */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
         goto exit;
     index += signatureLength;
 
@@ -3446,19 +3443,19 @@ exit:
 
     if (NULL != pEccSharedSecret)
     {
-        MOC_MEMSET(pEccSharedSecret, 0x00, eccSharedSecretLen);
-        MOC_FREE((void **) &pEccSharedSecret);
+        DIGI_MEMSET(pEccSharedSecret, 0x00, eccSharedSecretLen);
+        DIGI_FREE((void **) &pEccSharedSecret);
     }
 
     if (NULL != pQsSharedSecret)
     {
-        MOC_MEMSET(pQsSharedSecret, 0x00, qsSharedSecretLen);
-        MOC_FREE((void **) &pQsSharedSecret);
+        DIGI_MEMSET(pQsSharedSecret, 0x00, qsSharedSecretLen);
+        DIGI_FREE((void **) &pQsSharedSecret);
     }
 
     if (NULL != pCipherSS)
     {
-        MOC_FREE((void **) &pCipherSS);
+        DIGI_FREE((void **) &pCipherSS);
     }
 
     if(NULL != pContextSSH)
@@ -3493,18 +3490,18 @@ exit:
         CRYPTO_uninitAsymmetricKey(&pContextSSH->hostKey, NULL);
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_EC_deleteKeyAux(&pECCPubKey);
 #else
     EC_deleteKey(&pECCPubKey);
 #endif
     return status;
 } /* SSH_TRANS_sendClientKexHybridReply */
-#endif /* __ENABLE_MOCANA_PQC__ && __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_PQC__ && __ENABLE_DIGICERT_ECC__ */
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 static MSTATUS
 SSH_TRANS_receiveClientKexEcdhInit(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
 {
@@ -3603,7 +3600,7 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
         goto exit;
 
     /* get the length of the ECDH point */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &ephemeralKeyLen);
     if (OK != status)
         goto exit;
@@ -3619,7 +3616,7 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
     DEBUG_RELABEL_MEMORY(pEphemeralKey);
 
     /* get curve ID */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveID);
     if(OK != status)
         goto exit;
@@ -3630,7 +3627,7 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
 #endif
     /* generate a key with the given curveID */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_generateKeyPairAllocAux(MOC_ECC(pContextSSH->hwAccelCookie) curveID, &pECCPubKey, RANDOM_rngFun, g_pRandomContext);
     if (OK != status)
         goto exit;
@@ -3646,7 +3643,7 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
     pEphemeralKey[2] = ((ephemeralKeyLen >>  8) & 0xff);
     pEphemeralKey[3] = ((ephemeralKeyLen)       & 0xff);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCPubKey, 4 + pEphemeralKey, ephemeralKeyLen);
     if (OK != status)
         goto exit;
@@ -3663,7 +3660,7 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
 
     DUMP((ubyte *)"update:", pEphemeralKey, 4 + ephemeralKeyLen);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_ECDH_generateSharedSecretFromKeysAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCPubKey, pECCKey, &sharedSecret, (ubyte4 *) &sharedSecretLen, 1, NULL); 
     if (OK != status)
         goto exit;
@@ -3677,11 +3674,11 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
     while (((sbyte4) offset < sharedSecretLen) && (0x00 == sharedSecret[offset])) offset++;
 
     pKeyEx->bytesSharedSecretLen = sharedSecretLen - offset;
-    status = MOC_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
+    status = DIGI_MALLOC((void**)&(pKeyEx->pBytesSharedSecret), pKeyEx->bytesSharedSecretLen);
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY(pKeyEx->pBytesSharedSecret, sharedSecret + offset, pKeyEx->bytesSharedSecretLen);
+    status = DIGI_MEMCPY(pKeyEx->pBytesSharedSecret, sharedSecret + offset, pKeyEx->bytesSharedSecretLen);
     if (OK != status)
         goto exit;
 
@@ -3706,7 +3703,7 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
 
         DEBUG_RELABEL_MEMORY(SSH_SESSION_ID(pContextSSH));
 
-        MOC_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
+        DIGI_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
 
         pContextSSH->sessionIdLength = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize;
     }
@@ -3732,17 +3729,17 @@ SSH_TRANS_sendClientKexEcdhReply(sshContext *pContextSSH)
     index = 1;
 
     /* store certificate (K_S) & public host key length */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
         goto exit;
     index += pContextSSH->hostBlobLength;
 
     /* store ephemeral public key */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pEphemeralKey, 4 + ephemeralKeyLen)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pEphemeralKey, 4 + ephemeralKeyLen)))
         goto exit;
     index += 4 + ephemeralKeyLen;
 
     /* store signature blob */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
         goto exit;
     index += signatureLength;
 
@@ -3764,7 +3761,7 @@ exit:
 
     if (NULL != sharedSecret)
     {
-        MOC_MEMSET(sharedSecret, 0x00, sharedSecretLen);
+        DIGI_MEMSET(sharedSecret, 0x00, sharedSecretLen);
         FREE(sharedSecret);
     }
 
@@ -3794,7 +3791,7 @@ exit:
         CRYPTO_uninitAsymmetricKey(&pContextSSH->hostKey, NULL);
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_EC_deleteKeyAux(&pECCPubKey);
 #else
     EC_deleteKey(&pECCPubKey);
@@ -3802,11 +3799,11 @@ exit:
     return status;
 
 } /* SSH_TRANS_sendClientKexEcdhReply */
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
 static MSTATUS
 SSH_TRANS_buildHybridKey(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength)
 {
@@ -3827,7 +3824,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 static MSTATUS
 SSH_TRANS_buildQsKey(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength)
 {
@@ -3847,7 +3844,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__))
 static MSTATUS
 SSH_TRANS_buildDsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey)
 {
@@ -3894,7 +3891,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
 static MSTATUS
 SSH_TRANS_buildRsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey)
 {
@@ -3916,7 +3913,7 @@ SSH_TRANS_buildRsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 
     if (OK > (status = MEM_POOL_getPoolObject(&pContextSSH->smallPool, (void **)&(dataToSign))))
         goto exit;
 
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
     if (pContextSSH->pHostKeySuites->hashLen == SHA512_RESULT_SIZE)
     {
         if (OK > (status = SHA512_completeDigest(MOC_HASH(pContextSSH->hwAccelCookie) pDigestData, digestLen, dataToSign)))
@@ -3924,8 +3921,8 @@ SSH_TRANS_buildRsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 
         DUMP((ubyte *)"SHA512_completeDigest:", dataToSign, SHA512_RESULT_SIZE);
     }
     else
-#endif /* __DISABLE_MOCANA_SHA512__ */
-#ifndef __DISABLE_MOCANA_SHA256__
+#endif /* __DISABLE_DIGICERT_SHA512__ */
+#ifndef __DISABLE_DIGICERT_SHA256__
     if (pContextSSH->pHostKeySuites->hashLen == SHA256_RESULT_SIZE)
     {
         if (OK > (status = SHA256_completeDigest(MOC_HASH(pContextSSH->hwAccelCookie) pDigestData, digestLen, dataToSign)))
@@ -3954,7 +3951,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 static MSTATUS
 SSH_TRANS_buildEcdsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey)
 {
@@ -3972,17 +3969,17 @@ SSH_TRANS_buildEcdsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte
     {
         switch (pContextSSH->pHostKeySuites->hashLen)
         {
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
             case SHA256_RESULT_SIZE :
                 hashAlgo = ht_sha256;
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_SHA384__
+#ifndef __DISABLE_DIGICERT_SHA384__
             case SHA384_RESULT_SIZE :
                 hashAlgo = ht_sha384;
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
             case SHA512_RESULT_SIZE :
                 hashAlgo = ht_sha512;
                 break;
@@ -4004,21 +4001,21 @@ SSH_TRANS_buildEcdsaSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte
         /* compute signature */
         hashSize = pContextSSH->pHostKeySuites->hashLen;
         switch (hashSize) {
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
             case SHA256_RESULT_SIZE: if (OK > (status = SHA256_completeDigest(MOC_HASH(pContextSSH->hwAccelCookie) pDigestData, digestLen, kBuf)))
                                               {
                                                 goto exit;
                                               }
                                               break;
 #endif
-#ifndef __DISABLE_MOCANA_SHA384__
+#ifndef __DISABLE_DIGICERT_SHA384__
             case SHA384_RESULT_SIZE: if (OK > (status = SHA384_completeDigest(MOC_HASH(pContextSSH->hwAccelCookie) pDigestData, digestLen, kBuf)))
                                               {
                                                 goto exit;
                                               }
                                               break;
 #endif
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
             case SHA512_RESULT_SIZE: if (OK > (status = SHA512_completeDigest(MOC_HASH(pContextSSH->hwAccelCookie) pDigestData, digestLen, kBuf)))
                                               {
                                                 goto exit;
@@ -4045,7 +4042,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
 static MSTATUS
 SSH_TRANS_buildHybridSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey)
 {
@@ -4071,7 +4068,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 static MSTATUS
 SSH_TRANS_buildQsSignature(sshContext *pContextSSH, ubyte *pDigestData, ubyte4 digestLen, ubyte **ppSignature, ubyte4 *pSignatureLength, AsymmetricKey *pKey)
 {
@@ -4093,7 +4090,7 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_DIGICERT_PQC__ */
 
 /*------------------------------------------------------------------*/
 
@@ -4124,7 +4121,7 @@ replyToClientKeyExchange(sshContext *pContextSSH, ubyte replyCode)
         return ERR_NULL_POINTER;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DH_getKeyParametersAlloc(MOC_DH(pContextSSH->hwAccelCookie) &template, SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), MOC_GET_PUBLIC_KEY_DATA);
 #else
     status = DH_getKeyParametersAlloc(MOC_DH(pContextSSH->hwAccelCookie) &template, SSH_DIFFIEHELLMAN_CONTEXT(pContextSSH), MOC_GET_PUBLIC_KEY_DATA);
@@ -4157,7 +4154,7 @@ replyToClientKeyExchange(sshContext *pContextSSH, ubyte replyCode)
 
         DEBUG_RELABEL_MEMORY(SSH_SESSION_ID(pContextSSH));
 
-        MOC_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
+        DIGI_MEMCPY(SSH_SESSION_ID(pContextSSH), SSH_HASH_H(pContextSSH), pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
 
         pContextSSH->sessionIdLength = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize;
     }
@@ -4180,17 +4177,17 @@ replyToClientKeyExchange(sshContext *pContextSSH, ubyte replyCode)
     index = 1;
 
     /* store certificate & public host key length */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pContextSSH->pHostBlob, pContextSSH->hostBlobLength)))
         goto exit;
     index += pContextSSH->hostBlobLength;
 
     /* copy f mpint string */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pStringMpintF, stringLenF)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pStringMpintF, stringLenF)))
         goto exit;
     index += stringLenF;
 
     /* store signature blob */
-    if (OK > (status = MOC_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
+    if (OK > (status = DIGI_MEMCPY(pReplyMesg + index, pSignature, signatureLength)))
         goto exit;
 
     /* send it out */
@@ -4228,7 +4225,7 @@ exit:
         SERVER_KEX_INIT_PAYLOAD(pContextSSH) = NULL;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DH_freeKeyTemplate(NULL, &template);
 #else
     DH_freeKeyTemplate(NULL, &template);
@@ -4262,7 +4259,7 @@ makeKeyFromByteString(sshContext *pContextSSH, BulkCtx* pHashContext, ubyte *k, 
     if (OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, stringLenK, TRUE, &stringKClone)))
         goto exit;
 
-    MOC_MEMCPY(stringKClone, stringK, stringLenK);
+    DIGI_MEMCPY(stringKClone, stringK, stringLenK);
 
     if (NULL != stringK)
     {
@@ -4322,7 +4319,7 @@ makeKeyFromByteString(sshContext *pContextSSH, BulkCtx* pHashContext, ubyte *k, 
         if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pUpdateFunc(MOC_HASH(pContextSSH->hwAccelCookie) pHashContext, pTempKeyBuffer, m*pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize)))
             goto exit;
 
-        MOC_MEMSET(pTempKeyBuffer + m*pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize, 0xff, pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
+        DIGI_MEMSET(pTempKeyBuffer + m*pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize, 0xff, pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
 
         if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pFinalFunc(MOC_HASH(pContextSSH->hwAccelCookie) pHashContext, pTempKeyBuffer + m*pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize)))
             goto exit;
@@ -4331,7 +4328,7 @@ makeKeyFromByteString(sshContext *pContextSSH, BulkCtx* pHashContext, ubyte *k, 
     }
 
     /* copy out appropriate number of key data bytes */
-    MOC_MEMCPY(pKeyBuffer, pTempKeyBuffer, keyBufferSize);
+    DIGI_MEMCPY(pKeyBuffer, pTempKeyBuffer, keyBufferSize);
 
 exit:
     if (NULL != stringK)
@@ -4353,7 +4350,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 makeKey(sshContext *pContextSSH, BulkCtx* pHashContext, vlong *k, ubyte *H, ubyte chr,
         ubyte *pSessionId, ubyte *pKeyBuffer, ubyte4 keyBufferSize)
@@ -4373,7 +4370,7 @@ makeKey(sshContext *pContextSSH, BulkCtx* pHashContext, vlong *k, ubyte *H, ubyt
     if (OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, stringLenK, TRUE, &stringKClone)))
         goto exit;
 
-    MOC_MEMCPY(stringKClone, stringK, stringLenK);
+    DIGI_MEMCPY(stringKClone, stringK, stringLenK);
 
     if (NULL != stringK)
     {
@@ -4432,14 +4429,14 @@ makeKey(sshContext *pContextSSH, BulkCtx* pHashContext, vlong *k, ubyte *H, ubyt
         if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pUpdateFunc(MOC_HASH(pContextSSH->hwAccelCookie) pHashContext, pTempKeyBuffer, pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize)))
             goto exit;
 
-        MOC_MEMSET(pTempKeyBuffer + pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize, 0xff, pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
+        DIGI_MEMSET(pTempKeyBuffer + pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize, 0xff, pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize);
 
         if (OK > (status = pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->pFinalFunc(MOC_HASH(pContextSSH->hwAccelCookie) pHashContext, pTempKeyBuffer + pContextSSH->pKeyExSuiteInfo->pHashHandshakeAlgo->hashResultSize)))
             goto exit;
     }
 
     /* copy out appropriate number of key data bytes */
-    MOC_MEMCPY(pKeyBuffer, pTempKeyBuffer, keyBufferSize);
+    DIGI_MEMCPY(pKeyBuffer, pTempKeyBuffer, keyBufferSize);
 
 exit:
     if (NULL != stringK)
@@ -4457,7 +4454,7 @@ exit:
     return status;
 
 } /* makeKey */
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
 
 
 /*------------------------------------------------------------------*/
@@ -4489,7 +4486,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SP800_135_ACVP__
+#ifdef __ENABLE_DIGICERT_SP800_135_ACVP__
 extern MSTATUS
 #else
 static MSTATUS
@@ -4548,8 +4545,8 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH == INBOUND_CIPHER_TYPE(pContextSSH))
     {
         /* init inbound decipher key */
@@ -4582,7 +4579,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
     }
     else
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
     {
         /* init inbound decipher key */
         if (OK > (status = makeKeyFromByteString(pContextSSH, hashContext,
@@ -4635,8 +4632,8 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
     {
         if (OK > (status = makeKeyFromByteString(pContextSSH, hashContext,
@@ -4667,7 +4664,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
     }
     else
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
     {
         if (OK > (status = makeKeyFromByteString(pContextSSH, hashContext,
                                    pContextSSH->sshKeyExCtx.pBytesSharedSecret,
@@ -4731,7 +4728,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
     if (OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, pHmacSuite->hmacDigestLength, TRUE, &(INBOUND_KEY_DATA(pContextSSH)))))
         goto exit;
 
-    MOC_MEMCPY(INBOUND_KEY_DATA(pContextSSH), pKeyBuffer, pHmacSuite->hmacDigestLength);
+    DIGI_MEMCPY(INBOUND_KEY_DATA(pContextSSH), pKeyBuffer, pHmacSuite->hmacDigestLength);
 
     INBOUND_KEY_DATA_LEN(pContextSSH)  = pHmacSuite->hmacKeyLength;
 
@@ -4766,7 +4763,7 @@ receiveNewKeysMessage(sshContext *pContextSSH, ubyte *pOptionsSelected,
     if ( OK > (status = CRYPTO_ALLOC(pContextSSH->hwAccelCookie, pHmacSuite->hmacDigestLength, TRUE, &(OUTBOUND_KEY_DATA(pContextSSH)))))
         goto exit;
 
-    MOC_MEMCPY(OUTBOUND_KEY_DATA(pContextSSH), pKeyBuffer, pHmacSuite->hmacDigestLength);
+    DIGI_MEMCPY(OUTBOUND_KEY_DATA(pContextSSH), pKeyBuffer, pHmacSuite->hmacDigestLength);
 
     OUTBOUND_KEY_DATA_LEN(pContextSSH)  = pHmacSuite->hmacKeyLength;
 
@@ -4827,7 +4824,7 @@ SSH_TRANS_versionExchange(sshContext *pContextSSH)
     if ( OK > (status = CRYPTO_ALLOC ( pContextSSH->hwAccelCookie, (sizeof(SERVER_HELLO_STRING)-1) , TRUE, &pTempServerHelloClone ) ) )
         goto exit;
 
-    MOC_MEMCPY(pTempServerHelloClone, (ubyte *)SERVER_HELLO_STRING, sizeof(SERVER_HELLO_STRING)-1);
+    DIGI_MEMCPY(pTempServerHelloClone, (ubyte *)SERVER_HELLO_STRING, sizeof(SERVER_HELLO_STRING)-1);
 
     SERVER_HELLO_COMMENT_LEN(pContextSSH) = sizeof(SERVER_HELLO_STRING)-1;
     SERVER_HELLO_COMMENT(pContextSSH) = pTempServerHelloClone;
@@ -4881,9 +4878,9 @@ static MSTATUS sendMsgExtInfo(sshContext *pContextSSH)
     pAlgorithms = getPubKeyAuthAlgorithms();
     /* type byte + extension count + length of extension name */
     payloadLen = 1 + sizeof(ubyte4) + sizeof(ubyte4);
-    payloadLen += MOC_STRLEN("server-sig-algs") + pAlgorithms->stringLen;
+    payloadLen += DIGI_STRLEN("server-sig-algs") + pAlgorithms->stringLen;
 
-    status = MOC_MALLOC((void **) &pPayload, payloadLen);
+    status = DIGI_MALLOC((void **) &pPayload, payloadLen);
     if (OK != status)
         goto exit;
 
@@ -4893,7 +4890,7 @@ static MSTATUS sendMsgExtInfo(sshContext *pContextSSH)
     pPayload[3] = 0;
     pPayload[4] = 1;
 
-    extNameLen = MOC_STRLEN("server-sig-algs");
+    extNameLen = DIGI_STRLEN("server-sig-algs");
 
     pPayload[5] = 0;
     pPayload[6] = 0;
@@ -4902,13 +4899,13 @@ static MSTATUS sendMsgExtInfo(sshContext *pContextSSH)
 
     pTmp = pPayload + 9;
 
-    status = MOC_MEMCPY(pTmp, "server-sig-algs", extNameLen);
+    status = DIGI_MEMCPY(pTmp, "server-sig-algs", extNameLen);
     if (OK != status)
         goto exit;
 
     pTmp += extNameLen;
 
-    status = MOC_MEMCPY(pTmp, pAlgorithms->pString, pAlgorithms->stringLen);
+    status = DIGI_MEMCPY(pTmp, pAlgorithms->pString, pAlgorithms->stringLen);
     if (OK != status)
         goto exit;
 
@@ -4923,7 +4920,7 @@ static MSTATUS sendMsgExtInfo(sshContext *pContextSSH)
 
 exit:
     SSH_STR_freeStringBuffer(&pAlgorithms);
-    MOC_FREE((void **) &pPayload);
+    DIGI_FREE((void **) &pPayload);
 
     return status;
 }
@@ -5020,7 +5017,7 @@ SSH_TRANS_doProtocol(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen
             break;
         }
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
         case kTransReceiveDiffieHellmanGroup1:
         case kReduxTransReceiveDiffieHellmanGroup1:
         {
@@ -5075,7 +5072,7 @@ SSH_TRANS_doProtocol(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen
         }
 #endif
 
-#if (defined(__ENABLE_MOCANA_PQC__) && defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_PQC__) && defined(__ENABLE_DIGICERT_ECC__))
         case kTransReceiveHybrid:
         case kReduxTransReceiveHybrid:
         {
@@ -5103,8 +5100,8 @@ SSH_TRANS_doProtocol(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen
             status = SSH_TRANS_setMessageTimer(pContextSSH, SSH_sshSettings()->sshTimeOutNewKeys);
             break;
         }
-#endif /* __ENABLE_MOCANA_PQC__ && __ENABLE_MOCANA_ECC__ */
-#ifdef __ENABLE_MOCANA_ECC__
+#endif /* __ENABLE_DIGICERT_PQC__ && __ENABLE_DIGICERT_ECC__ */
+#ifdef __ENABLE_DIGICERT_ECC__
         case kTransReceiveECDH:
         case kReduxTransReceiveECDH:
         {
@@ -5134,7 +5131,7 @@ SSH_TRANS_doProtocol(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen
         }
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
         case kTransReceiveRSA:
         case kReduxTransReceiveRSA:
         {
@@ -5186,7 +5183,7 @@ SSH_TRANS_doProtocol(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen
             else
             {
                 SSH_UPPER_STATE(pContextSSH) = kOpenState;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 		status = SSH_TRANS_setMessageTimer(pContextSSH, SSH_sshSettings()->sshTimeOutNewKeys);
 #else
                 status = SSH_TRANS_setMessageTimer(pContextSSH, SSH_sshSettings()->sshTimeOutDefaultOpenState);
@@ -5242,9 +5239,9 @@ exit:
     return status;
 }
 
-#ifdef __ENABLE_MOCANA_SP800_135_ACVP__
+#ifdef __ENABLE_DIGICERT_SP800_135_ACVP__
 #include "../ssh/nist/ssh_nist.inc"
 #endif
 
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */
 

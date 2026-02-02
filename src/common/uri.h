@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_URI__
+#ifdef __ENABLE_DIGICERT_URI__
 
 typedef enum
 {
@@ -146,7 +146,7 @@ URI_Unescape(ubyte* component, ubyte4 componentLen,
 MOC_EXTERN MSTATUS
 URI_DELETE(URI* uri);
 
-#endif /* #ifdef __ENABLE_MOCANA_URI__ */
+#endif /* #ifdef __ENABLE_DIGICERT_URI__ */
 
 #ifdef __cplusplus
 }

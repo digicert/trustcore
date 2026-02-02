@@ -6,13 +6,18 @@
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  * 
  */
-
 
 /*------------------------------------------------------------------*/
 
@@ -20,7 +25,7 @@
 #define __TAP_COMM_CLIENT_HEADER__
 
 /*! @cond */
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 #ifdef __ENABLE_TAP_REMOTE__
 /*! @endcond */
 
@@ -102,7 +107,7 @@ MOC_EXTERN MSTATUS TAP_TransmitReceive(TAP_SessionInfo *pSessionInfo,
 
 
 /*! @cond */
-#endif  /* __ENABLE_MOCANA_TAP__ */
+#endif  /* __ENABLE_DIGICERT_TAP__ */
 #endif  /* __ENABLE_TAP_REMOTE__ */
 /*! @endcond */
 

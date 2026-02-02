@@ -21,7 +21,7 @@
 #include "../common/int64.h"
 
 
-#if __MOCANA_MAX_INT__ < 64
+#if __DIGICERT_MAX_INT__ < 64
 
 ubyte8 u8_Not( ubyte8 a)
 {

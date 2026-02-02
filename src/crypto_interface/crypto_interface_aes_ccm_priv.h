@@ -30,8 +30,8 @@
 extern "C" {
 #endif
     
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_CCM_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_CCM_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_CCM_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_CCM_INTERNAL__))
     
 #define AESCCM_encrypt          CRYPTO_INTERFACE_AES_CCM_encrypt
 #define AESCCM_decrypt          CRYPTO_INTERFACE_AES_CCM_decrypt

@@ -27,21 +27,38 @@
 #include "../common/mfmgmt.h"
 #include "../common/mtcp.h"
 #include "../common/mtcp_async.h"
-#if defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#include "../crypto/hw_accel.h"
+#if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
 #include "../http/http_context.h"
 #include "../http/http_common.h"
 #include "../http/http.h"
 #endif
 #include "../mqtt/mqtt_client.h"
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 #include "../crypto/cert_store.h"
+#if defined(__RTOS_FREERTOS__) && defined(__RTOS_FREERTOS_ESP32__)
+/* TODO: Temporary fix
+ *
+ * Issue: The header file mqtt_client.h includes merrors.h and redefines OK to
+ * MOC_OK for ESP32 builds. The ssl.h header below includes a ESP32 toolchain
+ * header file which also defines OK which then gets redefined to MOC_OK causing
+ * compilation errors.
+ *
+ * Fix: Undefine OK before including ssl.h, then redefine it back to MOC_OK
+ */
+#undef OK
+#endif
 #include "../ssl/ssl.h"
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#if defined(__RTOS_FREERTOS__) && defined(__RTOS_FREERTOS_ESP32__)
+/* TODO: Temporary fix - see comment above */
+#define OK MOC_OK
+#endif
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 #ifdef __ENABLE_DIGICERT_SCRAM_CLIENT__
 #include "../crypto/scram_client.h"
 #include "../crypto/crypto.h"
 #endif
-#if defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
 #include "../crypto/pubcrypto.h"
 #include "../crypto/ca_mgmt.h"
 #include "../crypto/pkcs10.h"
@@ -85,7 +102,7 @@ typedef struct
 {
     MqttVersion mqttVersion;
     TCP_SOCKET socket;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     sbyte4 sslConnInst;
     certStorePtr pStore;
     sbyte *pKeyFile;
@@ -131,7 +148,7 @@ typedef struct
     ubyte4 scramPassLen;
     ubyte scramHashType;
 #endif
-#if defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
     TrustEdgeConfig *pConfig;
 #endif
 } MqttClientExampleCtx;
@@ -423,12 +440,12 @@ static MSTATUS MQTT_EXAMPLE_authHandler(
         {
             case ht_sha256:
                 options.pAuthMethod = pScramMethodSha256;
-                options.authMethodLen = MOC_STRLEN(pScramMethodSha256);
+                options.authMethodLen = DIGI_STRLEN(pScramMethodSha256);
                 break;
 
             case ht_sha512:
                 options.pAuthMethod = pScramMethodSha512;
-                options.authMethodLen = MOC_STRLEN(pScramMethodSha512);
+                options.authMethodLen = DIGI_STRLEN(pScramMethodSha512);
                 break;
 
             default:
@@ -443,7 +460,7 @@ static MSTATUS MQTT_EXAMPLE_authHandler(
             goto exit;
         }
 
-        status = MOC_MEMCMP(options.pAuthMethod, pInfo->pAuthMethod, options.authMethodLen, &cmp);
+        status = DIGI_MEMCMP(options.pAuthMethod, pInfo->pAuthMethod, options.authMethodLen, &cmp);
         if (OK != status)
             goto exit;
 
@@ -467,7 +484,7 @@ exit:
 
     if (NULL != options.pAuthData)
     {
-        MOC_FREE((void **)&options.pAuthData);
+        DIGI_FREE((void **)&options.pAuthData);
     }
 
     return status;
@@ -480,7 +497,7 @@ static MSTATUS MQTT_EXAMPLE_contextCreate(
 {
     MSTATUS status;
 
-    status = MOC_CALLOC((void **) ppCtx, 1, sizeof(MqttClientExampleCtx));
+    status = DIGI_CALLOC((void **) ppCtx, 1, sizeof(MqttClientExampleCtx));
     if (OK != status)
     {
         goto exit;
@@ -489,7 +506,7 @@ static MSTATUS MQTT_EXAMPLE_contextCreate(
     (*ppCtx)->mqttVersion = MQTT_V5;
 
     (*ppCtx)->socket = -1;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     (*ppCtx)->sslConnInst = -1;
 #endif
     (*ppCtx)->transport = MQTT_TCP;
@@ -548,7 +565,7 @@ static MSTATUS MQTT_EXAMPLE_contextCreate(
     (*ppCtx)->mqttExampleHandlers.alertHandler = MQTT_EXAMPLE_alertHandler;
     (*ppCtx)->mqttExampleHandlers.authHandler = MQTT_EXAMPLE_authHandler;
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     status = CERT_STORE_createStore(&((*ppCtx)->pStore));
     if (OK != status)
         goto exit;
@@ -569,78 +586,78 @@ static MSTATUS MQTT_EXAMPLE_contextDelete(
     {
         for (i = 0; i < (*ppCtx)->topicCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->pTopics + i)->pTopic);
+            DIGI_FREE((void **) &((*ppCtx)->pTopics + i)->pTopic);
         }
-        MOC_FREE((void **) &((*ppCtx)->pTopics));
+        DIGI_FREE((void **) &((*ppCtx)->pTopics));
 
         for (i = 0; i < (*ppCtx)->unsubTopicCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->pUnsubTopics + i)->pTopic);
+            DIGI_FREE((void **) &((*ppCtx)->pUnsubTopics + i)->pTopic);
         }
-        MOC_FREE((void **) &((*ppCtx)->pUnsubTopics));
+        DIGI_FREE((void **) &((*ppCtx)->pUnsubTopics));
 
         for (i = 0; i < (*ppCtx)->msgCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->pMsgs + i)->pTopic);
-            MOC_FREE((void **) &((*ppCtx)->pMsgs + i)->pData);
+            DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pTopic);
+            DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pData);
             
             for (int j = 0; (ubyte4)j < (*ppCtx)->pMsgs->pubOptions.propCount; j++)
             {
-                MOC_FREE((void **) &(((*ppCtx)->pMsgs + i)->pubOptions.pProps + j)->data.pair.name.pData);
-                MOC_FREE((void **) &(((*ppCtx)->pMsgs + i)->pubOptions.pProps + j)->data.pair.value.pData);
+                DIGI_FREE((void **) &(((*ppCtx)->pMsgs + i)->pubOptions.pProps + j)->data.pair.name.pData);
+                DIGI_FREE((void **) &(((*ppCtx)->pMsgs + i)->pubOptions.pProps + j)->data.pair.value.pData);
             }
-            MOC_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pProps);
-            MOC_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pContentType);
-            MOC_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pCorrelationData);
-            MOC_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pResponseTopic);
+            DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pProps);
+            DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pContentType);
+            DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pCorrelationData);
+            DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pubOptions.pResponseTopic);
         }
-        MOC_FREE((void **) &((*ppCtx)->pMsgs));
+        DIGI_FREE((void **) &((*ppCtx)->pMsgs));
 
         for (i = 0; i < (*ppCtx)->mqttConnectOptions.propCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.pProps + i)->data.pair.name.pData);
-            MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.pProps + i)->data.pair.value.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.pProps + i)->data.pair.name.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.pProps + i)->data.pair.value.pData);
         }
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.pProps));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.pProps));
 
         for (i = 0; i < (*ppCtx)->mqttConnectOptions.willInfo.propCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pProps + i)->data.pair.name.pData);
-            MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pProps + i)->data.pair.value.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pProps + i)->data.pair.name.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pProps + i)->data.pair.value.pData);
         }
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pProps));
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pWillTopic));
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pWill));
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pContentType));
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pResponseTopic));
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pCorrelationData));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pProps));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pWillTopic));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pWill));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pContentType));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pResponseTopic));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.willInfo.pCorrelationData));
 
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.pAuthMethod));
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.pUsername));
-        MOC_FREE((void **) &((*ppCtx)->mqttConnectOptions.pPassword));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.pAuthMethod));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.pUsername));
+        DIGI_FREE((void **) &((*ppCtx)->mqttConnectOptions.pPassword));
 
         for (i = 0; i < (*ppCtx)->mqttSubscribeOptions.propCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->mqttSubscribeOptions.pProps + i)->data.pair.name.pData);
-            MOC_FREE((void **) &((*ppCtx)->mqttSubscribeOptions.pProps + i)->data.pair.value.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttSubscribeOptions.pProps + i)->data.pair.name.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttSubscribeOptions.pProps + i)->data.pair.value.pData);
         }
-        MOC_FREE((void **) &((*ppCtx)->mqttSubscribeOptions.pProps));
+        DIGI_FREE((void **) &((*ppCtx)->mqttSubscribeOptions.pProps));
 
         for (i = 0; i < (*ppCtx)->mqttUnsubscribeOptions.propCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->mqttUnsubscribeOptions.pProps + i)->data.pair.name.pData);
-            MOC_FREE((void **) &((*ppCtx)->mqttUnsubscribeOptions.pProps + i)->data.pair.value.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttUnsubscribeOptions.pProps + i)->data.pair.name.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttUnsubscribeOptions.pProps + i)->data.pair.value.pData);
         }
-        MOC_FREE((void **) &((*ppCtx)->mqttUnsubscribeOptions.pProps));
+        DIGI_FREE((void **) &((*ppCtx)->mqttUnsubscribeOptions.pProps));
 
         for (i = 0; i < (*ppCtx)->mqttDisconnectOptions.propCount; i++)
         {
-            MOC_FREE((void **) &((*ppCtx)->mqttDisconnectOptions.pProps + i)->data.pair.name.pData);
-            MOC_FREE((void **) &((*ppCtx)->mqttDisconnectOptions.pProps + i)->data.pair.value.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttDisconnectOptions.pProps + i)->data.pair.name.pData);
+            DIGI_FREE((void **) &((*ppCtx)->mqttDisconnectOptions.pProps + i)->data.pair.value.pData);
         }
-        MOC_FREE((void **) &((*ppCtx)->mqttDisconnectOptions.pProps));
+        DIGI_FREE((void **) &((*ppCtx)->mqttDisconnectOptions.pProps));
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (NULL != (*ppCtx)->pStore)
         {
             CERT_STORE_releaseStore(&((*ppCtx)->pStore));
@@ -648,35 +665,35 @@ static MSTATUS MQTT_EXAMPLE_contextDelete(
 
         if (NULL != (*ppCtx)->pKeyFile)
         {
-            MOC_FREE((void **) &((*ppCtx)->pKeyFile));
+            DIGI_FREE((void **) &((*ppCtx)->pKeyFile));
         }
 
         if (NULL != (*ppCtx)->pCertFile)
         {
-            MOC_FREE((void **) &((*ppCtx)->pCertFile));
+            DIGI_FREE((void **) &((*ppCtx)->pCertFile));
         }
 #endif
 
         if (NULL != (*ppCtx)->pProxy)
         {
-            MOC_FREE((void **) &((*ppCtx)->pProxy));
+            DIGI_FREE((void **) &((*ppCtx)->pProxy));
         }
         if (NULL != (*ppCtx)->pMqttClientId)
         {
-            MOC_FREE((void **) &((*ppCtx)->pMqttClientId));
+            DIGI_FREE((void **) &((*ppCtx)->pMqttClientId));
         }
         if (NULL != (*ppCtx)->pMqttServer)
         {
-            MOC_FREE((void **) &((*ppCtx)->pMqttServer));
+            DIGI_FREE((void **) &((*ppCtx)->pMqttServer));
         }
 #ifdef __ENABLE_DIGICERT_SCRAM_CLIENT__
         if (NULL != (*ppCtx)->pScramUser)
         {
-            MOC_FREE((void **) &((*ppCtx)->pScramUser));
+            DIGI_FREE((void **) &((*ppCtx)->pScramUser));
         }
         if (NULL != (*ppCtx)->pScramPass)
         {
-            MOC_FREE((void **) &((*ppCtx)->pScramPass));
+            DIGI_FREE((void **) &((*ppCtx)->pScramPass));
         }
         if (NULL != (*ppCtx)->pScramCtx)
         {
@@ -686,15 +703,15 @@ static MSTATUS MQTT_EXAMPLE_contextDelete(
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
         if (NULL != (*ppCtx)->pSendBuffer)
         {
-            MOC_FREE((void **) &((*ppCtx)->pSendBuffer));
+            DIGI_FREE((void **) &((*ppCtx)->pSendBuffer));
         }
         if (NULL != (*ppCtx)->pRecvBuffer)
         {
-            MOC_FREE((void **) &((*ppCtx)->pRecvBuffer));
+            DIGI_FREE((void **) &((*ppCtx)->pRecvBuffer));
         }
 #endif
 
-        MOC_FREE((void **) ppCtx);
+        DIGI_FREE((void **) ppCtx);
     }
 
     return status;
@@ -817,7 +834,7 @@ static MSTATUS MQTT_EXAMPLE_displayHelp(
     printf("                                                        Can be specified multiple times\n");
     
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     printf("    --mqtt_transport <transport>                        Choose the transport used for MQTT connection\n");
     printf("                                                            TCP (default)\n");
     printf("                                                            SSL\n");
@@ -825,17 +842,17 @@ static MSTATUS MQTT_EXAMPLE_displayHelp(
     printf("    --ssl_allow_untrusted                               Only applies if transport is SSL. Allow untrusted certificates for SSL\n");
     printf("    --ssl_key_file <file>                               Only applies if transport is SSL. SSL key file for client authentication\n");
     printf("    --ssl_cert_file <file>                              Only applies if transport is SSL. SSL certificate file for client authentication\n");
-#if defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
     printf("    --proxy <proxy>                                     Connect using proxy. Following formats allowed\n");
     printf("                                                            http://[username:password@]hostname:port\n");
     printf("                                                            https://[username:password@]hostname:port\n");
-#endif /* __ENABLE_MOCANA_HTTP_PROXY__ */
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
-#if defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
-#if defined(__ENABLE_MOCANA_PQC__)
+#endif /* __ENABLE_DIGICERT_HTTP_PROXY__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
+#if defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_PQC__)
     printf("    --require-pqc                                       Enforce usage of PQC algorithms\n");
-#endif /* __ENABLE_MOCANA_PQC__ */
-#endif /* __ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__ */
+#endif /* __ENABLE_DIGICERT_PQC__ */
+#endif /* __ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__ */
     printf("\n");
     printf("     Note: MQTT v3.1.1 does not support properties\n");
     printf("\n");
@@ -857,11 +874,11 @@ static void setStringParameter(
     char** param,
     char* value)
 {
-    *param = MALLOC((MOC_STRLEN((const sbyte *)value))+1);
+    *param = MALLOC((DIGI_STRLEN((const sbyte *)value))+1);
     if (NULL == *param)
         return;
-    (void) MOC_MEMCPY(*param, value, MOC_STRLEN((const sbyte *)value));
-    (*param)[MOC_STRLEN((const sbyte *)value)] = '\0';
+    (void) DIGI_MEMCPY(*param, value, DIGI_STRLEN((const sbyte *)value));
+    (*param)[DIGI_STRLEN((const sbyte *)value)] = '\0';
 }
 
 /*----------------------------------------------------------------------------*/
@@ -874,16 +891,16 @@ static MSTATUS MQTT_EXAMPLE_addSubTopic(
     MqttSubscribeTopic *pTopics = NULL;
     sbyte4 topicLen;
 
-    topicLen = MOC_STRLEN(pTopic);
+    topicLen = DIGI_STRLEN(pTopic);
 
     if (NULL == pCtx->pTopics)
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) &pCtx->pTopics, 1, sizeof(MqttSubscribeTopic));
         if (OK != status)
             goto exit;
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &pCtx->pTopics->pTopic, topicLen,
             pTopic, topicLen);
         if (OK != status)
@@ -895,17 +912,17 @@ static MSTATUS MQTT_EXAMPLE_addSubTopic(
     }
     else
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) &pTopics, pCtx->topicCount + 1,
             sizeof(MqttSubscribeTopic));
         if (OK != status)
             goto exit;
 
-        MOC_MEMCPY(
+        DIGI_MEMCPY(
             pTopics, pCtx->pTopics,
             sizeof(MqttSubscribeTopic) * pCtx->topicCount);
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &((pTopics + pCtx->topicCount)->pTopic), topicLen,
             pTopic, topicLen);
         if (OK != status)
@@ -913,7 +930,7 @@ static MSTATUS MQTT_EXAMPLE_addSubTopic(
 
         (pTopics + pCtx->topicCount)->topicLen = topicLen;
         (pTopics + pCtx->topicCount)->qos = MQTT_QOS_2;
-        MOC_FREE((void **) &pCtx->pTopics);
+        DIGI_FREE((void **) &pCtx->pTopics);
         pCtx->pTopics = pTopics;
         pCtx->topicCount++;
     }
@@ -933,16 +950,16 @@ static MSTATUS MQTT_EXAMPLE_addUnsubTopic(
     MqttUnsubscribeTopic *pUnsubTopics = NULL;
     sbyte4 topicLen;
 
-    topicLen = MOC_STRLEN(pTopic);
+    topicLen = DIGI_STRLEN(pTopic);
 
     if (NULL == pCtx->pUnsubTopics)
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) &pCtx->pUnsubTopics, 1, sizeof(MqttSubscribeTopic));
         if (OK != status)
             goto exit;
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &pCtx->pUnsubTopics->pTopic, topicLen,
             pTopic, topicLen);
         if (OK != status)
@@ -953,24 +970,24 @@ static MSTATUS MQTT_EXAMPLE_addUnsubTopic(
     }
     else
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) &pUnsubTopics, pCtx->unsubTopicCount + 1,
             sizeof(MqttSubscribeTopic));
         if (OK != status)
             goto exit;
 
-        MOC_MEMCPY(
+        DIGI_MEMCPY(
             pUnsubTopics, pCtx->pUnsubTopics,
             sizeof(MqttSubscribeTopic) * pCtx->unsubTopicCount);
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &((pUnsubTopics + pCtx->unsubTopicCount)->pTopic),
             topicLen, pTopic, topicLen);
         if (OK != status)
             goto exit;
 
         (pUnsubTopics + pCtx->unsubTopicCount)->topicLen = topicLen;
-        MOC_FREE((void **) &pCtx->pUnsubTopics);
+        DIGI_FREE((void **) &pCtx->pUnsubTopics);
         pCtx->pUnsubTopics = pUnsubTopics;
         pCtx->unsubTopicCount++;
     }
@@ -996,19 +1013,19 @@ static MSTATUS MQTT_EXAMPLE_addUserProperty(
 
     if (NULL == *ppProps)
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) ppProps, 1, sizeof(MqttProperty));
         if (OK != status)
             goto exit;
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &(*ppProps)->data.pair.name.pData, keyLen, pKey, keyLen);
         if (OK != status)
             goto exit;
 
         (*ppProps)->data.pair.name.dataLen = keyLen;
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &(*ppProps)->data.pair.value.pData, valueLen, pValue, valueLen);
         if (OK != status)
             goto exit;
@@ -1018,17 +1035,17 @@ static MSTATUS MQTT_EXAMPLE_addUserProperty(
     }
     else
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) &pProps, (*propCount) + 1,
             sizeof(MqttProperty));
         if (OK != status)
             goto exit;
 
-        MOC_MEMCPY(
+        DIGI_MEMCPY(
             pProps, *ppProps,
             sizeof(MqttProperty) * (*propCount));
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &((pProps + *propCount)->data.pair.name.pData), keyLen,
             pKey, keyLen);
         if (OK != status)
@@ -1036,14 +1053,14 @@ static MSTATUS MQTT_EXAMPLE_addUserProperty(
 
         (pProps + *propCount)->data.pair.name.dataLen = keyLen;
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &((pProps + *propCount)->data.pair.value.pData), valueLen,
             pValue, valueLen);
         if (OK != status)
             goto exit;
 
         (pProps + *propCount)->data.pair.value.dataLen = valueLen;
-        MOC_FREE((void **) ppProps);
+        DIGI_FREE((void **) ppProps);
         *ppProps = pProps;
         (*propCount)++;
     }
@@ -1068,12 +1085,12 @@ static MSTATUS MQTT_EXAMPLE_addMessage(
 
     if (NULL == pCtx->pMsgs)
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) &pCtx->pMsgs, 1, sizeof(MqttClientExampleMsg));
         if (OK != status)
             goto exit;
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &pCtx->pMsgs->pTopic, topicLen,
             pTopic, topicLen);
         if (OK != status)
@@ -1083,7 +1100,7 @@ static MSTATUS MQTT_EXAMPLE_addMessage(
 
         if (0 < dataLen)
         {
-           status = MOC_MALLOC_MEMCPY(
+           status = DIGI_MALLOC_MEMCPY(
             (void **) &pCtx->pMsgs->pData, dataLen,
             pData, dataLen);
             if (OK != status)
@@ -1097,17 +1114,17 @@ static MSTATUS MQTT_EXAMPLE_addMessage(
     }
     else
     {
-        status = MOC_CALLOC(
+        status = DIGI_CALLOC(
             (void **) &pMsgs, pCtx->msgCount + 1,
             sizeof(MqttClientExampleMsg));
         if (OK != status)
             goto exit;
 
-        MOC_MEMCPY(
+        DIGI_MEMCPY(
             pMsgs, pCtx->pMsgs,
             sizeof(MqttClientExampleMsg) * pCtx->msgCount);
 
-        status = MOC_MALLOC_MEMCPY(
+        status = DIGI_MALLOC_MEMCPY(
             (void **) &((pMsgs + pCtx->msgCount)->pTopic), topicLen,
             pTopic, topicLen);
         if (OK != status)
@@ -1117,7 +1134,7 @@ static MSTATUS MQTT_EXAMPLE_addMessage(
 
         if (0 < dataLen)
         {
-            status = MOC_MALLOC_MEMCPY(
+            status = DIGI_MALLOC_MEMCPY(
                 (void **) &((pMsgs + pCtx->msgCount)->pData), dataLen,
                 pData, dataLen);
             if (OK != status)
@@ -1127,7 +1144,7 @@ static MSTATUS MQTT_EXAMPLE_addMessage(
         (pMsgs + pCtx->msgCount)->dataLen = dataLen;
         (pMsgs + pCtx->msgCount)->qos = qos; /* MQTT_QOS_0; */
         (pMsgs + pCtx->msgCount)->retain = retain; /* FALSE; */
-        MOC_FREE((void **) &pCtx->pMsgs);
+        DIGI_FREE((void **) &pCtx->pMsgs);
         pCtx->pMsgs = pMsgs;
         pCtx->msgCount++;
     }
@@ -1139,7 +1156,7 @@ exit:
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 
 static MSTATUS MQTT_EXAMPLE_addTrustPointFile(
     certStorePtr pStore,
@@ -1149,14 +1166,14 @@ static MSTATUS MQTT_EXAMPLE_addTrustPointFile(
     ubyte *pData = NULL, *pTemp = NULL;
     ubyte4 dataLen = 0, tempLen = 0;
 
-    status = MOCANA_readFile(pFile, &pData, &dataLen);
+    status = DIGICERT_readFile(pFile, &pData, &dataLen);
     if (OK != status)
         goto exit;
 
     status = CA_MGMT_decodeCertificate(pData, dataLen, &pTemp, &tempLen);
     if (OK == status)
     {
-        MOC_FREE((void **) &pData);
+        DIGI_FREE((void **) &pData);
         pData = pTemp;
         dataLen = tempLen;
     }
@@ -1167,13 +1184,13 @@ exit:
 
     if (NULL != pData)
     {
-        MOC_FREE((void **) &pData);
+        DIGI_FREE((void **) &pData);
     }
 
     return status;
 }
 
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -1200,7 +1217,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
     i = 1;
     while (i < argc)
     {
-        if (0 == MOC_STRCMP(ppArgv[i], "--help"))
+        if (0 == DIGI_STRCMP(ppArgv[i], "--help"))
         {
             status = MQTT_EXAMPLE_displayHelp(ppArgv[0], NULL);
             if (argc == 2)
@@ -1209,11 +1226,11 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--print_hex_bytes"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--print_hex_bytes"))
         {
             pCtx->hexBytes = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_servername"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_servername"))
         {
             i++;
             if (i >= argc)
@@ -1223,7 +1240,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             setStringParameter((char **) &pCtx->pMqttServer, ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_port"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_port"))
         {
             i++;
             if (i >= argc)
@@ -1231,7 +1248,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_port argument");
                 goto exit;
             }
-            portNo = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            portNo = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_port is not valid number or too large");
@@ -1244,8 +1261,8 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             pCtx->mqttPortNo = portNo;
         }
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_transport"))
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_transport"))
         {
             i++;
             if (i >= argc)
@@ -1253,11 +1270,11 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_transport argument");
                 goto exit;
             }
-            if (0 == MOC_STRCMP(ppArgv[i], MQTT_TCP_TRANSPORT))
+            if (0 == DIGI_STRCMP(ppArgv[i], MQTT_TCP_TRANSPORT))
             {
                 pCtx->transport = MQTT_TCP;
             }
-            else if (0 == MOC_STRCMP(ppArgv[i], MQTT_SSL_TRANSPORT))
+            else if (0 == DIGI_STRCMP(ppArgv[i], MQTT_SSL_TRANSPORT))
             {
                 pCtx->transport = MQTT_SSL;
             }
@@ -1267,7 +1284,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--ssl_ca_file"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--ssl_ca_file"))
         {
             i++;
             if (i >= argc)
@@ -1282,11 +1299,11 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--ssl_allow_untrusted"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--ssl_allow_untrusted"))
         {
             pCtx->sslAllowUntrusted = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--ssl_key_file"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--ssl_key_file"))
         {
             i++;
             if (i >= argc)
@@ -1296,7 +1313,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             setStringParameter((char **) &pCtx->pKeyFile, ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--ssl_cert_file"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--ssl_cert_file"))
         {
             i++;
             if (i >= argc)
@@ -1306,8 +1323,8 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             setStringParameter((char **) &pCtx->pCertFile, ppArgv[i]);
         }
-#if defined(__ENABLE_MOCANA_HTTP_PROXY__)
-        else if (0 == MOC_STRCMP(ppArgv[i], "--proxy"))
+#if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--proxy"))
         {
             i++;
             if (i >= argc)
@@ -1317,9 +1334,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             setStringParameter((char **) &pCtx->pProxy, ppArgv[i]);
         }
-#endif /* __ENABLE_MOCANA_HTTP_PROXY__ */
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_client_id"))
+#endif /* __ENABLE_DIGICERT_HTTP_PROXY__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_client_id"))
         {
             i++;
             if (i >= argc)
@@ -1328,9 +1345,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
             setStringParameter((char **) &pCtx->pMqttClientId, ppArgv[i]);
-            pCtx->mqttClientIdLen = MOC_STRLEN(pCtx->pMqttClientId);
+            pCtx->mqttClientIdLen = DIGI_STRLEN(pCtx->pMqttClientId);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_version"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_version"))
         {
             i++;
             if (i >= argc)
@@ -1338,11 +1355,11 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_version argument");
                 goto exit;
             }
-            if (0 == MOC_STRCMP(ppArgv[i], "5"))
+            if (0 == DIGI_STRCMP(ppArgv[i], "5"))
             {
                 pCtx->mqttVersion = MQTT_V5;
             }
-            else if (0 == MOC_STRCMP(ppArgv[i], "3.1.1"))
+            else if (0 == DIGI_STRCMP(ppArgv[i], "3.1.1"))
             {
                 pCtx->mqttVersion = MQTT_V3_1_1;
             }
@@ -1353,11 +1370,11 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
         }
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_async"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_async"))
         {
             pCtx->async = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_async_send_buffer_size"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_async_send_buffer_size"))
         {
             i++;
             if (i >= argc)
@@ -1365,7 +1382,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_async_send_buffer_size argument");
                 goto exit;
             }
-            numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_async_send_buffer_size is not valid number or too large");
@@ -1378,7 +1395,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             pCtx->sendBufferLen = numVal;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_async_recv_buffer_size"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_async_recv_buffer_size"))
         {
             i++;
             if (i >= argc)
@@ -1386,7 +1403,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_async_recv_buffer_size argument");
                 goto exit;
             }
-            numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_async_recv_buffer_size is not valid number or too large");
@@ -1400,7 +1417,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             pCtx->recvBufferLen = numVal;
         }
 #endif
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_sub_topic"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_sub_topic"))
         {
             i++;
             if (i >= argc)
@@ -1412,7 +1429,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             if (OK != status)
                 goto exit;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_sub_topic_no_local_option"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_sub_topic_no_local_option"))
         {
             if (0 == pCtx->topicCount)
             {
@@ -1421,7 +1438,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             (pCtx->pTopics + pCtx->topicCount - 1)->noLocalOption = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_sub_topic_retain_as_published"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_sub_topic_retain_as_published"))
         {
             if (0 == pCtx->topicCount)
             {
@@ -1430,7 +1447,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             (pCtx->pTopics + pCtx->topicCount - 1)->retainAsPublished = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_sub_topic_retain_handling"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_sub_topic_retain_handling"))
         {
             i++;
             if (i >= argc)
@@ -1443,7 +1460,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "No topic to apply option too, specify topic using --mqtt_sub_topic");
                 goto exit;
             }
-            retainHandling = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            retainHandling = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_sub_topic_retain_handling is not valid number or too large");
@@ -1451,11 +1468,11 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             (pCtx->pTopics + pCtx->topicCount - 1)->retainHandling = retainHandling;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_sub_topic_single"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_sub_topic_single"))
         {
             pCtx->subTopicSingle = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_unsub_topic"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_unsub_topic"))
         {
             i++;
             if (i >= argc)
@@ -1467,11 +1484,11 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             if (OK != status)
                 goto exit;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_unsub_topic_single"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_unsub_topic_single"))
         {
             pCtx->unsubTopicSingle = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_pub_qos"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_pub_qos"))
         {
             i++;
             if (i >= argc)
@@ -1480,7 +1497,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
 
-            qos = (MqttQoS)MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            qos = (MqttQoS)DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_pub_qos is not valid number or too large");
@@ -1509,7 +1526,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
 
             pCtx->pMsgs[pCtx->msgCount - 1].qos = qos;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_pub_retain"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_pub_retain"))
         {
             if (0 == pCtx->msgCount)
             {
@@ -1520,7 +1537,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             pCtx->pMsgs[pCtx->msgCount - 1].retain = TRUE;
 
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_pub_topic"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_pub_topic"))
         {
             i++;
             if (i >= argc)
@@ -1528,10 +1545,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_pub_topic argument");
                 goto exit;
             }
-            MOC_FREE((void **) &pCurPubTopic);
+            DIGI_FREE((void **) &pCurPubTopic);
             setStringParameter((char **) &pCurPubTopic, ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_pub_message"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_pub_message"))
         {
             i++;
             if (i >= argc)
@@ -1547,8 +1564,8 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
 
             status = MQTT_EXAMPLE_addMessage(
-                pCtx, pCurPubTopic, MOC_STRLEN(pCurPubTopic),
-                ppArgv[i], MOC_STRLEN(ppArgv[i]), MQTT_QOS_0, FALSE);
+                pCtx, pCurPubTopic, DIGI_STRLEN(pCurPubTopic),
+                ppArgv[i], DIGI_STRLEN(ppArgv[i]), MQTT_QOS_0, FALSE);
             if (OK != status)
                 goto exit;
 
@@ -1557,7 +1574,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
 
             
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_pub_file"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_pub_file"))
         {
             i++;
             if (i >= argc)
@@ -1572,21 +1589,21 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
 
-            status = MOCANA_readFile(ppArgv[i], &pData, &dataLen);
+            status = DIGICERT_readFile(ppArgv[i], &pData, &dataLen);
             if (OK != status)
                 goto exit;
 
             status = MQTT_EXAMPLE_addMessage(
-                pCtx, pCurPubTopic, MOC_STRLEN(pCurPubTopic), pData, dataLen, MQTT_QOS_0, FALSE);
-            MOC_FREE((void **) &pData);
+                pCtx, pCurPubTopic, DIGI_STRLEN(pCurPubTopic), pData, dataLen, MQTT_QOS_0, FALSE);
+            DIGI_FREE((void **) &pData);
             if (OK != status)
                 goto exit;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_clean_start"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_clean_start"))
         {
             pCtx->mqttConnectOptions.cleanStart = TRUE;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_session_expiry_interval"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_session_expiry_interval"))
         {
             i++;
             if (i >= argc)
@@ -1594,7 +1611,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_session_expiry_interval argument");
                 goto exit;
             }
-            numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_session_expiry_interval is not valid number or too large");
@@ -1604,7 +1621,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             pCtx->mqttConnectOptions.sessionExpiryIntervalSet = TRUE;
             pCtx->mqttConnectOptions.sessionExpiryIntervalSeconds = (ubyte4) numVal;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_keep_alive"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_keep_alive"))
         {
             i++;
             if (i >= argc)
@@ -1612,7 +1629,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_keep_alive argument");
                 goto exit;
             }
-            numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_keep_alive is not valid number or too large");
@@ -1620,7 +1637,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             pCtx->mqttConnectOptions.keepAliveInterval = numVal;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_username"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_username"))
         {
             i++;
             if (i >= argc)
@@ -1629,9 +1646,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
             setStringParameter((char **) &(pCtx->mqttConnectOptions.pUsername), ppArgv[i]);
-            pCtx->mqttConnectOptions.usernameLen = MOC_STRLEN(ppArgv[i]);
+            pCtx->mqttConnectOptions.usernameLen = DIGI_STRLEN(ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_password"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_password"))
         {
             i++;
             if (i >= argc)
@@ -1640,10 +1657,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
             setStringParameter((char **) &(pCtx->mqttConnectOptions.pPassword), ppArgv[i]);
-            pCtx->mqttConnectOptions.passwordLen = MOC_STRLEN(ppArgv[i]);
+            pCtx->mqttConnectOptions.passwordLen = DIGI_STRLEN(ppArgv[i]);
         }
 #ifdef __ENABLE_DIGICERT_SCRAM_CLIENT__
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_scram_username"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_scram_username"))
         {
             i++;
             if (i >= argc)
@@ -1652,9 +1669,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
             setStringParameter((char **) &(pCtx->pScramUser), ppArgv[i]);
-            pCtx->scramUserLen = MOC_STRLEN(ppArgv[i]);
+            pCtx->scramUserLen = DIGI_STRLEN(ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_scram_password"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_scram_password"))
         {
             i++;
             if (i >= argc)
@@ -1663,9 +1680,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
             setStringParameter((char **) &(pCtx->pScramPass), ppArgv[i]);
-            pCtx->scramPassLen = MOC_STRLEN(ppArgv[i]);
+            pCtx->scramPassLen = DIGI_STRLEN(ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_scram_hash_alg"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_scram_hash_alg"))
         {
             i++;
             if (i >= argc)
@@ -1674,7 +1691,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
 
-            if (0 == MOC_STRCMP(ppArgv[i], "SHA256"))
+            if (0 == DIGI_STRCMP(ppArgv[i], "SHA256"))
             {
                 pCtx->scramHashType = ht_sha256;
 
@@ -1684,9 +1701,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     goto exit;
                 }
                 setStringParameter((char **) &(pCtx->mqttConnectOptions.pAuthMethod), pScramMethodSha256);
-                pCtx->mqttConnectOptions.authMethodLen = MOC_STRLEN(pScramMethodSha256);
+                pCtx->mqttConnectOptions.authMethodLen = DIGI_STRLEN(pScramMethodSha256);
             }
-            else if(0 == MOC_STRCMP(ppArgv[i], "SHA512"))
+            else if(0 == DIGI_STRCMP(ppArgv[i], "SHA512"))
             {
                 pCtx->scramHashType = ht_sha512;
 
@@ -1696,7 +1713,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     goto exit;
                 }
                 setStringParameter((char **) &(pCtx->mqttConnectOptions.pAuthMethod), pScramMethodSha512);
-                pCtx->mqttConnectOptions.authMethodLen = MOC_STRLEN(pScramMethodSha512);
+                pCtx->mqttConnectOptions.authMethodLen = DIGI_STRLEN(pScramMethodSha512);
             }
             else
             {
@@ -1705,7 +1722,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
         }
 #endif
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_will_topic"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_will_topic"))
         {
             i++;
             if (i >= argc)
@@ -1714,9 +1731,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
             setStringParameter((char **) &(pCtx->mqttConnectOptions.willInfo.pWillTopic), ppArgv[i]);
-            pCtx->mqttConnectOptions.willInfo.willTopicLen = MOC_STRLEN(ppArgv[i]);
+            pCtx->mqttConnectOptions.willInfo.willTopicLen = DIGI_STRLEN(ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_will_message"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_will_message"))
         {
             i++;
             if (i >= argc)
@@ -1731,9 +1748,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
             setStringParameter((char **) &(pCtx->mqttConnectOptions.willInfo.pWill), ppArgv[i]);
-            pCtx->mqttConnectOptions.willInfo.willLen = MOC_STRLEN(ppArgv[i]);
+            pCtx->mqttConnectOptions.willInfo.willLen = DIGI_STRLEN(ppArgv[i]);
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_will_qos"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_will_qos"))
         {
             i++;
             if (i >= argc)
@@ -1747,7 +1764,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 goto exit;
             }
 
-            qos = (MqttQoS)MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+            qos = (MqttQoS)DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
             if ('\0' != *pStop)
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for --mqtt_will_qos is not valid number or too large");
@@ -1770,7 +1787,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
 
             pCtx->mqttConnectOptions.willInfo.qos = qos;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_will_retain"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_will_retain"))
         {
             if (NULL == pCtx->mqttConnectOptions.willInfo.pWillTopic)
             {
@@ -1781,7 +1798,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             pCtx->mqttConnectOptions.willInfo.retain = TRUE;
 
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_connect_properties"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_connect_properties"))
         {
             propertySet = TRUE;
             i++;
@@ -1792,7 +1809,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_connect_properties argument");
                     goto exit;
                 }
-                if (0 == MOC_STRCMP(ppArgv[i], "session_expiry_interval"))
+                if (0 == DIGI_STRCMP(ppArgv[i], "session_expiry_interval"))
                 {
                     i++;
                     if (i >= argc)
@@ -1800,7 +1817,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing session_expiry_interval value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for session_expiry_interval is not valid number or too large");
@@ -1816,7 +1833,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttConnectOptions.sessionExpiryIntervalSeconds = (ubyte4) numVal;
 
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "receive_maximum"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "receive_maximum"))
                 {
                     i++;
                     if (i >= argc)
@@ -1824,7 +1841,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing receive_maximum value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for receive_maximum is not valid number or too large");
@@ -1838,7 +1855,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttConnectOptions.receiveMaxSet = TRUE;
                     pCtx->mqttConnectOptions.receiveMax = (ubyte2) numVal;
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "max_packet_size"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "max_packet_size"))
                 {
                     i++;
                     if (i >= argc)
@@ -1846,7 +1863,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing max_packet_size argument");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for max_packet_size is not valid number or too large");
@@ -1860,7 +1877,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttConnectOptions.maxPacketSizeSet = TRUE;
                     pCtx->mqttConnectOptions.maxPacketSize = (ubyte4) numVal;
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "topic_alias_max"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "topic_alias_max"))
                 {
                     i++;
                     if (i >= argc)
@@ -1868,7 +1885,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing topic_alias_max argument");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for topic_alias_max is not valid number or too large");
@@ -1882,15 +1899,15 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttConnectOptions.topicAliasMaxSet = TRUE;
                     pCtx->mqttConnectOptions.topicAliasMax = (ubyte2) numVal;
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "request_response_info"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "request_response_info"))
                 {
                     pCtx->mqttConnectOptions.requestResponseInfo = TRUE;
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "request_problem_info"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "request_problem_info"))
                 {
                     pCtx->mqttConnectOptions.requestProblemInfo = TRUE;
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "auth_method"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "auth_method"))
                 {
                     i++;
                     if (i >= argc)
@@ -1899,9 +1916,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->mqttConnectOptions.pAuthMethod), ppArgv[i]);
-                    pCtx->mqttConnectOptions.authMethodLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->mqttConnectOptions.authMethodLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "auth_data"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "auth_data"))
                 {
                     i++;
                     if (i >= argc)
@@ -1910,9 +1927,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->mqttConnectOptions.pAuthData), ppArgv[i]);
-                    pCtx->mqttConnectOptions.authDataLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->mqttConnectOptions.authDataLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "user_property"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "user_property"))
                 {
                     i++;
                     if (i > argc)
@@ -1920,7 +1937,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing key argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pKey);
+                    DIGI_FREE((void **) &pKey);
                     setStringParameter((char **) &pKey, ppArgv[i]);
 
                     i++;
@@ -1929,10 +1946,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing value argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pValue);
+                    DIGI_FREE((void **) &pValue);
                     setStringParameter((char **) &pValue, ppArgv[i]);
 
-                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttConnectOptions.pProps, &pCtx->mqttConnectOptions.propCount, pKey, MOC_STRLEN(pKey), pValue, MOC_STRLEN(pValue));
+                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttConnectOptions.pProps, &pCtx->mqttConnectOptions.propCount, pKey, DIGI_STRLEN(pKey), pValue, DIGI_STRLEN(pValue));
                     if (OK != status)
                         goto exit;
                 }
@@ -1945,7 +1962,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
            }
            i--;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_publish_properties"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_publish_properties"))
         {
             propertySet = TRUE;
             if (pCtx->msgCount == 0)
@@ -1961,7 +1978,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_publish_properties argument");
                     goto exit;
                 }
-                if (0 == MOC_STRCMP(ppArgv[i], "payload_format_indicator"))
+                if (0 == DIGI_STRCMP(ppArgv[i], "payload_format_indicator"))
                 {
                     i++;
                     if (i >= argc)
@@ -1969,7 +1986,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing payload_format_indicator value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for payload_format_indicator is not valid number or too large");
@@ -1986,7 +2003,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.setPayloadFormat = TRUE;
 
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "message_expiry_interval"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "message_expiry_interval"))
                 {
                     i++;
                     if (i >= argc)
@@ -1994,7 +2011,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing message_expiry_interval value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for message_expiry_interval is not valid number or too large");
@@ -2008,7 +2025,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.msgExpiryIntervalSet = TRUE;
                     pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.msgExpiryInterval= (ubyte4) numVal;
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "topic_alias"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "topic_alias"))
                 {
                     i++;
                     if (i >= argc)
@@ -2016,13 +2033,13 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing topic_alias argument");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for topic_alias is not valid number or too large");
                         goto exit;
                     }
-                    curPubTopicLen = MOC_STRLEN(pCurPubTopic);
+                    curPubTopicLen = DIGI_STRLEN(pCurPubTopic);
                     for (j = 0; (ubyte4)j < pCtx->msgCount - 1; j++)
                     {
                         if (curPubTopicLen != pCtx->pMsgs[j].topicLen)
@@ -2035,8 +2052,8 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         }
                         else
                         {
-                            if (((0 != (MOC_STRNCMP(pCurPubTopic, pCtx->pMsgs[j].pTopic, pCtx->pMsgs[j].topicLen))) && (pCtx->pMsgs[j].pubOptions.topicAlias == (ubyte2) numVal)) ||
-                                ((0 == (MOC_STRNCMP(pCurPubTopic, pCtx->pMsgs[j].pTopic, pCtx->pMsgs[j].topicLen))) && (pCtx->pMsgs[j].pubOptions.topicAlias != (ubyte2) numVal)))
+                            if (((0 != (DIGI_STRNCMP(pCurPubTopic, pCtx->pMsgs[j].pTopic, pCtx->pMsgs[j].topicLen))) && (pCtx->pMsgs[j].pubOptions.topicAlias == (ubyte2) numVal)) ||
+                                ((0 == (DIGI_STRNCMP(pCurPubTopic, pCtx->pMsgs[j].pTopic, pCtx->pMsgs[j].topicLen))) && (pCtx->pMsgs[j].pubOptions.topicAlias != (ubyte2) numVal)))
                             {
                                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Duplicate property value for topic_alias");
                                 goto exit;
@@ -2047,7 +2064,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.topicAliasSet = TRUE;
                     pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.topicAlias = (ubyte2) numVal;
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "response_topic"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "response_topic"))
                 {
                     i++;
                     if (i >= argc)
@@ -2056,9 +2073,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.pResponseTopic), ppArgv[i]);
-                    pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.responseTopicLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.responseTopicLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "correlation_data"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "correlation_data"))
                 {
                     i++;
                     if (i >= argc)
@@ -2067,9 +2084,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.pCorrelationData), ppArgv[i]);
-                    pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.correlationDataLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.correlationDataLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "content_type"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "content_type"))
                 {
                     i++;
                     if (i >= argc)
@@ -2078,9 +2095,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.pContentType), ppArgv[i]);
-                    pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.contentTypeLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.contentTypeLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "user_property"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "user_property"))
                 {
                     i++;
                     if (i > argc)
@@ -2088,7 +2105,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing key argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pKey);
+                    DIGI_FREE((void **) &pKey);
                     setStringParameter((char **) &pKey, ppArgv[i]);
 
                     i++;
@@ -2097,10 +2114,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing value argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pValue);
+                    DIGI_FREE((void **) &pValue);
                     setStringParameter((char **) &pValue, ppArgv[i]);
 
-                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.pProps, &pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.propCount, pKey, MOC_STRLEN(pKey), pValue, MOC_STRLEN(pValue));
+                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.pProps, &pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.propCount, pKey, DIGI_STRLEN(pKey), pValue, DIGI_STRLEN(pValue));
                     if (OK != status)
                         goto exit;
                 }
@@ -2113,7 +2130,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
            }
            i--;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_subscribe_properties"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_subscribe_properties"))
         {
             propertySet = TRUE;
             i++;
@@ -2124,7 +2141,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_subscribe_properties argument");
                     goto exit;
                 }
-                if (0 == MOC_STRCMP(ppArgv[i], "user_property"))
+                if (0 == DIGI_STRCMP(ppArgv[i], "user_property"))
                 {
                     if (pCtx->topicCount == 0)
                     {
@@ -2137,7 +2154,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing key argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pKey);
+                    DIGI_FREE((void **) &pKey);
                     setStringParameter((char **) &pKey, ppArgv[i]);
 
                     i++;
@@ -2146,10 +2163,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing value argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pValue);
+                    DIGI_FREE((void **) &pValue);
                     setStringParameter((char **) &pValue, ppArgv[i]);
 
-                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttSubscribeOptions.pProps, &pCtx->mqttSubscribeOptions.propCount, pKey, MOC_STRLEN(pKey), pValue, MOC_STRLEN(pValue));
+                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttSubscribeOptions.pProps, &pCtx->mqttSubscribeOptions.propCount, pKey, DIGI_STRLEN(pKey), pValue, DIGI_STRLEN(pValue));
                     if (OK != status)
                         goto exit;
                 }
@@ -2162,7 +2179,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
            }
            i--;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_unsubscribe_properties"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_unsubscribe_properties"))
         {
             propertySet = TRUE;
             i++;
@@ -2173,7 +2190,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_unsubscribe_properties argument");
                     goto exit;
                 }
-                if (0 == MOC_STRCMP(ppArgv[i], "user_property"))
+                if (0 == DIGI_STRCMP(ppArgv[i], "user_property"))
                 {
                     if (pCtx->unsubTopicCount == 0)
                     {
@@ -2186,7 +2203,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing key argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pKey);
+                    DIGI_FREE((void **) &pKey);
                     setStringParameter((char **) &pKey, ppArgv[i]);
 
                     i++;
@@ -2195,10 +2212,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing value argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pValue);
+                    DIGI_FREE((void **) &pValue);
                     setStringParameter((char **) &pValue, ppArgv[i]);
 
-                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttUnsubscribeOptions.pProps, &pCtx->mqttUnsubscribeOptions.propCount, pKey, MOC_STRLEN(pKey), pValue, MOC_STRLEN(pValue));
+                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttUnsubscribeOptions.pProps, &pCtx->mqttUnsubscribeOptions.propCount, pKey, DIGI_STRLEN(pKey), pValue, DIGI_STRLEN(pValue));
                     if (OK != status)
                         goto exit;
                 }
@@ -2211,7 +2228,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
            }
            i--;
         }
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_will_properties"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_will_properties"))
         {
             propertySet = TRUE;
             i++;
@@ -2222,7 +2239,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_will_properties argument");
                     goto exit;
                 }
-                if (0 == MOC_STRCMP(ppArgv[i], "message_expiry_interval"))
+                if (0 == DIGI_STRCMP(ppArgv[i], "message_expiry_interval"))
                 {
                     i++;
                     if (i >= argc)
@@ -2230,7 +2247,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing message_expiry_interval value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for message_expiry_interval is not valid number or too large");
@@ -2247,7 +2264,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttConnectOptions.willInfo.msgExpiryInterval = (ubyte4) numVal;
 
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "content_type"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "content_type"))
                 {
                     i++;
                     if (i >= argc)
@@ -2256,9 +2273,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->mqttConnectOptions.willInfo.pContentType), ppArgv[i]);
-                    pCtx->mqttConnectOptions.willInfo.contentTypeLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->mqttConnectOptions.willInfo.contentTypeLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "response_topic"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "response_topic"))
                 {
                     i++;
                     if (i >= argc)
@@ -2267,9 +2284,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->mqttConnectOptions.willInfo.pResponseTopic), ppArgv[i]);
-                    pCtx->mqttConnectOptions.willInfo.responseTopicLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->mqttConnectOptions.willInfo.responseTopicLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "correlation_data"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "correlation_data"))
                 {
                     i++;
                     if (i >= argc)
@@ -2278,9 +2295,9 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         goto exit;
                     }
                     setStringParameter((char **) &(pCtx->mqttConnectOptions.willInfo.pCorrelationData), ppArgv[i]);
-                    pCtx->mqttConnectOptions.willInfo.correlationDataLen = MOC_STRLEN(ppArgv[i]);
+                    pCtx->mqttConnectOptions.willInfo.correlationDataLen = DIGI_STRLEN(ppArgv[i]);
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "payload_format_indicator"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "payload_format_indicator"))
                 {
                     i++;
                     if (i >= argc)
@@ -2288,7 +2305,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing payload_format_indicator value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for payload_format_indicator is not valid number or too large");
@@ -2305,7 +2322,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttConnectOptions.willInfo.payloadFormat = (ubyte) numVal;
 
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "will_delay_interval"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "will_delay_interval"))
                 {
                     i++;
                     if (i >= argc)
@@ -2313,7 +2330,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing will_delay_interval value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for will_delay_interval is not valid number or too large");
@@ -2330,7 +2347,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttConnectOptions.willInfo.willDelayInterval = (ubyte4) numVal;
 
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "user_property"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "user_property"))
                 {
                     i++;
                     if (i > argc)
@@ -2338,7 +2355,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing key argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pKey);
+                    DIGI_FREE((void **) &pKey);
                     setStringParameter((char **) &pKey, ppArgv[i]);
 
                     i++;
@@ -2347,10 +2364,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing value argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pValue);
+                    DIGI_FREE((void **) &pValue);
                     setStringParameter((char **) &pValue, ppArgv[i]);
 
-                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttConnectOptions.willInfo.pProps, &pCtx->mqttConnectOptions.willInfo.propCount, pKey, MOC_STRLEN(pKey), pValue, MOC_STRLEN(pValue));
+                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttConnectOptions.willInfo.pProps, &pCtx->mqttConnectOptions.willInfo.propCount, pKey, DIGI_STRLEN(pKey), pValue, DIGI_STRLEN(pValue));
                     if (OK != status)
                         goto exit;
                 }
@@ -2364,7 +2381,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
            i--;
         }
 
-        else if (0 == MOC_STRCMP(ppArgv[i], "--mqtt_disconnect_properties"))
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_disconnect_properties"))
         {
             propertySet = TRUE;
             i++;
@@ -2375,7 +2392,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing --mqtt_disconnect_properties argument");
                     goto exit;
                 }
-                if (0 == MOC_STRCMP(ppArgv[i], "session_expiry_interval"))
+                if (0 == DIGI_STRCMP(ppArgv[i], "session_expiry_interval"))
                 {
                     i++;
                     if (i >= argc)
@@ -2383,7 +2400,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing session_expiry_interval value");
                         goto exit;
                     }
-                    numVal = MOC_ATOL(ppArgv[i], (const sbyte **) &pStop);
+                    numVal = DIGI_ATOL(ppArgv[i], (const sbyte **) &pStop);
                     if ('\0' != *pStop)
                     {
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Argument for session_expiry_interval is not valid number or too large");
@@ -2394,7 +2411,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                     pCtx->mqttDisconnectOptions.sendSessionExpiry = TRUE;
 
                 }
-                else if (0 == MOC_STRCMP(ppArgv[i], "user_property"))
+                else if (0 == DIGI_STRCMP(ppArgv[i], "user_property"))
                 {
                     i++;
                     if (i > argc)
@@ -2402,7 +2419,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing key argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pKey);
+                    DIGI_FREE((void **) &pKey);
                     setStringParameter((char **) &pKey, ppArgv[i]);
 
                     i++;
@@ -2411,10 +2428,10 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                         status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Missing value argument");
                         goto exit;
                     }
-                    MOC_FREE((void **) &pValue);
+                    DIGI_FREE((void **) &pValue);
                     setStringParameter((char **) &pValue, ppArgv[i]);
 
-                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttDisconnectOptions.pProps, &pCtx->mqttDisconnectOptions.propCount, pKey, MOC_STRLEN(pKey), pValue, MOC_STRLEN(pValue));
+                    status = MQTT_EXAMPLE_addUserProperty(pCtx, &pCtx->mqttDisconnectOptions.pProps, &pCtx->mqttDisconnectOptions.propCount, pKey, DIGI_STRLEN(pKey), pValue, DIGI_STRLEN(pValue));
                     if (OK != status)
                         goto exit;
                 }
@@ -2427,8 +2444,8 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
            }
            i--; 
         }
-#if defined(__ENABLE_MOCANA_PQC__)
-        else if (0 == MOC_STRCMP(ppArgv[i], "--require-pqc"))
+#if defined(__ENABLE_DIGICERT_PQC__)
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--require-pqc"))
         {
             /* Do nothing */
         }
@@ -2484,22 +2501,22 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
         if (0 == pCtx->sendBufferLen)
             pCtx->sendBufferLen = MQTT_ASYNC_SEND_BUFFER_SIZE;
 
-        status = MOC_MALLOC(
+        status = DIGI_MALLOC(
             (void **) &pCtx->pSendBuffer, pCtx->sendBufferLen);
         if (OK != status)
         {
-            printf("MOC_MALLOC failed with status = %d on line %d\n", status, __LINE__);
+            printf("DIGI_MALLOC failed with status = %d on line %d\n", status, __LINE__);
             goto exit;
         }
 
         if (0 == pCtx->recvBufferLen)
             pCtx->recvBufferLen = MQTT_ASYNC_RECV_BUFFER_SIZE;
 
-        status = MOC_MALLOC(
+        status = DIGI_MALLOC(
             (void **) &pCtx->pRecvBuffer, pCtx->recvBufferLen);
         if (OK != status)
         {
-            printf("MOC_MALLOC failed with status = %d on line %d\n", status, __LINE__);
+            printf("DIGI_MALLOC failed with status = %d on line %d\n", status, __LINE__);
             goto exit;
         }
     }
@@ -2509,15 +2526,15 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
 
 exit:
 
-    MOC_FREE((void **) &pCurPubTopic);
-    MOC_FREE((void **) &pKey);
-    MOC_FREE((void **) &pValue);
+    DIGI_FREE((void **) &pCurPubTopic);
+    DIGI_FREE((void **) &pKey);
+    DIGI_FREE((void **) &pValue);
     return status;
 }
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 
 static MSTATUS MQTT_EXAMPLE_sslCertStatusCb(
     sbyte4 sslConnectionInstance,
@@ -2590,7 +2607,7 @@ static MSTATUS MQTT_EXAMPLE_sendPendingData(
 
         if (0 < sendNumBytes)
         {
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
                 status = SSL_send(
@@ -2625,7 +2642,7 @@ exit:
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 
 static MSTATUS MQTT_EXAMPLE_getClientCertCallback(
     sbyte4 connInst,
@@ -2655,17 +2672,17 @@ static MSTATUS MQTT_EXAMPLE_getClientCertCallback(
 
     if (NULL != pCtx->pKeyFile && NULL != pCtx->pCertFile)
     {
-        status = MOCANA_readFile(pCtx->pCertFile, &pData, &dataLen);
+        status = DIGICERT_readFile(pCtx->pCertFile, &pData, &dataLen);
         if (OK != status)
         {
-            printf("MOCANA_readFile failed with status = %d on line %d\n", status, __LINE__);
+            printf("DIGICERT_readFile failed with status = %d on line %d\n", status, __LINE__);
             goto exit;
         }
 
         status = CA_MGMT_decodeCertificate(pData, dataLen, &pTmp, &tmpLen);
         if (OK == status)
         {
-            MOC_FREE((void **) &pData);
+            DIGI_FREE((void **) &pData);
             pData = pTmp;
             dataLen = tmpLen;
         }
@@ -2674,10 +2691,10 @@ static MSTATUS MQTT_EXAMPLE_getClientCertCallback(
         (*ppRetCert)->length = dataLen;
         *pRetNumCerts = 1;
 
-        status = MOCANA_readFile(pCtx->pKeyFile, &pData, &dataLen);
+        status = DIGICERT_readFile(pCtx->pKeyFile, &pData, &dataLen);
         if (OK != status)
         {
-            printf("MOCANA_readFile failed with status = %d on line %d\n", status, __LINE__);
+            printf("DIGICERT_readFile failed with status = %d on line %d\n", status, __LINE__);
             goto exit;
         }
 
@@ -2700,7 +2717,7 @@ exit:
 
     if (NULL != pData)
     {
-        MOC_FREE((void **) &pData);
+        DIGI_FREE((void **) &pData);
     }
 
     CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
@@ -2741,7 +2758,7 @@ MSTATUS MQTT_setupSignalHandler(int signal)
 /*----------------------------------------------------------------------------*/
 
 
-#if defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
 int MQTT_EXAMPLE_main(int argc, char *ppArgv[], TrustEdgeConfig **ppConfig)
 #else
 int main(int argc, char *ppArgv[])
@@ -2753,7 +2770,7 @@ int main(int argc, char *ppArgv[])
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
     ubyte4 timeoutMS;
 #endif
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
     sbyte *pServerAndPort = NULL;
     TCP_SOCKET socketProxy = -1;
     int ret;
@@ -2761,7 +2778,7 @@ int main(int argc, char *ppArgv[])
 #endif
     ubyte4 i;
     MqttClientExampleMsg *pCurMsg;
-#if defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
     TrustEdgeConfig *pConfig = NULL;
 
     if (NULL != ppConfig)
@@ -2772,14 +2789,14 @@ int main(int argc, char *ppArgv[])
 #endif
 
 
-#if !defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
-    status = MOCANA_initMocana();
+#if !defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
+    status = DIGICERT_initDigicert();
     if (OK != status)
     {
-        printf("MOCANA_initMocana failed with status = %d on line %d\n", status, __LINE__);
+        printf("DIGICERT_initDigicert failed with status = %d on line %d\n", status, __LINE__);
         goto exit;
     }
-#endif /* __ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__ */
+#endif /* __ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__ */
 
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
     if (OK > (status = FMGMT_changeCWD(MANDATORY_BASE_PATH)))
@@ -2808,7 +2825,7 @@ int main(int argc, char *ppArgv[])
         goto exit;
     }
 
-#if !defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
+#if !defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
     status = MQTT_init(MAX_MQTT_CLIENT_CONNECTIONS);
     if (OK != status)
     {
@@ -2816,17 +2833,17 @@ int main(int argc, char *ppArgv[])
         goto exit;
     }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     status = SSL_init(0, MAX_MQTT_CLIENT_CONNECTIONS);
     if (OK > status)
     {
         printf("SSL_init failed with status = %d on line %d\n", status, __LINE__);
         goto exit;
     }
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
-#endif /* __ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__ */
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
     if (NULL == pCtx->pProxy)
 #endif
     {
@@ -2845,7 +2862,7 @@ int main(int argc, char *ppArgv[])
         goto exit;
     }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
     if (NULL != pCtx->pProxy)
     {
         printf("Using proxy: %s\n", pCtx->pProxy);
@@ -2858,10 +2875,10 @@ int main(int argc, char *ppArgv[])
         }
 
         ret = snprintf(NULL, 0, "%s:%d", pCtx->pMqttServer, pCtx->mqttPortNo);
-        status = MOC_MALLOC((void **) &pServerAndPort, ret + 1);
+        status = DIGI_MALLOC((void **) &pServerAndPort, ret + 1);
         if (OK != status)
         {
-            printf("MOC_MALLOC failed with status = %d on line %d\n", status, __LINE__);
+            printf("DIGI_MALLOC failed with status = %d on line %d\n", status, __LINE__);
             goto exit;
         }
         snprintf(pServerAndPort, ret + 1, "%s:%d", pCtx->pMqttServer, pCtx->mqttPortNo);
@@ -2876,7 +2893,7 @@ int main(int argc, char *ppArgv[])
         }
     }
     else
-#endif /* __ENABLE_MOCANA_HTTP_PROXY__ */
+#endif /* __ENABLE_DIGICERT_HTTP_PROXY__ */
     {
         status = TCP_CONNECT(
             &pCtx->socket, pCtx->pMqttServerIp, pCtx->mqttPortNo);
@@ -2887,10 +2904,10 @@ int main(int argc, char *ppArgv[])
         }
     }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (MQTT_SSL == pCtx->transport)
     {
-#if defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
         if (0 <= SSL_isSessionSSL(transportProxy))
         {
             pCtx->sslConnInst = SSL_PROXY_connect(
@@ -2904,7 +2921,7 @@ int main(int argc, char *ppArgv[])
             }
         }
         else
-#endif /* __ENABLE_MOCANA_HTTP_PROXY__ */
+#endif /* __ENABLE_DIGICERT_HTTP_PROXY__ */
         {
             pCtx->sslConnInst = SSL_connect(
                 pCtx->socket, 0, NULL, NULL, pCtx->pMqttServer, pCtx->pStore);
@@ -2947,8 +2964,8 @@ int main(int argc, char *ppArgv[])
             goto exit;
         }
 
-#if defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
-#if defined(__ENABLE_MOCANA_PQC__)
+#if defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_PQC__)
         if (NULL != pConfig && TRUE == pConfig->requirePQC)
         {
             status = SSL_enforcePQCAlgorithm(pCtx->sslConnInst);
@@ -2968,7 +2985,7 @@ int main(int argc, char *ppArgv[])
             goto exit;
         }
     }
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
     if (TRUE == pCtx->async)
@@ -2999,7 +3016,7 @@ int main(int argc, char *ppArgv[])
     if (TRUE != pCtx->async)
 #endif
     {
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (MQTT_SSL == pCtx->transport)
         {
             status = MQTT_setTransportSSL(connInst, pCtx->sslConnInst);
@@ -3010,9 +3027,9 @@ int main(int argc, char *ppArgv[])
             }
         }
         else
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
         {
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
             if (0 <= SSL_isSessionSSL(transportProxy))
             {
                 status = MQTT_setTransportSSL(connInst, transportProxy);
@@ -3086,7 +3103,7 @@ int main(int argc, char *ppArgv[])
             }
 
             pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
                 status = SSL_recv(
@@ -3198,7 +3215,7 @@ int main(int argc, char *ppArgv[])
             }
 
             pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
                 status = SSL_recv(
@@ -3272,7 +3289,7 @@ int main(int argc, char *ppArgv[])
             }
 
             pCtx->bytesReceived = 0;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
                 status = SSL_recv(
@@ -3386,17 +3403,17 @@ close:
         MQTT_closeConnection(connInst);
     }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (NULL != pCtx && -1 < pCtx->sslConnInst)
         SSL_closeConnection(pCtx->sslConnInst);
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
     if (NULL != pCtx)
         TCP_CLOSE_SOCKET(pCtx->socket);
 
     MQTT_EXAMPLE_contextDelete(&pCtx);
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_HTTP_PROXY__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
     if (-1 < transportProxy)
     {
         (void) SSL_closeConnection(transportProxy);
@@ -3406,24 +3423,24 @@ close:
     (void) HTTP_PROXY_freeProxyUrl();
 
     if (NULL != pServerAndPort)
-        MOC_FREE((void **) &pServerAndPort);
+        DIGI_FREE((void **) &pServerAndPort);
 #endif
 
-#if defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
     if (NULL != pConfig)
     {
         TRUSTEDGE_utilsDeleteConfig(&pConfig);
     }
 #endif
 
-#if !defined(__ENABLE_MOCANA_MQTT_SAMPLE_LIBRARY__)
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if !defined(__ENABLE_DIGICERT_MQTT_SAMPLE_LIBRARY__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     SSL_shutdownStack();
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
     MQTT_shutdownStack();
 
-    MOCANA_freeMocana();
+    DIGICERT_freeDigicert();
 #endif
 
     return (OK > status) ? -1 : 0;

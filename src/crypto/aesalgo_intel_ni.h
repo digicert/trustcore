@@ -20,8 +20,8 @@
 #ifndef __AESALGO_INTEL_NI_HEADER__
 #define __AESALGO_INTEL_NI_HEADER__
 
-#if ((defined(__ENABLE_MOCANA_AES_NI__)) || \
-     (defined(__ENABLE_MOCANA_AES_NI_RUNTIME_CHECK__))) && \
+#if ((defined(__ENABLE_DIGICERT_AES_NI__)) || \
+     (defined(__ENABLE_DIGICERT_AES_NI_RUNTIME_CHECK__))) && \
      (!defined(__DISABLE_AES_CIPHERS__))
 
 #ifdef __cplusplus
@@ -29,9 +29,9 @@ extern "C" {
 #endif
 
 
-#if (defined(__ENABLE_MOCANA_FIPS_MODULE__) && \
-	 defined(__ENABLE_MOCANA_FIPS_FORCE_PAA_MODE__) && \
-	 defined(__ENABLE_MOCANA_AES_NI_RUNTIME_CHECK__) )
+#if (defined(__ENABLE_DIGICERT_FIPS_MODULE__) && \
+	 defined(__ENABLE_DIGICERT_FIPS_FORCE_PAA_MODE__) && \
+	 defined(__ENABLE_DIGICERT_AES_NI_RUNTIME_CHECK__) )
 /* For FIPS: Enable the ability to forcefully disable AES-NI support even if the process supports it. */
 MOC_EXTERN  void reset_to_default_aes_instructions(void);
 MOC_EXTERN  void force_disable_aes_instructions(void);
@@ -59,6 +59,6 @@ aesNiDecryptCBC(ubyte4 rk[/*4*(Nr + 1)*/], sbyte4 Nr, ubyte* pt, ubyte* ct, ubyt
 }
 #endif
 
-#endif /* defined(__ENABLE_MOCANA_AES_NI__) etc. */
+#endif /* defined(__ENABLE_DIGICERT_AES_NI__) etc. */
 
 #endif /* __AESALGO_INTEL_NI_HEADER__ */

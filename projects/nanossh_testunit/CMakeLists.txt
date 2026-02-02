@@ -22,34 +22,6 @@ include(${DEFS_FILE})
 message("\nEXTRA_DEFINITIONS = ${EXTRA_DEFINITIONS}")
 add_definitions("${EXTRA_DEFINITIONS}")
 
-# Architecture detection for crypto libraries
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-    set(CRYPTO_LIB_ARCH_DIR "aarch64")
-else()
-    set(CRYPTO_LIB_ARCH_DIR "linux-x86_64")
-endif()
-
-# Crypto library directory
-set(CRYPTO_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../../crypto_lib/${CRYPTO_LIB_ARCH_DIR}")
-
-# Import prebuilt crypto libraries
-add_library(nanocap SHARED IMPORTED)
-set_target_properties(nanocap PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocap.so")
-
-add_library(nanocert SHARED IMPORTED)
-set_target_properties(nanocert PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocert.so")
-
-add_library(nanocrypto SHARED IMPORTED)
-set_target_properties(nanocrypto PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocrypto.so")
-
-add_library(cryptointerface SHARED IMPORTED)
-set_target_properties(cryptointerface PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libcryptointerface.so")
-
-
 ########################################################################
 #
 # FLAGS

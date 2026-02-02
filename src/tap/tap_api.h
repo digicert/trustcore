@@ -8,14 +8,20 @@
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
  * @flags
  * Whether the following flags are defined determines whether or not support is enabled for a particular security module:
- *    + \c \__ENABLE_MOCANA_TPM2__
+ *    + \c \__ENABLE_DIGICERT_TPM2__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -23,7 +29,7 @@
 #define __TAP_API_HEADER__
 
 /*! @cond */
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 /*! @endcond */
 
 #include "../common/moptions.h"
@@ -219,7 +225,7 @@ MOC_EXTERN MSTATUS TAP_getTapInfo(TAP_Context *pCtx, ubyte4 *pProviderType, ubyt
  * @return ERR_NULL_POINTER if a NULL pointer is passed
  * @return ERR_INVALID_ARG if an invalid argument is specified
  *
- * @memory Memory is allocated for TAP_ProviderList.pProviderList, which must be freed by the caller via MOC_FREE.
+ * @memory Memory is allocated for TAP_ProviderList.pProviderList, which must be freed by the caller via DIGI_FREE.
  */
 MOC_EXTERN MSTATUS TAP_getProviderList(TAP_ConnectionInfo *pConnInfo,
                                    TAP_ProviderList *pProviderList,
@@ -1711,7 +1717,7 @@ MOC_EXTERN MSTATUS TAP_getQuote(TAP_Key *pTapKey,
  * @return ERR_NULL_POINTER if a NULL pointer is passed
  * @return ERR_INVALID_ARG if an invalid argument is specified
  *
- * @memory On success, memory is allocated for pSealedData and must be freed by via MOC_FREE().
+ * @memory On success, memory is allocated for pSealedData and must be freed by via DIGI_FREE().
  *
  * @note  A module may either ignore or require the a TAP_Key and/or a credential.
  */
@@ -1742,7 +1748,7 @@ MOC_EXTERN MSTATUS TAP_sealWithTrustedData(TAP_Context *pTapContext,
  * @return ERR_NULL_POINTER if a NULL pointer is passed
  * @return ERR_INVALID_ARG if an invalid argument is specified
  *
- * @memory On success, memory is allocated for pSealedData and must be freed by via MOC_FREE().
+ * @memory On success, memory is allocated for pSealedData and must be freed by via DIGI_FREE().
  *
  * @note  A module may either ignore or require the a TAP_Key and/or a credential.
  * @note  pExtraInfo must point to a module-specific structure. Refer to the module-specific documentation for Seal.
@@ -1877,7 +1883,7 @@ MOC_EXTERN MSTATUS TAP_getPolicyStorageDetails(TAP_Context *pTapContext,
  * @return ERR_NULL_POINTER if a NULL pointer is passed
  * @return ERR_INVALID_ARG if an invalid argument is specified
  *
- * @memory On success, memory is allocated for pNVOutData and must be freed by via MOC_FREE().
+ * @memory On success, memory is allocated for pNVOutData and must be freed by via DIGI_FREE().
  *
  * @note  A module may either ignore or require the a credential.
  * @note pOpAttributes may include TAP_ATTR_SIZE and TAP_ATTR_OFFSET, TAP_ATTR_READ_OP
@@ -1943,7 +1949,7 @@ MOC_EXTERN MSTATUS TAP_setPolicyStorage(TAP_Context *pTapContext,
  *
  * @note  A module may either ignore or require the a credential.
  *
- * @memory  Memory is allocated for the pTrustedData->pBuffer.  This must be freed by the caller via MOC_FREE.
+ * @memory  Memory is allocated for the pTrustedData->pBuffer.  This must be freed by the caller via DIGI_FREE.
  */
 MOC_EXTERN MSTATUS TAP_getTrustedData(TAP_Context *pTapContext,
                                   TAP_EntityCredentialList *pUsageCredentials,
@@ -2297,7 +2303,7 @@ MOC_EXTERN MSTATUS TAP_DP_freeFingerprintCallback(FingerprintElement **ppElement
 #endif
 
 /*! @cond */
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 /*! @endcond */
 
 #endif /* __TAP_API_HEADER__ */

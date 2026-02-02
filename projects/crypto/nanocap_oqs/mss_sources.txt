@@ -1,0 +1,7 @@
+MSS_SRC_DIR/crypto/mocasymkeys/oqs/oqscommon.c
+MSS_SRC_DIR/crypto/mocasymkeys/oqs/kemoqs.c
+MSS_SRC_DIR/crypto/mocasymkeys/oqs/sigoqs.c
+MSS_SRC_DIR/crypto/mocasymkeys/oqs/kem_oqs_kyber.c
+MSS_SRC_DIR/crypto/mocasymkeys/oqs/sig_oqs_dilithium.c
+MSS_SRC_DIR/crypto/mocasymkeys/oqs/sig_oqs_falcon.c
+MSS_SRC_DIR/crypto/mocasymkeys/oqs/sig_oqs_sphincs.c

@@ -37,8 +37,6 @@ To see full-size version of any of the following NanoSSH flowcharts, click the t
 \mocFlowchartPicture{flowchart_ssh_sftp_client.png}{NanoSSH SFTP Client}
 @endlatexonly
 
-@SuiteB_disclaimer
-
 @todo_techpubs (add \@brief descriptions for all groups; they'll appear on the
             Function Groups by Product tab's display)
 */

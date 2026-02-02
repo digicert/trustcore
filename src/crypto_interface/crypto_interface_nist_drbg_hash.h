@@ -47,7 +47,7 @@ extern "C" {
  * @param hashOutLenBytes     The output length of the hashMethod chosen.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -74,7 +74,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_NIST_HASHDRBG_newSeededContext(
  * @param ppContext   Pointer to the location of the context to be deleted.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -97,7 +97,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_NIST_HASHDRBG_deleteContext(
  * @param additionalInputLen  The length of the additional input data in bytes.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -127,7 +127,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_NIST_HASHDRBG_reSeed(
  * @param outputLenBytes      The number of output bytes requested.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -155,7 +155,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_NIST_HASHDRBG_generate(
  * @param outputLenBytes      The number of output bytes requested.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.
@@ -180,7 +180,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_NIST_HASHDRBG_numberGenerator(
  * @param pBuffer         Buffer to hold the resulting output bytes.
  *
  * @flags   To enable this method define the following flag:
- *          + \c \__ENABLE_MOCANA_NIST_DRBG_HASH__
+ *          + \c \__ENABLE_DIGICERT_NIST_DRBG_HASH__
  *
  * @return  \c OK (0) if successful; otherwise a negative number error code
  *          definition from merrors.h.

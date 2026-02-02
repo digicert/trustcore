@@ -3,8 +3,14 @@
  *
  * HTTP Header File
  *
- * Copyright Mocana Corp 2004-2007. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -67,7 +73,7 @@ then registered by assigning it to the appropriate structure function pointer(s)
 
 ! Flags
 There are no flag dependencies to use this structure. Some portions of this
-structure are dependent on whether the $__ENABLE_MOCANA_HTTPCC_SERVER__$ flag
+structure are dependent on whether the $__ENABLE_DIGICERT_HTTPCC_SERVER__$ flag
 is defined in moptions.h.
 
 */
@@ -323,7 +329,7 @@ status, use the $DISPLAY_ERROR$ macro.
 */
     sbyte4 (*funcPtrResponseBodyCallback)(httpContext *pHttpContext, ubyte *pDataReceived, ubyte4 dataLength, sbyte4 isContinueFromBlock);
 
-#ifdef __ENABLE_MOCANA_HTTPCC_SERVER__
+#ifdef __ENABLE_DIGICERT_HTTPCC_SERVER__
 /*! Post a request body or retrieve a response body.
 This callback function is part of the HTTP server's resource manager. The HTTP
 server calls this function to post a request body (fetch a resource to be sent to
@@ -338,7 +344,7 @@ callback pointer.
 
 ! Flags
 To use this callback, the following flag must be defined in moptions.h:
-- $__ENABLE_MOCANA_HTTPCC_SERVER__$
+- $__ENABLE_DIGICERT_HTTPCC_SERVER__$
 
 \param pHttpContext     Pointer to context describing current HTTP
 session (request-response pair).
@@ -357,7 +363,7 @@ status, use the $DISPLAY_ERROR$ macro.
 
     /*! (Internal use only)
     (Internal use only)
-    \note This field is defined only if the $__ENABLE_MOCANA_HTTPCC_SERVER__$
+    \note This field is defined only if the $__ENABLE_DIGICERT_HTTPCC_SERVER__$
     flag is defined in moptions.h.
     */
     struct hashTableOfPtrs* resourceList;
@@ -402,7 +408,7 @@ MOC_EXTERN sbyte4 SSL_PROXY_recv(sbyte4 ssl_id, sbyte *pRetBuffer, ubyte4 buffer
 
 ! Flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-- $__ENABLE_MOCANA_HTTP_CLIENT__$
+- $__ENABLE_DIGICERT_HTTP_CLIENT__$
 
 @inc_file http.h
 \param pHostName   The input host name in string form.
@@ -416,7 +422,7 @@ MOC_EXTERN MSTATUS HTTP_getHostIpAddr(sbyte* pHostName, sbyte **ppIpAddr);
 
 ! Flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-- $__ENABLE_MOCANA_HTTP_CLIENT__$
+- $__ENABLE_DIGICERT_HTTP_CLIENT__$
 
 @inc_file http.h
 
@@ -429,7 +435,7 @@ MOC_EXTERN byteBoolean HTTP_PROXY_isProxyUrlSet(void);
 
 ! Flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-- $__ENABLE_MOCANA_HTTP_CLIENT__$
+- $__ENABLE_DIGICERT_HTTP_CLIENT__$
 
 @inc_file http.h
 \param pUrl     String representing the url location of the proxy server. This may be a hostname
@@ -444,7 +450,7 @@ MOC_EXTERN MSTATUS HTTP_PROXY_setProxyUrlAndPort(sbyte *pUrl);
 
 ! Flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-- $__ENABLE_MOCANA_HTTP_CLIENT__$
+- $__ENABLE_DIGICERT_HTTP_CLIENT__$
 
 @inc_file http.h
 
@@ -457,7 +463,7 @@ MOC_EXTERN MSTATUS HTTP_PROXY_freeProxyUrl(void);
 
 ! Flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-- $__ENABLE_MOCANA_HTTP_CLIENT__$
+- $__ENABLE_DIGICERT_HTTP_CLIENT__$
 
 @inc_file http.h
 

@@ -20,7 +20,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -40,7 +40,7 @@
 #include "../crypto/crypto.h"
 #include "../crypto/dsa.h"
 #include "../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -57,7 +57,7 @@
 #include "../ssh/ssh_ftp.h"
 #include "../harness/harness.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_dh.h"
 #endif
 /*------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ static BulkEncryptionAlgo NULLSuite = { 1, NULL, NULL, NULL, NULL };
 static SSH_CipherSuiteInfo mNullCipherSuite = { (sbyte *)"null", 4, 0, SSH2_DEFAULT_CIPER_SIZE, &NULLSuite, NULL };
 static SSH_hmacSuiteInfo   mNullHmacSuite   = { (sbyte *)"null", 4, 0, 0, NULL, NULL };
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 static void destroyLpfData(sshContext* pContextSSH)
 {
     sshPfSession*  pTemp   = NULL;
@@ -90,7 +90,7 @@ static void destroyLpfData(sshContext* pContextSSH)
         pContextSSH->pPfSessionHead = NULL;
     }
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 extern MSTATUS
 SSH_CONTEXT_allocStructures(sshContext **ppContextSSH)
@@ -110,7 +110,7 @@ SSH_CONTEXT_allocStructures(sshContext **ppContextSSH)
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)(*ppContextSSH), 0x00, sizeof(sshContext));
+    DIGI_MEMSET((ubyte *)(*ppContextSSH), 0x00, sizeof(sshContext));
 
     if (OK > (status = (MSTATUS)HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSH, &((*ppContextSSH)->hwAccelCookie))))
         goto exit;
@@ -120,7 +120,7 @@ SSH_CONTEXT_allocStructures(sshContext **ppContextSSH)
         goto exit;
 
     DEBUG_RELABEL_MEMORY(pTempMemBuffer);
-    MOC_MEMSET((ubyte *)(pTempMemBuffer), 0x00, SSH_SMALL_TEMP_BUF_SIZE * 5);
+    DIGI_MEMSET((ubyte *)(pTempMemBuffer), 0x00, SSH_SMALL_TEMP_BUF_SIZE * 5);
     if (OK > (status = MEM_POOL_initPool(&((*ppContextSSH)->smallPool), pTempMemBuffer, SSH_SMALL_TEMP_BUF_SIZE * 5, SSH_SMALL_TEMP_BUF_SIZE)))
         goto exit;
 
@@ -130,7 +130,7 @@ SSH_CONTEXT_allocStructures(sshContext **ppContextSSH)
         goto exit;
 
     DEBUG_RELABEL_MEMORY(pTempMemBuffer);
-    MOC_MEMSET((ubyte *)(pTempMemBuffer), 0x00, SSH_MEDIUM_TEMP_BUF_SIZE * 5);
+    DIGI_MEMSET((ubyte *)(pTempMemBuffer), 0x00, SSH_MEDIUM_TEMP_BUF_SIZE * 5);
     if (OK > (status = MEM_POOL_initPool(&((*ppContextSSH)->mediumPool), pTempMemBuffer, SSH_MEDIUM_TEMP_BUF_SIZE * 5, SSH_MEDIUM_TEMP_BUF_SIZE)))
         goto exit;
 
@@ -159,7 +159,7 @@ SSH_CONTEXT_allocStructures(sshContext **ppContextSSH)
         goto exit;
     }
 
-    MOC_MEMSET((*ppContextSSH)->pTerminal, 0x00, sizeof(terminalState));
+    DIGI_MEMSET((*ppContextSSH)->pTerminal, 0x00, sizeof(terminalState));
 
     if (NULL == (*ppContextSSH)->decryptIV)
     {
@@ -268,17 +268,17 @@ SSH_CONTEXT_deallocStructures(sshContext **ppContextSSH)
         SSH_HASH_H(*ppContextSSH) = NULL;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DH_freeDhContext(&SSH_DIFFIEHELLMAN_CONTEXT(*ppContextSSH), NULL);
 #else
     DH_freeDhContext(&SSH_DIFFIEHELLMAN_CONTEXT(*ppContextSSH), NULL);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-    MOC_STREAM_close(&((*ppContextSSH)->pSocketOutStreamDescr));
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+    DIGI_STREAM_close(&((*ppContextSSH)->pSocketOutStreamDescr));
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
     if (NULL != (*ppContextSSH)->pAsyncCacheMessage)
     {
         FREE((*ppContextSSH)->pAsyncCacheMessage);
@@ -286,7 +286,7 @@ SSH_CONTEXT_deallocStructures(sshContext **ppContextSSH)
     }
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     if (NULL != (*ppContextSSH)->p_sftpIncomingBuffer)
         FREE((*ppContextSSH)->p_sftpIncomingBuffer);
 
@@ -337,7 +337,7 @@ SSH_CONTEXT_deallocStructures(sshContext **ppContextSSH)
         if (NULL != pTerminal->pEncodedTerminalModes)
             FREE(pTerminal->pEncodedTerminalModes);
 
-        MOC_MEMSET((ubyte *)pTerminal, 0x00, sizeof(terminalState));
+        DIGI_MEMSET((ubyte *)pTerminal, 0x00, sizeof(terminalState));
         FREE((*ppContextSSH)->pTerminal);
     }
 
@@ -371,9 +371,9 @@ SSH_CONTEXT_deallocStructures(sshContext **ppContextSSH)
         CRYPTO_FREE((*ppContextSSH)->hwAccelCookie, TRUE, &((*ppContextSSH)->pHostBlob));
     }
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     destroyLpfData(*ppContextSSH);
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
     HARDWARE_ACCEL_CLOSE_CHANNEL(MOCANA_SSH, &(*ppContextSSH)->hwAccelCookie);
     FREE(*ppContextSSH);
@@ -383,7 +383,7 @@ exit:
     return status;
 }
 
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */
 
 
 

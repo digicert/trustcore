@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 /* An RSA Padding scheme for the Special TAP RSA encryption or verification
  * functions is really a function. This is the signature of such a function.
@@ -82,10 +82,10 @@ typedef struct
 } MCTAlgIdInputInfo;
 
 /* The MCTRsaPad will allocate memory for the AlgId, build the alg ID and deposit
- * the buffer at pAlgId. The caller frees it using MOC_FREE.
+ * the buffer at pAlgId. The caller frees it using DIGI_FREE.
  * The MCTRsaPad will allocate memory for the list of supported symmetric
  * algorithms, fill it and deposit the buffer at pSupportedSym. The caller frees
- * it using MOC_FREE.
+ * it using DIGI_FREE.
  */
 typedef struct
 {
@@ -101,8 +101,8 @@ typedef struct
  * <p>Although this is a function, do not call it directly, only use it as an
  * argument in functions that take an MCTRsaPad.
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_TAP__
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_TAP__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
  */
 MOC_EXTERN MSTATUS CT_RSA_PAD_PKCS_1_5 (
   ubyte4 operation,
@@ -128,8 +128,8 @@ MOC_EXTERN MSTATUS CT_RSA_PAD_PKCS_1_5 (
  * <p>The defaults are SHA-1, MGF1 with SHA-1, and specified-empty (meaning no
  * PSource).
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_TAP__
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_TAP__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
  */
 MOC_EXTERN MSTATUS CT_RSA_PAD_OAEP (
   ubyte4 operation,
@@ -162,8 +162,8 @@ MOC_EXTERN MSTATUS CT_RSA_PAD_OAEP (
  * <p>The defaults are SHA-1, MGF1 with SHA-1, saltLen of 20, and a trailer field
  * of 0xBC.
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_TAP__
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_TAP__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
  */
 MOC_EXTERN MSTATUS CT_RSA_PAD_PSS (
   ubyte4 operation,
@@ -220,11 +220,11 @@ MOC_EXTERN MSTATUS CT_RSA_PAD_PSS (
  * Asymmetric Encryption Padding.
  * <p>The caller supplies the key and data to encrypt, the function will allocate
  * a buffer to hold the encrypted data and return it. It is the responsibility of
- * the caller to free that memory using MOC_FREE (see mss/src/common/mstdlib.h).
+ * the caller to free that memory using DIGI_FREE (see mss/src/common/mstdlib.h).
  * <p>The caller can also supply a random object, as both PKCS 1.5 padding and
  * OAEP use random bytes. If no random object is provided, the function will use
- * the global random (created during the call to MOCANA_initialize or
- * MOCANA_initMocana).
+ * the global random (created during the call to DIGICERT_initialize or
+ * DIGICERT_initDigicert).
  * <p>The caller specifies which padding scheme to use with the PaddingScheme
  * argument. It must be either CT_RSA_PAD_PKCS_1_5 or CT_RSA_PAD_OAEP.
  * <p>If you choose OAEP, the function will use MGF1 and specified as the
@@ -250,9 +250,9 @@ MOC_EXTERN MSTATUS CT_RSA_PAD_PSS (
  * 256 - ((2 * 32) + 2) = 256 - 66 = 190 bytes.
  *
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_TAP__
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
- *  + \c \__ENABLE_MOCANA_SYM__
+ *  + \c \__ENABLE_DIGICERT_TAP__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_SYM__
  *
  * @param [in]   pPubKey           Pointer to TAP_RSAPublicKey struct containing
  *                                 the RSA public key data used to encrypt.
@@ -276,7 +276,7 @@ MOC_EXTERN MSTATUS CT_RSA_PAD_PSS (
  * @param [out]  ppCiphertext      The address where the function will deposit a
  *                                 pointer to allocated data containing the
  *                                 encrypted result. The caller must free this
- *                                 memory using MOC_FREE.
+ *                                 memory using DIGI_FREE.
  * @param [out]  pCiphertextLen    The address where the function will deposit
  *                                 the length, in bytes, of the ciphertext result.
  *
@@ -286,7 +286,7 @@ MOC_EXTERN MSTATUS CT_RSA_PAD_PSS (
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @memory On success, memory is allocated for ppCiphertest and must be freed by
- * calling MOC_FREE.
+ * calling DIGI_FREE.
  */
 MOC_EXTERN MSTATUS CT_RsaPublicEncrypt (
   TAP_RSAPublicKey *pPubKey,
@@ -345,11 +345,11 @@ MOC_EXTERN MSTATUS CT_RsaPublicEncrypt (
  * if the signature was valid, which can be "no, it is not valid".
  *
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_TAP__
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
- *  + \c \__ENABLE_MOCANA_SYM__
+ *  + \c \__ENABLE_DIGICERT_TAP__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_SYM__
  * <p>This is not compiled if the following build flag is defined.
- *  + \c \__DISABLE_MOCANA_RSA_VERIFY__
+ *  + \c \__DISABLE_DIGICERT_RSA_VERIFY__
  *
  * @param [in]   pPubKey           Pointer to TAP_RSAPublicKey struct containing
  *                                 the RSA public key data used to verify.
@@ -417,8 +417,8 @@ MOC_EXTERN MSTATUS CT_RsaVerifySignature (
  * it.
  *
  * <p>This is compiled only if the following build flags are defined.
- *  + \c \__ENABLE_MOCANA_TAP__
- *  + \c \__ENABLE_MOCANA_ASYM_KEY__
+ *  + \c \__ENABLE_DIGICERT_TAP__
+ *  + \c \__ENABLE_DIGICERT_ASYM_KEY__
  *
  * @param [in]      pPubKey           Pointer to TAP_RSAPublicKey struct
  *                                    containing the RSA public key data.
@@ -462,28 +462,28 @@ MOC_EXTERN MSTATUS CT_OaepPssOp (
 #define PAD_TAP_SHA_512_COUNT 0
 #define PAD_TAP_SHA_512_OP
 
-#if !defined(__DISABLE_MOCANA_SHA224__)
+#if !defined(__DISABLE_DIGICERT_SHA224__)
 #undef PAD_TAP_SHA_224_COUNT
 #undef PAD_TAP_SHA_224_OP
 #define PAD_TAP_SHA_224_COUNT 1
 #define PAD_TAP_SHA_224_OP ,{ MSha224SwOperator, NULL }
 #endif
 
-#if !defined(__DISABLE_MOCANA_SHA256__)
+#if !defined(__DISABLE_DIGICERT_SHA256__)
 #undef PAD_TAP_SHA_256_COUNT
 #undef PAD_TAP_SHA_256_OP
 #define PAD_TAP_SHA_256_COUNT 1
 #define PAD_TAP_SHA_256_OP ,{ MSha256SwOperator, NULL }
 #endif
 
-#if !defined(__DISABLE_MOCANA_SHA384__)
+#if !defined(__DISABLE_DIGICERT_SHA384__)
 #undef PAD_TAP_SHA_384_COUNT
 #undef PAD_TAP_SHA_384_OP
 #define PAD_TAP_SHA_384_COUNT 1
 #define PAD_TAP_SHA_384_OP ,{ MSha384SwOperator, NULL }
 #endif
 
-#if !defined(__DISABLE_MOCANA_SHA512__)
+#if !defined(__DISABLE_DIGICERT_SHA512__)
 #undef PAD_TAP_SHA_512_COUNT
 #undef PAD_TAP_SHA_512_OP
 #define PAD_TAP_SHA_512_COUNT 1
@@ -502,7 +502,7 @@ MOC_EXTERN MSTATUS CT_OaepPssOp (
     PAD_TAP_SHA_384_OP \
     PAD_TAP_SHA_512_OP
 
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
 #ifdef __cplusplus
 }

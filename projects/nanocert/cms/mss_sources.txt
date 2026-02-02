@@ -1,0 +1,7 @@
+MSS_SRC_DIR/crypto/cms_aux.c
+MSS_SRC_DIR/crypto/cms_resign_util.c
+MSS_SRC_DIR/crypto/moccms.c
+MSS_SRC_DIR/crypto/moccms_asn.c
+MSS_SRC_DIR/crypto/moccms_decode.c
+MSS_SRC_DIR/crypto/moccms_encode.c
+MSS_SRC_DIR/crypto/moccms_util.c

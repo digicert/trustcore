@@ -31,8 +31,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_DES_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_DES_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_DES_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_DES_INTERNAL__))
 
 #define DES_initKey  CRYPTO_INTERFACE_DES_initKey
 #define DES_encipher CRYPTO_INTERFACE_DES_encipher

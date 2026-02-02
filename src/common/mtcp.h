@@ -595,17 +595,17 @@ typedef void *Socket_t;
 #endif
 #endif
 
-#if defined __MOCANA_TCP__
+#if defined __DIGICERT_TCP__
 
 #define MOC_TCP_SOCKET          int
-#define MOC_TCP_INIT            MO_TCP_init
-#define MOC_TCP_SHUTDOWN        MO_TCP_shutdown
-#define MOC_TCP_LISTEN_SOCKET   MO_TCP_listenSocket
-#define MOC_TCP_ACCEPT_SOCKET   MO_TCP_acceptSocket
-#define MOC_TCP_CLOSE_SOCKET    MO_TCP_closeSocket
-#define MOC_TCP_READ_AVL        MO_TCP_readSocketAvailable
-#define MOC_TCP_WRITE           MO_TCP_writeSocket
-#define MOC_TCP_CONNECT         MO_TCP_connectSocket
+#define DIGI_TCP_INIT            MO_TCP_init
+#define DIGI_TCP_SHUTDOWN        MO_TCP_shutdown
+#define DIGI_TCP_LISTEN_SOCKET   MO_TCP_listenSocket
+#define DIGI_TCP_ACCEPT_SOCKET   MO_TCP_acceptSocket
+#define DIGI_TCP_CLOSE_SOCKET    MO_TCP_closeSocket
+#define DIGI_TCP_READ_AVL        MO_TCP_readSocketAvailable
+#define DIGI_TCP_WRITE           MO_TCP_writeSocket
+#define DIGI_TCP_CONNECT         MO_TCP_connectSocket
 
 #endif
 
@@ -634,14 +634,14 @@ MOC_EXTERN MSTATUS TCP_WRITE_ALL    (TCP_SOCKET socket, sbyte *pBuffer, ubyte4 n
 MOC_EXTERN MSTATUS TCP_getPeerName  (TCP_SOCKET socket, ubyte2 *portNo, MOC_IP_ADDRESS_S *addr);
 
 
-MOC_EXTERN MSTATUS MOC_TCP_INIT         (void);
-MOC_EXTERN MSTATUS MOC_TCP_SHUTDOWN     (void);
-MOC_EXTERN MSTATUS MOC_TCP_LISTEN_SOCKET(TCP_SOCKET *socket, ubyte2 portNumber);
-MOC_EXTERN MSTATUS MOC_TCP_ACCEPT_SOCKET(TCP_SOCKET *clientSocket, TCP_SOCKET listenSocket, intBoolean *isBreakSignalRequest);
-MOC_EXTERN MSTATUS MOC_TCP_CLOSE_SOCKET (TCP_SOCKET socket);
-MOC_EXTERN MSTATUS MOC_TCP_READ_AVL     (TCP_SOCKET socket, sbyte *pBuffer, ubyte4 maxBytesToRead,  ubyte4 *pNumBytesRead, ubyte4 msTimeout);
-MOC_EXTERN MSTATUS MOC_TCP_WRITE        (TCP_SOCKET socket, sbyte *pBuffer, ubyte4 numBytesToWrite, ubyte4 *pNumBytesWritten);
-MOC_EXTERN MSTATUS MOC_TCP_CONNECT      (TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 portNo);
+MOC_EXTERN MSTATUS DIGI_TCP_INIT         (void);
+MOC_EXTERN MSTATUS DIGI_TCP_SHUTDOWN     (void);
+MOC_EXTERN MSTATUS DIGI_TCP_LISTEN_SOCKET(TCP_SOCKET *socket, ubyte2 portNumber);
+MOC_EXTERN MSTATUS DIGI_TCP_ACCEPT_SOCKET(TCP_SOCKET *clientSocket, TCP_SOCKET listenSocket, intBoolean *isBreakSignalRequest);
+MOC_EXTERN MSTATUS DIGI_TCP_CLOSE_SOCKET (TCP_SOCKET socket);
+MOC_EXTERN MSTATUS DIGI_TCP_READ_AVL     (TCP_SOCKET socket, sbyte *pBuffer, ubyte4 maxBytesToRead,  ubyte4 *pNumBytesRead, ubyte4 msTimeout);
+MOC_EXTERN MSTATUS DIGI_TCP_WRITE        (TCP_SOCKET socket, sbyte *pBuffer, ubyte4 numBytesToWrite, ubyte4 *pNumBytesWritten);
+MOC_EXTERN MSTATUS DIGI_TCP_CONNECT      (TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 portNo);
 
 MOC_EXTERN MSTATUS UNIXDOMAIN_CONNECT   (TCP_SOCKET *socket, sbyte *soc_path);
 MOC_EXTERN MSTATUS UNIXDOMAIN_ACCEPT    (TCP_SOCKET *clientSocket, TCP_SOCKET listenSocket, intBoolean *isBreakSignalRequest);
@@ -658,7 +658,7 @@ MOC_EXTERN MSTATUS TCP_SHARE_SOCKET (TCP_SOCKET socket);
  * to do nothing.
  */
 #if !(defined(__KERNEL__) || defined(_KERNEL) || defined(IPCOM_KERNEL))
-#if !defined(__DISABLE_MOCANA_TCP_INTERFACE__)
+#if !defined(__DISABLE_DIGICERT_TCP_INTERFACE__)
 
 /**
  * @def      MOC_CHECK_TCP_INIT(_status)
@@ -669,7 +669,7 @@ MOC_EXTERN MSTATUS TCP_SHARE_SOCKET (TCP_SOCKET socket);
  * @par Flags
  * To enable this macro, \b both conditions 1 and 2 must be met:
  *   1. The following flags must \b not be defined:
- *     + \c \__DISABLE_MOCANA_TCP_INTERFACE__
+ *     + \c \__DISABLE_DIGICERT_TCP_INTERFACE__
  *     .
  *   2. At least \b one of the following conditions must be met:
  *     + \c \__KERNEL__   must \b not be defined
@@ -691,7 +691,7 @@ MOC_EXTERN MSTATUS TCP_SHARE_SOCKET (TCP_SOCKET socket);
  * @par Flags
  * To enable this macro, \b both conditions 1 and 2 must be met:
  *   1. The following flags must \b not be defined:
- *     + \c \__DISABLE_MOCANA_TCP_INTERFACE__
+ *     + \c \__DISABLE_DIGICERT_TCP_INTERFACE__
  *     .
  *   2. At least \b one of the following conditions must be met:
  *     + \c \__KERNEL__   must \b not be defined
@@ -703,7 +703,7 @@ MOC_EXTERN MSTATUS TCP_SHARE_SOCKET (TCP_SOCKET socket);
     if (OK != _dStatus)                                                        \
       _status = _dStatus;
 
-#endif /* !defined(__DISABLE_MOCANA_TCP_INTERFACE__) */
+#endif /* !defined(__DISABLE_DIGICERT_TCP_INTERFACE__) */
 #endif /* !defined(__KERNEL__) etc */
 
 #ifndef MOC_CHECK_TCP_INIT

@@ -31,7 +31,7 @@
 #include "../asn1/parseasn1.h"
 #include "../asn1/derencoder.h"
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ALL_OPERATIONS__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ALL_OPERATIONS__))
 
 enum { E_DER_ITEM_NORMAL, E_DER_ITEM_OPAQUE, E_DER_ITEM_UNDEF_LENGTH };
 
@@ -51,7 +51,7 @@ typedef struct DER_ITEM
 
 /*------ dtor function used when the tree item owns the data ----------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_CORE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_CORE__))
 
 static void
 DER_ReleaseOwnedData( TreeItem* pThis)
@@ -68,7 +68,7 @@ DER_ReleaseOwnedData( TreeItem* pThis)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 static void AddItemToParent( DER_ITEMPTR pParent, DER_ITEMPTR pNewChild)
 {
@@ -84,7 +84,7 @@ static void AddItemToParent( DER_ITEMPTR pParent, DER_ITEMPTR pNewChild)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddItem( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
@@ -138,7 +138,7 @@ DER_AddItem( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_SETTERS__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_SETTERS__))
 
 extern MSTATUS
 DER_SetItemData( DER_ITEMPTR pItem, ubyte4 length, const ubyte* value)
@@ -166,11 +166,11 @@ DER_SetItemData( DER_ITEMPTR pItem, ubyte4 length, const ubyte* value)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddItemCopyData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
-                                  const ubyte pValue[MAX_DER_STORAGE],
+                                  const ubyte *pValue,
                                   DER_ITEMPTR* ppNewDERItem)
 {
     MSTATUS status;
@@ -179,7 +179,7 @@ DER_AddItemCopyData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
     if (length > MAX_DER_STORAGE)
     {
         ubyte* pData = NULL;
-        if(OK > (status = MOC_MALLOC((void**) &pData, length)))
+        if(OK > (status = DIGI_MALLOC((void**) &pData, length)))
         {
             return status;
         }
@@ -201,7 +201,7 @@ DER_AddItemCopyData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
         pLocal->value = pLocal->valueCopy;
     }
 
-    MOC_MEMCPY((ubyte*)pLocal->value, (ubyte *) pValue, length);
+    DIGI_MEMCPY((ubyte*)pLocal->value, (ubyte *) pValue, length);
 
     /* return ppNewDERItem if necessary */
     if (ppNewDERItem)
@@ -217,7 +217,7 @@ DER_AddItemCopyData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddItemOwnData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
@@ -255,7 +255,7 @@ DER_AddItemOwnData( DER_ITEMPTR pParent, ubyte type, ubyte4 length,
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_CORE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_CORE__))
 
 static MSTATUS
 DER_EncodeDateElement( ubyte* buffer, ubyte value)
@@ -273,8 +273,8 @@ DER_EncodeDateElement( ubyte* buffer, ubyte value)
 
 /*---------------------------------------------------------------------------*/
 
-#if ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_CORE__)) && \
-     (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__)))
+#if ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_CORE__)) && \
+     (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__)))
 
 extern MSTATUS
 DER_AddTime( DER_ITEMPTR pParent, const TimeDate* td, DER_ITEMPTR* ppNewDERItem)
@@ -304,7 +304,7 @@ DER_AddTime( DER_ITEMPTR pParent, const TimeDate* td, DER_ITEMPTR* ppNewDERItem)
     }
     else
     {
-        next = (ubyte *)MOC_LTOA(year, (sbyte *)encode, buffSize);
+        next = (ubyte *)DIGI_LTOA(year, (sbyte *)encode, buffSize);
     }
 
     DER_EncodeDateElement(next, td->m_month);
@@ -334,7 +334,7 @@ exit:
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddBitString( DER_ITEMPTR pParent, ubyte4 length,
@@ -398,7 +398,7 @@ exit:
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddBERItem(  DER_ITEMPTR pParent, ubyte type, DER_ITEMPTR* ppNewDERItem)
@@ -445,7 +445,7 @@ DER_AddBERItem(  DER_ITEMPTR pParent, ubyte type, DER_ITEMPTR* ppNewDERItem)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddDERBuffer( DER_ITEMPTR pParent, ubyte4 length, const ubyte* value,
@@ -500,7 +500,7 @@ DER_AddDERBuffer( DER_ITEMPTR pParent, ubyte4 length, const ubyte* value,
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddDERBufferOwn( DER_ITEMPTR pParent, ubyte4 length,
@@ -538,7 +538,7 @@ DER_AddDERBufferOwn( DER_ITEMPTR pParent, ubyte4 length,
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__))
 
 extern MSTATUS
 DER_GetIntegerEncodingOffset( ubyte4 length, const ubyte* pLeadZero,
@@ -575,8 +575,8 @@ DER_GetIntegerEncodingOffset( ubyte4 length, const ubyte* pLeadZero,
 
 /*---------------------------------------------------------------------------*/
 
-#if ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__)) && \
-     (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__)))
+#if ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__)) && \
+     (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__)))
 
 extern MSTATUS
 DER_AddInteger( DER_ITEMPTR pParent, ubyte4 length,
@@ -609,7 +609,7 @@ DER_AddIntegerCopyData( DER_ITEMPTR pParent, ubyte4 length,
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS
 DER_AddIntegerEx( DER_ITEMPTR pParent, ubyte4 value, DER_ITEMPTR* ppNewDerItem)
@@ -636,7 +636,7 @@ DER_AddIntegerEx( DER_ITEMPTR pParent, ubyte4 value, DER_ITEMPTR* ppNewDerItem)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 extern MSTATUS DER_AddVlongInteger (
   DER_ITEMPTR pParent,
@@ -692,7 +692,7 @@ extern MSTATUS DER_AddVlongInteger (
    */
   numLen = (numLen + 7) / 8;
 
-  status = MOC_MALLOC ((void **)&pBuf, (ubyte4)(numLen + extra));
+  status = DIGI_MALLOC ((void **)&pBuf, (ubyte4)(numLen + extra));
   if (OK != status)
     goto exit;
 
@@ -720,7 +720,7 @@ exit:
 
   if (NULL != pBuf)
   {
-    MOC_FREE ((void **)&pBuf);
+    DIGI_FREE ((void **)&pBuf);
   }
 
   return (status);
@@ -731,7 +731,7 @@ exit:
 
 /*---------------------------------------------------------------------------*/
 
-#if(!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__))
+#if(!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__))
 
 extern MSTATUS
 DER_GetSerializedDataPtr( DER_ITEMPTR pRoot, ubyte** pBuffer)
@@ -766,7 +766,7 @@ DER_GetSerializedDataPtr( DER_ITEMPTR pRoot, ubyte** pBuffer)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_CORE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_CORE__))
 
 extern MSTATUS
 DER_FinalizeBERItems( DER_ITEMPTR pRoot)
@@ -813,7 +813,7 @@ DER_FinalizeBERItems( DER_ITEMPTR pRoot)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__))
 
 extern MSTATUS
 DER_GetLength( DER_ITEMPTR pRoot, ubyte4* pTotalLength)
@@ -890,7 +890,7 @@ DER_GetLength( DER_ITEMPTR pRoot, ubyte4* pTotalLength)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_SERIALIZE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_SERIALIZE__))
 
 static ubyte*
 DER_SerializeAux( DER_ITEMPTR pRoot, ubyte* buffer, DER_ITEMPTR* pStop)
@@ -952,7 +952,7 @@ DER_SerializeAux( DER_ITEMPTR pRoot, ubyte* buffer, DER_ITEMPTR* pStop)
     {
         if ( pRoot->value)
         {
-            MOC_MEMCPY( buffer, pRoot->value, (sbyte4) pRoot->valueLen);
+            DIGI_MEMCPY( buffer, pRoot->value, (sbyte4) pRoot->valueLen);
         }
         buffer += pRoot->valueLen;
     }
@@ -987,7 +987,7 @@ DER_SerializeAux( DER_ITEMPTR pRoot, ubyte* buffer, DER_ITEMPTR* pStop)
 
 /*---------------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_SERIALIZE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_SERIALIZE__))
 
 static ubyte*
 DER_SerializeAux2( DER_ITEMPTR pRoot, ubyte* buffer, sbyte4* pOffset, DER_ITEMPTR* pStop)
@@ -1072,8 +1072,8 @@ DER_SerializeAux2( DER_ITEMPTR pRoot, ubyte* buffer, sbyte4* pOffset, DER_ITEMPT
 
 /*---------------------------------------------------------------------------*/
 
-#if ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_SERIALIZE__)) && \
-     (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__)))
+#if ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_SERIALIZE__)) && \
+     (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__)))
 
 extern MSTATUS
 DER_SerializeInto( DER_ITEMPTR pRoot, ubyte* buffer, ubyte4* bufferLength)
@@ -1115,8 +1115,8 @@ DER_SerializeInto( DER_ITEMPTR pRoot, ubyte* buffer, ubyte4* bufferLength)
 
 /*---------------------------------------------------------------------------*/
 
-#if ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_SERIALIZE__)) && \
-     (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__)))
+#if ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_SERIALIZE__)) && \
+     (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__)))
 
 extern MSTATUS
 DER_SerializeIntoOffset( DER_ITEMPTR pRoot, sbyte4 offset,
@@ -1167,8 +1167,8 @@ exit:
 
 /*---------------------------------------------------------------------------*/
 
-#if ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_SERIALIZE__)) && \
-     (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__)))
+#if ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_SERIALIZE__)) && \
+     (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__)))
 
 extern MSTATUS
 DER_Serialize( DER_ITEMPTR pRoot, ubyte** pBuffer, ubyte4* pBufferLength)
@@ -1212,8 +1212,8 @@ DER_Serialize( DER_ITEMPTR pRoot, ubyte** pBuffer, ubyte4* pBufferLength)
 
 /*---------------------------------------------------------------------------*/
 
-#if ((!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_SERIALIZE__)) && \
-     (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__)))
+#if ((!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_SERIALIZE__)) && \
+     (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__)))
 
 extern MSTATUS
 DER_SerializeOffset( DER_ITEMPTR pRoot, sbyte4 offset, ubyte** pBuffer, ubyte4* pBufferLength)
@@ -1273,7 +1273,7 @@ exit:
 
 /*-----------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_GETTERS__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_GETTERS__))
 
 extern MSTATUS
 DER_GetASNBufferInfo( DER_ITEMPTR pItem, ubyte** ppBuffer, ubyte4* pDataLen)
@@ -1292,7 +1292,7 @@ DER_GetASNBufferInfo( DER_ITEMPTR pItem, ubyte** ppBuffer, ubyte4* pDataLen)
 
 /*------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_CORE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_CORE__))
 
 extern MSTATUS
 DER_StoreAlgoOID( DER_ITEMPTR pRoot, const ubyte* oid,
@@ -1336,7 +1336,7 @@ DER_StoreAlgoOIDownData(DER_ITEMPTR pRoot, ubyte4 oidLen, ubyte **ppOid, intBool
 
 /*------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_ADD_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_ADD_ELEMENT__))
 
 MOC_EXTERN MSTATUS
 DER_AddASN1Item( DER_ITEMPTR pParent, ASN1_ITEMPTR pItem, CStream cs,
@@ -1387,7 +1387,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if(!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_CORE__))
+#if(!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_CORE__))
 
 MOC_EXTERN MSTATUS
 DER_SwitchType( DER_ITEMPTR pParent, ubyte newType)
@@ -1404,7 +1404,7 @@ DER_SwitchType( DER_ITEMPTR pParent, ubyte newType)
 
 /*------------------------------------------------------------------*/
 
-#if (!defined(__DISABLE_MOCANA_ASN1_DER_ENCODE_CORE__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_DER_ENCODE_CORE__))
 
 MOC_EXTERN MSTATUS
 DER_Free( DER_ITEMPTR pRoot)
@@ -1417,4 +1417,4 @@ DER_Free( DER_ITEMPTR pRoot)
 
 /*------------------------------------------------------------------*/
 
-#endif /* __DISABLE_MOCANA_ASN1_DER_ENCODE_ALL_OPERATIONS__) */
+#endif /* __DISABLE_DIGICERT_ASN1_DER_ENCODE_ALL_OPERATIONS__) */

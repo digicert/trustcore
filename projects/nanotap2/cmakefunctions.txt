@@ -1,0 +1,61 @@
+cmake_minimum_required (VERSION 3.5)
+
+function(buildLibrary libType targetName targetDir mssSrcDir buildDir mssBinDir ${libraryLists})
+
+  set(SHARED_LIB_EXT "so")
+  if(APPLE)
+    set(SHARED_LIB_EXT "dylib")
+  elseif("STATIC" STREQUAL "${libType}")
+    set(SHARED_LIB_EXT "a")
+  endif()
+
+  # adding dsf include directories listed in dsf_includes.txt
+  file(STRINGS "${targetDir}/mss_includes.txt" DSF_INCLUDES)
+  string(REGEX REPLACE "MSS_SRC_DIR/" "${mssSrcDir}/" DSF_INCLUDES "${DSF_INCLUDES}")
+
+  include_directories("." ${DSF_INCLUDES})
+
+  message("${targetName} includes")
+  message("----------------")
+  foreach(dir ${DSF_INCLUDES})
+      message(${dir})
+  endforeach()
+
+
+  file(STRINGS "${targetDir}/mss_sources.txt" DSF_SOURCES)
+  string(REGEX REPLACE "MSS_SRC_DIR/" "${mssSrcDir}/" DSF_SOURCES "${DSF_SOURCES}")
+  message("dsf sources")
+  message("-----------")
+  foreach(file ${DSF_SOURCES})
+      message(${file})
+  endforeach()
+
+  if(WIN32)
+    set(DSF_SOURCES ${DSF_SOURCES} ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.rc)
+  endif()
+
+    if("SHARED" STREQUAL "${libType}")
+        add_library(${targetName} SHARED ${DSF_SOURCES})
+        target_link_libraries(${targetName} ${libraryLists})
+        if (WIN32)
+            target_link_libraries(${targetName} Shlwapi Ws2_32)
+        else()
+            if(NOT ANDROID)
+                set(PTHREAD_LINK pthread)
+            endif()
+            target_link_libraries(${targetName} ${PTHREAD_LINK} dl)
+            add_custom_command(TARGET ${targetName} POST_BUILD
+                        COMMAND cp ${buildDir}/libs/lib${targetName}.${SHARED_LIB_EXT} ${mssBinDir}/
+                        COMMAND echo "Copied lib${targetName}.${SHARED_LIB_EXT} to ${mssBinDir}/")
+
+        endif()
+    else()
+        add_library(${targetName} ${libraryLists} STATIC ${DSF_SOURCES})
+    endif()
+
+    if (NOT WIN32)
+        add_custom_command(TARGET ${targetName} POST_BUILD
+            COMMAND cp ${buildDir}/libs/lib${targetName}.${SHARED_LIB_EXT} ${mssBinDir}/
+            COMMAND echo "Copied lib${targetName}.${SHARED_LIB_EXT} to ${mssBinDir}/")
+    endif()
+endfunction()

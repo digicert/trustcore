@@ -249,7 +249,7 @@ typedef struct
 #define HW_ACCEL_ASYNC_initServiceRequestQueues TESTHARNESS_initServiceRequestQueues
 #define HW_ACCEL_ASYNC_addServiceRequest        TESTHARNESS_addServiceRequest
 
-#elif (defined(__ENABLE_MOCANA_PKCS11_CRYPTO__))
+#elif (defined(__ENABLE_DIGICERT_PKCS11_CRYPTO__))
 #define HW_ACCEL_ASYNC_initDrv                  DUMMYHARNESS_initDrv
 #define HW_ACCEL_ASYNC_termDrv                  DUMMYHARNESS_termDrv
 #define HW_ACCEL_ASYNC_listOfInitRegionDescrs   DUMMYHARNESS_listOfInitRegionDescrs

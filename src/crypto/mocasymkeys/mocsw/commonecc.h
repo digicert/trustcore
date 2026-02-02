@@ -3,8 +3,14 @@
  *
  * Functions common to ECC operations.
  *
- * Copyright Mocana Corp 2017. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -193,7 +199,7 @@ MOC_EXTERN MSTATUS DeserializeEccKeyAlt (
 
 /* This will build the Mocana version 2 key blob of the given key.
  * It will allocate memory for the result. It is the responsibility of the caller
- * to free it using MOC_FREE.
+ * to free it using DIGI_FREE.
  */
 MOC_EXTERN MSTATUS BuildEccKeyBlobAlloc (
   MOC_ECC(hwAccelDescr hwAccelCtx)
@@ -205,7 +211,7 @@ MOC_EXTERN MSTATUS BuildEccKeyBlobAlloc (
 /* This will build the PKCS 8 DER encoding of a private key, or the X.509
  * SubjectPubkicKeyInfo of a public key.
  * It will allocate memory for the result. It is the responsibility of the caller
- * to free it using MOC_FREE.
+ * to free it using DIGI_FREE.
  */
 MOC_EXTERN MSTATUS DerEncodeEccKeyAlloc (
   MOC_ECC(hwAccelDescr hwAccelCtx)
@@ -217,7 +223,7 @@ MOC_EXTERN MSTATUS DerEncodeEccKeyAlloc (
 /* This will build the PKCS 8 DER encoding of a private key, or the X.509
  * SubjectPubkicKeyInfo of a public key for an Edward's curve EdDSA key.
  * It will allocate memory for the result. It is the responsibility of the caller
- * to free it using MOC_FREE.
+ * to free it using DIGI_FREE.
  */
 MOC_EXTERN MSTATUS DerEncodeEccEdKeyAlloc (
   MOC_ECC(hwAccelDescr hwAccelCtx)

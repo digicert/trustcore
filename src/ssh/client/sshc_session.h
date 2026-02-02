@@ -85,7 +85,7 @@ MOC_EXTERN MSTATUS SSHC_SESSION_sendWindowAdjust(sshClientContext *pContextSSH, 
  */
 MOC_EXTERN MSTATUS SSHC_SESSION_sendWindowChangeChannelRequest(sshClientContext *pContextSSH, ubyte4 width, ubyte4 height);
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /**
  * @dont_show
  * @internal
@@ -125,6 +125,6 @@ extern MSTATUS sendRpfStart( sshClientContext* pContextSSH,  ubyte* pBindHost, u
  */
 extern MSTATUS sendCancelRpfReq( sshClientContext* pContextSSH,  ubyte* pBindHost, ubyte4 bindPort, ubyte* pHostAddr, ubyte4 hostPort);
 
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 #endif /* __SSHC_SESSION_HEADER__ */

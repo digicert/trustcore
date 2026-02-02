@@ -93,7 +93,7 @@ BEREncodeOID( const sbyte* oidStr, byteBoolean* wildCard, ubyte** oid)
         }
         /* add value -- only important for first 2 fields
          all these tricks because the first two values are encoded as one */
-        value += MOC_ATOL( oidStr, &oidStr);
+        value += DIGI_ATOL( oidStr, &oidStr);
 
         if (first)
         {
@@ -128,7 +128,7 @@ BEREncodeOID( const sbyte* oidStr, byteBoolean* wildCard, ubyte** oid)
     }
     (*oid)[0] = 0x06;         /* OID */
     (*oid)[1] = (ubyte)offset;        /* size */
-    MOC_MEMCPY((*oid)+2, scratch, offset);
+    DIGI_MEMCPY((*oid)+2, scratch, offset);
 
     return OK;
 }
@@ -173,7 +173,7 @@ int TestEncodedOID( char *s, char* expected)
         sprintf(generated + i * 3, "%02X ", oid[i]);
     }
 
-    retVal = MOC_STRCMP( (ubyte*) generated, (ubyte*) expected);
+    retVal = DIGI_STRCMP( (ubyte*) generated, (ubyte*) expected);
 
 exit:
 

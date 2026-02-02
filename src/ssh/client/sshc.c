@@ -26,17 +26,17 @@
 @flags
 To enable any of this file's functions, the following flag must be defined in
 moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 Whether the following flags are defined determines which functions are enabled:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @filedoc    sshc.c
 */
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include "../../common/mtypes.h"
 #include "../../common/mocana.h"
@@ -57,10 +57,10 @@ Whether the following flags are defined determines which functions are enabled:
 #include "../../crypto/dsa.h"
 #include "../../crypto/dh.h"
 #include "../../crypto/crypto.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../../crypto/primefld.h"
 #include "../../crypto/primeec.h"
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto/ecc.h"
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
@@ -90,7 +90,7 @@ static volatile sbyte4          m_instanceClient;
 static sshClientSettings        m_sshcSettings;
 static sshcConnectDescr*        m_sshcConnectTable;
 static sbyte4                   m_sshMaxConnections;
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
 static sftpClientSettings       m_sftpcSettings;
 #endif
 
@@ -126,7 +126,7 @@ SSHC_sshClientSettings(void)
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
 /**
 @brief      Get a NanoSSH SFTP client's configuration and callback settings.
 
@@ -140,8 +140,8 @@ SSHC_sshClientSettings(void)
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc_filesys.h
 
@@ -160,7 +160,7 @@ SSHC_sftpClientSettings(void)
 #endif
 
 /*------------------------------------------------------------------*/
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 static sbyte4 doLocalPortForwarding(sshClientContext *pContextSSH, sshcConnectDescr *pDescr,intBoolean useTimeout, ubyte4 timeout)
 {
     MSTATUS status = OK;
@@ -206,7 +206,7 @@ static sbyte4 doLocalPortForwarding(sshClientContext *pContextSSH, sshcConnectDe
 
 } /* doLocalPortForwarding */
 
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 /*------------------------------------------------------------------*/
 
 static void
@@ -230,12 +230,12 @@ SSHC_init(sbyte4 numClientConnections)
     MSTATUS     status = OK;
     sshcConnectDescr *pConn;
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
     gMocanaAppsRunning++;
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__) || defined(__ENABLE_DIGICERT_ECC_EDDSA_448__))
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_createCombMutexes();
 #else
     status = EC_createCombMutexes();
@@ -246,7 +246,7 @@ SSHC_init(sbyte4 numClientConnections)
 
     m_sshMaxConnections = numClientConnections;
 
-    MOC_MEMSET((ubyte *)&m_sshcSettings, 0x00, sizeof(m_sshcSettings));
+    DIGI_MEMSET((ubyte *)&m_sshcSettings, 0x00, sizeof(m_sshcSettings));
 
     if (NULL == (m_sshcConnectTable = MALLOC(sizeof(sshcConnectDescr) * numClientConnections)))
     {
@@ -254,7 +254,7 @@ SSHC_init(sbyte4 numClientConnections)
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)m_sshcConnectTable, 0x00, sizeof(sshcConnectDescr) * numClientConnections);
+    DIGI_MEMSET((ubyte *)m_sshcConnectTable, 0x00, sizeof(sshcConnectDescr) * numClientConnections);
 
     m_sshcSettings.sshMaxAuthAttempts            = MAX_SSHC_AUTH_ATTEMPTS;
     m_sshcSettings.sshTimeOutOpen                = TIMEOUT_SSHC_OPEN;
@@ -277,7 +277,7 @@ SSHC_init(sbyte4 numClientConnections)
     m_sshcSettings.funcPtrClosed                 = sshcProtocolUpcall;
     m_sshcSettings.funcPtrBreakOp                = sshcProtocolUpcall;
 
-#ifdef __ENABLE_MOCANA_SSH_AUTH_BANNER__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_BANNER__
     m_sshcSettings.funcPtrDisplayBanner           = NULL;
 #endif
 
@@ -311,7 +311,7 @@ exit:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 
@@ -365,7 +365,7 @@ SSHC_connect(TCP_SOCKET tempSocket, sbyte4 *pConnectionInstance, sbyte *pCommonN
         if (CONNECT_CLOSED == pConn->connectionState)
         {
             /* clear out previous settings */
-            MOC_MEMSET((ubyte *)pConn, 0x00, sizeof(sshcConnectDescr));
+            DIGI_MEMSET((ubyte *)pConn, 0x00, sizeof(sshcConnectDescr));
 
             /* take ownership */
             pConn->connectionState = CONNECT_NEGOTIATE;
@@ -387,11 +387,11 @@ SSHC_connect(TCP_SOCKET tempSocket, sbyte4 *pConnectionInstance, sbyte *pCommonN
             pConn->socket = pConn->pContextSSH->socket = connectSocket;
             CONNECTION_INSTANCE(pConn->pContextSSH)    = instance;
 
-#ifdef __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__
             /* Keep a copy of common name */
             if (pCommonName)
             {
-                int len = MOC_STRLEN(pCommonName);
+                int len = DIGI_STRLEN(pCommonName);
 
                 if (NULL == (pConn->pContextSSH->pCommonName = MALLOC(len + 1)))
                 {
@@ -399,7 +399,7 @@ SSHC_connect(TCP_SOCKET tempSocket, sbyte4 *pConnectionInstance, sbyte *pCommonN
                     goto exit;
                 }
 
-                MOC_MEMCPY(pConn->pContextSSH->pCommonName, pCommonName, len);
+                DIGI_MEMCPY(pConn->pContextSSH->pCommonName, pCommonName, len);
                 pConn->pContextSSH->pCommonName[len] = 0;
             }
             else
@@ -548,7 +548,7 @@ SSHC_negotiateConnection(sbyte4 connectionInstance)
 
     if (OK <= (status = doProtocolConnect(connectionInstance, TRUE, TIMEOUT_SSHC_NEWKEYS)))
     {
-        MOCANA_log(MOCANA_SSH, LS_INFO, (sbyte *)"SSH client negotiated connection.");
+        DIGICERT_log(MOCANA_SSH, LS_INFO, (sbyte *)"SSH client negotiated connection.");
         pDescr->connectionState = CONNECT_OPEN;
     }
 
@@ -786,7 +786,7 @@ SSHC_sendMessage(sbyte4 connectionInstance, ubyte *pBuffer, ubyte4 bufferSize, u
     }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSHC_sendMessage() returns status = ", status);
 #endif
@@ -999,7 +999,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
 extern sbyte4
 SSHC_negotiateSFTPHello(sbyte4 connectionInstance)
 {
@@ -1277,10 +1277,10 @@ SSHC_setCookie(sbyte4 connectionInstance, void* cookie)
 extern sbyte4
 SSHC_shutdown(void)
 {
-    MOCANA_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH client shutting down.");
+    DIGICERT_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH client shutting down.");
 
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__) || defined(__ENABLE_DIGICERT_ECC_EDDSA_448__))
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_EC_deleteAllCombsAndMutexes();
 #else
     EC_deleteAllCombsAndMutexes();
@@ -1295,7 +1295,7 @@ SSHC_shutdown(void)
 
     SSHC_STR_HOUSE_freeStringBuffers();
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
     gMocanaAppsRunning--;
 #endif
 
@@ -1337,7 +1337,7 @@ SSHC_freeGenerateServerAuthKeyFile(ubyte **ppFreeEncodedAuthKey)
 }
 
 /*-------------------------------------------------------------------------------------*/
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /*-------------------------------------------------------------------------------------*/
 
 extern sbyte4
@@ -1413,9 +1413,9 @@ SSHC_startRemotePortForwarding(sbyte4 connectionInstance, sbyte *pBindAddr, ubyt
         /* check if entry is already present. If so, then this is a duplicate request */
         if (pContextSSH->rpfTable[i].inUse)
         {
-            if((!MOC_STRCMP((sbyte *)pContextSSH->rpfTable[i].pBindAddr, pBindAddr)) &&
+            if((!DIGI_STRCMP((sbyte *)pContextSSH->rpfTable[i].pBindAddr, pBindAddr)) &&
                (pContextSSH->rpfTable[i].bindPort == bindPort)  &&
-               (!MOC_STRCMP((sbyte *)pContextSSH->rpfTable[i].pHostAddr, pHostAddr)) &&
+               (!DIGI_STRCMP((sbyte *)pContextSSH->rpfTable[i].pHostAddr, pHostAddr)) &&
                (pContextSSH->rpfTable[i].hostPort == hostPort))
                 goto exit;
         }
@@ -1429,19 +1429,19 @@ SSHC_startRemotePortForwarding(sbyte4 connectionInstance, sbyte *pBindAddr, ubyt
         /* empty slot found */
         pContextSSH->rpfTable[i].isConfirmed = FALSE;
         pContextSSH->rpfTable[i].inUse = TRUE;
-        if (OK > (status =  MOC_MALLOC((void **)&pContextSSH->rpfTable[i].pBindAddr, MOC_STRLEN(pBindAddr) + 1)))
+        if (OK > (status =  DIGI_MALLOC((void **)&pContextSSH->rpfTable[i].pBindAddr, DIGI_STRLEN(pBindAddr) + 1)))
             goto exit;
 
-        MOC_STRCBCPY((sbyte *)pContextSSH->rpfTable[i].pBindAddr, MOC_STRLEN(pBindAddr) + 1, pBindAddr);
+        DIGI_STRCBCPY((sbyte *)pContextSSH->rpfTable[i].pBindAddr, DIGI_STRLEN(pBindAddr) + 1, pBindAddr);
         pContextSSH->rpfTable[i].bindPort = bindPort;
 
-        if (OK > (status =  MOC_MALLOC((void **)&pContextSSH->rpfTable[i].pHostAddr, MOC_STRLEN(pHostAddr) + 1)))
+        if (OK > (status =  DIGI_MALLOC((void **)&pContextSSH->rpfTable[i].pHostAddr, DIGI_STRLEN(pHostAddr) + 1)))
             goto exit;
 
-        MOC_STRCBCPY((sbyte *)pContextSSH->rpfTable[i].pHostAddr, MOC_STRLEN(pHostAddr) + 1, pHostAddr);
+        DIGI_STRCBCPY((sbyte *)pContextSSH->rpfTable[i].pHostAddr, DIGI_STRLEN(pHostAddr) + 1, pHostAddr);
         pContextSSH->rpfTable[i].hostPort = hostPort;
 
-        MOC_MEMSET( (ubyte*)pContextSSH->rpfTable[i].channelList, 0x00, SSH_MAX_REMOTE_PORT_FWD_CHANNEL );
+        DIGI_MEMSET( (ubyte*)pContextSSH->rpfTable[i].channelList, 0x00, SSH_MAX_REMOTE_PORT_FWD_CHANNEL );
 
         if (OK > (status = (sendRpfStart(pContextSSH, (ubyte *) pBindAddr, bindPort))))
         {
@@ -1491,7 +1491,7 @@ SSHC_cancelRemotePortForwarding(sbyte4 connectionInstance, sbyte *pHostAddr, uby
         /* check if entry is already present. If so, then this is a duplicate request */
         if (pContextSSH->rpfTable[i].inUse)
         {
-            if((!MOC_STRCMP((sbyte *)pContextSSH->rpfTable[i].pHostAddr, pHostAddr)) &&
+            if((!DIGI_STRCMP((sbyte *)pContextSSH->rpfTable[i].pHostAddr, pHostAddr)) &&
                   (pContextSSH->rpfTable[i].hostPort == hostPort))
             {
                 if (OK > (status = (sendCancelRpfReq(pContextSSH,
@@ -1598,7 +1598,7 @@ exit:
     return status;
 }
 
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 
 /*------------------------------------------------------------------*/
@@ -1679,4 +1679,4 @@ exit:
     return (sbyte4)status;
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

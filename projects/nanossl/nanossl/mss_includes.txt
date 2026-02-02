@@ -1,0 +1,12 @@
+MSS_SRC_DIR/asn1
+MSS_SRC_DIR/cap
+MSS_SRC_DIR/common
+MSS_SRC_DIR/crypto
+MSS_SRC_DIR/crypto_interface
+MSS_SRC_DIR/harness
+MSS_SRC_DIR/http
+MSS_SRC_DIR/openssl_wrapper
+MSS_SRC_DIR/ssl
+MSS_SRC_DIR/ocsp
+MSS_SRC_DIR/ocsp/client
+MSS_SRC_DIR/platform

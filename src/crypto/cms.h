@@ -294,15 +294,6 @@ typedef struct CMSKeyAgreeRecipientId
     } u;
 } CMSKeyAgreeRecipientId;
 
-#if 0  /* this is not supported yet */
-typedef struct CMSKEKRecipientId
-{
-    ASN1_ITEMPTR keyIdentifer;
-    ASN1_ITEMPTR date;          /* can be NULL */
-    ASN1_ITEMPTR other;         /* can be NULL */
-} CMSKEKRecipientId;
-#endif
-
 /* data structure used in the CMS_GetPrivateKey callback. The callback implementer
 should use the content of this structure to determine which key is requested */
 /**
@@ -352,11 +343,11 @@ typedef struct CMSRecipientId
     {
         CMSKeyTransRecipientId    ktrid;   /* type = NO_TAG */
         CMSKeyAgreeRecipientId    karid;   /* type = 1 */
-#if 0
-        CMSKEKRecipientId         kekrid;  /* type = 2 */
-        CMSPasswordRecipientId    pwrdi;   /* type = 3 */
-        CMSOtherRecipientId       orid;    /* type = 4 */
-#endif
+       /*
+        CMSKEKRecipientId         kekrid;     type = 2 
+        CMSPasswordRecipientId    pwrdi;      type = 3 
+        CMSOtherRecipientId       orid;       type = 4 
+       */
     } ri;
 } CMSRecipientId;
 
@@ -382,7 +373,7 @@ ubyte* pemKeyFile = FILE_PATH("key.pem");
 ubyte *pPemKey=NULL, *pKeyblob=NULL;
 ubyte4 pemKeyLen, keyblobLen;
 
-if (OK > (status = MOCANA_readFile( pemKeyFile, &pPemKey, &pemKeyLen)))
+if (OK > (status = DIGICERT_readFile( pemKeyFile, &pPemKey, &pemKeyLen)))
     goto exit;   // at exit, handle error
 
 if (OK > (status = BASE64_initializeContext()))
@@ -653,8 +644,8 @@ structure as opaque, and do not attempt to access its members directly.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -694,8 +685,8 @@ MOC_EXTERN MSTATUS CMS_newContext(CMS_context* pNewContext,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -729,8 +720,8 @@ MOC_EXTERN MSTATUS CMS_updateContext( CMS_context context, const ubyte* input,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -768,8 +759,8 @@ MOC_EXTERN MSTATUS CMS_createContentInfo(const ubyte* contentType,	DER_ITEMPTR *
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -801,8 +792,8 @@ MOC_EXTERN MSTATUS CMS_getContentType( CMS_context context, CMS_ContentType* cms
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -840,8 +831,8 @@ MOC_EXTERN MSTATUS CMS_getContentTypeOnly( CMS_context context,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -873,8 +864,8 @@ MOC_EXTERN MSTATUS CMS_getEncapContentType( CMS_context context, ubyte** ppOID);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -914,8 +905,8 @@ this function returns an error (\c ERR_EOF).
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -955,8 +946,8 @@ MOC_EXTERN MSTATUS CMS_getRecipientInfo( CMS_context context,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -991,8 +982,8 @@ MOC_EXTERN MSTATUS CMS_getDecryptingRecipient( CMS_context context,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1033,8 +1024,8 @@ verify the signers, and will return the error, \c ERR_PKCS7_DETACHED_DATA.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1063,8 +1054,8 @@ MOC_EXTERN MSTATUS CMS_getNumSigners( CMS_context context,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1115,8 +1106,8 @@ returned buffers).
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1150,8 +1141,8 @@ MOC_EXTERN MSTATUS CMS_getReceiptInfo( const ubyte* receipt, ubyte4 receiptLen,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1190,8 +1181,8 @@ To get subsequent certificates, use ASN1_NEXT_SIBLING.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1228,8 +1219,8 @@ MOC_EXTERN MSTATUS CMS_getFirstCertificate( CMS_context context,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1261,8 +1252,8 @@ MOC_EXTERN MSTATUS CMS_detachedSignature(CMS_context context, intBoolean* detach
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:`
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1302,8 +1293,8 @@ RFC&nbsp;2634.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1316,7 +1307,7 @@ To enable this function, at least one of the following flags must be defined in 
 @param  rngFun      Pointer to a function that generates random numbers
                       suitable for cryptographic use. To be FIPS-compliant,
                       reference RANDOM_rngFun() (defined in random.c), and make
-                      sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+                      sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
                       moptions.h
 @param  rngFunArg   Pointer to arguments that are required by the function
                       referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -1382,8 +1373,8 @@ To delete and free the \c SignedData object, call CMS_signedDeleteContext().
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1400,7 +1391,7 @@ To enable this function, at least one of the following flags must be defined in 
 @param  rngFun      Pointer to a function that generates random numbers
                       suitable for cryptographic use. To be FIPS-compliant,
                       reference RANDOM_rngFun() (defined in random.c), and make
-                      sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+                      sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
                       moptions.h
 @param  rngFunArg   Pointer to arguments that are required by the function
                       referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -1429,8 +1420,8 @@ MOC_EXTERN MSTATUS CMS_signedNewContext( CMS_signedDataContext* pNewCtx,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1459,8 +1450,8 @@ MOC_EXTERN MSTATUS CMS_signedAddCertificate( CMS_signedDataContext myCtx, const 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1498,8 +1489,8 @@ enum {
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1548,8 +1539,8 @@ MOC_EXTERN MSTATUS CMS_signedAddSigner( CMS_signedDataContext myCtx,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1618,8 +1609,8 @@ CMS_signedAddSignerAttribute(
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1664,8 +1655,8 @@ MOC_EXTERN MSTATUS CMS_signedAddSignerAttribute( CMS_signedDataContext myCtx,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1713,8 +1704,8 @@ Do not call this function until \e after:
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1760,8 +1751,8 @@ MOC_EXTERN MSTATUS CMS_signedGetRequestInfo( CMS_signedDataContext myCtx,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1800,8 +1791,8 @@ MOC_EXTERN MSTATUS CMS_signedUpdateContext( MOC_ASYM(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1841,8 +1832,8 @@ CMS_envelopedDeleteContext().
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1857,7 +1848,7 @@ To enable this function, at least one of the following flags must be defined in 
 @param  rngFun      Pointer to a function that generates random numbers
                       suitable for cryptographic use. To be FIPS-compliant,
                       reference RANDOM_rngFun() (defined in random.c), and
-                      make sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is
+                      make sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is
                       defined in moptions.h
 @param  rngFunArg   Pointer to arguments that are required by the function
                       referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -1888,8 +1879,8 @@ MOC_EXTERN MSTATUS CMS_envelopedNewContext( CMS_envelopedDataContext* pNewCtx,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1919,8 +1910,8 @@ MOC_EXTERN MSTATUS CMS_envelopedAddRecipient( CMS_envelopedDataContext myCtx,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1959,8 +1950,8 @@ MOC_EXTERN MSTATUS CMS_envelopedAddUnauthAttribute( CMS_envelopedDataContext myC
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 
@@ -1999,8 +1990,8 @@ MOC_EXTERN MSTATUS CMS_envelopedUpdateContext(MOC_HW(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS7__
-+ \c \__ENABLE_MOCANA_CMS__
++ \c \__ENABLE_DIGICERT_PKCS7__
++ \c \__ENABLE_DIGICERT_CMS__
 
 @inc_file   pkcs7.h, cms.h
 

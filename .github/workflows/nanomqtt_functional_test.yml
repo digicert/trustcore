@@ -4,6 +4,8 @@ on:
   workflow_dispatch: {}
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   mqtt-functional-tests:
@@ -33,12 +35,12 @@ jobs:
 
     - name: Build NanoMQTT for Functional Tests
       run: |
-        cmake -DDISABLE_SSH_SERVER=ON -DDISABLE_SSH_CLIENT=ON -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_MQTT_TEST=ON -B build -S .
+        cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_MQTT_CLIENT=ON -DENABLE_MQTT_TEST=ON -B build -S .
         cmake --build build
 
     - name: Run NanoMQTT Functional Tests
       run: |
-        export LD_LIBRARY_PATH=lib/:crypto_lib/linux-x86_64/:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
 
         set +e
 

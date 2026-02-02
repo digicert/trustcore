@@ -22,8 +22,8 @@
  * @details    Documentation file for Elliptic Curve El-Gamal APIs.
  *
  * @flags      To enable the methods in this file one must define both flags
- *             + \c \__ENABLE_MOCANA_ECC__
- *             + \c \__ENABLE_MOCANA_ECC_ELGAMAL__
+ *             + \c \__ENABLE_DIGICERT_ECC__
+ *             + \c \__ENABLE_DIGICERT_ECC_ELGAMAL__
  *
  * @filedoc    primeec_eg.h
  */
@@ -35,7 +35,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_ecc_eg_priv.h"
 #endif
 
@@ -43,7 +43,7 @@
 #include "../crypto/hw_accel.h"
 #include "../common/random.h"
 /* for primefld headers just in case its enabled */
-#ifdef __ENABLE_MOCANA_VLONG_ECC_CONVERSION__
+#ifdef __ENABLE_DIGICERT_VLONG_ECC_CONVERSION__
 #include "../common/vlong.h"
 #endif
 #include "../crypto/primefld.h"

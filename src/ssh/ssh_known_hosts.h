@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 
-#ifdef __ENABLE_MOCANA_SSH_KNOWN_HOSTS__
+#ifdef __ENABLE_DIGICERT_SSH_KNOWN_HOSTS__
 
 /**
 @brief      Add a host entry to a NanoSSH known-host list.
@@ -179,7 +179,7 @@ MOC_EXTERN MSTATUS SSH_KNOWN_HOSTS_getEntries(sbyte4 *pEntries);
             file's contents; they are simply stored in the buffer.
 
 @note       To avoid memory leaks, be sure to make a subsequent call to
-            MOCANA_freeReadFile().
+            DIGICERT_freeReadFile().
 
 @ingroup    func_ssh_server_known_hosts
 
@@ -189,7 +189,7 @@ MOC_EXTERN MSTATUS SSH_KNOWN_HOSTS_getEntries(sbyte4 *pEntries);
 @flags
 To enable this function, the following flags must be defined in moptions.h:
 + \c \__ENABLE_SSH_KNOWN_HOSTS__
-+ \c \__ENABLE_MOCANA_IPV6__
++ \c \__ENABLE_DIGICERT_IPV6__
 
 @inc_file ssh_known_hosts.h
 
@@ -223,7 +223,7 @@ MOC_EXTERN MSTATUS SSH_KNOWN_HOSTS_readFile(sbyte* filename, ubyte** ppBuffer, u
 @flags
 To enable this function, the following flags must be defined in moptions.h:
 + \c \__ENABLE_SSH_KNOWN_HOSTS__
-+ \c \__ENABLE_MOCANA_IPV6__
++ \c \__ENABLE_DIGICERT_IPV6__
 
 @inc_file ssh_known_hosts.h
 
@@ -271,7 +271,7 @@ MOC_EXTERN MSTATUS SSH_KNOWN_HOSTS_removeKnownHostsEntry(ubyte** ppBuffer, ubyte
 @flags
 To enable this function, the following flags must be defined in moptions.h:
 + \c \__ENABLE_SSH_KNOWN_HOSTS__
-+ \c \__ENABLE_MOCANA_IPV6__
++ \c \__ENABLE_DIGICERT_IPV6__
 
 @inc_file ssh_known_hosts.h
 
@@ -316,7 +316,7 @@ SSH_KNOWN_HOSTS_updateEntries to update the global variable count.
 @flags
 To enable this function, the following flags must be defined in moptions.h:
 + \c \__ENABLE_SSH_KNOWN_HOSTS__
-+ \c \__ENABLE_MOCANA_IPV6__
++ \c \__ENABLE_DIGICERT_IPV6__
 
 @inc_file ssh_known_hosts.h
 
@@ -347,7 +347,7 @@ MOC_EXTERN MSTATUS SSH_KNOWN_HOSTS_updateEntries(ubyte * pBuffer, ubyte4 bufferL
 @flags
 To enable this function, the following flags must be defined in moptions.h:
 + \c \__ENABLE_SSH_KNOWN_HOSTS__
-+ \c \__ENABLE_MOCANA_IPV6__
++ \c \__ENABLE_DIGICERT_IPV6__
 
 @inc_file ssh_known_hosts.h
 
@@ -390,7 +390,7 @@ MOC_EXTERN MSTATUS SSH_KNOWN_HOSTS_updateKnownHostsEntry(ubyte** ppBuffer, ubyte
 @flags
 To enable this function, the following flags must be defined in moptions.h:
 + \c \__ENABLE_SSH_KNOWN_HOSTS__
-+ \c \__ENABLE_MOCANA_IPV6__
++ \c \__ENABLE_DIGICERT_IPV6__
 
 @inc_file ssh_known_hosts.h
 

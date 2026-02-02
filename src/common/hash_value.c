@@ -64,8 +64,8 @@
 #undef MOC_BIG_ENDIAN
 #endif
 
-#if ((!defined(__DISABLE_MOCANA_COMMON_HASH_VALUE_GENERATE__)) && \
-     (!defined(__DISABLE_MOCANA_COMMON_HASH_TABLE_FACTORY__)))
+#if ((!defined(__DISABLE_DIGICERT_COMMON_HASH_VALUE_GENERATE__)) && \
+     (!defined(__DISABLE_DIGICERT_COMMON_HASH_TABLE_FACTORY__)))
 
 #if ((defined(MOC_LITTLE_ENDIAN)) && (defined(MOC_BIG_ENDIAN)))
 #error Pick either MOC_LITTLE_ENDIAN or MOC_BIG_ENDIAN or pick neither.
@@ -596,4 +596,4 @@ exit:
 }
 #endif /* ((!defined(MOC_LITTLE_ENDIAN)) && (!defined(MOC_BIG_ENDIAN))) */
 
-#endif /* __DISABLE_MOCANA_COMMON_HASH_VALUE_GENERATE__ etc */
+#endif /* __DISABLE_DIGICERT_COMMON_HASH_VALUE_GENERATE__ etc */

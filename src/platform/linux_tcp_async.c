@@ -256,16 +256,16 @@ LINUX_TCP_ASYNC_createSelectConnectionList(ubyte4 listMaxSize, TCP_SOCKET_LIST *
     listMaxSize++;
 
     /* allocate a zeroize buffer for connection list head */
-    if (OK > (status = MOC_MALLOC((void **)&pConnectionList, sizeof(connectionList))))
+    if (OK > (status = DIGI_MALLOC((void **)&pConnectionList, sizeof(connectionList))))
         goto exit;
 
-    MOC_MEMSET((ubyte *)pConnectionList, 0x00, sizeof(connectionList));
+    DIGI_MEMSET((ubyte *)pConnectionList, 0x00, sizeof(connectionList));
 
     /* allocate a zeroize buffer for pool of connections */
-    if (OK > (status = MOC_MALLOC(&pMemPoolBase, sizeof(tcpAsyncConnection) * listMaxSize)))
+    if (OK > (status = DIGI_MALLOC(&pMemPoolBase, sizeof(tcpAsyncConnection) * listMaxSize)))
         goto exit;
 
-    MOC_MEMSET((ubyte *)pMemPoolBase, 0x00, sizeof(tcpAsyncConnection) * listMaxSize);
+    DIGI_MEMSET((ubyte *)pMemPoolBase, 0x00, sizeof(tcpAsyncConnection) * listMaxSize);
 
     /* create a pool --- pools are not reentrant */
     if (OK > (status = MEM_POOL_createPool(&pConnectionList->pListMemberPool, pMemPoolBase,
@@ -276,10 +276,10 @@ LINUX_TCP_ASYNC_createSelectConnectionList(ubyte4 listMaxSize, TCP_SOCKET_LIST *
 
     /* allocate a zeroize buffer for pool red-black nodes */
     /* !!!!! how many should we buffer more for???  log(n)?  */
-    if (OK > (status = MOC_MALLOC(&pRedBlackPoolBase, sizeof(redBlackNodeDescr) * listMaxSize)))
+    if (OK > (status = DIGI_MALLOC(&pRedBlackPoolBase, sizeof(redBlackNodeDescr) * listMaxSize)))
         goto exit;
 
-    MOC_MEMSET((ubyte *)pRedBlackPoolBase, 0x00, sizeof(redBlackNodeDescr) * listMaxSize);
+    DIGI_MEMSET((ubyte *)pRedBlackPoolBase, 0x00, sizeof(redBlackNodeDescr) * listMaxSize);
 
     /* create a pool --- pools are not reentrant */
     if (OK > (status = MEM_POOL_createPool(&pConnectionList->pRedBlackPool, pRedBlackPoolBase,
@@ -318,13 +318,13 @@ LINUX_TCP_ASYNC_createSelectConnectionList(ubyte4 listMaxSize, TCP_SOCKET_LIST *
 
 exit:
     REDBLACK_freeTree(&pRbTree, NULL, NULL, NULL);
-    MOC_FREE((void **)&pRedBlackPoolBase);
+    DIGI_FREE((void **)&pRedBlackPoolBase);
     if(NULL != pConnectionList)
     {
         MEM_POOL_freePool(&(pConnectionList->pListMemberPool), NULL);
-        MOC_FREE((void **)&pConnectionList);
+        DIGI_FREE((void **)&pConnectionList);
     }
-    MOC_FREE((void **)&pMemPoolBase);
+    DIGI_FREE((void **)&pMemPoolBase);
 
     return status;
 
@@ -465,15 +465,15 @@ LINUX_TCP_ASYNC_selectInternal(TCP_SOCKET_LIST *pSocketList, ubyte4 msTimeout,
     }
 
     /* clone master list to read and error list */
-    MOC_MEMCPY(&(pConnectionList->readList),
+    DIGI_MEMCPY(&(pConnectionList->readList),
                &(pConnectionList->masterList),
                 sizeof(fd_set));
 
-    MOC_MEMCPY(&(pConnectionList->writeList),
+    DIGI_MEMCPY(&(pConnectionList->writeList),
                &(pConnectionList->masterList),
                 sizeof(fd_set));
 
-    MOC_MEMCPY(&(pConnectionList->errorList),
+    DIGI_MEMCPY(&(pConnectionList->errorList),
                &(pConnectionList->masterList),
                 sizeof(fd_set));
 

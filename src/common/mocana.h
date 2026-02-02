@@ -11,21 +11,21 @@
  * @flags
  * Whether the following flags are defined determines which additional header files
  * are included:
- *   + \c \__ENABLE_MOCANA_IKE_SERVER__
- *   + \c \__ENABLE_MOCANA_MEM_PART__
- *   + \c \__ENABLE_MOCANA_PEM_CONVERSION__
- *   + \c \__ENABLE_MOCANA_PKCS10__
- *   + \c \__ENABLE_MOCANA_RADIUS_CLIENT__
- *   + \c \__ENABLE_MOCANA_SSH_SERVER__
- *   + \c \__DISABLE_MOCANA_INIT__
- *   + \c \__DISABLE_MOCANA_TCP_INTERFACE__
+ *   + \c \__ENABLE_DIGICERT_IKE_SERVER__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
+ *   + \c \__ENABLE_DIGICERT_PEM_CONVERSION__
+ *   + \c \__ENABLE_DIGICERT_PKCS10__
+ *   + \c \__ENABLE_DIGICERT_RADIUS_CLIENT__
+ *   + \c \__ENABLE_DIGICERT_SSH_SERVER__
+ *   + \c \__DISABLE_DIGICERT_INIT__
+ *   + \c \__DISABLE_DIGICERT_TCP_INTERFACE__
  *   + \c IPCOM_KERNEL
  *
  * Whether the following flags are defined determines which function declarations
  * are enabled:
- *   + \c \__DISABLE_MOCANA_ADD_ENTROPY__
- *   + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
- *   + \c \__DISABLE_MOCANA_INIT__
+ *   + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
+ *   + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
+ *   + \c \__DISABLE_DIGICERT_INIT__
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 
@@ -43,8 +43,6 @@
 
 #ifndef __MOCANA_HEADER__
 #define __MOCANA_HEADER__
-
-#include "merrors.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -132,7 +130,7 @@ enum logSeverity
  *
  * @brief Callback for logging function
  *
- * @details Users can create custom logging functions and register them via MOCANA_initLog(),
+ * @details Users can create custom logging functions and register them via DIGICERT_initLog(),
  *          provided the custom functions have this signature.
  *         <p> For example, you can define a custom logging function as follows:
  *
@@ -146,7 +144,7 @@ enum logSeverity
  * You would then register the custom logging function as follows:
  *
  * @code
- *      status = MOCANA_initLog(MY_logFn);
+ *      status = DIGICERT_initLog(MY_logFn);
  *      if (OK != status)
  *      {
  *         <error handling code>
@@ -173,14 +171,14 @@ MOC_EXTERN_MOCANA_H ShutdownHandler g_sslShutdownHandler;
 /**
  * @cond __INCLUDE_DOXYGEN_FOR_PROTOS_IN_DOT_H__
  */
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
 
 /**
  * @ingroup    common_functions
  * @ingroup    common_nanotap_functions
  *
  * @brief      Initialize Mocana %common code base. This is an older function,
- *             you should use MOCANA_initialize instead (see initmocana.h).
+ *             you should use DIGICERT_initialize instead (see initmocana.h).
  * @details    This function initializes the Mocana %common code base; it is
  *             typically the first initialization step for any Mocana Security
  *             of Things Platform product.
@@ -193,20 +191,20 @@ MOC_EXTERN_MOCANA_H ShutdownHandler g_sslShutdownHandler;
  *             thread wait times (our FIPS documentation describes the process
  *             and how it produces entropy). This method will take 20 seconds or
  *             more to generate the seed material.
- *             <p>Second, if you set the __ENABLE_MOCANA_DEV_URANDOM__ build
+ *             <p>Second, if you set the __ENABLE_DIGICERT_DEV_URANDOM__ build
  *             flag, NanoCrypto will seed using 128 bytes from /dev/urandom
  *             and no bytes from stack state.
- *             <p>Third, if you set the __DISABLE_MOCANA_RAND_ENTROPY_THREADS__
+ *             <p>Third, if you set the __DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
  *             build flag, NanoCrypto will not use its thread wait seed
  *             collection technique (no 20 second wait).
  *             <p>Fourth, you can always add seed material of your own using
- *             RNG_SEED_addEntropyBit, MOCANA_addEntropyBit, or
- *             MOCANA_addEntropy32Bits.
+ *             RNG_SEED_addEntropyBit, DIGICERT_addEntropyBit, or
+ *             DIGICERT_addEntropy32Bits.
  *             <p>The most secure is using the build flag
- *             __ENABLE_MOCANA_DEV_URANDOM__, and not using
- *             __DISABLE_MOCANA_RAND_ENTROPY_THREADS__. But if you do not want to
+ *             __ENABLE_DIGICERT_DEV_URANDOM__, and not using
+ *             __DISABLE_DIGICERT_RAND_ENTROPY_THREADS__. But if you do not want to
  *             wait for the thread wait algorithm to complete, then you should
- *             still use __ENABLE_MOCANA_DEV_URANDOM__ if possible.
+ *             still use __ENABLE_DIGICERT_DEV_URANDOM__ if possible.
  * <pre>
  * <code>
  *    build flags                              NanoCrypto entropy
@@ -216,16 +214,16 @@ MOC_EXTERN_MOCANA_H ShutdownHandler g_sslShutdownHandler;
  *                                             time of day
  *                                             stack state
  *
- *   __ENABLE_MOCANA_DEV_URANDOM__             20 seconds or more
+ *   __ENABLE_DIGICERT_DEV_URANDOM__             20 seconds or more
  *                                             thread wait time
  *                                             time of day
  *                                             /dev/urandom
  *
- *   __DISABLE_MOCANA_RAND_ENTROPY_THREADS__   milliseconds
- *   __ENABLE_MOCANA_DEV_URANDOM__             time of day
+ *   __DISABLE_DIGICERT_RAND_ENTROPY_THREADS__   milliseconds
+ *   __ENABLE_DIGICERT_DEV_URANDOM__             time of day
  *                                             /dev/urandom
  *
- *   __DISABLE_MOCANA_RAND_ENTROPY_THREADS__   milliseconds
+ *   __DISABLE_DIGICERT_RAND_ENTROPY_THREADS__   milliseconds
  *                                             time of day
  *                                             stack state
  * </code>
@@ -233,21 +231,21 @@ MOC_EXTERN_MOCANA_H ShutdownHandler g_sslShutdownHandler;
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_INIT__
+ *  + \c \__DISABLE_DIGICERT_INIT__
  *
  * Additionally, whether or not the following flags are defined determines which
  * initialization functions are called:
- *  + \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
- *  + \c \__ENABLE_MOCANA_DEV_URANDOM__
- *  + \c \__DISABLE_MOCANA_STARTUP_GUARD__
- *  + \c \__ENABLE_MOCANA_DEBUG_CONSOLE__
- *  + \c \__ENABLE_MOCANA_DTLS_CLIENT__
- *  + \c \__ENABLE_MOCANA_DTLS_SERVER__
- *  + \c \__ENABLE_MOCANA_IKE_SERVER__
- *  + \c \__ENABLE_MOCANA_PEM_CONVERSION__
- *  + \c \__ENABLE_MOCANA_PKCS10__
- *  + \c \__ENABLE_MOCANA_RADIUS_CLIENT__
- *  + \c \__ENABLE_MOCANA_SSH_SERVER__
+ *  + \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
+ *  + \c \__ENABLE_DIGICERT_DEV_URANDOM__
+ *  + \c \__DISABLE_DIGICERT_STARTUP_GUARD__
+ *  + \c \__ENABLE_DIGICERT_DEBUG_CONSOLE__
+ *  + \c \__ENABLE_DIGICERT_DTLS_CLIENT__
+ *  + \c \__ENABLE_DIGICERT_DTLS_SERVER__
+ *  + \c \__ENABLE_DIGICERT_IKE_SERVER__
+ *  + \c \__ENABLE_DIGICERT_PEM_CONVERSION__
+ *  + \c \__ENABLE_DIGICERT_PKCS10__
+ *  + \c \__ENABLE_DIGICERT_RADIUS_CLIENT__
+ *  + \c \__ENABLE_DIGICERT_SSH_SERVER__
  *  + \c \__KERNEL__
  *  + \c UDP_init
  *
@@ -258,23 +256,23 @@ MOC_EXTERN_MOCANA_H ShutdownHandler g_sslShutdownHandler;
  *
  * @code
  * sbyte4 status = 0;
- * status = MOCANA_initMocana();
+ * status = DIGICERT_initDigicert();
  * @endcode
  *
  */
-MOC_EXTERN sbyte4  MOCANA_initMocana(void);
+MOC_EXTERN sbyte4  DIGICERT_initDigicert(void);
 
 /**
- * @brief      Release memory allocated by MOCANA_initMocana.
+ * @brief      Release memory allocated by DIGICERT_initDigicert.
  * @details    This function releases memory previously allocated by a call to
- *             MOCANA_initMocana().
+ *             DIGICERT_initDigicert().
  *
  * @ingroup    common_functions
  * @ingroup    common_nanotap_functions
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_INIT__
+ *  + \c \__DISABLE_DIGICERT_INIT__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -283,14 +281,14 @@ MOC_EXTERN sbyte4  MOCANA_initMocana(void);
  *
  * @code
  * int status = 0;
- * status = MOCANA_freeMocana();
+ * status = DIGICERT_freeDigicert();
  * @endcode
 */
-MOC_EXTERN sbyte4  MOCANA_freeMocana(void);
+MOC_EXTERN sbyte4  DIGICERT_freeDigicert(void);
 
 /**
  * @brief This is the same as initMocana, except it will set up static memory.
- * This is an older function, you should use MOCANA_initialize instead (see
+ * This is an older function, you should use DIGICERT_initialize instead (see
  * initmocana.h).
  *
  * @details The caller passes in a buffer which will be all the memory the Mocana
@@ -298,9 +296,9 @@ MOC_EXTERN sbyte4  MOCANA_freeMocana(void);
  * "GlobalAlloc" or any other system memory allocator. All Mocana memory
  * allocations will simply grab some of the area inside the buffer provided by
  * the caller.
- * <p>Whether you call MOCANA_initMocana or MOCANA_initMocanaStaticMem, you must
- * call MOCANA_freeMocana when you are done.
- * <p>See the documentation for MOCANA_initMocana for more information.
+ * <p>Whether you call DIGICERT_initDigicert or DIGICERT_initDigicertStaticMem, you must
+ * call DIGICERT_freeDigicert when you are done.
+ * <p>See the documentation for DIGICERT_initDigicert for more information.
  *
  * @ingroup    common_functions
  *
@@ -314,7 +312,7 @@ MOC_EXTERN sbyte4  MOCANA_freeMocana(void);
  *  returned error status, use the \c DISPLAY_ERROR macro.
  *
  */
-MOC_EXTERN sbyte4  MOCANA_initMocanaStaticMemory (
+MOC_EXTERN sbyte4  DIGICERT_initDigicertStaticMemory (
   ubyte *pStaticMem, ubyte4 staticMemSize);
 #endif
 
@@ -328,7 +326,7 @@ MOC_EXTERN sbyte4  MOCANA_initMocanaStaticMemory (
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -340,13 +338,13 @@ MOC_EXTERN sbyte4  MOCANA_initMocanaStaticMemory (
  *
  * @code
  * sbyte4 status = 0;
- * status = MOCANA_initLog(myEventHandler);
+ * status = DIGICERT_initLog(myEventHandler);
  * @endcode
  *
  * @remark     This is a convenience function provided for your application's use;
  *             it is not used by Mocana SoT Platform code.
  */
-MOC_EXTERN sbyte4  MOCANA_initLog(logFn lFn);
+MOC_EXTERN sbyte4  DIGICERT_initLog(logFn lFn);
 
 
 /**
@@ -356,22 +354,22 @@ MOC_EXTERN sbyte4  MOCANA_initLog(logFn lFn);
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation (regardless of product).
  */
-MOC_EXTERN void MOCANA_log(sbyte4 module, sbyte4 severity, sbyte *msg);
+MOC_EXTERN void DIGICERT_log(sbyte4 module, sbyte4 severity, sbyte *msg);
 
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 /**
  * @brief      Add a random bit to application's random number generator.
  * @details    This function adds a random bit to your application's random number
  *             generator. Before calling this function, your application should
  *             have already initialized the Mocana %common code base by
- *             calling MOCANA_initMocana().
+ *             calling DIGICERT_initDigicert().
  *
  * @ingroup    common_functions
  *
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *   + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ *   + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -384,10 +382,10 @@ MOC_EXTERN void MOCANA_log(sbyte4 module, sbyte4 severity, sbyte *msg);
  * @code
  * sbyte4 status = 0;
  * ubyte ebit;
- * status = MOCANA_addEntropyBit(ebit);
+ * status = DIGICERT_addEntropyBit(ebit);
  * @endcode
  */
-MOC_EXTERN sbyte4  MOCANA_addEntropyBit(ubyte entropyBit);
+MOC_EXTERN sbyte4  DIGICERT_addEntropyBit(ubyte entropyBit);
 
 
 /**
@@ -395,14 +393,14 @@ MOC_EXTERN sbyte4  MOCANA_addEntropyBit(ubyte entropyBit);
  * @details    This function adds 32 random bits to your application's random
  *             number generator. Before calling this function, your application
  *             should have already initialized the Mocana %common code base by
- *             calling MOCANA_initMocana().
+ *             calling DIGICERT_initDigicert().
  *
  * @ingroup    common_functions
  * @ingroup    common_nanotap_functions
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *   + \c \__DISABLE_MOCANA_ADD_ENTROPY__
+ *   + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -415,13 +413,13 @@ MOC_EXTERN sbyte4  MOCANA_addEntropyBit(ubyte entropyBit);
  * @code
  * sbyte4 status = 0;
  * ubyte4 ebit;
- * status = MOCANA_addEntropy32Bits(ebit);
+ * status = DIGICERT_addEntropy32Bits(ebit);
  * @endcode
  */
-MOC_EXTERN sbyte4  MOCANA_addEntropy32Bits(ubyte4 entropyBits);
+MOC_EXTERN sbyte4  DIGICERT_addEntropy32Bits(ubyte4 entropyBits);
 #endif
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 
 /**
  * @brief      Allocate a buffer and fill with data read from a file.
@@ -433,7 +431,7 @@ MOC_EXTERN sbyte4  MOCANA_addEntropy32Bits(ubyte4 entropyBits);
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -450,29 +448,29 @@ MOC_EXTERN sbyte4  MOCANA_addEntropy32Bits(ubyte4 entropyBits);
  * ubyte *pCertificate = NULL;
  * ubyte4 retCertLength = 0;
  *
- * if (0 > (status = MOCANA_readFile(CERTIFICATE_DER_FILE, &pCertificate, &retCertLength)))
+ * if (0 > (status = DIGICERT_readFile(CERTIFICATE_DER_FILE, &pCertificate, &retCertLength)))
  *     goto exit;
  * @endcode
  *
  * @memory     Memory allocated b this function must be freed by a subsequent call
- *             to MOCANA_freeReadFile().
+ *             to DIGICERT_freeReadFile().
  *
  * @remark     This is a convenience function provided for your application's use;
  *             it is not used by Mocana SoT Platform code.
  */
-MOC_EXTERN sbyte4 MOCANA_readFile(const char* pFilename, ubyte **ppRetBuffer, ubyte4 *pRetBufLength);
+MOC_EXTERN sbyte4 DIGICERT_readFile(const char* pFilename, ubyte **ppRetBuffer, ubyte4 *pRetBufLength);
 
 /**
- * @brief      Release memory allocated by MOCANA_readFile().
+ * @brief      Release memory allocated by DIGICERT_readFile().
  * @details    This function releases memory previously allocated by a call to
- *             MOCANA_readFile().
+ *             DIGICERT_readFile().
  *
  * @ingroup    common_functions
  * @ingroup    common_nanotap_functions
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
@@ -485,13 +483,13 @@ MOC_EXTERN sbyte4 MOCANA_readFile(const char* pFilename, ubyte **ppRetBuffer, ub
  * @code
  * ubyte *pCertificate;
  * ...
- * status = MOCANA_freeReadFile(&pCertificate);
+ * status = DIGICERT_freeReadFile(&pCertificate);
  * @endcode
  *
  * @remark     This is a convenience function provided for your application's use;
  *             it is not used by Mocana SoT Platform code.
  */
-MOC_EXTERN sbyte4 MOCANA_freeReadFile(ubyte **ppRetBuffer);
+MOC_EXTERN sbyte4 DIGICERT_freeReadFile(ubyte **ppRetBuffer);
 
 /**
  * @brief      Write a buffer's contents to a file.
@@ -502,7 +500,7 @@ MOC_EXTERN sbyte4 MOCANA_freeReadFile(ubyte **ppRetBuffer);
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -515,13 +513,13 @@ MOC_EXTERN sbyte4 MOCANA_freeReadFile(ubyte **ppRetBuffer);
  *
  * @code
  * sbyte4 status = 0;
- * status = MOCANA_writeFile(CERTIFICATE_DER_FILE, pCertificate, retCertLength);
+ * status = DIGICERT_writeFile(CERTIFICATE_DER_FILE, pCertificate, retCertLength);
  * @endcode
  *
  * @remark     This is a convenience function provided for your application's use;
  *             it is not used by Mocana SoT Platform code.
  */
-MOC_EXTERN sbyte4 MOCANA_writeFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength);
+MOC_EXTERN sbyte4 DIGICERT_writeFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength);
 
 /**
  * @brief      Appends a buffer's contents to a file, file is created if
@@ -533,7 +531,7 @@ MOC_EXTERN sbyte4 MOCANA_writeFile(const char* pFilename, const ubyte *pBuffer, 
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -546,20 +544,20 @@ MOC_EXTERN sbyte4 MOCANA_writeFile(const char* pFilename, const ubyte *pBuffer, 
  *
  * @code
  * sbyte4 status = 0;
- * status = MOCANA_writeFile(CERTIFICATE_DER_FILE, pCertificate, retCertLength);
+ * status = DIGICERT_writeFile(CERTIFICATE_DER_FILE, pCertificate, retCertLength);
  * @endcode
  *
  * @remark     This is a convenience function provided for your application's use;
  *             it is not used by Mocana SoT Platform code.
  */
-MOC_EXTERN sbyte4 MOCANA_appendFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength);
+MOC_EXTERN sbyte4 DIGICERT_appendFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength);
 
 /**
  * @brief      Copy a file.
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -572,14 +570,14 @@ MOC_EXTERN sbyte4 MOCANA_appendFile(const char* pFilename, const ubyte *pBuffer,
  * @remark     This is a convenience function provided for your application's use;
  *             it is not used by Mocana SoT Platform code.
  */
-MOC_EXTERN sbyte4 MOCANA_copyFile(const char *pSrcFilename, const char *pDestFilename);
+MOC_EXTERN sbyte4 DIGICERT_copyFile(const char *pSrcFilename, const char *pDestFilename);
 
 /**
  * @brief      Delete a file from the filesystem.
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -591,14 +589,14 @@ MOC_EXTERN sbyte4 MOCANA_copyFile(const char *pSrcFilename, const char *pDestFil
  * @remark     This is a convenience function provided for your application's use;
  *             it is not used by Mocana SoT Platform code.
  */
-MOC_EXTERN sbyte4 MOCANA_deleteFile(const char *pFilename);
+MOC_EXTERN sbyte4 DIGICERT_deleteFile(const char *pFilename);
 
 /**
  * @brief      Check if a file exists on the filesystem.
  *
  * @flags
  * To enable this function, the following flag must \b not be defined:
- *  + \c \__DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+ *  + \c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
  *
  * @return     \c OK (0) if successful; otherwise a negative number error code
  *             definition from merrors.h. To retrieve a string containing an
@@ -612,7 +610,7 @@ MOC_EXTERN sbyte4 MOCANA_deleteFile(const char *pFilename);
  *                          the file exists, otherwise it will be FALSE.
  *
  */
-MOC_EXTERN sbyte4 MOCANA_checkFile(
+MOC_EXTERN sbyte4 DIGICERT_checkFile(
     const char *pFilename, const char *pExt, intBoolean *pFileExist);
 
 #endif
@@ -624,7 +622,7 @@ MOC_EXTERN sbyte4 MOCANA_checkFile(
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation (regardless of product).
  */
-MOC_EXTERN MSTATUS MOCANA_opendir(void **pDirInfo, const char *pPath);
+MOC_EXTERN int DIGICERT_opendir(void **pDirInfo, const char *pPath);
 
 /**
  * @private
@@ -633,7 +631,7 @@ MOC_EXTERN MSTATUS MOCANA_opendir(void **pDirInfo, const char *pPath);
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation (regardless of product).
  */
-MOC_EXTERN MSTATUS MOCANA_readdir(void *pDir, void **pFileInfo);
+MOC_EXTERN int DIGICERT_readdir(void *pDir, void **pFileInfo);
 
 /**
  * @private
@@ -642,7 +640,7 @@ MOC_EXTERN MSTATUS MOCANA_readdir(void *pDir, void **pFileInfo);
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation (regardless of product).
  */
-MOC_EXTERN MSTATUS MOCANA_closedir(void *pDir);
+MOC_EXTERN int DIGICERT_closedir(void *pDir);
 
 /**
  * @endcond
@@ -652,34 +650,34 @@ MOC_EXTERN MSTATUS MOCANA_closedir(void *pDir);
 #define MOC_DP_MAPPING_RELEASE TRUE
 #endif
 
-#if ( (defined(__ENABLE_MOCANA_FP_MAPPING_READ__)) && \
-      (!defined(__ENABLE_MOCANA_FP_MAPPING_GUARD__)) )
+#if ( (defined(__ENABLE_DIGICERT_FP_MAPPING_READ__)) && \
+      (!defined(__ENABLE_DIGICERT_FP_MAPPING_GUARD__)) )
 
 #include "../data_protection/file_protect.h"
 
-#define MOCANA_readFile(_file, _retBuf, _retLen)                              \
-    MOCANA_readFileEx(_file, _retBuf, _retLen, MOC_DP_MAPPING_RELEASE)
+#define DIGICERT_readFile(_file, _retBuf, _retLen)                              \
+    DIGICERT_readFileEx(_file, _retBuf, _retLen, MOC_DP_MAPPING_RELEASE)
 
 #endif
 
-#if ( (defined(__ENABLE_MOCANA_FP_MAPPING_WRITE__)) && \
-      (!defined(__ENABLE_MOCANA_FP_MAPPING_GUARD__)) )
+#if ( (defined(__ENABLE_DIGICERT_FP_MAPPING_WRITE__)) && \
+      (!defined(__ENABLE_DIGICERT_FP_MAPPING_GUARD__)) )
 
 #include "../data_protection/file_protect.h"
 
-#ifndef __DISABLE_MOCANA_FP_IMMUTABLE_WRITE_BUFFER__
+#ifndef __DISABLE_DIGICERT_FP_IMMUTABLE_WRITE_BUFFER__
 
-#define MOCANA_writeFile(_file, _buf, _bufLen)                                \
-    MOCANA_writeFileEx(_file, _buf, _bufLen, MOC_DP_MAPPING_RELEASE)
+#define DIGICERT_writeFile(_file, _buf, _bufLen)                                \
+    DIGICERT_writeFileEx(_file, _buf, _bufLen, MOC_DP_MAPPING_RELEASE)
 
 #else
 
-#define MOCANA_writeFile(_file, _buf, _bufLen)                                \
-    MOCANA_writeFileEx(_file, (ubyte *)_buf, _bufLen, MOC_DP_MAPPING_RELEASE)
+#define DIGICERT_writeFile(_file, _buf, _bufLen)                                \
+    DIGICERT_writeFileEx(_file, (ubyte *)_buf, _bufLen, MOC_DP_MAPPING_RELEASE)
 
-#endif /* ifdef __DISABLE_MOCANA_FP_IMMUTABLE_WRITE_BUFFER__ */
+#endif /* ifdef __DISABLE_DIGICERT_FP_IMMUTABLE_WRITE_BUFFER__ */
 
-#endif /* if (defined(__ENABLE_MOCANA_FP_MAPPING_WRITE__)) && (!defined(__ENABLE_MOCANA_FP_MAPPING_GUARD__)) */
+#endif /* if (defined(__ENABLE_DIGICERT_FP_MAPPING_WRITE__)) && (!defined(__ENABLE_DIGICERT_FP_MAPPING_GUARD__)) */
 
 #ifdef __cplusplus
 }

@@ -56,7 +56,7 @@ MOC_EXTERN MSTATUS SSH_SESSION_sendCloseChannel(sshContext *pContextSSH);
  */
 MOC_EXTERN void    SSH_SESSION_sendClose(sshContext *pContextSSH, MSTATUS errorCode);
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /**
  * @dont_show
  * @internal
@@ -80,7 +80,7 @@ MOC_EXTERN MSTATUS SSH_SESSION_lpfSendClose(sshContext *pContextSSH, sshPfSessio
  * @internal
  */
 MOC_EXTERN MSTATUS SSH_SESSION_sendPortFwdWindowAdjust(sshContext *pContextSSH, ubyte mesgType, ubyte4 numBytesToAck, ubyte4 recipientChannel);
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 /**
  * @dont_show

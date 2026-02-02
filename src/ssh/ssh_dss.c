@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -33,11 +33,11 @@
 #include "../crypto/dsa.h"
 #include "../crypto/sha1.h"
 
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
 #include "../crypto/sha256.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -47,17 +47,17 @@
 #include "../crypto/cert_store.h"
 #include "../ssh/ssh_str.h"
 #include "../ssh/ssh_mpint.h"
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 #include "../ssh/ssh_utils.h"
 #include "../ssh/ssh.h"
 #include "../ssh/ssh_str_house.h"
 #endif
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 #include "../ssh/client/sshc_str_house.h"
 #endif
 #include "../ssh/ssh_dss.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/cryptointerface.h"
 #include "../crypto_interface/crypto_interface_dsa.h"
 #endif
@@ -94,7 +94,7 @@ SSH_DSS_buildDssCertificate(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_getKeyParametersAlloc(MOC_DSA(hwAccelCtx) pKey->key.pDSA, &template, MOC_GET_PUBLIC_KEY_DATA);
 #else
     status = DSA_getKeyParametersAlloc(MOC_DSA(hwAccelCtx) pKey->key.pDSA, &template, MOC_GET_PUBLIC_KEY_DATA);
@@ -127,14 +127,14 @@ SSH_DSS_buildDssCertificate(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
     /* save variables */
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         *pRetLen = ssh_dss_signature.stringLen + (ubyte4)lenP + (ubyte4)lenQ + (ubyte4)lenG + (ubyte4)lenY;
 #else
         status = ERR_SSH_CONFIG;
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         *pRetLen = sshc_dss_signature.stringLen + (ubyte4)lenP + (ubyte4)lenQ + (ubyte4)lenG + (ubyte4)lenY;
 #else
         status = ERR_SSH_CONFIG;
@@ -142,7 +142,7 @@ SSH_DSS_buildDssCertificate(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
 #endif
     }
 
-    status = MOC_MALLOC((void **) ppCertificate, 4 + *pRetLen);
+    status = DIGI_MALLOC((void **) ppCertificate, 4 + *pRetLen);
     if (OK != status)
         goto exit;
 
@@ -155,42 +155,42 @@ SSH_DSS_buildDssCertificate(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        MOC_MEMCPY((*ppCertificate) + index, ssh_dss_signature.pString, (sbyte4)ssh_dss_signature.stringLen);
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        DIGI_MEMCPY((*ppCertificate) + index, ssh_dss_signature.pString, (sbyte4)ssh_dss_signature.stringLen);
         index += ssh_dss_signature.stringLen;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        MOC_MEMCPY((*ppCertificate) + index, sshc_dss_signature.pString, (sbyte4)sshc_dss_signature.stringLen);
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        DIGI_MEMCPY((*ppCertificate) + index, sshc_dss_signature.pString, (sbyte4)sshc_dss_signature.stringLen);
         index += sshc_dss_signature.stringLen;
 #endif
     }
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringP, lenP);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringP, lenP);
     index += (ubyte4)lenP;
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringQ, lenQ);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringQ, lenQ);
     index += (ubyte4)lenQ;
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringG, lenG);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringG, lenG);
     index += (ubyte4)lenG;
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringY, lenY);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringY, lenY);
 
 exit:
     if (NULL != pStringP)
-        MOC_FREE((void **)&pStringP);
+        DIGI_FREE((void **)&pStringP);
 
     if (NULL != pStringQ)
-        MOC_FREE((void **)&pStringQ);
+        DIGI_FREE((void **)&pStringQ);
 
     if (NULL != pStringG)
-        MOC_FREE((void **)&pStringG);
+        DIGI_FREE((void **)&pStringG);
 
     if (NULL != pStringY)
-        MOC_FREE((void **)&pStringY);
+        DIGI_FREE((void **)&pStringY);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DSA_freeKeyTemplate(NULL, &template);
 #else
     DSA_freeKeyTemplate(NULL, &template);
@@ -215,7 +215,7 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
     sbyte4  msgLen;
     ubyte4  hashLen = 20;
     ubyte4  index;
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
     sbyte4  cipherTextLen;
 #endif
     MSTATUS status = OK;
@@ -234,8 +234,8 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
         status = ERR_NULL_POINTER;
         goto exit;
     }
-#ifndef __DISABLE_MOCANA_SHA256__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifndef __DISABLE_DIGICERT_SHA256__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_getCipherTextLength(MOC_DSA(hwAccelCtx) pKey->key.pDSA, &cipherTextLen);
 #else
     status = DSA_getCipherTextLength(MOC_DSA(hwAccelCtx) pKey->key.pDSA, &cipherTextLen);
@@ -250,13 +250,13 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
     }
 #endif
 
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
     intBoolean verify;
     status = VLONG_byteStringFromVlong(pM, NULL, &msgLen);
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC((void **)&pMsg, msgLen);
+    status = DIGI_MALLOC((void **)&pMsg, msgLen);
     if (OK != status)
         goto exit;
 
@@ -264,7 +264,7 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_computeSignatureAux(MOC_DSA(hwAccelCtx) g_pRandomContext, pKey->key.pDSA,
         pMsg, msgLen, &verify, &pR1, &r1Len, &pS1, &s1Len, ppVlongQueue);
 #else
@@ -277,14 +277,14 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         index = ssh_dss_signature.stringLen + 4 + (hashLen * 2);
 #else
         status = ERR_SSH_CONFIG;
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         index = sshc_dss_signature.stringLen + 4 + (hashLen *2);
 #else
         status = ERR_SSH_CONFIG;
@@ -292,7 +292,7 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
 #endif
     }
 
-    status = MOC_MALLOC((void **) &pSignature, 4 + index);
+    status = DIGI_MALLOC((void **) &pSignature, 4 + index);
     if (OK != status)
         goto exit;
 
@@ -304,14 +304,14 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        if (OK > (status = MOC_MEMCPY(pSignature + index, ssh_dss_signature.pString, (sbyte4)ssh_dss_signature.stringLen)))
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, ssh_dss_signature.pString, (sbyte4)ssh_dss_signature.stringLen)))
             goto exit;
         index += ssh_dss_signature.stringLen;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        if (OK > (status = MOC_MEMCPY(pSignature + index, sshc_dss_signature.pString, (sbyte4)sshc_dss_signature.stringLen)))
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, sshc_dss_signature.pString, (sbyte4)sshc_dss_signature.stringLen)))
             goto exit;
         index += sshc_dss_signature.stringLen;
 #endif
@@ -325,12 +325,12 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
     index += 4;
 
     /* copy r & s to signature blob */
-    status = MOC_MEMCPY(pSignature + index, pR1, hashLen);
+    status = DIGI_MEMCPY(pSignature + index, pR1, hashLen);
     if (OK != status)
         goto exit;
     index += hashLen;
 
-    status = MOC_MEMCPY(pSignature + index, pS1, hashLen);
+    status = DIGI_MEMCPY(pSignature + index, pS1, hashLen);
     if (OK != status)
         goto exit;
     index += hashLen;
@@ -342,16 +342,16 @@ SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, 
 
 exit:
     if (NULL != pSignature)
-        MOC_FREE((void **) &pSignature);
+        DIGI_FREE((void **) &pSignature);
 
     if (NULL != pMsg)
-        MOC_FREE((void **) &pMsg);
+        DIGI_FREE((void **) &pMsg);
 
     if (NULL != pR1)
-        MOC_FREE((void **) &pR1);
+        DIGI_FREE((void **) &pR1);
 
     if (NULL != pS1)
-        MOC_FREE((void **) &pS1);
+        DIGI_FREE((void **) &pS1);
 
     return status;
 
@@ -367,13 +367,13 @@ SSH_DSS_calcDssSignatureLength(AsymmetricKey *pKey, intBoolean isServer, ubyte4 
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         *pSignatureLength = 4 + ssh_dss_signature.stringLen + 4 + (hashLen * 2);
 #else
         return ERR_SSH_CONFIG;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         *pSignatureLength = 4 + sshc_dss_signature.stringLen + 4 + (hashLen * 2);
 #else
         return ERR_SSH_CONFIG;
@@ -489,7 +489,7 @@ SSH_DSS_extractDssCertificate(MOC_ASYM(hwAccelDescr hwAccelCtx) sshStringBuffer*
     template.pX = NULL;
     template.xLen = 0;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_setKeyParametersAux(MOC_DSA(hwAccelCtx) pPublicKey->key.pDSA, &template);
 #else
     status = DSA_setKeyParametersAux(MOC_DSA(hwAccelCtx) pPublicKey->key.pDSA, &template);
@@ -499,19 +499,19 @@ SSH_DSS_extractDssCertificate(MOC_ASYM(hwAccelDescr hwAccelCtx) sshStringBuffer*
 
 exit:
     if (NULL != pP)
-        MOC_FREE((void **) &pP);
+        DIGI_FREE((void **) &pP);
 
     if (NULL != pQ)
-        MOC_FREE((void **) &pQ);
+        DIGI_FREE((void **) &pQ);
 
     if (NULL != pG)
-        MOC_FREE((void **) &pG);
+        DIGI_FREE((void **) &pG);
 
     if (NULL != pY)
-        MOC_FREE((void **) &pY);
+        DIGI_FREE((void **) &pY);
 
 #if 0
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DSA_freeKeyTemplate(NULL, &template);
 #else
     DSA_freeKeyTemplate(NULL, &template);
@@ -553,7 +553,7 @@ SSH_DSS_verifyDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pPubl
         status = ERR_NULL_POINTER;
         goto exit;
     }
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_getCipherTextLength(MOC_DSA(hwAccelCtx) pPublicKey->key.pDSA, &cipherTextLen);
 #else
     status = DSA_getCipherTextLength(MOC_DSA(hwAccelCtx) pPublicKey->key.pDSA, &cipherTextLen);
@@ -576,16 +576,16 @@ SSH_DSS_verifyDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pPubl
     /* check signature type */
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_dss_signature.pString, ssh_dss_signature.stringLen, &result)))
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_dss_signature.pString, ssh_dss_signature.stringLen, &result)))
             goto exit;
 #else
         status = ERR_SSH_CONFIG;
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        if (OK > (status = MOC_MEMCMP(tempString->pString, sshc_dss_signature.pString, sshc_dss_signature.stringLen, &result)))
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        if (OK > (status = DIGI_MEMCMP(tempString->pString, sshc_dss_signature.pString, sshc_dss_signature.stringLen, &result)))
             goto exit;
 #else
         status = ERR_SSH_CONFIG;
@@ -617,7 +617,7 @@ SSH_DSS_verifyDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pPubl
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC((void **)&pMsg, msgLen);
+    status = DIGI_MALLOC((void **)&pMsg, msgLen);
     if (OK != status)
         goto exit;
 
@@ -625,7 +625,7 @@ SSH_DSS_verifyDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pPubl
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_verifySignatureAux(MOC_DSA(hwAccelCtx) pPublicKey->key.pDSA, pMsg, msgLen,
         4 + rsString->pString, sigLen, 4 + sigLen + rsString->pString, sigLen,
         pIsGoodSignature, ppVlongQueue);
@@ -642,12 +642,12 @@ exit:
 
     if (NULL != pMsg)
     {
-        MOC_FREE((void **) &pMsg);
+        DIGI_FREE((void **) &pMsg);
     }
 
     return status;
 
 } /* SSH_DSS_verifyDssSignature */
 
-#endif /* ((defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))) */
+#endif /* ((defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))) */
 

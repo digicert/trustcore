@@ -3,8 +3,14 @@
  *
  * SSL Developer API
  *
- * Copyright Mocana Corp 2003-2007. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -27,25 +33,25 @@
 @flags
 Whether the following flags are defined determines which function declarations
 and callbacks are enabled:
-+ \c \__ENABLE_MOCANA_EAP_FAST__
-+ \c \__ENABLE_MOCANA_EXTRACT_CERT_BLOB__
-+ \c \__ENABLE_MOCANA_INNER_APP__
-+ \c \__ENABLE_MOCANA_MULTIPLE_COMMON_NAMES__
-+ \c \__ENABLE_MOCANA_SSL_ALERTS__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_DUAL_MODE_API__
-+ \c \__ENABLE_MOCANA_SSL_ECDH_ANON_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_ECDH_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_ECDHE_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_INTERNAL_STRUCT_ACCESS__
-+ \c \__ENABLE_MOCANA_SSL_KEY_EXPANSION__
-+ \c \__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_NEW_HANDSHAKE__
-+ \c \__ENABLE_MOCANA_SSL_PSK_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_CUSTOM_RNG__
++ \c \__ENABLE_DIGICERT_EAP_FAST__
++ \c \__ENABLE_DIGICERT_EXTRACT_CERT_BLOB__
++ \c \__ENABLE_DIGICERT_INNER_APP__
++ \c \__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__
++ \c \__ENABLE_DIGICERT_SSL_ALERTS__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_DUAL_MODE_API__
++ \c \__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_INTERNAL_STRUCT_ACCESS__
++ \c \__ENABLE_DIGICERT_SSL_KEY_EXPANSION__
++ \c \__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_NEW_HANDSHAKE__
++ \c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CUSTOM_RNG__
 
 @filedoc    ssl.h
 */
@@ -62,17 +68,17 @@ and callbacks are enabled:
 #include "../common/mtcp.h"
 
 #include "../common/sizedbuffer.h"
-#ifdef __ENABLE_MOCANA_OPENSSL_SHIM__
+#ifdef __ENABLE_DIGICERT_OPENSSL_SHIM__
 #include "../openssl_wrapper/openssl_shim.h"
 #endif
 
-#ifndef __DISABLE_MOCANA_SSL_CERTIFICATE_CALLBACK__
+#ifndef __DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
 #include "../crypto/pubcrypto.h"
 #include "../crypto/ca_mgmt.h"
 #include "../crypto/cert_chain.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_MBEDTLS_SHIM__
+#ifdef __ENABLE_DIGICERT_MBEDTLS_SHIM__
 #include "../mbedtls_wrapper/mbedtls_shim.h"
 #endif
 
@@ -81,7 +87,7 @@ extern "C" {
 #endif
 
 /* NOTE: copyed over from ike_utils.h */
-#ifndef __ENABLE_MOCANA_IPV6__
+#ifndef __ENABLE_DIGICERT_IPV6__
 
 #define ZERO_MOC_IPADDR(a)      a = 0
 #define ISZERO_MOC_IPADDR(a)    (0 == a)
@@ -134,7 +140,7 @@ extern "C" {
 
 #define GET_MOC_IPADDR6(a)      (ubyte *) (a)->uin.addr6
 #define SET_MOC_IPADDR6(s, v)   (s).family = AF_INET6;\
-                                MOC_MEMCPY((ubyte *) (s).uin.addr6, (ubyte *)(v), 16)
+                                DIGI_MEMCPY((ubyte *) (s).uin.addr6, (ubyte *)(v), 16)
 #define LT_MOC_IPADDR6(x, y)    ((GET_NTOHL((x).uin.addr6[0]) < GET_NTOHL((y).uin.addr6[0])) ||\
                                  (((x).uin.addr6[0] == (y).uin.addr6[0]) &&\
                                   ((GET_NTOHL((x).uin.addr6[1]) < GET_NTOHL((y).uin.addr6[1])) ||\
@@ -145,32 +151,32 @@ extern "C" {
 #define LT_MOC_IPADDR(p, q)     (((p).family != (q).family) ||\
                                  ((AF_INET == (p).family) ? LT_MOC_IPADDR4(p, q) : LT_MOC_IPADDR6(p, q)))
 
-#endif /* __ENABLE_MOCANA_IPV6__ */
+#endif /* __ENABLE_DIGICERT_IPV6__ */
 
-#if defined(__ENABLE_MOCANA_TAP_OSSL_REMOTE__) || defined(__ENABLE_MOCANA_SSL_SSLCONNECT_RENAME__)
+#if defined(__ENABLE_DIGICERT_TAP_OSSL_REMOTE__) || defined(__ENABLE_DIGICERT_SSL_SSLCONNECT_RENAME__)
 #define SSL_connect MOC_SSL_connect
 #endif
 
-#if !defined( __ENABLE_MOCANA_SSL_CLIENT__ ) && defined( __ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__ )
-#define __ENABLE_MOCANA_SSL_CLIENT__
+#if !defined( __ENABLE_DIGICERT_SSL_CLIENT__ ) && defined( __ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__ )
+#define __ENABLE_DIGICERT_SSL_CLIENT__
 #endif
 
-#if !defined( __ENABLE_MOCANA_SSL_SERVER__ ) && defined( __ENABLE_MOCANA_SSL_ASYNC_SERVER_API__ )
-#define __ENABLE_MOCANA_SSL_SERVER__
+#if !defined( __ENABLE_DIGICERT_SSL_SERVER__ ) && defined( __ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__ )
+#define __ENABLE_DIGICERT_SSL_SERVER__
 #endif
 
 /* check for possible build configuration errors */
-#ifndef __ENABLE_MOCANA_SSL_DUAL_MODE_API__
-#if defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__) && defined(__ENABLE_MOCANA_SSL_SERVER__) && !defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__)
+#ifndef __ENABLE_DIGICERT_SSL_DUAL_MODE_API__
+#if defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__) && defined(__ENABLE_DIGICERT_SSL_SERVER__) && !defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__)
 #error SSL build configuration error.  Mixing async client w/ sync server prohibited.
 #endif
 
-#if defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__) && defined(__ENABLE_MOCANA_SSL_CLIENT__) && !defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__)
+#if defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__) && !defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__)
 #error SSL build configuration error.  Mixing async server w/ sync client prohibited.
 #endif
-#endif /* __ENABLE_MOCANA_SSL_DUAL_MODE_API__ */
+#endif /* __ENABLE_DIGICERT_SSL_DUAL_MODE_API__ */
 
-#if defined(__ENABLE_MOCANA_SSL_SERVER__) || defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_SERVER__) || defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 
 #ifdef _DEBUG
 #define TIMEOUT_SSL_RECV                    (0)
@@ -298,7 +304,7 @@ extern "C" {
 #define SSL_APPLICATION_DATA                (23)
 #define SSL_INNER_APPLICATION               (24)
 /* Enumeration for SSL_INNER_APPLICATION and SSL_HEARTBEAT is same */
-#if defined(__ENABLE_MOCANA_SSL_HEARTBEAT_RFC_6520__)
+#if defined(__ENABLE_DIGICERT_SSL_HEARTBEAT_RFC_6520__)
 #define SSL_HEARTBEAT                       (24)
 #endif
 #define SSL_ACK                             (26)
@@ -383,7 +389,7 @@ extern "C" {
 #endif
 
 #ifndef MAX_SSL_MINORVERSION
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
 #define MAX_SSL_MINORVERSION (TLS13_MINORVERSION)
 #else
 #define MAX_SSL_MINORVERSION (TLS12_MINORVERSION)
@@ -408,7 +414,7 @@ extern "C" {
 #endif
 
 #ifndef MAX_DTLS_MINORVERSION
-#if defined(__ENABLE_MOCANA_TLS13__) && !defined(__ENABLE_MOCANA_OPENSSL_SHIM__)
+#if defined(__ENABLE_DIGICERT_TLS13__) && !defined(__ENABLE_DIGICERT_OPENSSL_SHIM__)
 #define MAX_DTLS_MINORVERSION (DTLS13_MINORVERSION)
 #else
 #define MAX_DTLS_MINORVERSION (DTLS12_MINORVERSION)
@@ -424,7 +430,7 @@ extern "C" {
 
 #define MAX_PASSWORD_SIZE   (128)
 
-#if defined(__ENABLE_MOCANA_SSL_HEARTBEAT_RFC_6520__)
+#if defined(__ENABLE_DIGICERT_SSL_HEARTBEAT_RFC_6520__)
 typedef enum
 {
     noHeartbeatMessages = 0,
@@ -460,14 +466,14 @@ enum tlsExtensionTypes
     tlsExt_heartbeat = 15,
     tlsExt_applicationLayerProtocolNegotiation = 16,
     tlsExt_signed_certificate_timestamp = 18,
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
     tlsExt_certificate_type = 19,
     tlsExt_server_certificate_type = 20,
 #endif
     tlsExt_encrypt_then_mac = 22,
     tlsExt_extendedMasterSecret = 23,
     tlsExt_ticket = 35,
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
     tlsExt_pre_shared_key = 41,
     tlsExt_early_data   = 42,
     tlsExt_supported_versions = 43,
@@ -484,7 +490,7 @@ enum tlsExtensionTypes
     tlsExt_renegotiated_connection = 0xff01
 };
 
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
 enum keyUpdateRequest
 {
     keyUpdateRequest_not_requested = 0,
@@ -529,7 +535,7 @@ enum tlsExtNamedCurves
     tlsExtHybrid_X25519MLKEM768        = TLS_EXT_NAMED_CURVES_PQC | 0x00ec,
 };
 
-#ifdef __ENABLE_MOCANA_INNER_APP__
+#ifdef __ENABLE_DIGICERT_INNER_APP__
 /**
  * @dont_show
  * @internal
@@ -650,7 +656,6 @@ typedef struct tls13PSK
     ubyte4              obfuscatedTicketAge;
     TLS_HashAlgorithm   hashAlgo;
     TimeDate            startTime;
-    ubyte4              pskReceivedTimeInMS;
     ubyte4              maxEarlyDataSize;
     ubyte2              pSelectedTlsVersion;
     ubyte               selectedALPN[SSL_ALPN_MAX_SIZE];
@@ -705,9 +710,9 @@ typedef struct responderID
 } ResponderID;
 
 
-#if (defined( __ENABLE_MOCANA_SSL_ECDH_SUPPORT__)   || \
-        defined(__ENABLE_MOCANA_SSL_ECDHE_SUPPORT__)|| \
-        defined(__ENABLE_MOCANA_SSL_ECDH_ANON_SUPPORT__) )
+#if (defined( __ENABLE_DIGICERT_SSL_ECDH_SUPPORT__)   || \
+        defined(__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__)|| \
+        defined(__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__) )
 ubyte2 SSL_getNamedCurveOfCurveId( ubyte4 curveId);
 ubyte4 SSL_getCurveIdOfNamedCurve( ubyte2 namedCurve);
 #endif
@@ -792,10 +797,10 @@ appropriate structure function pointer(s).
 
 @flags
 To use this structure, at least one of the following flags must be defined in moptions.h:
-- \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
+- \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 */
 typedef struct sslSettings
@@ -805,14 +810,14 @@ typedef struct sslSettings
     /** @brief      Port number for the connection context.
         @details    Port number for the connection context.
         @flags
-        This field is defined only if the \c \__ENABLE_MOCANA_SSL_SERVER__ flag
+        This field is defined only if the \c \__ENABLE_DIGICERT_SSL_SERVER__ flag
         is defined in moptions.h.
     */
     ubyte4    sslListenPort;
     /** Internal use only.
     Internal use only.
     */
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
     ubyte                   helloCookieSecret[2][SSL_SHA512_FINGER_PRINT_SIZE];
 #else
     ubyte                   helloCookieSecret[2][SSL_SHA_FINGER_PRINT_SIZE];
@@ -838,8 +843,8 @@ typedef struct sslSettings
     /** @brief      Number of seconds to wait for connection timeout.
         @details    Number of seconds to wait for connection timeout.
         @flags
-        This field is defined only if the \c \__ENABLE_MOCANA_SSL_SERVER__ and
-        \c \__ENABLE_MOCANA_DTLS_SERVER__ flags are defined in moptions.h.
+        This field is defined only if the \c \__ENABLE_DIGICERT_SSL_SERVER__ and
+        \c \__ENABLE_DIGICERT_DTLS_SERVER__ flags are defined in moptions.h.
     */
     ubyte4                  sslTimeOutConnectTimedWait;
 
@@ -958,7 +963,7 @@ typedef struct sslSettings
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                             SSL_ASYNC_acceptConnection().
@@ -986,7 +991,7 @@ To enable this callback, the following flag must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                             SSL_ASYNC_acceptConnection().
@@ -1013,7 +1018,7 @@ To enable this callback, the following flag must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                             SSL_ASYNC_acceptConnection().
@@ -1068,7 +1073,7 @@ To enable this callback, the following flag must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @param connectionInstance   Connection instance returned from SSL_ASYNC_connect().
 @param isRehandshake        True(One) indicates a rehandshake notice.
@@ -1095,7 +1100,7 @@ To enable this callback, the following flag must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @param connectionInstance   Connection instance returned from SSL_ASYNC_connect().
 @param pMesg                Pointer to the received decrypted message.
@@ -1121,7 +1126,7 @@ To enable this callback, the following flag must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @param connectionInstance   Connection instance returned from SSL_ASYNC_connect().
 @param msTimerExpire        Number of milliseconds until timer expires.
@@ -1154,11 +1159,11 @@ To enable this callback, the following flag must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @param connectionInstance   Pointer to the SSL/TLS %client instance.
 @param hash                 Pointer to hash byte string.
@@ -1207,11 +1212,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_PSK_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param hintPSK              On return, the server's preferred PSK.
@@ -1250,11 +1255,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_PSK_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param pServerName          Name of the server.
@@ -1297,11 +1302,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_PSK_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param pServerName          Name of the server.
@@ -1344,11 +1349,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_PSK_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param pIdentityPSK         Pointer to buffer containing the PSK identity to
@@ -1390,11 +1395,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_PSK_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param pIdentityPSK         Pointer to buffer containing the PSK identity to
@@ -1448,11 +1453,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_PSK_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param pHintPSK             Pointer to buffer containing the PSK hint&mdash;a
@@ -1499,13 +1504,13 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ALERTS__
++ \c \__ENABLE_DIGICERT_SSL_ALERTS__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param alertId              SSL alert code (see \ref ssl_alert_codes).
@@ -1545,13 +1550,13 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_NEW_HANDSHAKE__
++ \c \__ENABLE_DIGICERT_SSL_NEW_HANDSHAKE__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance       Pointer to the SSL/TLS Client instance.
 @param pRetDoRehandshake        On return, pointer to \c TRUE if request should
@@ -1625,11 +1630,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_DTLS_SRTP__
++ \c \__ENABLE_DIGICERT_DTLS_SRTP__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_DTLS_CLIENT__
-+ \c \__ENABLE_MOCANA_DTLS_SERVER__
++ \c \__ENABLE_DIGICERT_DTLS_CLIENT__
++ \c \__ENABLE_DIGICERT_DTLS_SERVER__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param pChannelDescr        Pointer peer descriptor.
@@ -1673,11 +1678,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_DTLS_SRTP__
++ \c \__ENABLE_DIGICERT_DTLS_SRTP__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_DTLS_CLIENT__
-+ \c \__ENABLE_MOCANA_DTLS_SERVER__
++ \c \__ENABLE_DIGICERT_DTLS_CLIENT__
++ \c \__ENABLE_DIGICERT_DTLS_SERVER__
 
 @param connectionInstance   Pointer to the SSL/TLS Client instance.
 @param pChannelDescr        Pointer peer descriptor.
@@ -1722,11 +1727,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ECDHE_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_ECDH_ANON_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__
 
 @param connectionInstance       Pointer to the SSL/TLS Client instance.
 @param cipherSuiteID            Identifier for the cipher suite.\n
@@ -1825,8 +1830,8 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
      @flags
      To enable this callback, the following flags must be defined in moptions.h:
-     + \c \__ENABLE_MOCANA_SSL_SERVER__
-     + \c \__ENABLE_MOCANA_SSL_SRP__
+     + \c \__ENABLE_DIGICERT_SSL_SERVER__
+     + \c \__ENABLE_DIGICERT_SSL_SRP__
 
      @param connectionInstance       Pointer to the SSL/TLS Client instance.
      @param identity                 Pointer to the identity
@@ -1834,7 +1839,7 @@ Additionally, at least one of the following flags must be defined in moptions.h:
      @param numBits                  number of bits for the SRP operation\n
      Your function should return a number from the set 1024, 1536, 2048, 3172,
      4096, 6144, 8192. Some of these values might be invalid based on the value
-     of the compile time defined flag __MOCANA_MIN_SRP_BITS__ Consult RFC 5054 
+     of the compile time defined flag __DIGICERT_MIN_SRP_BITS__ Consult RFC 5054 
      for further information about these values.
      @param salt                     Salt used when computing the verifier.
      @param saltLength               Length in bytes of salt.
@@ -1874,7 +1879,7 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 typedef sbyte4 (*SSLTransportSend)(sbyte4 sslId, sbyte *pBuffer, ubyte4 bufferLen, ubyte4 *pRetNumBytesSent);
 typedef sbyte4 (*SSLTransportRecv)(sbyte4 sslId, sbyte *pRetBuffer, ubyte4 bufferSize, ubyte4 *pNumBytesReceived, ubyte4 timeout);
 
-#if defined(__ENABLE_MOCANA_SSL_FIPS__)
+#if defined(__ENABLE_DIGICERT_SSL_FIPS__)
 /**
 @brief      Enable FIPS at runtime.
 
@@ -1891,7 +1896,7 @@ typedef sbyte4 (*SSLTransportRecv)(sbyte4 sslId, sbyte *pRetBuffer, ubyte4 buffe
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_FIPS__
++ \c \__ENABLE_DIGICERT_SSL_FIPS__
 
 @inc_file ssl.h
 
@@ -1922,7 +1927,7 @@ MOC_EXTERN sbyte4 SSL_setFIPSEnabled(ubyte isFIPSEnabled);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_FIPS__
++ \c \__ENABLE_DIGICERT_SSL_FIPS__
 
 @inc_file ssl.h
 
@@ -1937,7 +1942,7 @@ To enable this function, at least one of the following flags must be defined in 
 @funcdoc ssl.c
 */
 MOC_EXTERN sbyte4 SSL_checkFIPS();
-#endif /* __ENABLE_MOCANA_SSL_FIPS__ */
+#endif /* __ENABLE_DIGICERT_SSL_FIPS__ */
 
 /*------------------------------------------------------------------*/
 
@@ -1960,10 +1965,10 @@ MOC_EXTERN sbyte4 SSL_checkFIPS();
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2001,10 +2006,10 @@ MOC_EXTERN sbyte4  SSL_shutdownStack(void);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2047,7 +2052,7 @@ MOC_EXTERN sbyte4  SSL_releaseTables(void);
 */
 MOC_EXTERN sbyte4 SSL_setMinRSAKeySize(ubyte4 keySize);
 
-#if defined(__ENABLE_MOCANA_TLS12_UNSECURE_HASH__)
+#if defined(__ENABLE_DIGICERT_TLS12_UNSECURE_HASH__)
 
 /**
  *
@@ -2071,8 +2076,8 @@ MOC_EXTERN sbyte4 SSL_setMinRSAKeySize(ubyte4 keySize);
 MOC_EXTERN sbyte4 SSL_setSha1SigAlg(intBoolean setting);
 #endif
 
-#if ((!defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__) && !defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__)) || \
-     defined(__ENABLE_MOCANA_SSL_SERVER__) || defined(__ENABLE_MOCANA_SSL_CLIENT__))
+#if ((!defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__) && !defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__)) || \
+     defined(__ENABLE_DIGICERT_SSL_SERVER__) || defined(__ENABLE_DIGICERT_SSL_CLIENT__))
 /**
 @brief      Get a socket's connection instance.
 
@@ -2089,8 +2094,8 @@ MOC_EXTERN sbyte4 SSL_setSha1SigAlg(intBoolean setting);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -2132,10 +2137,10 @@ MOC_EXTERN sbyte4  SSL_getInstanceFromSocket(TCP_SOCKET socket);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2198,10 +2203,10 @@ MOC_EXTERN sbyte4  SSL_getTlsUnique(sbyte4 connectionInstance,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2239,10 +2244,10 @@ MOC_EXTERN sbyte4  SSL_setCookie(sbyte4 connectionInstance, void* cookie);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2270,15 +2275,15 @@ MOC_EXTERN sslSettings* SSL_sslSettings(void);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flags must \b not be defined:
 + \c \__DISABLE_SSL_GET_SOCKET_API__
-+ \c \__ENABLE_MOCANA_DTLS_SERVER__
-+ \c \__ENABLE_MOCANA_DTLS_CLIENT__
++ \c \__ENABLE_DIGICERT_DTLS_SERVER__
++ \c \__ENABLE_DIGICERT_DTLS_CLIENT__
 
 @inc_file ssl.h
 
@@ -2297,7 +2302,7 @@ Additionally, the following flags must \b not be defined:
 @funcdoc ssl.c
 */
 MOC_EXTERN sbyte4  SSL_getSocketId(sbyte4 connectionInstance, TCP_SOCKET *pRetSocket);
-#if (defined(__ENABLE_MOCANA_DTLS_SERVER__) || defined(__ENABLE_MOCANA_DTLS_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_DTLS_SERVER__) || defined(__ENABLE_DIGICERT_DTLS_CLIENT__))
 /**
  * @dont_show
  * @internal
@@ -2306,7 +2311,7 @@ MOC_EXTERN sbyte4  SSL_getSocketId(sbyte4 connectionInstance, TCP_SOCKET *pRetSo
  * should not be included in the API documentation.
  */
 MOC_EXTERN sbyte4  SSL_getPeerDescr(sbyte4 connectionInstance, const peerDescr **ppRetPeerDescr);
-#endif /* (defined(__ENABLE_MOCANA_DTLS_SERVER__) || defined(__ENABLE_MOCANA_DTLS_CLIENT__)) */
+#endif /* (defined(__ENABLE_DIGICERT_DTLS_SERVER__) || defined(__ENABLE_DIGICERT_DTLS_CLIENT__)) */
 
 /**
 @brief      Determine whether a connection instance represents an SSL/TLS
@@ -2328,10 +2333,10 @@ MOC_EXTERN sbyte4  SSL_getPeerDescr(sbyte4 connectionInstance, const peerDescr *
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must \b not be defined:
 + \c \__DISABLE_SSL_IS_SESSION_API__
@@ -2351,7 +2356,7 @@ Additionally, the following flag must \b not be defined:
 MOC_EXTERN sbyte4  SSL_isSessionSSL(sbyte4 connectionInstance);
 #endif /* __DISABLE_SSL_IS_SESSION_API__ */
 
-#if (defined(__ENABLE_MOCANA_DTLS_SERVER__) || defined(__ENABLE_MOCANA_DTLS_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_DTLS_SERVER__) || defined(__ENABLE_DIGICERT_DTLS_CLIENT__))
 /**
 @brief      Determine whether a connection instance represents a DTLS
             %server, a DTLS %client, or an unrecognized connection (for
@@ -2372,14 +2377,14 @@ MOC_EXTERN sbyte4  SSL_isSessionSSL(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_DTLS_SERVER__
-+ \c \__ENABLE_MOCANA_DTLS_CLIENT__
++ \c \__ENABLE_DIGICERT_DTLS_SERVER__
++ \c \__ENABLE_DIGICERT_DTLS_CLIENT__
 
 @inc_file ssl.h
 
@@ -2396,7 +2401,7 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 MOC_EXTERN sbyte4  SSL_isSessionDTLS(sbyte4 connectionInstance);
 
 
-#if defined(__ENABLE_MOCANA_DTLS_EXT_API__)
+#if defined(__ENABLE_DIGICERT_DTLS_EXT_API__)
 /**
 @brief      Get the time remaing until DTLS timeout
 
@@ -2407,16 +2412,16 @@ MOC_EXTERN sbyte4  SSL_isSessionDTLS(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_DTLS_SERVER__
-+ \c \__ENABLE_MOCANA_DTLS_CLIENT__
-+ \c \__ENABLE_MOCANA_DTLS_EXT_API__
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_DTLS_SERVER__
++ \c \__ENABLE_DIGICERT_DTLS_CLIENT__
++ \c \__ENABLE_DIGICERT_DTLS_EXT_API__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -2440,16 +2445,16 @@ MOC_EXTERN sbyte4 SSL_DTLS_getTimeout(sbyte4 connectionInstance, void *pTime);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_DTLS_SERVER__
-+ \c \__ENABLE_MOCANA_DTLS_CLIENT__
-+ \c \__ENABLE_MOCANA_DTLS_EXT_API__
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_DTLS_SERVER__
++ \c \__ENABLE_DIGICERT_DTLS_CLIENT__
++ \c \__ENABLE_DIGICERT_DTLS_EXT_API__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -2461,9 +2466,9 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 @funcdoc ssl.c
 */
 MOC_EXTERN sbyte4 DTLS_isTimerExpired(sbyte4 connectionInstance);
-#endif /*__ENABLE_MOCANA_DTLS_EXT_API__ */
+#endif /*__ENABLE_DIGICERT_DTLS_EXT_API__ */
 
-#endif /* (defined(__ENABLE_MOCANA_DTLS_SERVER__) || defined(__ENABLE_MOCANA_DTLS_CLIENT__)) */
+#endif /* (defined(__ENABLE_DIGICERT_DTLS_SERVER__) || defined(__ENABLE_DIGICERT_DTLS_CLIENT__)) */
 
 #ifndef __DISABLE_SSL_SESSION_FLAGS_API__
 /**
@@ -2480,10 +2485,10 @@ MOC_EXTERN sbyte4 DTLS_isTimerExpired(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must \b not be defined:
 + \c \__DISABLE_SSL_SESSION_FLAGS_API__
@@ -2520,10 +2525,10 @@ MOC_EXTERN sbyte4  SSL_getSessionFlags(sbyte4 connectionInstance, ubyte4 *pRetFl
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 @param connectionInstance   Connection instance returned from SSL_connect().
@@ -2567,10 +2572,10 @@ definitions, defined in ssl.h:
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must \b not be defined:
 + \c \__DISABLE_SSL_SESSION_FLAGS_API__
@@ -2615,10 +2620,10 @@ MOC_EXTERN sbyte4  SSL_setSessionFlags(sbyte4 connectionInstance, ubyte4 flagsSS
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must \b not be defined:
 + \c \__DISABLE_SSL_IOCTL_API__
@@ -2666,10 +2671,10 @@ any of the following values:
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must \b not be defined:
 + \c \__DISABLE_SSL_IOCTL_API__
@@ -2703,7 +2708,7 @@ Additionally, the following flag must \b not be defined:
 MOC_EXTERN sbyte4  SSL_ioctl(sbyte4 connectionInstance, ubyte4 setting, void *value);
 #endif /* __DISABLE_SSL_IOCTL_API__ */
 
-#ifdef __ENABLE_MOCANA_SSL_ALERTS__
+#ifdef __ENABLE_DIGICERT_SSL_ALERTS__
 /**
 @brief      Get the SSL alert code for a Mocana error.
 
@@ -2721,13 +2726,13 @@ MOC_EXTERN sbyte4  SSL_ioctl(sbyte4 connectionInstance, ubyte4 setting, void *va
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ALERTS__
++ \c \__ENABLE_DIGICERT_SSL_ALERTS__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2762,13 +2767,13 @@ MOC_EXTERN sbyte4  SSL_lookupAlert(sbyte4 connectionInstance, sbyte4 lookupError
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ALERTS__
++ \c \__ENABLE_DIGICERT_SSL_ALERTS__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
     
 @inc_file ssl.h 
 
@@ -2787,9 +2792,9 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 @funcdoc ssl.c
 */
 MOC_EXTERN sbyte4  SSL_sendAlert(sbyte4 connectionInstance, sbyte4 alertId, sbyte4 alertClass);
-#endif /* __ENABLE_MOCANA_SSL_ALERTS__ */
+#endif /* __ENABLE_DIGICERT_SSL_ALERTS__ */
 
-#ifdef __ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
+#ifdef __ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 /**
 @brief      Enable specified ciphers.
 
@@ -2810,13 +2815,13 @@ synchronous or asynchronous clients).
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
++ \c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2859,13 +2864,13 @@ synchronous or asynchronous clients).
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
++ \c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -2888,7 +2893,7 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 */
 
 MOC_EXTERN sbyte4  SSL_getCipherList(sbyte4 connectionInstance, ubyte2 **ppCipherIdList, ubyte4 *pCount);
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
 /**
 @brief      Set cipher, supported Groups and signature algorithm.
 
@@ -2903,14 +2908,14 @@ MOC_EXTERN sbyte4  SSL_getCipherList(sbyte4 connectionInstance, ubyte2 **ppCiphe
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 @flags
 And the following flags have to be enabled
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 
 @inc_file ssl.h
 
@@ -2952,15 +2957,15 @@ SSL_setCipherAlgorithm(sbyte4 connectionInstance, ubyte2 *pList, ubyte4 listLeng
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 @flags
 And the following flags have to be enabled
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
-+ \c \__ENABLE_MOCANA_PQC__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
++ \c \__ENABLE_DIGICERT_PQC__
 
 @inc_file ssl.h
 
@@ -2999,13 +3004,13 @@ synchronous or asynchronous clients).
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
++ \c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3024,7 +3029,7 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 */
 MOC_EXTERN sbyte4  SSL_disableCipherHashAlgorithm(sbyte4 connectionInstance, TLS_HashAlgorithm hashId);
 
-#if defined(__ENABLE_MOCANA_SSL_DSA_SUPPORT__)
+#if defined(__ENABLE_DIGICERT_SSL_DSA_SUPPORT__)
 /**
 @brief      Enable/disable DSA ciphers.
 
@@ -3044,14 +3049,14 @@ synchronous or asynchronous clients).
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
++ \c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
-+ \c \__ENABLE_MOCANA_SSL_DSA_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_DSA_SUPPORT__
 
 @inc_file ssl.h
 
@@ -3073,9 +3078,9 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 MOC_EXTERN sbyte4 SSL_setDSACiphers(sbyte4 connectionInstance, ubyte enableDSACiphers);
 #endif
 
-#if (defined( __ENABLE_MOCANA_SSL_ECDH_SUPPORT__)   || \
-        defined(__ENABLE_MOCANA_SSL_ECDHE_SUPPORT__)|| \
-        defined(__ENABLE_MOCANA_SSL_ECDH_ANON_SUPPORT__) )
+#if (defined( __ENABLE_DIGICERT_SSL_ECDH_SUPPORT__)   || \
+        defined(__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__)|| \
+        defined(__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__) )
 /**
 @brief      Enable ECC curves.
 
@@ -3096,16 +3101,16 @@ synchronous or asynchronous clients).
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
++ \c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ECDH_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_ECDHE_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_ECDH_ANON_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3127,8 +3132,8 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 MOC_EXTERN sbyte4  SSL_enableECCCurves(sbyte4 connectionInstance,
                                        enum tlsExtNamedCurves* pECCCurvesList,
                                        ubyte4 listLength);
-#endif /* __ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__ */
-#endif /* (defined( __ENABLE_MOCANA_SSL_ECDH_SUPPORT__) || defined(__ENABLE_MOCANA_SSL_ECDHE_SUPPORT__) || defined(__ENABLE_MOCANA_SSL_ECDH_ANON_SUPPORT__)) */
+#endif /* __ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__ */
+#endif /* (defined( __ENABLE_DIGICERT_SSL_ECDH_SUPPORT__) || defined(__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__) || defined(__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__)) */
 
 /**
 @brief      Get a connection's ciphers and ecCurves.
@@ -3143,10 +3148,10 @@ MOC_EXTERN sbyte4  SSL_enableECCCurves(sbyte4 connectionInstance,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3185,10 +3190,10 @@ MOC_EXTERN sbyte4  SSL_getCipherInfo( sbyte4 connectionInstance, ubyte2* pCipher
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3225,10 +3230,10 @@ MOC_EXTERN sbyte4  SSL_getSSLTLSVersion( sbyte4 connectionInstance, ubyte4* pVer
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3251,7 +3256,7 @@ MOC_EXTERN sbyte4  SSL_setApplicationLayerProtocol(sbyte4 connectionInstance,
                                                    sbyte4 numNextProtocols,
                                                    const char** nextProtocols);
 
-#if defined(__ENABLE_MOCANA_SSL_HEARTBEAT_RFC_6520__)
+#if defined(__ENABLE_DIGICERT_SSL_HEARTBEAT_RFC_6520__)
 MOC_EXTERN MSTATUS SSL_sendHeartbeatMessage(sbyte4 connectionInstance);
 
 MOC_EXTERN MSTATUS SSL_enableHeartbeatSupport(sbyte4 connectionInstance, E_HeartbeatExtension value,
@@ -3259,7 +3264,7 @@ MOC_EXTERN MSTATUS SSL_enableHeartbeatSupport(sbyte4 connectionInstance, E_Heart
                                                                                        sbyte4 status, ubyte heartbeatType));
 #endif
 
-#if defined(__ENABLE_MOCANA_SSL_SERVER__)
+#if defined(__ENABLE_DIGICERT_SSL_SERVER__)
 /**
 @brief      Set the CA list that will be sent as part of Certificate Request message.
 
@@ -3276,8 +3281,8 @@ MOC_EXTERN MSTATUS SSL_enableHeartbeatSupport(sbyte4 connectionInstance, E_Heart
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3300,7 +3305,7 @@ To enable this function, at least one of the following flags must be defined in 
 MOC_EXTERN MSTATUS SSL_setClientCAList(SizedBuffer *pClientCAList, ubyte4 numClientCANames);
 #endif
 
-#if defined(__ENABLE_MOCANA_OCSP_CLIENT__)
+#if defined(__ENABLE_DIGICERT_OCSP_CLIENT__)
 MOC_EXTERN sbyte4 SSL_setCertifcateStatusRequestExtensions(sbyte4 connectionInstance,
                                                            char** ppTrustedResponderCertPath,
                                                            ubyte4 trustedResponderCertCount,
@@ -3313,7 +3318,7 @@ SSL_setOCSPCallback(sbyte4 (*funcPtrSingleCertStatusCallback)(sbyte4 connectionI
                                                               sbyte4 ocspStatus));
 #endif
 
-#if (defined(__ENABLE_MOCANA_DTLS_SERVER__) || defined(__ENABLE_MOCANA_DTLS_CLIENT__)) && defined(__ENABLE_MOCANA_DTLS_SRTP__) && defined(__ENABLE_MOCANA_SRTP_PROFILES_SELECT__)
+#if (defined(__ENABLE_DIGICERT_DTLS_SERVER__) || defined(__ENABLE_DIGICERT_DTLS_CLIENT__)) && defined(__ENABLE_DIGICERT_DTLS_SRTP__) && defined(__ENABLE_DIGICERT_SRTP_PROFILES_SELECT__)
 MOC_EXTERN sbyte4 SSL_setSrtpInitCallback(sbyte4(*cb)(sbyte4 connectionInstance, peerDescr *pChannelDescr,
                                                       const SrtpProfileInfo* pProfile, void* keyMaterials, ubyte* mki));
 MOC_EXTERN sbyte4 SSL_setSrtpEncodeCallback(sbyte4(*cb)(sbyte4 connectionInstance, peerDescr *pChannelDescr,
@@ -3322,20 +3327,20 @@ MOC_EXTERN sbyte4 SSL_setSrtpEncodeCallback(sbyte4(*cb)(sbyte4 connectionInstanc
 MOC_EXTERN sbyte4 SSL_enableSrtpProfiles(sbyte4 connectionInstance, ubyte2 *pSrtpProfileList, ubyte4 listLength);
 #endif
 
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
 
 MOC_EXTERN MSTATUS SSL_sendKeyUpdateRequest(sbyte4 connectionInstance, ubyte updateRequest);
 
-#if (defined(__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__) && defined(__ENABLE_MOCANA_SSL_CLIENT__)) || \
-     defined(__ENABLE_MOCANA_SSL_SERVER__)
+#if (defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__)) || \
+     defined(__ENABLE_DIGICERT_SSL_SERVER__)
 MOC_EXTERN MSTATUS SSL_getSignatureAlgo(sbyte4 connectionInstance, ubyte2 *pSigAlg);
 #endif
 
-#if defined(__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__) && defined(__ENABLE_MOCANA_SSL_SERVER__)
+#if defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__) && defined(__ENABLE_DIGICERT_SSL_SERVER__)
 MOC_EXTERN MSTATUS SSL_sendPosthandshakeAuthCertificateRequest(sbyte4 connectionInstance);
 #endif
 
-#if (defined(__ENABLE_MOCANA_TLS13_PSK__) && defined(__ENABLE_MOCANA_TLS13_0RTT__))
+#if (defined(__ENABLE_DIGICERT_TLS13_PSK__) && defined(__ENABLE_DIGICERT_TLS13_0RTT__))
 
 /**
 @brief      Set the recv early data size.
@@ -3353,13 +3358,13 @@ MOC_EXTERN MSTATUS SSL_sendPosthandshakeAuthCertificateRequest(sbyte4 connection
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flags must be defined:
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_TLS13_PSK__
-+ \c \__ENABLE_MOCANA_TLS13_0RTT__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_TLS13_PSK__
++ \c \__ENABLE_DIGICERT_TLS13_0RTT__
 
 @inc_file ssl.h
 
@@ -3396,13 +3401,13 @@ MOC_EXTERN sbyte4 SSL_setRecvEarlyDataSize(sbyte4 connectionInstance,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flags must be defined:
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_TLS13_PSK__
-+ \c \__ENABLE_MOCANA_TLS13_0RTT__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_TLS13_PSK__
++ \c \__ENABLE_DIGICERT_TLS13_0RTT__
 
 @inc_file ssl.h
 
@@ -3437,13 +3442,13 @@ MOC_EXTERN sbyte4 SSL_setMaxEarlyDataSize(sbyte4 connectionInstance,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_TLS13_PSK__
-+ \c \__ENABLE_MOCANA_TLS13_0RTT__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_TLS13_PSK__
++ \c \__ENABLE_DIGICERT_TLS13_0RTT__
 
 @inc_file ssl.h
 
@@ -3464,7 +3469,7 @@ MOC_EXTERN sbyte4 SSL_setEarlyData(sbyte4 connectionInstance,
                                           ubyte* pEarlyData, ubyte4 earlyDataSize);
 
 #endif
-#endif /* __ENABLE_MOCANA_TLS13__ */
+#endif /* __ENABLE_DIGICERT_TLS13__ */
 
 /**
 @brief      Retrieve the selected Application Layer Protocol.
@@ -3483,10 +3488,10 @@ MOC_EXTERN sbyte4 SSL_setEarlyData(sbyte4 connectionInstance,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3516,7 +3521,7 @@ MOC_EXTERN sbyte4  SSL_getSelectedApplicationProtocol( sbyte4 connectionInstance
                                                       const ubyte** selectedApplicationProtocol,
                                                       ubyte4* selectedApplicationProtocolLen);
 
-#ifdef __ENABLE_MOCANA_SSL_REHANDSHAKE__
+#ifdef __ENABLE_DIGICERT_SSL_REHANDSHAKE__
 /**
 @brief      Renegotiate an SSL/TLS session.
 
@@ -3538,13 +3543,13 @@ The peer can ignore the rehandshake request or send back an
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_REHANDSHAKE__
++ \c \__ENABLE_DIGICERT_SSL_REHANDSHAKE__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3566,13 +3571,13 @@ MOC_EXTERN sbyte4  SSL_initiateRehandshake(sbyte4 connectionInstance);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_REHANDSHAKE__
++ \c \__ENABLE_DIGICERT_SSL_REHANDSHAKE__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from SSL_connect().
 
@@ -3598,11 +3603,11 @@ MOC_EXTERN sbyte4 SSL_isRehandshakeAllowed(sbyte4 connectionInstance, intBoolean
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_REHANDSHAKE__
++ \c \__ENABLE_DIGICERT_SSL_REHANDSHAKE__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -3619,7 +3624,7 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 @funcdoc ssl.c
 */
 MOC_EXTERN sbyte4  SSL_checkRehandshakeTimer(sbyte4 connectionInstance);
-#endif /* __ENABLE_MOCANA_SSL_REHANDSHAKE__ */
+#endif /* __ENABLE_DIGICERT_SSL_REHANDSHAKE__ */
 
 /**
  * @dont_show
@@ -3630,7 +3635,7 @@ MOC_EXTERN sbyte4  SSL_checkRehandshakeTimer(sbyte4 connectionInstance);
  */
 MOC_EXTERN sbyte4  SSL_getSessionInfo(sbyte4 connectionInstance, ubyte* sessionIdLen, ubyte sessionId[SSL_MAXSESSIONIDSIZE], ubyte masterSecret[SSL_MASTERSECRETSIZE]);
 
-#ifdef __ENABLE_MOCANA_SSL_KEY_EXPANSION__
+#ifdef __ENABLE_DIGICERT_SSL_KEY_EXPANSION__
 /**
  * @dont_show
  * @internal
@@ -3649,7 +3654,7 @@ MOC_EXTERN sbyte4  SSL_generateExpansionKey(sbyte4 connectionInstance, ubyte *pK
 MOC_EXTERN sbyte4  SSL_generateTLSExpansionKey(sbyte4 connectionInstance, ubyte *pKey,ubyte2 keyLen, ubyte *keyPhrase, ubyte2 keyPhraseLen);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_INTERNAL_STRUCT_ACCESS__
+#ifdef __ENABLE_DIGICERT_SSL_INTERNAL_STRUCT_ACCESS__
 /**
  * @dont_show
  * @internal
@@ -3661,7 +3666,7 @@ MOC_EXTERN void*   SSL_returnPtrToSSLSocket(sbyte4 connectionInstance);
 #endif
 
 /* common client */
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 /**
 @brief      Get connection instance's identifying information.
 
@@ -3677,8 +3682,8 @@ MOC_EXTERN void*   SSL_returnPtrToSSLSocket(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @inc_file ssl.h
 
@@ -3702,7 +3707,7 @@ MOC_EXTERN sbyte4  SSL_getClientSessionInfo(sbyte4 connectionInstance,
                                             ubyte masterSecret[SSL_MASTERSECRETSIZE]);
 
 
-#if defined(__ENABLE_MOCANA_MULTIPLE_COMMON_NAMES__)
+#if defined(__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__)
 /**
 @brief      Specify a list of DNS names acceptable to the %client.
 
@@ -3716,11 +3721,11 @@ MOC_EXTERN sbyte4  SSL_getClientSessionInfo(sbyte4 connectionInstance,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_MULTIPLE_COMMON_NAMES__
++ \c \__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @inc_file ssl.h
 
@@ -3746,12 +3751,12 @@ SSL_setDNSNames( myConnection, myMatchInfo);
 */
 MOC_EXTERN sbyte4  SSL_setDNSNames( sbyte4 connectionInstance,
                                    const CNMatchInfo* cnMatchInfo);
-#endif /* __ENABLE_MOCANA_MULTIPLE_COMMON_NAMES__ */
+#endif /* __ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__ */
 
 MOC_EXTERN sbyte4 SSL_setServerNameIndication(sbyte4 connectionInstance,
                                               const char *serverName);
 
-#if defined(__ENABLE_MOCANA_SSL_SRP__)
+#if defined(__ENABLE_DIGICERT_SSL_SRP__)
 MOC_EXTERN sbyte4 SSL_setClientSRPIdentity(sbyte4 connectionInstance,
                                            ubyte* userName,
                                            ubyte userNameLen,
@@ -3759,9 +3764,9 @@ MOC_EXTERN sbyte4 SSL_setClientSRPIdentity(sbyte4 connectionInstance,
                                            ubyte4 passwordLen);
 #endif
 
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
-#if defined(__ENABLE_MOCANA_EAP_FAST__) && defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_EAP_FAST__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 /**
  * @dont_show
  * @internal
@@ -3771,7 +3776,7 @@ MOC_EXTERN sbyte4 SSL_setClientSRPIdentity(sbyte4 connectionInstance,
  */
 MOC_EXTERN sbyte4  SSL_setEAPFASTParams(sbyte4 connectionInstance, ubyte* pPacOpaque, ubyte4 pacOpaqueLen, ubyte pPacKey[/*PACKEY_SIZE*/]);
 #endif
-#if defined(__ENABLE_MOCANA_EAP_FAST__)
+#if defined(__ENABLE_DIGICERT_EAP_FAST__)
 MOC_EXTERN sbyte4 SSL_getEAPFAST_CHAPChallenge(sbyte4 connectionInstance, ubyte *challenge , ubyte4 challengeLen);
 /**
  * @dont_show
@@ -3791,7 +3796,7 @@ MOC_EXTERN sbyte4  SSL_getEAPFAST_IntermediateCompoundKey(sbyte4 connectionInsta
 MOC_EXTERN sbyte4  SSL_generateEAPFASTSessionKeys(sbyte4 connectionInstance, ubyte* S_IMCK, sbyte4 s_imckLen, ubyte* MSK, sbyte4 mskLen, ubyte* EMSK, sbyte4 emskLen);
 #endif
 
-#if (defined(__ENABLE_MOCANA_INNER_APP__))
+#if (defined(__ENABLE_DIGICERT_INNER_APP__))
 /**
  * @dont_show
  * @internal
@@ -3826,14 +3831,14 @@ MOC_EXTERN sbyte4 SSL_updateInnerAppSecret(sbyte4 connectionInstance, ubyte* ses
 MOC_EXTERN sbyte4 SSL_verifyInnerAppVerifyData(sbyte4 connectionInstance,ubyte *data,InnerAppType appType);
 #endif
 
-#if defined(__ENABLE_MOCANA_OCSP_CLIENT__)
+#if defined(__ENABLE_DIGICERT_OCSP_CLIENT__)
 MOC_EXTERN sbyte4 SSL_setOcspResponderUrl(sbyte4 connectionInstance, const char* pUrl);
 #endif
 
 /* common server */
-#if defined(__ENABLE_MOCANA_SSL_SERVER__)
+#if defined(__ENABLE_DIGICERT_SSL_SERVER__)
 
-#if defined(__ENABLE_MOCANA_SSL_SRP__)
+#if defined(__ENABLE_DIGICERT_SSL_SRP__)
 MOC_EXTERN sbyte4 SSL_getClientSRPIdentity(sbyte4 connectionInstance,
                                            const ubyte** identity,
                                            ubyte4* identityLength);
@@ -3844,12 +3849,12 @@ MOC_EXTERN MSTATUS SSL_setFuncPtrSRPCallback(sbyte4(*funcPtrSRPCallback)
                                               ubyte salt[SSL_PSK_SERVER_IDENTITY_LENGTH],
                                               ubyte4* saltLength,
                                               ubyte** verifier, ubyte4* verifierLength));
-#endif /* __ENABLE_MOCANA_SSL_SRP__ */
+#endif /* __ENABLE_DIGICERT_SSL_SRP__ */
 
 #endif
 
 /* common synchronous client/server */
-#if defined(__ENABLE_MOCANA_SSL_DUAL_MODE_API__) || ((defined(__ENABLE_MOCANA_SSL_SERVER__)) && (!defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__))) || ((defined(__ENABLE_MOCANA_SSL_CLIENT__)) && (!defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__)))
+#if defined(__ENABLE_DIGICERT_SSL_DUAL_MODE_API__) || ((defined(__ENABLE_DIGICERT_SSL_SERVER__)) && (!defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__))) || ((defined(__ENABLE_DIGICERT_SSL_CLIENT__)) && (!defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__)))
 /**
 @brief      Initialize NanoSSL %client or server internal structures.
 
@@ -3866,8 +3871,8 @@ MOC_EXTERN MSTATUS SSL_setFuncPtrSRPCallback(sbyte4(*funcPtrSRPCallback)
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -3888,7 +3893,7 @@ To enable this function, at least one of the following flags must be defined in 
 */
 MOC_EXTERN sbyte4  SSL_init(sbyte4 numServerConnections, sbyte4 numClientConnections);
 
-#if defined(__ENABLE_MOCANA_SSL_CUSTOM_RNG__)
+#if defined(__ENABLE_DIGICERT_SSL_CUSTOM_RNG__)
 MOC_EXTERN sbyte4  SSL_initEx(sbyte4 numServerConnections, sbyte4 numClientConnections, RNGFun rngFun, void* rngArg);
 #endif
 
@@ -3909,8 +3914,8 @@ MOC_EXTERN sbyte4  SSL_initEx(sbyte4 numServerConnections, sbyte4 numClientConne
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -3964,8 +3969,8 @@ MOC_EXTERN sbyte4  SSL_negotiateConnection(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -4007,8 +4012,8 @@ MOC_EXTERN sbyte4  SSL_send(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bu
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -4082,8 +4087,8 @@ MOC_EXTERN sbyte4  SSL_recv(sbyte4 connectionInstance, sbyte *pRetBuffer, sbyte4
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -4119,8 +4124,8 @@ MOC_EXTERN sbyte4  SSL_sendPending(sbyte4 connectionInstance, sbyte4 *pNumBytesP
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -4156,8 +4161,8 @@ MOC_EXTERN sbyte4  SSL_recvPending(sbyte4 connectionInstance, sbyte4 *pRetBoolea
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -4178,7 +4183,7 @@ MOC_EXTERN sbyte4  SSL_closeConnection(sbyte4 connectionInstance);
 #endif
 
 /* common asynchronous client/server */
-#if defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__) || defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__)
+#if defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__) || defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__)
 /**
 @brief      Initialize NanoSSL %client or %server internal structures.
 
@@ -4193,8 +4198,8 @@ MOC_EXTERN sbyte4  SSL_closeConnection(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4219,7 +4224,7 @@ To enable this function, at least one of the following flags must be defined in 
 */
 MOC_EXTERN sbyte4 SSL_ASYNC_init(sbyte4 numServerConnections, sbyte4 numClientConnections);
 
-#if defined(__ENABLE_MOCANA_SSL_CUSTOM_RNG__)
+#if defined(__ENABLE_DIGICERT_SSL_CUSTOM_RNG__)
 MOC_EXTERN sbyte4 SSL_ASYNC_initEx(sbyte4 numServerConnections, sbyte4 numClientConnections, RNGFun rngFun, void* rngArg);
 #endif
 
@@ -4240,8 +4245,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_initEx(sbyte4 numServerConnections, sbyte4 numClient
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4308,11 +4313,11 @@ MOC_EXTERN sbyte4 SSL_ASYNC_recvMessage(sbyte4 connectionInstance, ubyte *pBytes
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_API_EXTENSIONS__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_API_EXTENSIONS__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4352,8 +4357,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_recvMessage2(sbyte4 connectionInstance, ubyte *pByte
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4407,8 +4412,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_sendMessage(sbyte4 connectionInstance, sbyte *pBuffe
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4438,8 +4443,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_sendMessagePending(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4474,8 +4479,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_closeConnection(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4510,8 +4515,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_getSendBuffer(sbyte4 connectionInstance, ubyte *data
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4545,8 +4550,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_getRecvBuffer(sbyte4 connectionInstance, ubyte **dat
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4584,8 +4589,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_getRecvPending(sbyte4 connectionInstance, sbyte4 *le
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4626,8 +4631,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_getSendBufferZeroCopy(sbyte4 connectionInstance, uby
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -4648,7 +4653,7 @@ To enable this function, at least one of the following flags must be defined in 
 */
 MOC_EXTERN sbyte4 SSL_ASYNC_freeSendBufferZeroCopy(sbyte4 connectionInstance, ubyte4 numUnusedBytes);
 
-#if (defined(__ENABLE_MOCANA_MBEDTLS_SHIM__))
+#if (defined(__ENABLE_DIGICERT_MBEDTLS_SHIM__))
 /**
 @brief      Binds NanoSSL functions to be used by NanoSSL Shim layer.
 
@@ -4663,11 +4668,11 @@ MOC_EXTERN sbyte4 SSL_ASYNC_freeSendBufferZeroCopy(sbyte4 connectionInstance, ub
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_MBEDTLS_SHIM__
++ \c \__ENABLE_DIGICERT_MBEDTLS_SHIM__
 
 @inc_file ssl.h
 
@@ -4687,7 +4692,7 @@ Additionally, the following flag must be defined in moptions.h:
 MOC_EXTERN sbyte4 SSL_bindMbedtlsShimMethods(mssl_methods_t *pMeth);
 #endif
 
-#if (defined(__ENABLE_MOCANA_OPENSSL_SHIM__))
+#if (defined(__ENABLE_DIGICERT_OPENSSL_SHIM__))
 /**
 @brief      Binds NanoSSL functions to be used by NanoSSL Shim layer.
 
@@ -4702,11 +4707,11 @@ MOC_EXTERN sbyte4 SSL_bindMbedtlsShimMethods(mssl_methods_t *pMeth);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -4738,11 +4743,11 @@ MOC_EXTERN sbyte4 SSL_bindShimMethods(nssl_methods_t *pMeth);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -4766,11 +4771,11 @@ MOC_EXTERN MSTATUS SSL_decryptPKCS8PemKey(ubyte *pContent, ubyte4 contentLength,
 MOC_EXTERN sbyte4 SSL_InitAsymmetricKey(AsymmetricKey* pAsymKey);
 MOC_EXTERN sbyte4 SSL_UninitAsymmetricKey(AsymmetricKey* pAsymKey);
 MOC_EXTERN sbyte4 SSL_initializeVersion();
-#if defined(__ENABLE_MOCANA_DTLS_CLIENT__)
+#if defined(__ENABLE_DIGICERT_DTLS_CLIENT__)
 MOC_EXTERN sbyte4 SSL_DTLS_start(sbyte4 connectionInstance);
 #endif
 
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
 /**
 @brief      Convert DSA private key into Mocana's internal KeyBlob format.
 
@@ -4785,12 +4790,12 @@ MOC_EXTERN sbyte4 SSL_DTLS_start(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
-+ \c \__ENABLE_MOCANA_DSA__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_DSA__
 
 @inc_file ssl.h
 
@@ -4808,8 +4813,8 @@ Additionally, the following flag must be defined in moptions.h:
 @funcdoc ssl.c
 */
 MOC_EXTERN sbyte4 SSL_OSSL_DSAParamsToKeyBlob(OSSL_DSAParams *pD, void **ppKeyBlob, unsigned int *pBlobLen);
-#endif /* __ENABLE_MOCANA_DSA__ */
-#if (defined(__ENABLE_MOCANA_ECC__))
+#endif /* __ENABLE_DIGICERT_DSA__ */
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /**
 @brief      Convert ECC private key into Mocana's internal KeyBlob format.
 
@@ -4824,12 +4829,12 @@ MOC_EXTERN sbyte4 SSL_OSSL_DSAParamsToKeyBlob(OSSL_DSAParams *pD, void **ppKeyBl
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
-+ \c \__ENABLE_MOCANA_ECC__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_ECC__
 
 @inc_file ssl.h
 
@@ -4847,7 +4852,7 @@ Additionally, the following flag must be defined in moptions.h:
 @funcdoc ssl.c
 */
 MOC_EXTERN sbyte4 SSL_OSSL_ECCParamsToKeyBlob(OSSL_ECCParams *pEParams, void *ppKeyBlob, unsigned int *pBlobLen);
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
 /**
 @brief      Add a trust point to a Mocana SoT Platform certificate store.
@@ -4862,11 +4867,11 @@ MOC_EXTERN sbyte4 SSL_OSSL_ECCParamsToKeyBlob(OSSL_ECCParams *pEParams, void *pp
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -4904,11 +4909,11 @@ MOC_EXTERN sbyte4 SSL_OSSL_AddTrustPoint(void *pCertStore, u_int8_t *pDerBuf, in
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 n
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -4949,8 +4954,8 @@ MOC_EXTERN sbyte4 SSL_OSSL_AddIdenCertChainExtData(void *pCertStore, OSSL_SizedB
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -4983,8 +4988,8 @@ MOC_EXTERN sbyte4 SSL_ASYNC_acceptConnectionAlt(TCP_SOCKET tempSocket, void* pCe
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file ssl.h
 
@@ -5026,11 +5031,11 @@ SSL_ASYNC_connectAlt(TCP_SOCKET tempSocket, ubyte sessionIdLen, ubyte * sessionI
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file cert_store.h
 
@@ -5062,11 +5067,11 @@ MOC_EXTERN sbyte4 CERT_STORE_createStoreAlt(void **ppNewStore);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 Additionally, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_OPENSSL_SHIM__
++ \c \__ENABLE_DIGICERT_OPENSSL_SHIM__
 
 @inc_file cert_store.h
 
@@ -5081,8 +5086,8 @@ Additionally, the following flag must be defined in moptions.h:
 @funcdoc    cert_store.c
 */
 MOC_EXTERN MSTATUS CERT_STORE_releaseStoreAlt(void **ppReleaseStore);
-#endif /* __ENABLE_MOCANA_OPENSSL_SHIM__  || __ENABLE_MOCANA_MBEDTLS_SHIM__*/
-#endif /* defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__) || defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__) */
+#endif /* __ENABLE_DIGICERT_OPENSSL_SHIM__  || __ENABLE_DIGICERT_MBEDTLS_SHIM__*/
+#endif /* defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__) || defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__) */
 /**
 @brief      Checks if a secure connection has been established.
 
@@ -5097,12 +5102,12 @@ MOC_EXTERN MSTATUS CERT_STORE_releaseStoreAlt(void **ppReleaseStore);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -5188,12 +5193,12 @@ MOC_EXTERN sbyte4 SSL_getState(sbyte4 connectionInstance, sbyte4 *pState);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -5222,12 +5227,12 @@ MOC_EXTERN sbyte4 SSL_in_connect_init_moc(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -5274,7 +5279,7 @@ To enable this function, no flags need to be defined in moptions.h
 MOC_EXTERN MSTATUS SSL_SOCK_getPeerCertificateBytes(sbyte4 connectionInstance, ubyte **ppCertBytes, ubyte4 *pCertLen);
 
 /* sync server */
-#if defined(__ENABLE_MOCANA_SSL_DUAL_MODE_API__) || ((defined(__ENABLE_MOCANA_SSL_SERVER__)) && (!defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__)))
+#if defined(__ENABLE_DIGICERT_SSL_DUAL_MODE_API__) || ((defined(__ENABLE_DIGICERT_SSL_SERVER__)) && (!defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__)))
 /**
 @brief      Create a synchronous server connection context.
 
@@ -5288,7 +5293,7 @@ MOC_EXTERN MSTATUS SSL_SOCK_getPeerCertificateBytes(sbyte4 connectionInstance, u
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
 
 @inc_file ssl.h
 
@@ -5318,7 +5323,7 @@ MOC_EXTERN sbyte4  SSL_acceptConnection(TCP_SOCKET tempSocket,
 #endif
 
 /* sync client */
-#if (!defined(__ENABLE_MOCANA_OPENSSL_SHIM__) || defined(ENABLE_MOCANA_TAP_OSSL_REMOTE__)) && (defined(__ENABLE_MOCANA_SSL_DUAL_MODE_API__) || ((defined(__ENABLE_MOCANA_SSL_CLIENT__)) && (!defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__))))
+#if (!defined(__ENABLE_DIGICERT_OPENSSL_SHIM__) || defined(ENABLE_DIGICERT_TAP_OSSL_REMOTE__)) && (defined(__ENABLE_DIGICERT_SSL_DUAL_MODE_API__) || ((defined(__ENABLE_DIGICERT_SSL_CLIENT__)) && (!defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__))))
 /**
 @brief      Create a synchronous %client connection context.
 
@@ -5332,7 +5337,7 @@ MOC_EXTERN sbyte4  SSL_acceptConnection(TCP_SOCKET tempSocket,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
 
 @inc_file ssl.h
 
@@ -5377,7 +5382,7 @@ MOC_EXTERN sbyte4  SSL_connect(TCP_SOCKET tempSocket,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
 
 @inc_file ssl.h
 
@@ -5410,7 +5415,7 @@ SSL_PROXY_connect(TCP_SOCKET sslSocket, sbyte4 sslId, SSLTransportSend transport
 #endif
 
 /* async server */
-#ifdef __ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 /**
 @brief      Register a secure asynchronous SSL/TLS connection.
 
@@ -5423,7 +5428,7 @@ SSL_PROXY_connect(TCP_SOCKET sslSocket, sbyte4 sslId, SSLTransportSend transport
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 @inc_file ssl.h
 
@@ -5453,7 +5458,7 @@ MOC_EXTERN sbyte4  SSL_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
 #endif
 
 /* async client */
-#ifdef __ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
+#ifdef __ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 /**
 @brief      Create an asynchronous %client connection context.
 
@@ -5467,7 +5472,7 @@ MOC_EXTERN sbyte4  SSL_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @inc_file ssl.h
 
@@ -5510,7 +5515,7 @@ MOC_EXTERN sbyte4  SSL_ASYNC_connect(TCP_SOCKET tempSocket, ubyte sessionIdLen,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__
 
 @inc_file ssl.h
 
@@ -5527,7 +5532,7 @@ To enable this function, the following flag must be defined in moptions.h:
 MOC_EXTERN sbyte4  SSL_ASYNC_start(sbyte4 connectionInstance);
 #endif
 
-#ifndef __DISABLE_MOCANA_ALPN_CALLBACK__
+#ifndef __DISABLE_DIGICERT_ALPN_CALLBACK__
 /**  
 @brief      Register an Application Layer Protocol Negotiation callback
 
@@ -5540,11 +5545,11 @@ MOC_EXTERN sbyte4  SSL_ASYNC_start(sbyte4 connectionInstance);
 
 @flags
 To enable this callback, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_CLIENT__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_CLIENT__
 
 Additionally, the following flag must not be defined in moptions.h:
-+ \c \__DISABLE_MOCANA_ALPN_CALLBACK__
++ \c \__DISABLE_DIGICERT_ALPN_CALLBACK__
 
 @param connectionInstance       Connection instance returned from SSL_connect().
 @param funcPtrAlpnCallback      Function pointer to a valid ALPN callback function.
@@ -5566,9 +5571,9 @@ MOC_EXTERN MSTATUS SSL_setAlpnCallback(sbyte4 connectionInstance,
 
 
 
-#endif /* __DISABLE_MOCANA_ALPN_CALLBACK__ */
+#endif /* __DISABLE_DIGICERT_ALPN_CALLBACK__ */
 
-#if defined( __ENABLE_MOCANA_SSL_ALERTS__ )
+#if defined( __ENABLE_DIGICERT_SSL_ALERTS__ )
 
 /**
 @brief      Register an alert msg callback function
@@ -5579,7 +5584,7 @@ MOC_EXTERN MSTATUS SSL_setAlpnCallback(sbyte4 connectionInstance,
 
 @flags
 To enable this callback, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_ALERTS__
++ \c \__ENABLE_DIGICERT_SSL_ALERTS__
 
 @param connectionInstance       Connection instance returned from SSL_connect().
 @param funcPtrAlerCallback      Function pointer to a valid Alert callback function.
@@ -5599,7 +5604,7 @@ MOC_EXTERN MSTATUS SSL_setAlertCallback(sbyte4 connectionInstance,
                                                                        sbyte4 alertClass));
 #endif
 
-#ifndef __DISABLE_MOCANA_SSL_CERTIFICATE_CALLBACK__
+#ifndef __DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
 
 /**
 @brief     Provide Certificate and its validation status from the SSL stack
@@ -5618,7 +5623,7 @@ MOC_EXTERN MSTATUS SSL_setAlertCallback(sbyte4 connectionInstance,
 @flags
 Enabled by default.
 To disable, define tthe following flag in moptions.h
-+\c \__DISABLE_MOCANA_SSL_CERTIFICATE_CALLBACK__
++\c \__DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
 
 @param connectionInstance               Connection instance returned from 
                                         SSL_connect().
@@ -5668,7 +5673,7 @@ SSL_setCertAndStatusCallback(sbyte4 connectionInstance,
 @flags
 Enabled by default.
 To disable, define tthe following flag in moptions.h
-+\c \__DISABLE_MOCANA_SSL_CERTIFICATE_CALLBACK__
++\c \__DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
 
 @param connectionInstance               Connection instance returned from 
                                         SSL_connect().
@@ -5705,9 +5710,9 @@ SSL_setFullCertChainCallback(sbyte4 connectionInstance,
 @flags
 Enabled by default.
 To disable, define tthe following flag in moptions.h
-+\c \__DISABLE_MOCANA_SSL_CLIENT__
-+\c \__DISABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
-+\c \__DISABLE_MOCANA_SSL_CERTIFICATE_CALLBACK__
++\c \__DISABLE_DIGICERT_SSL_CLIENT__
++\c \__DISABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
++\c \__DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
 
 @param connectionInstance               Connection instance returned from
                                         SSL_connect().
@@ -5734,7 +5739,7 @@ SSL_setClientCertAuthorityCallback(sbyte4 connectionInstance,
                                              SizedBuffer *pCertAuthorities,
                                              ubyte4 certAuthorityCount));
 
-#endif /* __DISABLE_MOCANA_SSL_CERTIFICATE_CALLBACK__ */
+#endif /* __DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__ */
 
 /**
 @brief     Set Callback to request cert and key from the Application.
@@ -5753,8 +5758,8 @@ SSL_setClientCertAuthorityCallback(sbyte4 connectionInstance,
 @flags
 Enabled by default.
 To disable, define tthe following flag in moptions.h
-+\c \__DISABLE_MOCANA_SSL_CLIENT__
-+\c \__DISABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
++\c \__DISABLE_DIGICERT_SSL_CLIENT__
++\c \__DISABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
 
 @param connectionInstance           Connection instance returned from SSL_connect().
 @param funcPtrClientCertCallback    Function pointer to a valid
@@ -5824,8 +5829,8 @@ SSL_setCertVerifySignCallback(sbyte4 (*funcPtrMutualAuthCertificateVerify)
 @flags
 Enabled by default.
 To disable, define tthe following flag in moptions.h
-+\c \__DISABLE_MOCANA_SSL_CLIENT__
-+\c \__DISABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
++\c \__DISABLE_DIGICERT_SSL_CLIENT__
++\c \__DISABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
 
 @param connectionInstance Connection instance returned from SSL_connect().
 @param pCerts             Certificate to add to cert store (in der format).
@@ -5848,7 +5853,7 @@ MOC_EXTERN MSTATUS SSL_populateMutualAuthCertStore(sbyte4 connectionInstance,
                                                    ubyte *pKey, ubyte4 keyLen,
                                                    const ubyte *pCACert, ubyte4 caCertLength);
 
-#ifdef __ENABLE_MOCANA_SSL_INVALID_CERTIFICATE_CALLBACK__
+#ifdef __ENABLE_DIGICERT_SSL_INVALID_CERTIFICATE_CALLBACK__
 /**
 @brief      Provide status to application when stack receives empty certificate.
 
@@ -5864,7 +5869,7 @@ MOC_EXTERN MSTATUS SSL_populateMutualAuthCertStore(sbyte4 connectionInstance,
 
 @flags
 To enable define the following fla in moptions.h
-+\c \__ENABLE_MOCANA_SSL_INVALID_CERTIFICATE_CALLBACK__
++\c \__ENABLE_DIGICERT_SSL_INVALID_CERTIFICATE_CALLBACK__
 
 @param connectionInstance               Connection instance returned from
                                         SSL_connect().
@@ -5896,7 +5901,7 @@ SSL_setInvalidCertCallback(sbyte4 connectionInstance,
                                            MSTATUS validationstatus));
 
 
-#endif /* __ENABLE_MOCANA_SSL_INVALID_CERTIFICATE_CALLBACK__ */
+#endif /* __ENABLE_DIGICERT_SSL_INVALID_CERTIFICATE_CALLBACK__ */
 
 /**
 @brief     Register a version callback to record the server version and client
@@ -5953,8 +5958,8 @@ SSL_setVersionCallback(
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_DHE_SUPPORT__
-+ \c \__ENABLE_MOCANA_SSL_DH_ANON_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_DHE_SUPPORT__
++ \c \__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__
 
 @inc_file ssl.h
 
@@ -5983,7 +5988,7 @@ MOC_EXTERN ubyte4 SSL_getMaxProtoVersion();
 MOC_EXTERN sbyte4 SSL_getProtoVersion(sbyte4 connectionInstance);
 
 
-#ifdef __ENABLE_MOCANA_SSL_KEY_EXPANSION__
+#ifdef __ENABLE_DIGICERT_SSL_KEY_EXPANSION__
 /**
 @brief      Generate the export key material with the given label and context for a connection.
 
@@ -5998,7 +6003,7 @@ MOC_EXTERN sbyte4 SSL_getProtoVersion(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_KEY_EXPANSION__
++ \c \__ENABLE_DIGICERT_SSL_KEY_EXPANSION__
 @inc_file ssl.h
 
 @param connectionInstance    Connection instance returned from SSL_connect().
@@ -6044,7 +6049,7 @@ MOC_EXTERN sbyte4 SSL_generateExportKeyMaterial(sbyte4 connectionInstance, ubyte
 @flags
 To enable this function, at least one of the following flags must be defined in
 moption.h:
-+ \c \__ENABLE_MOCANA_SSL_KEY_EXPANSION__
++ \c \__ENABLE_DIGICERT_SSL_KEY_EXPANSION__
 @inc_file ssl.h
 
 @param connectionInstance   Connection instance returned from SSL_connect().
@@ -6067,9 +6072,9 @@ MOC_EXTERN sbyte4 SSL_generateEarlyExportKeyMaterial(sbyte4 connectionInstance,
                                                      ubyte *pKey, ubyte2 keyLen,
                                                      ubyte *pLabel, ubyte2 labelLen,
                                                      ubyte *pContext, ubyte4 contextLen);
-#endif /* __ENABLE_MOCANA_SSL_KEY_EXPANSION__ */
+#endif /* __ENABLE_DIGICERT_SSL_KEY_EXPANSION__ */
 
-#if (defined(__ENABLE_MOCANA_TLS13__) && defined(__ENABLE_MOCANA_TLS13_0RTT__))
+#if (defined(__ENABLE_DIGICERT_TLS13__) && defined(__ENABLE_DIGICERT_TLS13_0RTT__))
 /**
 @brief      Function to set the callback to pass data
             to the application received during the SSL handshake.
@@ -6083,8 +6088,8 @@ MOC_EXTERN sbyte4 SSL_generateEarlyExportKeyMaterial(sbyte4 connectionInstance,
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_TLS13_0RTT__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_TLS13_0RTT__
 
 @inc_file ssl.h
 
@@ -6107,9 +6112,9 @@ SSL_setReceiveApplicationDataCallback(sbyte4 (*funcPtrTLS13ApplicationDataCallba
                                                                                    ubyte *pData, ubyte4 dataLen,
                                                                                    dataState state));
 
-#endif /* (defined(__ENABLE_MOCANA_TLS13__) && defined(__ENABLE_MOCANA_TLS13_0RTT__)) */
+#endif /* (defined(__ENABLE_DIGICERT_TLS13__) && defined(__ENABLE_DIGICERT_TLS13_0RTT__)) */
 
-#if (defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__))
 /**
 @brief      Set the alias of the certificate-key pair to be used for mutual auth.
 
@@ -6123,8 +6128,8 @@ SSL_setReceiveApplicationDataCallback(sbyte4 (*funcPtrTLS13ApplicationDataCallba
 
 @flags
 To enable define the following fla in moptions.h
-+\c \__ENABLE_MOCANA_SSL_CLIENT__
-+\c \__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
++\c \__ENABLE_DIGICERT_SSL_CLIENT__
++\c \__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
 
 @param pAlias         Alias byte string; Alias will be used to search the
                       corresponding certificate
@@ -6145,7 +6150,7 @@ MOC_EXTERN MSTATUS
 SSL_setMutualAuthCertificateAlias(sbyte4 connectionInstance, ubyte *pAlias, ubyte4 aliasLen);
 #endif
 
-#endif /* (defined(__ENABLE_MOCANA_SSL_SERVER__) || defined(__ENABLE_MOCANA_SSL_CLIENT__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSL_SERVER__) || defined(__ENABLE_DIGICERT_SSL_CLIENT__)) */
 
 #ifdef __cplusplus
 }
@@ -6154,18 +6159,18 @@ SSL_setMutualAuthCertificateAlias(sbyte4 connectionInstance, ubyte *pAlias, ubyt
 MOC_EXTERN MSTATUS SSL_setMaxTimerCountForRehandshake(ubyte4 timerCount);
 MOC_EXTERN MSTATUS SSL_setmaxByteCount(ubyte4 byteCount);
 
-#ifdef __ENABLE_MOCANA_SSL_REHANDSHAKE__
+#ifdef __ENABLE_DIGICERT_SSL_REHANDSHAKE__
 MOC_EXTERN MSTATUS SSL_setFuncPtrClientRehandshakeRequest(sbyte4(*funcPtrClientRehandshakeRequest)
                                                                 (sbyte4 connectionInstance));
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_ALERTS__
+#ifdef __ENABLE_DIGICERT_SSL_ALERTS__
 MOC_EXTERN MSTATUS SSL_setFuncPtrAlertCallback(sbyte4 (*funcPtrAlertCallback)
                                                       (sbyte4 connectionInstance,
                                                        sbyte4 alertId, sbyte4 alertClass));
 #endif
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_SSL_SESSION_TICKET_RFC_5077__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
 MOC_EXTERN MSTATUS
 SSL_setClientSaveTicketCallback(sbyte4 connectionInstance,
                                 sbyte4 (*cb)(sbyte4 connectionInstance,
@@ -6180,7 +6185,7 @@ SSL_setClientRetrieveTicketCallback(sbyte4 connectionInstance,
                                                  intBoolean *pFreememory));
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSL_PSK_SUPPORT__) || defined(__ENABLE_MOCANA_TLS13_PSK__))
+#if (defined(__ENABLE_DIGICERT_SSL_PSK_SUPPORT__) || defined(__ENABLE_DIGICERT_TLS13_PSK__))
 MOC_EXTERN MSTATUS SSL_setFuncPtrLookupPSK(sbyte4 (*funcPtrLookupPSK)
                                                   (sbyte4, ubyte*, ubyte4,
                                                    ubyte[SSL_PSK_MAX_LENGTH],
@@ -6190,7 +6195,7 @@ MOC_EXTERN MSTATUS SSL_setFuncPtrGetHintPSK(sbyte4 (*funcPtrGetHintPSK)
                                                    (sbyte4, ubyte hintPSK[SSL_PSK_SERVER_IDENTITY_LENGTH],
                                                     ubyte4 *));
 
-#if defined(__ENABLE_MOCANA_TLS13_PSK__)
+#if defined(__ENABLE_DIGICERT_TLS13_PSK__)
 
 /**
 @brief      Deserialize TLS 1.3 PSK.
@@ -6225,8 +6230,8 @@ MOC_EXTERN MSTATUS SSL_setFuncPtrGetHintPSK(sbyte4 (*funcPtrGetHintPSK)
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_TLS13_PSK__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_TLS13_PSK__
 
 @inc_file ssl.h
 
@@ -6276,8 +6281,8 @@ MOC_EXTERN MSTATUS SSL_deserializePSK(ubyte *pPsk, ubyte4 pskLen, tls13PSK **ppR
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_TLS13_PSK__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_TLS13_PSK__
 
 @inc_file ssl.h
 
@@ -6309,8 +6314,8 @@ MOC_EXTERN MSTATUS SSL_serializePSK(tls13PSK *pPsk, ubyte **ppPsk, ubyte4 *pPskL
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_TLS13__
-+ \c \__ENABLE_MOCANA_TLS13_PSK__
++ \c \__ENABLE_DIGICERT_TLS13__
++ \c \__ENABLE_DIGICERT_TLS13_PSK__
 
 @inc_file ssl.h
 
@@ -6326,15 +6331,15 @@ To enable this function, at least one of the following flags must be defined in 
 */
 MOC_EXTERN MSTATUS SSL_freePSK(tls13PSK **ppPsk);
 
-#endif /* __ENABLE_MOCANA_TLS13_PSK__ */
+#endif /* __ENABLE_DIGICERT_TLS13_PSK__ */
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 MOC_EXTERN MSTATUS SSL_setFuncPtrChoosePSK(sbyte4 (*funcPtrChoosePSK)
                                                   (sbyte4, ubyte *, ubyte4,
                                                    ubyte retPskIdentity[SSL_PSK_SERVER_IDENTITY_LENGTH],
                                                    ubyte4 *, ubyte retPSK[SSL_PSK_MAX_LENGTH], ubyte4 *));
 
-#if defined(__ENABLE_MOCANA_TLS13_PSK__)
+#if defined(__ENABLE_DIGICERT_TLS13_PSK__)
 MOC_EXTERN MSTATUS
 SSL_setClientSavePSKCallback(sbyte4 connectionInstance,
                              sbyte4 (*cb)(sbyte4 connectionInstance,
@@ -6348,16 +6353,16 @@ SSL_CLIENT_setRetrievePSKCallback(sbyte4 connectionInstance,
                                        void *userData, void **ppPSKs,
                                        ubyte2 *pNumPSKs,ubyte* selectedIndex,
                                        intBoolean *pFreeMemory));
-#endif /* __ENABLE_MOCANA_TLS13_PSK__ */
-#endif /*__ENABLE_MOCANA_SSL_CLIENT__ */
-#endif /* __ENABLE_MOCANA_SSL_PSK_SUPPORT__  || __ENABLE_MOCANA_TLS13_PSK__ */
+#endif /* __ENABLE_DIGICERT_TLS13_PSK__ */
+#endif /*__ENABLE_DIGICERT_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_PSK_SUPPORT__  || __ENABLE_DIGICERT_TLS13_PSK__ */
 
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
 
 MOC_EXTERN MSTATUS SSL_setFuncPtrKeyUpdateRequest(sbyte4 (*funcPtrKeyUpdate)
                                                          (sbyte4 connectionInstance));
-#if defined(__ENABLE_MOCANA_TLS13_PSK__)
-#if defined(__ENABLE_MOCANA_SSL_SERVER__)
+#if defined(__ENABLE_DIGICERT_TLS13_PSK__)
+#if defined(__ENABLE_DIGICERT_SSL_SERVER__)
 MOC_EXTERN MSTATUS
 SSL_setServerSavePSKCallback(sbyte4 (*cb)(sbyte4 connectionInstance,
                                           ubyte* ServerInfo, ubyte4 serverInfoLen,
@@ -6374,12 +6379,12 @@ SSL_setServerDeletePSKCallback(sbyte4 (*cb)(sbyte4 connectionInstance,
                                           sbyte* ServerInfo, ubyte4 serverInfoLen,
                                           ubyte* pIdentityPSK, ubyte4 identityLengthPSK,
                                           ubyte* pPsk));
-#endif /* __ENABLE_MOCANA_SSL_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSL_SERVER__ */
 
-#endif /* __ENABLE_MOCANA_TLS13_PSK__ */
-#endif /* __ENABLE_MOCANA_TLS13__ */
+#endif /* __ENABLE_DIGICERT_TLS13_PSK__ */
+#endif /* __ENABLE_DIGICERT_TLS13__ */
 
-#if (defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_SSL_SESSION_TICKET_RFC_5077__))
+#if (defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__))
 MOC_EXTERN MSTATUS
 SSL_setClientSaveTicketCallback(sbyte4 connectionInstance,
                                 sbyte4 (*cb)(sbyte4 connectionInstance,
@@ -6398,7 +6403,7 @@ MOC_EXTERN MSTATUS SSL_getSharedSignatureAlgorithm(sbyte4 connectionInstance, ub
                                                    ubyte2 *pSigAlgo, ubyte isPeer);
 MOC_EXTERN MSTATUS SSL_INTERNAL_setConnectionState(sbyte4 connectionInstance, sbyte4 connectionState);
 
-#if defined(__ENABLE_MOCANA_TAP__) && defined(__ENABLE_MOCANA_TAP_DEFER_UNLOADKEY__)
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_TAP_DEFER_UNLOADKEY__)
 /**
 @brief      Unload the TAP keys in deferred mode, when the application is shutting down.
 
@@ -6406,8 +6411,8 @@ MOC_EXTERN MSTATUS SSL_INTERNAL_setConnectionState(sbyte4 connectionInstance, sb
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_TAP__
-+ \c \__ENABLE_MOCANA_TAP_DEFER_UNLOADKEY__
++ \c \__ENABLE_DIGICERT_TAP__
++ \c \__ENABLE_DIGICERT_TAP_DEFER_UNLOADKEY__
 
 @inc_file ssl.h
 

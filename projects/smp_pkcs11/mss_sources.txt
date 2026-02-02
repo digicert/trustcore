@@ -1,0 +1,3 @@
+MSS_SRC_DIR/smp/smp_pkcs11/smp_pkcs11_util.c
+MSS_SRC_DIR/smp/smp_pkcs11/smp_pkcs11_api.c
+MSS_SRC_DIR/smp/smp_pkcs11/smp_pkcs11_interface.c

@@ -5,25 +5,18 @@ option(CM_ENABLE_TAP                                "Enable TAP"                
 
 project(SSHClient LANGUAGES C CXX)
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-    set(CRYPTO_LIB_ARCH_DIR "aarch64")
-else()
-    set(CRYPTO_LIB_ARCH_DIR "linux-x86_64")
-endif()
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 
 if (DEFINED SECURE_PATH)
   message("\nSECURE_PATH = ${SECURE_PATH}")
   add_definitions("-D__ENABLE_DIGICERT_SECURE_PATH__")
-  add_definitions("-D__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__")
+  add_definitions("-D__ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__")
   add_definitions("-DMANDATORY_BASE_PATH=\"${SECURE_PATH}\"")
 endif()
 
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
 set(LIB_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
-set(CRYPTO_LIBS   "${CMAKE_CURRENT_SOURCE_DIR}/../../crypto_lib/${CRYPTO_LIB_ARCH_DIR}")
 set(CMAKE_BUILD_RPATH "${LIB_DIR}")
 set(SAMPLE_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../samples/bin")
 set(SAMPLE_FILE_PATH "${SAMPLE_BIN_DIR}/ssh_client")
@@ -36,53 +29,37 @@ include_directories(${INCLUDE_DIR})
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sshc_example.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sshc_shell_example.c
-    ${SRC_DIR}/initialize/digicert_example.c
+    ${SRC_DIR}/../samples/common/digicert_example.c
 )
 
 add_executable(ssh_client ${SOURCE_FILES})
 
-set(ASN1_LIB          "${LIB_DIR}/libasn1.so")
-set(COMMON_LIB        "${LIB_DIR}/libcommon.so")
-set(INITIALIZE_LIB    "${LIB_DIR}/libinitialize.so")
-set(PLATFORM_LIB      "${LIB_DIR}/libplatform.so")
-set(NANOSSHC_LIB      "${LIB_DIR}/libnanosshc.so")
+set(ASN1_LIB             "${LIB_DIR}/libasn1.so")
+set(COMMON_LIB           "${LIB_DIR}/libcommon.so")
+set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.so")
+set(PLATFORM_LIB         "${LIB_DIR}/libplatform.so")
+set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.so")
+set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.so")
+set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
+set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.so")
+set(NANOSSHC_LIB         "${LIB_DIR}/libnanosshc.so")
+set(CERT_ENROLL_LIB      "${LIB_DIR}/libcert_enroll.so")
 
-add_library(nanocap SHARED IMPORTED)
-  set_target_properties(nanocap PROPERTIES
-  IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocap.so")
-
-add_library(nanocert SHARED IMPORTED)
-  set_target_properties(nanocert PROPERTIES
-  IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocert.so")
-
-add_library(nanocrypto SHARED IMPORTED)
-  set_target_properties(nanocrypto PROPERTIES
-  IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanocrypto.so")
-
-add_library(cryptointerface SHARED IMPORTED)
-  set_target_properties(cryptointerface PROPERTIES
-  IMPORTED_LOCATION "${CRYPTO_LIBS}/libcryptointerface.so")
+if(CM_ENABLE_SSL)
+  set(NANOSSL_LIB          "${LIB_DIR}/libnanossl.so")
+endif()
 
 if(CM_ENABLE_TAP)
-  add_library(nanotap2_common SHARED IMPORTED)
-    set_target_properties(nanotap2_common PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2_common.so")
-
-  add_library(libnanotap2_configparser SHARED IMPORTED)
-    set_target_properties(libnanotap2_configparser PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2_configparser.so")
-
-  add_library(libnanotap2 SHARED IMPORTED)
-    set_target_properties(libnanotap2 PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libnanotap2.so")
-
-  add_library(libsmptpm2 SHARED IMPORTED)
-    set_target_properties(libsmptpm2 PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libsmptpm2.so")
-
-  add_library(libtpm2 SHARED IMPORTED)
-    set_target_properties(libtpm2 PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIBS}/libtpm2.so")
+  set(NANOTAP2_COMMON_LIB "${LIB_DIR}/libnanotap2_common.so")
+  set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.so")
+  set(NANOTAP2_LIB "${LIB_DIR}/libnanotap2.so")
+  if(ENABLE_PKCS11_SOFTHSM OR ENABLE_PKCS11_TEE)
+    set(SMP_LIB "${LIB_DIR}/libsmppkcs11.so")
+    set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
+  elseif(ENABLE_TPM2)
+    set(SMP_LIB "${LIB_DIR}/libsmptpm2.so")
+    set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
+  endif()
 
   target_link_libraries(ssh_client PRIVATE
       ${PLATFORM_LIB}
@@ -90,15 +67,17 @@ if(CM_ENABLE_TAP)
       ${COMMON_LIB}
       ${INITIALIZE_LIB}
       ${NANOSSHC_LIB}
-      nanocap
-      nanocert
-      nanocrypto
-      cryptointerface
-      nanotap2_common
-      libnanotap2_configparser
-      libnanotap2
-      libsmptpm2
-      libtpm2
+      ${NANOCRYPTO_LIB}
+      ${NANOCAP_LIB}
+      ${CRYPTO_INTERFACE_LIB}
+      ${NANOCERT_LIB}
+      $<$<BOOL:${CM_ENABLE_SSL}>:${NANOSSL_LIB}>
+      ${CERT_ENROLL_LIB}
+      ${NANOTAP2_COMMON_LIB}
+      ${NANOTAP2_CONFIGPARSER_LIB}
+      ${NANOTAP2_LIB}
+      ${SMP_LIB}
+      ${TPM2_LIB}
       )
 
 else()
@@ -109,10 +88,12 @@ else()
       ${COMMON_LIB}
       ${INITIALIZE_LIB}
       ${NANOSSHC_LIB}
-      nanocap
-      nanocert
-      nanocrypto
-      cryptointerface
+      ${NANOCRYPTO_LIB}
+      ${NANOCAP_LIB}
+      ${CRYPTO_INTERFACE_LIB}
+      ${NANOCERT_LIB}
+      $<$<BOOL:${CM_ENABLE_SSL}>:${NANOSSL_LIB}>
+      ${CERT_ENROLL_LIB}
       )
 
 endif()

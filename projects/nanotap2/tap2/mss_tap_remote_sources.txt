@@ -1,0 +1,3 @@
+MSS_SRC_DIR/common/mtcp.c
+MSS_SRC_DIR/platform/win32_tcp.c
+MSS_SRC_DIR/platform/win32_udp.c

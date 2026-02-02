@@ -1,0 +1,164 @@
+cmake_minimum_required (VERSION 3.5)
+
+function(init_flags)
+  # initializing flags
+  message("")
+  foreach(stem CXX_FLAGS
+          CXX_FLAGS_DEBUG
+          CXX_FLAGS_RELEASE
+          C_FLAGS
+          C_FLAGS_DEBUG
+          C_FLAGS_RELEASE
+          MODULE_LINKER_FLAGS
+          MODULE_LINKER_FLAGS_DEBUG
+          EXE_LINKER_FLAGS
+          EXE_LINKER_FLAGS_DEBUG
+          SHARED_LINKER_FLAGS
+          SHARED_LINKER_FLAGS_DEBUG)
+      set(CMAKE_${stem} "${CMAKE_${stem}} ${${stem}_MOCANA}" PARENT_SCOPE)
+      string(STRIP "${CMAKE_${stem}}" CMAKE_${stem})
+      message("----------------")
+      message("${stem}_MOCANA = ${${stem}_MOCANA}")
+      message("CMAKE_${stem}  = ${CMAKE_${stem}}")
+  endforeach()
+
+  if (WIN32)
+      message("---- CFLAGS update for windows ----")
+      #Ensure that the library is built using static version of the run-time library msvcrt
+      foreach(item CXX_FLAGS
+              CXX_FLAGS_RELEASE
+              C_FLAGS
+              C_FLAGS_RELEASE
+              )
+      message("----------------")
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      if ("$ENV{CM_ENV_FORCE_STATIC_LINK}" STREQUAL "1")
+        set(CMAKE_${item} "${CMAKE_${item}} /MT" PARENT_SCOPE)
+        string(REPLACE "/MD" "/MT" CMAKE_${item} "${CMAKE_${item}}")
+      endif()
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      endforeach()
+
+      foreach(item CXX_FLAGS_DEBUG
+              C_FLAGS_DEBUG
+              )
+      message("----------------")
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      if ("$ENV{CM_ENV_FORCE_STATIC_LINK}" STREQUAL "1")
+        set(CMAKE_${item} "${CMAKE_${item}} /MTd" PARENT_SCOPE)
+        string(REPLACE "/MDd" "/MTd" CMAKE_${item} "${CMAKE_${item}}")
+      endif()
+      message("CMAKE_${item}  = ${CMAKE_${item}}")
+      endforeach()
+  endif()
+endfunction()
+
+function(buildflags targetdir extraFlags mocana_flags)
+  message("TARGET_DIR = ${targetdir}")
+  init_flags()
+  set(MOCANA_FLAGS_FILE "${targetdir}/mocana_flags.txt")
+
+  if (NOT CM_DISABLE_SUITEB)
+      set(MOCANA_SUITEB_FLAGS_FILE "${targetdir}/mocana_suiteb_flags.txt")
+      message("\nMOCANA_SUITEB_FLAGS_FILE = ${MOCANA_SUITEB_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_DEBUG)
+      set(MOCANA_DEBUG_FLAGS_FILE "${targetdir}/mocana_debug_flags.txt")
+      message("\nMOCANA_DEBUG_FLAGS_FILE = ${MOCANA_DEBUG_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_TAP_REMOTE)
+      set(MOCANA_TAP_REMOTE_FLAGS_FILE "${targetdir}/mocana_tap_remote_flags.txt")
+      message("\nMOCANA_TAP_REMOTE_FLAGS_FILE = ${MOCANA_TAP_REMOTE_FLAGS_FILE}")
+  endif()
+
+  if (CM_ENABLE_TAP_EXTERN)
+      set(MOCANA_TAP_EXTERN_FLAGS_FILE "${targetdir}/mocana_tap_extern_flags.txt")
+      message("\nMOCANA_TAP_EXTERN_FLAGS_FILE = ${MOCANA_TAP_EXTERN_FLAGS_FILE}")
+  endif()
+
+  if(NOT EXISTS ${MOCANA_FLAGS_FILE})
+      message(FATAL_ERROR "\nMOCANA_FLAGS_FILE = ${MOCANA_FLAGS_FILE} does not exist")
+  endif()
+
+  message("\nMOCANA_FLAGS_FILE = ${MOCANA_FLAGS_FILE}")
+
+  file(STRINGS ${MOCANA_FLAGS_FILE} mocana_flags)
+
+  # Adding suiteb flags
+  if (NOT CM_DISABLE_SUITEB)
+      file(STRINGS ${MOCANA_SUITEB_FLAGS_FILE} mocana_suiteb_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_suiteb_flags})
+  endif()
+
+  # Adding debug flags
+  if (CM_ENABLE_DEBUG)
+      file(STRINGS ${MOCANA_DEBUG_FLAGS_FILE} mocana_debug_flags)
+      message("\nMOCANA_DEBUG_FLAGS = ${mocana_debug_flags}")
+      if(WIN32)
+          string(REGEX REPLACE "-D__ENABLE_DIGICERT_VALGRIND_SUPPORT__" "" mocana_debug_flags "${mocana_debug_flags}")
+      endif()
+      set(mocana_flags ${mocana_flags} ${mocana_debug_flags})
+  endif()
+
+  # Adding tap extern flags
+  if (CM_ENABLE_TAP)
+      if(CM_ENABLE_OPENSSL_SHIM)
+        if(CM_ENABLE_TAP_EXTERN)
+            file(STRINGS ${MOCANA_TAP_EXTERN_FLAGS_FILE} mocana_tap_extern_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_tap_extern_flags})
+        endif()
+      endif()
+
+  endif()
+
+
+
+  # Adding tap remote flags
+  if (CM_ENABLE_TAP_REMOTE)
+
+      file(STRINGS ${MOCANA_TAP_REMOTE_FLAGS_FILE} mocana_tap_remote_flags)
+      set(mocana_flags ${mocana_flags} ${mocana_tap_remote_flags})
+
+      if(CM_ENABLE_OPENSSL_SHIM )
+           file(STRINGS ${MOCANA_OPENSSL_SHIM_TAP_REMOTE_FLAGS_FILE} mocana_openssl_shim_tap_remote_flags)
+           set(mocana_flags ${mocana_flags} ${mocana_openssl_shim_tap_remote_flags})
+
+           if(CM_ENABLE_TAP_EXTERN)
+                file(STRINGS ${MOCANA_TAP_EXTERN_FLAGS_FILE} mocana_tap_extern_flags)
+                set(mocana_flags ${mocana_flags} ${mocana_tap_extern_flags})
+           endif()
+
+      endif()
+
+      if(CM_BUILD_NANOSSL_LIB)
+         file(STRINGS ${MOCANA_NANOSSL_TAP_REMOTE_FLAGS_FILE} mocana_nanossl_tap_remote_flags)
+         set(mocana_flags ${mocana_flags} ${mocana_nanossl_tap_remote_flags})
+      endif()
+
+  endif()
+
+   if(CM_BUILD_NANOSSL_LIB OR CM_ENABLE_OPENSSL_SHIM)
+       if(CM_ENABLE_OPENSSL_SHIM)
+            file(STRINGS ${MOCANA_OPENSSL_SHIM_FLAGS_FILE} mocana_openssl_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_openssl_flags})
+       endif()
+   endif()
+
+  if(CM_BUILD_SSL_CLIENT OR CM_BUILD_SSL_SERVER)
+     if(CM_ENABLE_SSL_MAUTH_SUPPORT)
+            file(STRINGS ${MOCANA_MUTUAL_AUTH_FLAGS_FILE} mocana_mutual_auth_flags)
+            set(mocana_flags ${mocana_flags} ${mocana_mutual_auth_flags})
+     endif()
+  endif()
+
+  set(mocana_flags ${mocana_flags} ${extraFlags})
+
+  foreach(flag ${mocana_flags})
+      string(STRIP "${MOCANA_FLAGS} ${flag}" MOCANA_FLAGS)
+  endforeach()
+
+  set(MOCANA_FLAGS ${MOCANA_FLAGS} PARENT_SCOPE)
+
+endfunction()

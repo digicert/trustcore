@@ -78,7 +78,7 @@ SEG_strCpy(const sbyte* pSrcBuf, sbyte* pDestBuf, sbyte4 destBufLen)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_memsetSeg(mocSegDescr *pSrcBufSeg, ubyte valueToSet, ubyte4 numBytesToSet, ubyte4 offset)
+DIGI_memsetSeg(mocSegDescr *pSrcBufSeg, ubyte valueToSet, ubyte4 numBytesToSet, ubyte4 offset)
 {
     MSTATUS         status = OK;
     mocSegDescr*    pCurSeg = pSrcBufSeg;
@@ -99,12 +99,12 @@ MOC_memsetSeg(mocSegDescr *pSrcBufSeg, ubyte valueToSet, ubyte4 numBytesToSet, u
 
     if (numBytesToSet > numBytesLeft)
     {
-        MOC_MEMSET(GET_SEG_BUFFER(pCurSeg) + offset, valueToSet, GET_SEG_BUFFER_LEN(pCurSeg) - offset);
+        DIGI_MEMSET(GET_SEG_BUFFER(pCurSeg) + offset, valueToSet, GET_SEG_BUFFER_LEN(pCurSeg) - offset);
         numBytesToSet = numBytesToSet - numBytesLeft;
     }
     else
     {
-        MOC_MEMSET(GET_SEG_BUFFER(pCurSeg) + offset, valueToSet, numBytesToSet);
+        DIGI_MEMSET(GET_SEG_BUFFER(pCurSeg) + offset, valueToSet, numBytesToSet);
         goto exit;
     }
 
@@ -112,11 +112,11 @@ MOC_memsetSeg(mocSegDescr *pSrcBufSeg, ubyte valueToSet, ubyte4 numBytesToSet, u
     {
         if (numBytesToSet > GET_SEG_BUFFER_LEN(pCurSeg))
         {
-            MOC_MEMSET(GET_SEG_BUFFER(pCurSeg), valueToSet, GET_SEG_BUFFER_LEN(pCurSeg));
+            DIGI_MEMSET(GET_SEG_BUFFER(pCurSeg), valueToSet, GET_SEG_BUFFER_LEN(pCurSeg));
         }
         else
         {
-            MOC_MEMSET(GET_SEG_BUFFER(pCurSeg), valueToSet, numBytesToSet);
+            DIGI_MEMSET(GET_SEG_BUFFER(pCurSeg), valueToSet, numBytesToSet);
             break;
         }
 
@@ -131,7 +131,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_copyToSegEx(const ubyte* pSrcBuf, ubyte4 srcBufLen,
+DIGI_copyToSegEx(const ubyte* pSrcBuf, ubyte4 srcBufLen,
                 mocSegDescr *pDestBufSeg, ubyte4 offset,
                 mocSegDescr** ppNewBufSeg, ubyte4* pNewOff)
 {
@@ -162,14 +162,14 @@ MOC_copyToSegEx(const ubyte* pSrcBuf, ubyte4 srcBufLen,
 
     if (srcBufLen >= numBytesLeft)
     {
-        MOC_MEMCPY(GET_SEG_BUFFER(pCurSeg) + offset, pBuf, numBytesLeft);
+        DIGI_MEMCPY(GET_SEG_BUFFER(pCurSeg) + offset, pBuf, numBytesLeft);
         srcBufLen = srcBufLen - numBytesLeft;
         pBuf = pBuf + numBytesLeft;
         GET_SEG_BYTES_USED(pCurSeg) = GET_SEG_BUFFER_LEN(pCurSeg);
     }
     else
     {
-        MOC_MEMCPY(GET_SEG_BUFFER(pCurSeg) + offset, pBuf, srcBufLen);
+        DIGI_MEMCPY(GET_SEG_BUFFER(pCurSeg) + offset, pBuf, srcBufLen);
         if ( offset + srcBufLen > GET_SEG_BYTES_USED(pCurSeg))
         {
             GET_SEG_BYTES_USED(pCurSeg) = offset + srcBufLen;
@@ -184,14 +184,14 @@ MOC_copyToSegEx(const ubyte* pSrcBuf, ubyte4 srcBufLen,
     {
         if (srcBufLen >= GET_SEG_BUFFER_LEN(pCurSeg))
         {
-            MOC_MEMCPY(GET_SEG_BUFFER(pCurSeg), pBuf, GET_SEG_BUFFER_LEN(pCurSeg));
+            DIGI_MEMCPY(GET_SEG_BUFFER(pCurSeg), pBuf, GET_SEG_BUFFER_LEN(pCurSeg));
             pBuf = pBuf + GET_SEG_BUFFER_LEN(pCurSeg);
             srcBufLen = srcBufLen - GET_SEG_BUFFER_LEN(pCurSeg);
             GET_SEG_BYTES_USED(pCurSeg) = GET_SEG_BUFFER_LEN(pCurSeg);
         }
         else
         {
-            MOC_MEMCPY(GET_SEG_BUFFER(pCurSeg), pBuf, srcBufLen);
+            DIGI_MEMCPY(GET_SEG_BUFFER(pCurSeg), pBuf, srcBufLen);
             if (srcBufLen > GET_SEG_BYTES_USED(pCurSeg))
             {
                 GET_SEG_BYTES_USED(pCurSeg) = srcBufLen;
@@ -222,16 +222,16 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_copyToSeg(const ubyte* pSrcBuf, ubyte4 srcBufLen, mocSegDescr *pDestBufSeg, ubyte4 offset)
+DIGI_copyToSeg(const ubyte* pSrcBuf, ubyte4 srcBufLen, mocSegDescr *pDestBufSeg, ubyte4 offset)
 {
-    return MOC_copyToSegEx(pSrcBuf, srcBufLen, pDestBufSeg, offset, NULL, NULL);
+    return DIGI_copyToSegEx(pSrcBuf, srcBufLen, pDestBufSeg, offset, NULL, NULL);
 }
 
 
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_copyFromSegEx(const mocSegDescr *pSrcBufSeg, ubyte4 offset,
+DIGI_copyFromSegEx(const mocSegDescr *pSrcBufSeg, ubyte4 offset,
                   ubyte* pDestBuf, ubyte4 destBufLen,
                   mocSegDescr** ppNewBufSeg, ubyte4* pNewOff)
 {
@@ -262,13 +262,13 @@ MOC_copyFromSegEx(const mocSegDescr *pSrcBufSeg, ubyte4 offset,
 
     if (destBufLen >= numBytesLeft)
     {
-        MOC_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg) + offset, numBytesLeft);
+        DIGI_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg) + offset, numBytesLeft);
         pBuf = pBuf + numBytesLeft;
         destBufLen = destBufLen - numBytesLeft;
     }
     else
     {
-        MOC_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg) + offset, destBufLen);
+        DIGI_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg) + offset, destBufLen);
 
         pBuf = pBuf + destBufLen;
         retOffset = offset + destBufLen;
@@ -279,13 +279,13 @@ MOC_copyFromSegEx(const mocSegDescr *pSrcBufSeg, ubyte4 offset,
     {
         if (destBufLen >= GET_SEG_BUFFER_LEN(pCurSeg))
         {
-            MOC_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg), GET_SEG_BUFFER_LEN(pCurSeg));
+            DIGI_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg), GET_SEG_BUFFER_LEN(pCurSeg));
             pBuf = pBuf + GET_SEG_BUFFER_LEN(pCurSeg);
             destBufLen = destBufLen - GET_SEG_BUFFER_LEN(pCurSeg);
         }
         else
         {
-            MOC_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg), destBufLen);
+            DIGI_MEMCPY(pBuf, GET_SEG_BUFFER(pCurSeg), destBufLen);
 
             pBuf = pBuf + destBufLen;
             break;
@@ -313,16 +313,16 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_copyFromSeg(const mocSegDescr *pSrcBufSeg, ubyte4 offset, ubyte* pDestBuf, ubyte4 destBufLen)
+DIGI_copyFromSeg(const mocSegDescr *pSrcBufSeg, ubyte4 offset, ubyte* pDestBuf, ubyte4 destBufLen)
 {
-    return MOC_copyFromSegEx(pSrcBufSeg, offset, pDestBuf, destBufLen, NULL, NULL);
+    return DIGI_copyFromSegEx(pSrcBufSeg, offset, pDestBuf, destBufLen, NULL, NULL);
 }
 
 
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_freeTestSeg(mocSegDescr **ppBufSeg)
+DIGI_freeTestSeg(mocSegDescr **ppBufSeg)
 {
     mocSegDescr* pTmp = NULL;
     mocSegDescr* pCur = NULL;
@@ -352,7 +352,7 @@ MOC_freeTestSeg(mocSegDescr **ppBufSeg)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_createTestSeg(mocSegDescr **ppBufSeg, ubyte4 numSeg, ubyte4 segBufSize)
+DIGI_createTestSeg(mocSegDescr **ppBufSeg, ubyte4 numSeg, ubyte4 segBufSize)
 {
     MSTATUS      status = ERR_NULL_POINTER;
     mocSegDescr* pHead = NULL;
@@ -368,11 +368,11 @@ MOC_createTestSeg(mocSegDescr **ppBufSeg, ubyte4 numSeg, ubyte4 segBufSize)
 
         if (NULL == pTmp)
         {
-            MOC_freeTestSeg(&pHead);
+            DIGI_freeTestSeg(&pHead);
             goto exit;
         }
 
-        MOC_MEMSET((ubyte *)pTmp, 0x00, sizeof(mocSegDescr));
+        DIGI_MEMSET((ubyte *)pTmp, 0x00, sizeof(mocSegDescr));
 
         GET_SEG_BUFFER(pTmp) = (ubyte *)MALLOC(segBufSize);
 
@@ -385,7 +385,7 @@ MOC_createTestSeg(mocSegDescr **ppBufSeg, ubyte4 numSeg, ubyte4 segBufSize)
             if (pTmp)
                 FREE(pTmp);
 
-            MOC_freeTestSeg(&pHead);
+            DIGI_freeTestSeg(&pHead);
             goto exit;
         }
 
@@ -419,7 +419,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_clearTestSeg(mocSegDescr *pBufSeg)
+DIGI_clearTestSeg(mocSegDescr *pBufSeg)
 {
     mocSegDescr* pTmp = pBufSeg;
 
@@ -427,7 +427,7 @@ MOC_clearTestSeg(mocSegDescr *pBufSeg)
     {
         if (NULL != GET_SEG_BUFFER(pTmp))
         {
-            MOC_MEMSET(GET_SEG_BUFFER(pTmp), 0x00, GET_SEG_BUFFER_LEN(pTmp));
+            DIGI_MEMSET(GET_SEG_BUFFER(pTmp), 0x00, GET_SEG_BUFFER_LEN(pTmp));
         }
 
         GET_SEG_BYTES_USED(pTmp) = 0;
@@ -442,7 +442,7 @@ MOC_clearTestSeg(mocSegDescr *pBufSeg)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_setByteInSeg(ubyte value, mocSegDescr *pDestBufSeg, ubyte4 offset)
+DIGI_setByteInSeg(ubyte value, mocSegDescr *pDestBufSeg, ubyte4 offset)
 {
     MSTATUS         status = OK;
 

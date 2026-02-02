@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#if defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)
 
 #include "../common/mdefs.h"
 #include "../common/mtypes.h"
@@ -29,15 +29,15 @@
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 #define MAX_SSH_STRING_SIZE     2097152
 #else
-#ifdef __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__
 #define MAX_SSH_STRING_SIZE     8192
 #else
 #define MAX_SSH_STRING_SIZE     2048
-#endif /* __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__ */
-#endif /* __ENABLE_MOCANA_PQC__ */
+#endif /* __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_PQC__ */
 
 /*------------------------------------------------------------------*/
 
@@ -138,7 +138,7 @@ SSH_STR_copyStringToPayload(ubyte *pBuffer, ubyte4 bufSize, ubyte4 *bufIndex,
     pBuffer[3] = (ubyte)((pAppendToBuffer->stringLen));
 
     if (0 < pAppendToBuffer->stringLen)
-        MOC_MEMCPY(&(pBuffer[4]), pAppendToBuffer->pString, pAppendToBuffer->stringLen);
+        DIGI_MEMCPY(&(pBuffer[4]), pAppendToBuffer->pString, pAppendToBuffer->stringLen);
 
     *bufIndex += (4 + pAppendToBuffer->stringLen);
 
@@ -176,7 +176,7 @@ SSH_STR_copyStringToPayload2(ubyte *pBuffer, ubyte4 bufSize, ubyte4 *bufIndex,
     pBuffer[3] = (ubyte)(appendLen);
 
     if (0 < appendLen)
-        MOC_MEMCPY(pBuffer + 4, pAppendToBuffer, appendLen);
+        DIGI_MEMCPY(pBuffer + 4, pAppendToBuffer, appendLen);
 
     *bufIndex += 4 + appendLen;
 
@@ -211,7 +211,7 @@ SSH_STR_copyStringToPayload3(ubyte *pBuffer, ubyte4 bufSize, ubyte4 *bufIndex,
     pBuffer += *bufIndex;
 
     if (0 < pAppendToBuffer->stringLen)
-        MOC_MEMCPY(pBuffer, pAppendToBuffer->pString, pAppendToBuffer->stringLen);
+        DIGI_MEMCPY(pBuffer, pAppendToBuffer->pString, pAppendToBuffer->stringLen);
 
     *bufIndex += (pAppendToBuffer->stringLen);
 
@@ -236,7 +236,7 @@ SSH_STR_copyFromString(ubyte *pBuffer, ubyte4 *bufIndex,
     }
 
     if (TRUE == copyToBuffer)
-        MOC_MEMCPY(&(pBuffer[*bufIndex]), pAppendToBuffer->pString, pAppendToBuffer->stringLen);
+        DIGI_MEMCPY(&(pBuffer[*bufIndex]), pAppendToBuffer->pString, pAppendToBuffer->stringLen);
 
     *bufIndex += pAppendToBuffer->stringLen;
 
@@ -331,7 +331,7 @@ SSH_STR_copyStringFromPayload(ubyte *pBuffer, ubyte4 bufSize,
 
     if (OK <= status)
     {
-        MOC_MEMCPY((*ppRetString)->pString, &(pBuffer[*pBufIndex]), stringLen+4);
+        DIGI_MEMCPY((*ppRetString)->pString, &(pBuffer[*pBufIndex]), stringLen+4);
         (*ppRetString)->stringLen = stringLen + 4;
     }
 
@@ -386,7 +386,7 @@ SSH_STR_copyStringFromPayload2(ubyte *pBuffer, ubyte4 bufSize,
     }
 
     if ((OK <= status) && (0 < stringLen))
-        status = MOC_MEMCPY((*ppRetString)->pString, 4 + pBuffer, stringLen);
+        status = DIGI_MEMCPY((*ppRetString)->pString, 4 + pBuffer, stringLen);
 
     (*pBufIndex) += stringLen + 4;
 
@@ -436,7 +436,7 @@ SSH_STR_copyStringFromPayload3(ubyte *pBuffer, ubyte4 bufSize,
         goto exit;
     }
 
-    status = MOC_MEMCPY((*ppRetString), 4 + pBuffer, stringLen);
+    status = DIGI_MEMCPY((*ppRetString), 4 + pBuffer, stringLen);
     (*ppRetString)[stringLen] = '\0';
 
     (*pBufIndex) += stringLen + 4;
@@ -726,7 +726,7 @@ SSH_STR_copyBytesAsStringToPayload(ubyte *pBuffer, ubyte4 bufSize, ubyte4 *bufIn
     pBuffer[3] = (ubyte)(appendLen);
 
     if (0 < appendLen)
-        MOC_MEMCPY(pBuffer + 4, pAppendToBuffer, appendLen);
+        DIGI_MEMCPY(pBuffer + 4, pAppendToBuffer, appendLen);
 
     *bufIndex += 4 + appendLen;
 
@@ -734,4 +734,4 @@ exit:
     return status;
 }
 
-#endif /* (__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__) */
+#endif /* (__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__) */

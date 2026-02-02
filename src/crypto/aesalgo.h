@@ -24,7 +24,7 @@ extern "C" {
 /**
  * @brief   Wrapper function for encryption key setup.
  * @details This function is a wrapper to the encryption key setup 
- *          implementation. If AES-Ni is enabled (__ENABLE_MOCANA_AES_NI__),
+ *          implementation. If AES-Ni is enabled (__ENABLE_DIGICERT_AES_NI__),
  *          then this function will call the AES-Ni implementation of key
  *          setup for encryption. Otherwise, this function will call the 
  *          software implementation of key setup for encryption.
@@ -37,8 +37,8 @@ extern "C" {
  *
  * @par Flags
  * The following flags will effect the execution of this function:
- *   + \c \__ENABLE_MOCANA_AES_NI__
- *   + \c \__ENABLE_MOCANA_AES_NI_RUNTIME_CHECK__
+ *   + \c \__ENABLE_DIGICERT_AES_NI__
+ *   + \c \__ENABLE_DIGICERT_AES_NI_RUNTIME_CHECK__
  *   .
  */
 MOC_EXTERN sbyte4 aesKeySetupEnc (
@@ -50,7 +50,7 @@ MOC_EXTERN sbyte4 aesKeySetupEnc (
 /**
  * @brief   Wrapper function for decryption key setup.
  * @details This function is a wrapper to the decryption key setup 
- *          implementation. If AES-Ni is enabled (__ENABLE_MOCANA_AES_NI__),
+ *          implementation. If AES-Ni is enabled (__ENABLE_DIGICERT_AES_NI__),
  *          then this function will call the AES-Ni implementation of key
  *          setup for decryption. Otherwise, this function will call the 
  *          software implementation of key setup for decryption.
@@ -63,8 +63,8 @@ MOC_EXTERN sbyte4 aesKeySetupEnc (
  *
  * @par Flags
  * The following flags will effect the execution of this function:
- *   + \c \__ENABLE_MOCANA_AES_NI__
- *   + \c \__ENABLE_MOCANA_AES_NI_RUNTIME_CHECK__
+ *   + \c \__ENABLE_DIGICERT_AES_NI__
+ *   + \c \__ENABLE_DIGICERT_AES_NI_RUNTIME_CHECK__
  *   .
  */
 MOC_EXTERN sbyte4 aesKeySetupDec (
@@ -76,7 +76,7 @@ MOC_EXTERN sbyte4 aesKeySetupDec (
 /**
  * @brief   Wrapper function for AES encryption.
  * @details This function is a wrapper to the AES encryption implementation. 
- *          If AES-Ni is enabled (__ENABLE_MOCANA_AES_NI__), then this function 
+ *          If AES-Ni is enabled (__ENABLE_DIGICERT_AES_NI__), then this function 
  *          will call the AES-Ni encryption implementation. Otherwise, this 
  *          function will call the software encryption implementation.
  *
@@ -87,8 +87,8 @@ MOC_EXTERN sbyte4 aesKeySetupDec (
  *
  * @par Flags
  * The following flags will effect the execution of this function:
- *   + \c \__ENABLE_MOCANA_AES_NI__
- *   + \c \__ENABLE_MOCANA_AES_NI_RUNTIME_CHECK__
+ *   + \c \__ENABLE_DIGICERT_AES_NI__
+ *   + \c \__ENABLE_DIGICERT_AES_NI_RUNTIME_CHECK__
  *   .
  */
 MOC_EXTERN void aesEncrypt (
@@ -101,7 +101,7 @@ MOC_EXTERN void aesEncrypt (
 /**
  * @brief   Wrapper function for AES decryption.
  * @details This function is a wrapper to the AES decryption implementation. 
- *          If AES-Ni is enabled (__ENABLE_MOCANA_AES_NI__), then this function 
+ *          If AES-Ni is enabled (__ENABLE_DIGICERT_AES_NI__), then this function 
  *          will call the AES-Ni decryption implementation. Otherwise, this 
  *          function will call the software decryption implementation.
  *
@@ -112,8 +112,8 @@ MOC_EXTERN void aesEncrypt (
  *
  * @par Flags
  * The following flags will effect the execution of this function:
- *   + \c \__ENABLE_MOCANA_AES_NI__
- *   + \c \__ENABLE_MOCANA_AES_NI_RUNTIME_CHECK__
+ *   + \c \__ENABLE_DIGICERT_AES_NI__
+ *   + \c \__ENABLE_DIGICERT_AES_NI_RUNTIME_CHECK__
  *   .
  */
 MOC_EXTERN void aesDecrypt (

@@ -17,7 +17,7 @@
 
 #include "../common/moptions.h"
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT_EXAMPLE__) && !defined(__ENABLE_MOCANA_SSH_PORT_FORWARDING__) && !defined(__ENABLE_MOCANA_SSH_FTP_CLIENT__) && (defined(__ENABLE_MOCANA_EXAMPLES__) || defined(__ENABLE_MOCANA_BIN_EXAMPLES__)))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT_EXAMPLE__) && !defined(__ENABLE_DIGICERT_SSH_PORT_FORWARDING__) && !defined(__ENABLE_DIGICERT_SSH_FTP_CLIENT__) && (defined(__ENABLE_DIGICERT_EXAMPLES__) || defined(__ENABLE_DIGICERT_BIN_EXAMPLES__)))
 
 #include "../common/mtypes.h"
 #include "../common/mdefs.h"
@@ -53,7 +53,7 @@
 #define KEYBLOB_AUTH_KEY_FILE_NAME                      "sshckeys.dat"
 #define AUTH_KEYFILE_NAME                               "sshc_id_dsa.pub"
 
-#ifdef __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__
 #define SSHC_EXAMPLE_AUTH_METHOD                        MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE 
 #else
 #define SSHC_EXAMPLE_AUTH_METHOD                        MOCANA_SSH_AUTH_PASSWORD
@@ -80,7 +80,7 @@ SSHC_EXAMPLE_retrieveAuthKeys(int connectionInstance,
     *ppRetKeyBlob = NULL;
     *pRetKeyBlobLength = 0;
 
-    if (0 > (status = MOCANA_readFile(KEYBLOB_AUTH_KEY_FILE_NAME, ppRetKeyBlob, pRetKeyBlobLength)))
+    if (0 > (status = DIGICERT_readFile(KEYBLOB_AUTH_KEY_FILE_NAME, ppRetKeyBlob, pRetKeyBlobLength)))
         status = ERR_SSH_MISSING_KEY_FILE;
 
     return status;
@@ -89,7 +89,7 @@ SSHC_EXAMPLE_retrieveAuthKeys(int connectionInstance,
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT_EXAMPLE_AUTH__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT_EXAMPLE_AUTH__
 static int
 SSHC_EXAMPLE_testAuthKeys(void)
 {
@@ -97,12 +97,12 @@ SSHC_EXAMPLE_testAuthKeys(void)
     ubyte4  keyBlobLength;
     int     status;
 
-    if (0 <= (status = MOCANA_readFile(KEYBLOB_AUTH_KEY_FILE_NAME, &pKeyBlob, &keyBlobLength)))
-        MOCANA_freeReadFile(&pKeyBlob);
+    if (0 <= (status = DIGICERT_readFile(KEYBLOB_AUTH_KEY_FILE_NAME, &pKeyBlob, &keyBlobLength)))
+        DIGICERT_freeReadFile(&pKeyBlob);
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_CLIENT_EXAMPLE_AUTH__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT_EXAMPLE_AUTH__ */
 
 
 /*------------------------------------------------------------------*/
@@ -112,7 +112,7 @@ SSHC_EXAMPLE_releaseAuthKeys(sbyte4 connectionInstance, ubyte **ppFreeKeyBlob)
 {
     MOC_UNUSED(connectionInstance);
 
-    MOCANA_freeReadFile(ppFreeKeyBlob);
+    DIGICERT_freeReadFile(ppFreeKeyBlob);
 
     return 0;
 }
@@ -120,7 +120,7 @@ SSHC_EXAMPLE_releaseAuthKeys(sbyte4 connectionInstance, ubyte **ppFreeKeyBlob)
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT_EXAMPLE_AUTH__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT_EXAMPLE_AUTH__
 static int
 SSHC_EXAMPLE_computeAuthKeys(void)
 {
@@ -137,14 +137,14 @@ SSHC_EXAMPLE_computeAuthKeys(void)
         DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, "SSHC_EXAMPLE_computeAuthKeys: host key does not exist, computing new key...");
 
         /* if not, compute new host keys */
-#ifdef __ENABLE_MOCANA_SSH_RSA_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_RSA_SUPPORT__
         if (0 > (status = CA_MGMT_generateNakedKey(akt_rsa, 2048, &pKeyBlob, &keyBlobLen)))
-#elif __ENABLE_MOCANA_SSH_DSA_SUPPORT__
+#elif __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
         if (0 > (status = CA_MGMT_generateNakedKey(akt_dsa, 2048, &pKeyBlob, &keyBlobLen)))
 #endif
             goto exit;
 
-        status = MOCANA_writeFile(KEYBLOB_AUTH_KEY_FILE_NAME, pKeyBlob, keyBlobLen);
+        status = DIGICERT_writeFile(KEYBLOB_AUTH_KEY_FILE_NAME, pKeyBlob, keyBlobLen);
 
         DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, "SSHC_EXAMPLE_computeAuthKeys: host key computation completed.");
 
@@ -153,7 +153,7 @@ SSHC_EXAMPLE_computeAuthKeys(void)
          *
          * Example code snippet for generating and exporting the client's public key in BASE64 format:
          * SSHC_generateServerAuthKeyFile(pKeyBlob, keyBlobLen, &pEncodedKeyBlob, &encodedKeyBlobLen);
-         * MOCANA_writeFile("id_dsa.pub", pEncodedKeyBlob, encodedKeyBlobLen);
+         * DIGICERT_writeFile("id_dsa.pub", pEncodedKeyBlob, encodedKeyBlobLen);
          * SSHC_freeGenerateServerAuthKeyFile(&pEncodedKeyBlob);
          */
     }
@@ -164,7 +164,7 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_CLIENT_EXAMPLE_AUTH__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT_EXAMPLE_AUTH__ */
 
 
 /*------------------------------------------------------------------*/
@@ -186,11 +186,11 @@ SSHC_EXAMPLE_ServerPubKeyAuthUpcall(int connectionInstance,
     /* then use that to look up the appropriate host key stored file */
 
     /* make sure the server provided pubkey matches a pub key on file */
-    if (0 > MOCANA_readFile(AUTH_KEYFILE_NAME, &pStoredHostPublicKey, &storedHostPublicKeyLength))
+    if (0 > DIGICERT_readFile(AUTH_KEYFILE_NAME, &pStoredHostPublicKey, &storedHostPublicKeyLength))
     {
         /* save the server's host key for the next time we connect */
         /* this code should be smarter; needs to save host key based on server identity */
-        MOCANA_writeFile(AUTH_KEYFILE_NAME, (ubyte *)pPubKey, pubKeyLength);
+        DIGICERT_writeFile(AUTH_KEYFILE_NAME, (ubyte *)pPubKey, pubKeyLength);
 
         /* we accept first time server host keys */
         result = 1;
@@ -210,7 +210,7 @@ SSHC_EXAMPLE_ServerPubKeyAuthUpcall(int connectionInstance,
 
 exit:
     if (NULL != pStoredHostPublicKey)
-        MOCANA_freeReadFile(&pStoredHostPublicKey);
+        DIGICERT_freeReadFile(&pStoredHostPublicKey);
 
     return result;
 }
@@ -289,7 +289,7 @@ static void
 setParameter(char ** param, char *value)
 {
     *param = MALLOC((strlen(value))+1);
-    MOC_MEMCPY(*param, value, strlen(value));
+    DIGI_MEMCPY(*param, value, strlen(value));
     (*param)[strlen(value)] = '\0';
 }
 
@@ -403,7 +403,7 @@ SSH_CLIENTEXAMPLE_main(int dummy)
     MOC_UNUSED(dummy);
 
 #ifdef __FREERTOS_RTOS__
-    /* Suspend till MOCANA_initMocana has completed its work */
+    /* Suspend till DIGICERT_initDigicert has completed its work */
     RTOS_taskSuspend(NULL);
     /* After resumption if initMocana has returned an error then we need to exit out */
     if (0 > gMocanaAppsRunning)
@@ -422,7 +422,7 @@ SSH_CLIENTEXAMPLE_main(int dummy)
     SSHC_sshClientSettings()->funcPtrReleaseNakedAuthKeys          = SSHC_EXAMPLE_releaseAuthKeys;
     SSHC_sshClientSettings()->funcPtrSessionReKey                  = SSHC_EXAMPLE_reKeyFunction;
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT_EXAMPLE_AUTH__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT_EXAMPLE_AUTH__
     /* if using public key authentication, create client auth keys */
     /* this is optional, in most instance you will probably use password authentication */
     if (0 > SSHC_EXAMPLE_computeAuthKeys())
@@ -518,4 +518,4 @@ exit:
 
 } /* SSH_CLIENTEXAMPLE_main */
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_CLIENT_EXAMPLE__) && defined(__ENABLE_MOCANA_SSH_FTP_CLIENT__) && defined(__ENABLE_MOCANA_EXAMPLES__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_CLIENT_EXAMPLE__) && defined(__ENABLE_DIGICERT_SSH_FTP_CLIENT__) && defined(__ENABLE_DIGICERT_EXAMPLES__)) */

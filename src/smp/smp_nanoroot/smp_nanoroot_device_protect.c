@@ -12,7 +12,7 @@
  *
  */
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #include "smp_nanoroot_device_protect.h"
 #include "common/mdefs.h"
@@ -51,7 +51,7 @@
 #include "crypto/poly1305.h"
 #include "crypto_interface/crypto_interface_poly1305.h"
 
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
 /* no crypto interface implemenation yet for nist_kdf or ansix9_63_kdf or blake2 */
 #include "crypto/nist_prf.h"
 #include "crypto/nist_kdf.h"
@@ -70,7 +70,7 @@ static MSTATUS NanoROOTapplyKDF(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte kdfAlgo,
 {
     MSTATUS status;
     const BulkHashAlgo *pBHA;
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
     HMAC_CTX *pHmacCtx = NULL;
 #endif
     ubyte pPseudoKey[NanoROOTMAX_SEED_LEN] = {0};
@@ -87,7 +87,7 @@ static MSTATUS NanoROOTapplyKDF(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte kdfAlgo,
         case NanoROOTKDF_NIST_FB:
         case NanoROOTKDF_NIST_DP:
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
             status = ERR_CRYPTO_INTERFACE_NO_IMPLEMENTATION_AVAILABLE;
 #else
             status = CRYPTO_INTERFACE_HmacCreate(MOC_HASH(hwAccelCtx) &pHmacCtx, pBHA);
@@ -121,13 +121,13 @@ static MSTATUS NanoROOTapplyKDF(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte kdfAlgo,
                                 (ubyte *) pLabel, labelLen, NULL, 0, pRunningSeed, seedLen);
 
             /* zero out the pseudo key, ok to ignore return code */
-            MOC_MEMSET(pPseudoKey, 0x00, NanoROOTMAX_SEED_LEN);
+            DIGI_MEMSET(pPseudoKey, 0x00, NanoROOTMAX_SEED_LEN);
 
             break;
 
         case NanoROOTKDF_ANSI_X963:
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
             status = ERR_CRYPTO_INTERFACE_NO_IMPLEMENTATION_AVAILABLE;
 #else
             status = ANSIX963KDF_generate(MOC_HASH(hwAccelCtx) pBHA, pRunningSeed, NanoROOTMAX_SEED_LEN,
@@ -142,7 +142,7 @@ static MSTATUS NanoROOTapplyKDF(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte kdfAlgo,
 
 exit:
 
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
     if (NULL != pHmacCtx)
     {
         MSTATUS fstatus = CRYPTO_INTERFACE_HmacDelete(MOC_HASH(hwAccelCtx) &pHmacCtx);
@@ -234,13 +234,13 @@ static MSTATUS NanoROOTapplySymAlg(MOC_SYM(hwAccelDescr hwAccelCtx) ubyte symAlg
                 goto exit;
 
             /* make a mutable copy of the iv*/
-            MOC_MEMCPY(pIv, pKeyMaterial + keyLen, 16);
+            DIGI_MEMCPY(pIv, pKeyMaterial + keyLen, 16);
 
             status = CRYPTO_INTERFACE_DoAES(MOC_SYM(hwAccelCtx) pCtx, pData, dataLen, encrypt, pIv);
             *pOutLen = dataLen;
 
             /* zero the mutable copy of the pIv */
-            MOC_MEMSET(pIv, 0x00, 16);
+            DIGI_MEMSET(pIv, 0x00, 16);
 
             /* delete the ctx regardless of status */
             fstatus = CRYPTO_INTERFACE_DeleteAESCtx(MOC_SYM(hwAccelCtx) &pCtx);
@@ -248,7 +248,7 @@ static MSTATUS NanoROOTapplySymAlg(MOC_SYM(hwAccelDescr hwAccelCtx) ubyte symAlg
                 status = fstatus;
 
             break;
-#ifdef __ENABLE_MOCANA_CHACHA20__
+#ifdef __ENABLE_DIGICERT_CHACHA20__
         case NanoROOTCHACHA20:
 
             /* chacha20 keys contain a 16 byte AES key, a 16 byte nonce, and 16 byte r */
@@ -312,7 +312,7 @@ MSTATUS NanoROOT_initFingerprintCtx(NROOT_FP_CTX **ppCtx, ubyte4 numUses, ubyte 
     }
 
     /* allocate all the memory we'll need in a single shot */
-    status = MOC_CALLOC((void **) ppCtx, 1, sizeof(_NROOT_FP_CTX) + NanoROOTMAX_SEED_LEN * numUses);
+    status = DIGI_CALLOC((void **) ppCtx, 1, sizeof(_NROOT_FP_CTX) + NanoROOTMAX_SEED_LEN * numUses);
     if (OK != status)
         goto exit;
 
@@ -366,7 +366,7 @@ MSTATUS NanoROOT_FingerprintDevice(NROOT_FP_CTX *pCtx, ubyte kdfAlgo, NROOTKdfEl
         return ERR_TDP_INVALID_SEED_LEN;
 
     /* begin with the initial seed, which is zero padded on the right via init */
-    status = MOC_MEMCPY(pCtx->pRunningSeed, pInitialSeed, initialSeedLen);
+    status = DIGI_MEMCPY(pCtx->pRunningSeed, pInitialSeed, initialSeedLen);
     if (OK != status)
         goto exit;
 
@@ -382,7 +382,7 @@ MSTATUS NanoROOT_FingerprintDevice(NROOT_FP_CTX *pCtx, ubyte kdfAlgo, NROOTKdfEl
         if ( i == (numElements - 1) )
             seedLen = pCtx->numUses * NanoROOTMAX_SEED_LEN;
 
-        labelLen = MOC_STRLEN((const sbyte *) pElements[i].pLabel);
+        labelLen = DIGI_STRLEN((const sbyte *) pElements[i].pLabel);
 
         status = NanoROOTapplyKDF(MOC_HASH(pCtx->hwAccelCtx) kdfAlgo, (const ubyte *) pElements[i].pLabel,
                                  labelLen, (const ubyte *) pElements[i].pValue, pElements[i].valueLen,
@@ -396,7 +396,7 @@ MSTATUS NanoROOT_FingerprintDevice(NROOT_FP_CTX *pCtx, ubyte kdfAlgo, NROOTKdfEl
 exit:
 
     if (OK != status)  /* zero the running seed, rest of pCtx can remain unchanged */
-        MOC_MEMSET((ubyte *) pCtx->pRunningSeed, 0x00, pCtx->numUses * NanoROOTMAX_SEED_LEN);  /* here on error only, ignore return code */
+        DIGI_MEMSET((ubyte *) pCtx->pRunningSeed, 0x00, pCtx->numUses * NanoROOTMAX_SEED_LEN);  /* here on error only, ignore return code */
 
     return status;
 }
@@ -430,7 +430,7 @@ MSTATUS NanoROOT_Encrypt(NROOT_FP_CTX *pCtx, ubyte symAlgo, ubyte *pCredData, ub
     if (pDataIn != pDataOut)
     {
         /* not in-place, copy over to pDataOut which we'll encrypt in-place. ok to ignore return code */
-        MOC_MEMCPY(pDataOut, pDataIn, dataLen);
+        DIGI_MEMCPY(pDataOut, pDataIn, dataLen);
     }
 
     if(NULL != pCredData)
@@ -446,7 +446,7 @@ MSTATUS NanoROOT_Encrypt(NROOT_FP_CTX *pCtx, ubyte symAlgo, ubyte *pCredData, ub
         status = NanoROOTapplySymAlg(MOC_SYM(pCtx->hwAccelCtx) symAlgo, keyData, pDataOut, dataLen, pOutLen, TRUE);
 
         /* zero out the keyData, ok to ignore return code */
-        MOC_MEMSET(keyData, 0x00, NanoROOTMAX_SEED_LEN);
+        DIGI_MEMSET(keyData, 0x00, NanoROOTMAX_SEED_LEN);
     }
     else
     {
@@ -491,7 +491,7 @@ MSTATUS NanoROOT_Decrypt(NROOT_FP_CTX *pCtx, ubyte symAlgo, ubyte *pCredData, ub
     if (pDataIn != pDataOut)
     {
         /* not in-place, copy over to pDataOut which we'll encrypt in-place. ok to ignore return code */
-        MOC_MEMCPY(pDataOut, pDataIn, dataLen);
+        DIGI_MEMCPY(pDataOut, pDataIn, dataLen);
     }
 
     if(NULL != pCredData)
@@ -507,7 +507,7 @@ MSTATUS NanoROOT_Decrypt(NROOT_FP_CTX *pCtx, ubyte symAlgo, ubyte *pCredData, ub
         status = NanoROOTapplySymAlg(MOC_SYM(pCtx->hwAccelCtx) symAlgo, keyData, pDataOut, dataLen, pOutLen, FALSE);
 
         /* zero out the keyData, ok to ignore return code */
-        MOC_MEMSET(keyData, 0x00, NanoROOTMAX_SEED_LEN);
+        DIGI_MEMSET(keyData, 0x00, NanoROOTMAX_SEED_LEN);
     }
     else
     {
@@ -542,14 +542,14 @@ MSTATUS NanoROOT_freeFingerprintCtx(NROOT_FP_CTX **ppCtx)
         status = fstatus;
 #endif
 
-    /* ok to ignore MOC_MEMSET return code */
-    (void) MOC_MEMSET((ubyte *) *ppCtx, 0x00, sizeof(_NROOT_FP_CTX) + NanoROOTMAX_SEED_LEN * ((*ppCtx)->numUses));
+    /* ok to ignore DIGI_MEMSET return code */
+    (void) DIGI_MEMSET((ubyte *) *ppCtx, 0x00, sizeof(_NROOT_FP_CTX) + NanoROOTMAX_SEED_LEN * ((*ppCtx)->numUses));
 
-    fstatus = MOC_FREE((void **) ppCtx);
+    fstatus = DIGI_FREE((void **) ppCtx);
     if (OK == status)
         status = fstatus;
 
     return status;
 }
 
-#endif /* __ENABLE_MOCANA_SMP__ && __ENABLE_MOCANA_SMP_NANOROOT__ */
+#endif /* __ENABLE_DIGICERT_SMP__ && __ENABLE_DIGICERT_SMP_NANOROOT__ */

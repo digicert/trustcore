@@ -17,7 +17,7 @@
 #ifndef __PRIMEFLD_PRIV_HEADER__
 #define __PRIMEFLD_PRIV_HEADER__
 
-#if (defined(__ENABLE_MOCANA_ECC__) || defined(__ENABLE_MOCANA_RSA_SIMPLE__))
+#if (defined(__ENABLE_DIGICERT_ECC__) || defined(__ENABLE_DIGICERT_RSA_SIMPLE__))
 
 #include "../common/vlong.h"
 
@@ -27,7 +27,7 @@ extern "C" {
 
 /* we should typedef the "word" used to represent numbers in the prime field */
 /* the code is not cleaned up yet (i.e. ubyte4 is used instead of pf_unit ) */
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 typedef ubyte8 pf_unit;
 #else
 typedef ubyte4 pf_unit;
@@ -61,7 +61,7 @@ MOC_EXTERN void BI_setUnitsToByteString( sbyte4 n, pf_unit* a,
   const ubyte* b, sbyte4 bLen);
 MOC_EXTERN void BI_shiftREx( sbyte4 n, pf_unit* a_s, sbyte4 shift);
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 
 /*------------------------------------------------------------------------*/
 /* Multiplication routines */
@@ -138,35 +138,35 @@ struct PFE
   pf_unit  units[1];
 };
 
-#ifdef __ENABLE_MOCANA_ECC_P192__
+#ifdef __ENABLE_DIGICERT_ECC_P192__
 extern const struct PrimeField PrimeFieldP192;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P224__
+#ifndef __DISABLE_DIGICERT_ECC_P224__
 extern const struct PrimeField PrimeFieldP224;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P256__
+#ifndef __DISABLE_DIGICERT_ECC_P256__
 extern const struct PrimeField PrimeFieldP256;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P384__
+#ifndef __DISABLE_DIGICERT_ECC_P384__
 extern const struct PrimeField PrimeFieldP384;
 #endif
     
-#if defined(__ENABLE_MOCANA_ECC_EDDSA_448__) || defined(__ENABLE_MOCANA_ECC_EDDH_448__) || defined(__ENABLE_MOCANA_FIPS_MODULE__)
+#if defined(__ENABLE_DIGICERT_ECC_EDDSA_448__) || defined(__ENABLE_DIGICERT_ECC_EDDH_448__) || defined(__ENABLE_DIGICERT_FIPS_MODULE__)
 extern const struct PrimeField PrimeFieldP448;
 #endif
 
-#ifndef __DISABLE_MOCANA_ECC_P521__
+#ifndef __DISABLE_DIGICERT_ECC_P521__
 extern const struct PrimeField PrimeFieldP521;
 #endif
 
-#endif /* if defined(__ENABLE_MOCANA_ECC) */
+#endif /* if defined(__ENABLE_DIGICERT_ECC__) */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* if (defined(__ENABLE_MOCANA_ECC__) etc. */
+#endif /* if (defined(__ENABLE_DIGICERT_ECC__) etc. */
 #endif

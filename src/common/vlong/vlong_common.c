@@ -43,7 +43,7 @@
     }
     else
     {
-      /* status = MOC_MEMSET((ubyte *)(*ppRetVlongValue), 0x00, sizeof(vlong)); */
+      /* status = DIGI_MEMSET((ubyte *)(*ppRetVlongValue), 0x00, sizeof(vlong)); */
       (*ppRetVlongValue)->numUnitsAllocated = 0;
       (*ppRetVlongValue)->pUnits = NULL;
     }
@@ -472,14 +472,14 @@ MOC_EXTERN ubyte4 BITLENGTH (
 
 #else
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 MOC_EXTERN ubyte4 BITLENGTH (
   vlong_unit w
   )
 {
   ubyte4 hi = (ubyte4)HI_HUNIT(w);
-  return (hi) ? 32 + MOC_BITLENGTH(hi) : MOC_BITLENGTH((ubyte4)LO_HUNIT(w));
+  return (hi) ? 32 + DIGI_BITLENGTH(hi) : DIGI_BITLENGTH((ubyte4)LO_HUNIT(w));
 } /* BITLENGTH */
 
-#endif /* ifdef __ENABLE_MOCANA_64_BIT__ */
+#endif /* ifdef __ENABLE_DIGICERT_64_BIT__ */
 #endif /* ifdef ASM_BIT_LENGTH */

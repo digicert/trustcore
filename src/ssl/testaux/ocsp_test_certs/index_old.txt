@@ -1,0 +1,4 @@
+V	260215191503z		90C18060F7168C99	unknown	/C=US/ST=CA/L=SF/O=Mocana/OU=IOT/CN=rsa_ca/emailAddress=rsa_ca@mocana.com
+V	450529110000Z		2FEBBF53576DD2D1F3D7801E2A343CBE46937DB3	unknown	/C=US/ST=California/L=San Francisco/O=Mocana Corporation/OU=Engineering CA (RSA 2048)/CN=ssltest.mocana.com/emailAddress=info@mocana.com	
+R	450529110000Z	160318110000Z	0D1B3CFA5DFF36DD6ADBD61D60E40706A2CB3C3D	unknown	/C=US/ST=California/L=San Francisco/O=Mocana Corporation/OU=Engineering CA (ECC 256)/CN=ssltest.mocana.com/emailAddress=info@mocana.com
+V	450529110000Z		51630E57846CC91C406554BB1E3D4C4386F24743	unknown	/C=US/ST=California/L=San Francisco/O=Mocana Corporation/OU=Engineering (RSA 2048)/CN=ssltest2.mocana.com/emailAddress=info@mocana.com

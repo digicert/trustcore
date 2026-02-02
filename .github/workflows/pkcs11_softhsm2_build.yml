@@ -1,0 +1,46 @@
+name: PKCS11 SoftHSM2 Build
+
+on:
+  pull_request:
+    paths:
+      - projects/smp_pkcs11/**
+      - src/smp/smp_pkcs11/**
+
+permissions:
+  contents: read
+
+jobs:
+  BuildPKCS11SoftHSM2:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: trustcore-test
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install cmake softhsm2 libsofthsm2
+
+      - name: CMake
+        run: |
+          cd trustcore-test
+          cp /usr/lib/softhsm/libsofthsm2.so ./lib/ 
+          cmake \
+            -DWITH_LOGGING=ON \
+            -DBUILD_SAMPLES=ON \
+            -DENABLE_MQTT_CLIENT=ON \
+            -DENABLE_MQTT_STREAMING_SUPPORT=ON \
+            -DENABLE_SSH_CLIENT=ON \
+            -DENABLE_SSH_SERVER=ON \
+            -DENABLE_SSH_CLIENT_CERT_AUTH=ON \
+            -DENABLE_SSH_SERVER_CERT_AUTH=ON \
+            -DENABLE_TAP_API_EXAMPLE=ON \
+            -DENABLE_PKCS11_SOFTHSM2=ON \
+            -DENABLE_SCEP=ON \
+            -DENABLE_EST=ON \
+            -DENABLE_TAP=ON \
+            -DSECURE_PATH="$(pwd)" \
+            -B build -S . && \
+          cmake --build build

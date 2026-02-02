@@ -46,10 +46,10 @@ typedef struct
 
 /*------------------------------------------------------------------*/
 
-MOC_EXTERN MSTATUS MOC_STREAM_open (streamDescr **ppRetStreamDescr, void* outStream, ubyte4 buflen, funcStreamWriteData pFuncWriteData);
-MOC_EXTERN MSTATUS MOC_STREAM_write(streamDescr *pStreamDescr, ubyte *pBuffer, ubyte4 numBytesToWrite, ubyte4 *pRetNumBytesWritten);
-MOC_EXTERN MSTATUS MOC_STREAM_flush(streamDescr *pStreamDescr, ubyte4 *pRetNumBytesPending, intBoolean *pFlushComplete);
-MOC_EXTERN MSTATUS MOC_STREAM_close(streamDescr **ppFreeStreamDescr);
+MOC_EXTERN MSTATUS DIGI_STREAM_open (streamDescr **ppRetStreamDescr, void* outStream, ubyte4 buflen, funcStreamWriteData pFuncWriteData);
+MOC_EXTERN MSTATUS DIGI_STREAM_write(streamDescr *pStreamDescr, ubyte *pBuffer, ubyte4 numBytesToWrite, ubyte4 *pRetNumBytesWritten);
+MOC_EXTERN MSTATUS DIGI_STREAM_flush(streamDescr *pStreamDescr, ubyte4 *pRetNumBytesPending, intBoolean *pFlushComplete);
+MOC_EXTERN MSTATUS DIGI_STREAM_close(streamDescr **ppFreeStreamDescr);
 
 #ifdef __cplusplus
 }

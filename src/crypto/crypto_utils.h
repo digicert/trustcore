@@ -731,7 +731,7 @@ MOC_EXTERN MSTATUS CRYPTO_UTILS_getAsymmetricKeyInfo(
  * If the certificate is expired and an expired certificate store is provided
  * then the certificate will be loaded into that store.
  *
- * NOTE: If building with __ENABLE_MOCANA_MINIMAL_CA__ flag then this API will
+ * NOTE: If building with __ENABLE_DIGICERT_MINIMAL_CA__ flag then this API will
  * only load in the child certificates found from the provided directory.
  *
  * @param pStore        Certificate store to load in valid certificates found.
@@ -769,7 +769,7 @@ MOC_EXTERN MSTATUS CRYPTO_UTILS_getIssuerAndSerial(
     ubyte4 *pSerialLen
     );
 
-#ifndef __ENABLE_MOCANA_TRUSTPOINT_LOCAL__
+#ifndef __ENABLE_DIGICERT_TRUSTPOINT_LOCAL__
 MOC_EXTERN MSTATUS CRYPTO_UTILS_checkForUpgrade(
     sbyte *pConfPath, intBoolean *pUpgrading);
 #endif

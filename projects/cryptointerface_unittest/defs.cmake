@@ -1,0 +1,124 @@
+########################################################################
+#
+# choosing 32 vs 64 bit
+#
+########################################################################
+
+#set(MX3264_GCC_FLAG "-m32")
+#set(MX3264_GCC_FLAG "-m64")
+
+if(NOT DEFINED MX3264_GCC_FLAG)
+    if(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+	if (${CMAKE_C_COMPILER} MATCHES "aarch64-linux-gnu-gcc")
+                set(MX3264_GCC_FLAG "")
+	elseif ("${CMAKE_C_COMPILER}" MATCHES "arm-linux-gnueabihf-gcc")
+                set(MX3264_GCC_FLAG "")
+	else()
+                set(MX3264_GCC_FLAG "-m64")
+	endif()
+    elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+	if ("${CMAKE_C_COMPILER}" MATCHES "arm-linux-gnueabihf-gcc")
+                set(MX3264_GCC_FLAG "")
+	else()
+                set(MX3264_GCC_FLAG "-m32")
+	endif()
+    else()
+        message(FATAL_ERROR "unexpected void pointer size\n")
+    endif()
+endif()
+
+if(x"${MX3264_GCC_FLAG}" MATCHES x"-m64")
+    set(EXTRA_DEFINITIONS "-D__ENABLE_DIGICERT_64_BIT__")
+endif()
+
+########################################################################
+# Endianess
+########################################################################
+include(TestBigEndian)
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+if(IS_BIG_ENDIAN)
+    set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -DMOC_BIG_ENDIAN")
+else()
+    set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -DMOC_LITTLE_ENDIAN")
+endif()
+
+########################################################################
+#
+# RTOS selection
+#
+########################################################################
+
+if(APPLE)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(RTOS_FLAG_MOCANA "-D__RTOS_OSX__")
+    else()
+        message(FATAL_ERROR "Apple OS is not Darwin\n")
+    endif()
+elseif(WIN32)
+	set(RTOS_FLAG_MOCANA "-D__RTOS_WIN32__ -D__ENABLE_DIGICERT_WIN_STUDIO_BUILD__")
+else()
+    # we assume generic Linux
+    set(RTOS_FLAG_MOCANA "-D__RTOS_LINUX__")
+endif()
+
+########################################################################
+#
+# language flags
+#
+########################################################################
+
+ set(CXX_FLAGS_MOCANA              "-Werror=return-type -Wall")
+#set(CXX_FLAGS_MOCANA              "${CXX_FLAGS_MOCANA} -D_LARGEFILE64_SOURCE")
+#set(CXX_FLAGS_MOCANA              "${CXX_FLAGS_MOCANA} -DLIBUTILS_NATIVE=1")
+#set(CXX_FLAGS_MOCANA              "${CXX_FLAGS_MOCANA} -DOFF_T_IS_64_BIT")
+#set(CXX_FLAGS_MOCANA              "${CXX_FLAGS_MOCANA} -Wno-implicit")
+
+ set(CXX_FLAGS_DEBUG_MOCANA        "-fprofile-arcs -ftest-coverage -rdynamic")
+#set(CXX_FLAGS_DEBUG_MOCANA        "${CXX_FLAGS_DEBUG_MOCANA} -DENABLE_LIBDEX_LOGS")
+				   # to disable log messages
+#set(CXX_FLAGS_DEBUG_MOCANA        "${CXX_FLAGS_DEBUG_MOCANA} -DLOG_NDEBUG=1")
+
+ set(CXX_FLAGS_RELEASE_MOCANA      "-Werror=uninitialized")
+				   # CMAKE RELEASE flags turn on optimization.
+				   # By some compilers Werror=uninitialized is
+				   # only supported with optimizations enabled.
+
+ set(C_FLAGS_MOCANA                "${MX3264_GCC_FLAG}")
+
+ set(MODULE_LINKER_FLAGS_MOCANA    "${MX3264_GCC_FLAG}")
+
+ set(SHARED_LINKER_FLAGS_MOCANA    "${MX3264_GCC_FLAG}")
+
+ set(EXE_LINKER_FLAGS_MOCANA       "${MX3264_GCC_FLAG}")
+ set(EXE_LINKER_FLAGS_DEBUG_MOCANA "-fprofile-arcs -ftest-coverage")
+
+########################################################################
+#
+# extra preprocessor definitions
+#
+########################################################################
+
+ set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} ${RTOS_FLAG_MOCANA}")
+
+#set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -O3")
+#set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -funroll-all-loops")
+
+########################################################################
+#
+# Coverage tools
+#
+########################################################################
+
+message(STATUS "Test GPROF support for ${CMAKE_C_COMPILER_ID}")
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" OR
+  "${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+ ## Add Profiling
+ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+   option(MOCANA_ENABLE_GPROF "Enable gprof profiling (must be using Debug build)" OFF)
+   if(MOCANA_ENABLE_GPROF)
+     message(STATUS "Enable GPROF")
+     set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -fprofile-arcs -ftest-coverage")
+     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs")
+   endif()
+ endif()
+endif()

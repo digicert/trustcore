@@ -1,0 +1,10 @@
+#
+# This file is used by testmonkey.rb. It specifies
+# a list of tests to run for each makefile build.
+# If not specified, all tests will run.
+#
+makefile_altivec: vlong
+makefile_ctr: random
+makefile_noasm: vlong
+makefile_small_size: vlong
+makefile_sse2: vlong

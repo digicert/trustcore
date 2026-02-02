@@ -21,7 +21,7 @@
  * @details    Header file for declaring Secure Remote Protocol methods.
  *
  * @flags      To enable the methods in this file please define:
- *             + \c \__ENABLE_MOCANA_SRP__
+ *             + \c \__ENABLE_DIGICERT_SRP__
  *
  * @filedoc    srp.h
  */
@@ -31,8 +31,8 @@
 #ifndef __SRP_HEADER__
 #define __SRP_HEADER__
 
-#ifndef __MOCANA_MIN_SRP_BITS__
-#define __MOCANA_MIN_SRP_BITS__   (2048)
+#ifndef __DIGICERT_MIN_SRP_BITS__
+#define __DIGICERT_MIN_SRP_BITS__   (2048)
 #endif
 
 #ifdef __cplusplus
@@ -47,13 +47,13 @@ extern "C" {
  *          each when done with them.
  *
  * @param bitNum     The bit size requested. The acceptable values are 2048, 3072, 4096, 6144, and 8192.
- *                   If + \c \__MOCANA_MIN_SRP_BITS__ is defined to 1024, or 1536 then those sizes are also acceptable.
+ *                   If + \c \__DIGICERT_MIN_SRP_BITS__ is defined to 1024, or 1536 then those sizes are also acceptable.
  * @param modulus    Pointer to the location of the modulus for the bit size requested.
  * @param generator  Pointer to the location of the group generator for the bit size requested.
  * @param k          Pointer to the location of the k parameter (a SHA1 hash dependent on the modulus and generator).
  *
  * @flags      To enable this method please define:
- *             + \c \__ENABLE_MOCANA_SRP__
+ *             + \c \__ENABLE_DIGICERT_SRP__
  *
  * @return  \c OK (0) if successful, otherwise a negative number
  *          error code from merrors.h.
@@ -71,7 +71,7 @@ MOC_EXTERN MSTATUS SRP_getGroupParameters( ubyte4 bitNum,
  *          any memeory.
  *
  * @param bitNum       The bit size requested. The acceptable values are 2048, 3072, 4096, 6144, and 8192.
- *                     If + \c \__MOCANA_MIN_SRP_BITS__ is defined to 1024, or 1536 then those sizes are also acceptable.
+ *                     If + \c \__DIGICERT_MIN_SRP_BITS__ is defined to 1024, or 1536 then those sizes are also acceptable.
  * @param modulus      Contents will be set to the location of the modulus for the bit size requested.
  * @param modulusLen   Contents will be set to the size of the modulus in bytes.
  * @param generator    Contents will be set to the location of the group generator for the bit size requested.
@@ -80,7 +80,7 @@ MOC_EXTERN MSTATUS SRP_getGroupParameters( ubyte4 bitNum,
  *                     the modulus and generator). The size of k in bytes is always 20.
  *
  * @flags      To enable this method please define:
- *             + \c \__ENABLE_MOCANA_SRP__
+ *             + \c \__ENABLE_DIGICERT_SRP__
  *
  * @return  \c OK (0) if successful, otherwise a negative number
  *          error code from merrors.h.
@@ -106,12 +106,12 @@ MOC_EXTERN MSTATUS SRP_getGroupParameters2( ubyte4 bitNum,
  * @param pw           The user's password as a byte array.
  * @param pwLen        The length of the user's password in bytes.
  * @param bitNum       The bit size for the group requested. The acceptable values are 2048, 3072, 4096, 6144, and 8192.
- *                     If + \c \__MOCANA_MIN_SRP_BITS__ is defined to 1024, or 1536 then those sizes are also acceptable.
+ *                     If + \c \__DIGICERT_MIN_SRP_BITS__ is defined to 1024, or 1536 then those sizes are also acceptable.
  * @param verifier     Pointer to the location that will receive the verifier as a newly allocated byte array.
  * @param verifierLen  Contents will be set to the length of the verifier in bytes.
  *
  * @flags      To enable this method please define:
- *             + \c \__ENABLE_MOCANA_SRP__
+ *             + \c \__ENABLE_DIGICERT_SRP__
  *
  * @return  \c OK (0) if successful, otherwise a negative number
  *          error code from merrors.h.

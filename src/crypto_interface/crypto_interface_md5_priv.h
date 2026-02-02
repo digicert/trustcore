@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_MD5_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_MD5_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD5_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD5_INTERNAL__))
 
 #define MD5Alloc_m         CRYPTO_INTERFACE_MD5Alloc_m
 #define MD5Free_m          CRYPTO_INTERFACE_MD5Free_m

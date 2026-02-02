@@ -21,7 +21,7 @@
  * 
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_SMP__
+ *    + \c \__ENABLE_DIGICERT_SMP__
  *
  * 
  */
@@ -36,14 +36,14 @@
 #include "../common/mdefs.h"
 #include "../common/mstdlib.h"
 
-#if defined(__ENABLE_MOCANA_SMP__)
+#if defined(__ENABLE_DIGICERT_SMP__)
 #include "../tap/tap_smp.h"
 
 
 #define SMP_CREATE_NAME_HELPER(a,b,c,d) a##b##c##d
 #define SMP_CREATE_API_NAME(a, b, c, d) SMP_CREATE_NAME_HELPER(a,b,c,d)
 
-#ifdef __DISABLE_MOCANA_SMP_EXTENDED_ERROR__
+#ifdef __DISABLE_DIGICERT_SMP_EXTENDED_ERROR__
 
 #define SMP_API(smpName, apiName, ...)\
         SMP_CREATE_API_NAME(SMP_, smpName, _,apiName)(__VA_ARGS__)
@@ -65,7 +65,7 @@
 #define CALL_SMP_API_NO_RET(smpName, apiName, ...)\
         SMP_CREATE_API_NAME(SMP_, smpName, _,apiName)(__VA_ARGS__, pErrorRules, ppErrAttrReturned)
 
-#endif /* __DISABLE_MOCANA_SMP_EXTENDED_ERROR__ */
+#endif /* __DISABLE_DIGICERT_SMP_EXTENDED_ERROR__ */
 
-#endif /* __ENABLE_MOCANA_SMP__ */
+#endif /* __ENABLE_DIGICERT_SMP__ */
 #endif /* __SMP_HEADER__ */

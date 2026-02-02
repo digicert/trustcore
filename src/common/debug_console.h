@@ -71,7 +71,7 @@
 
 #define DEBUG_TRUSTEDGE_MESSAGE DEBUG_ID_MESSAGE
 
-#ifdef  __ENABLE_MOCANA_DEBUG_CONSOLE__  /* 1 */
+#ifdef  __ENABLE_DIGICERT_DEBUG_CONSOLE__  /* 1 */
 
 MOC_EXTERN sbyte4     m_errorClass;
 
@@ -106,7 +106,7 @@ MOC_EXTERN sbyte4     m_errorClass;
 #define DEBUG_PRINTSTR1ASCIPADDR1(X,Y,Z) DEBUG_CONSOLE_printString1AsciiIPAddr(X,Y,Z)
 #endif
 
-#else /* if __ENABLE_MOCANA_DEBUG_CONSOLE__ 1 not defined */
+#else /* if __ENABLE_DIGICERT_DEBUG_CONSOLE__ 1 not defined */
 
 #define DEBUG_CONSOLE_setPrintClass(X)
 #define DEBUG_CONSOLE_unsetPrintClass(X)
@@ -140,9 +140,9 @@ MOC_EXTERN sbyte4     m_errorClass;
 #define DEBUG_PRINTSTR2HEXINT2(V,W,X,Y,Z)
 #define DEBUG_PRINTSTR1ASCIPADDR1(X,Y,Z)
 
-#endif /* __ENABLE_MOCANA_DEBUG_CONSOLE__ 1 */
+#endif /* __ENABLE_DIGICERT_DEBUG_CONSOLE__ 1 */
 
-#ifndef __ENABLE_MOCANA_DEBUG_CONSOLE__ /* 2 */
+#ifndef __ENABLE_DIGICERT_DEBUG_CONSOLE__ /* 2 */
 
   #define DB_PRINT(...)
   #define DBUG_PRINT(ec, expr)
@@ -151,9 +151,9 @@ MOC_EXTERN sbyte4     m_errorClass;
   #define DUMP_BYTES(a,b,c,d)
   #define DUMP_SHORTS(a,b,c,d)
   #define DUMP_LONGS(a,b,c,d)
-  #define MOC_logTime(...)
+  #define DIGI_logTime(...)
 
-#else /* __ENABLE_MOCANA_DEBUG_CONSOLE__ 2 is defined */
+#else /* __ENABLE_DIGICERT_DEBUG_CONSOLE__ 2 is defined */
 
   #ifndef __ENABLE_CUSTOM_DEBUG_CONSOLE_DEFS__
 
@@ -172,13 +172,16 @@ void my_printf(__VA_ARGS__);
 #elif FREEDOM
     #define DB_PRINT  DbgConsole_Printf
     #define printf    DbgConsole_Printf
+#elif defined(__RTOS_FREERTOS_ESP32__)
+    #include <stdio.h>
+    #define DB_PRINT  printf
 #else
     #define DB_PRINT  printf
 #endif
 
 #elif defined(__AZURE_RTOS__)
-  void MOC_STM32_logUsrMsg(__VA_ARGS__);
-	#define DB_PRINT  MOC_STM32_logUsrMsg
+  void DIGI_STM32_logUsrMsg(__VA_ARGS__);
+	#define DB_PRINT  DIGI_STM32_logUsrMsg
 #else
     #define DB_PRINT(...)  DEBUG_CONSOLE_printf(__VA_ARGS__)
     #if defined(__LINUX_RTOS__) && defined(__KERNEL__)
@@ -205,10 +208,10 @@ void my_printf(__VA_ARGS__);
   #define DUMP_SHORTS(a,b,c,d)  DEBUG_CONSOLE_dump_data(a,b,c,2,d)
   #define DUMP_LONGS(a,b,c,d)   DEBUG_CONSOLE_dump_data(a,b,c,4,d)
 
-#endif /* __ENABLE_MOCANA_DEBUG_CONSOLE__ 2 */
+#endif /* __ENABLE_DIGICERT_DEBUG_CONSOLE__ 2 */
 
 #ifdef __RTOS_OSX__
-#define MOC_logTime(...)
+#define DIGI_logTime(...)
 #endif
 
 /*------------------------------------------------------------------*/
@@ -217,7 +220,7 @@ void my_printf(__VA_ARGS__);
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__ /* 3 */
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__ /* 3 */
 
 MOC_EXTERN void DEBUG_CONSOLE_init(void);
 MOC_EXTERN sbyte4 DEBUG_CONSOLE_start(ubyte2 listenPort);
@@ -276,7 +279,7 @@ MOC_EXTERN void DEBUG_CONSOLE_TAG_printf(const char *tag, const char *format, ..
  * @par Flags
  * To enable this macro, \b both of the following conditions must be met:
  *   1. The following flags \b must be defined:
- *     + \c \__ENABLE_MOCANA_DEBUG_CONSOLE__
+ *     + \c \__ENABLE_DIGICERT_DEBUG_CONSOLE__
  *     .
  *   2. At least \b one of the following conditions must be met:
  *     + \c \__KERNEL__   must \b not be defined
@@ -289,7 +292,7 @@ MOC_EXTERN void DEBUG_CONSOLE_TAG_printf(const char *tag, const char *format, ..
 
 #endif /* !defined (__KERNEL__) etc */
 
-#if !defined (__MOCANA_DUMP_CONSOLE_TO_STDOUT__)
+#if !defined (__DIGICERT_DUMP_CONSOLE_TO_STDOUT__)
 
 /**
  * @def      MOC_DEBUG_CONSOLE_START(_status, _port)
@@ -301,10 +304,10 @@ MOC_EXTERN void DEBUG_CONSOLE_TAG_printf(const char *tag, const char *format, ..
  * @par Flags
  * To enable this macro, \b both of the following conditions must be met:
  *   1. The following flags \b must be defined:
- *     + \c \__ENABLE_MOCANA_DEBUG_CONSOLE__
+ *     + \c \__ENABLE_DIGICERT_DEBUG_CONSOLE__
  *     .
  *   2. The following flags must \b not be defined:
- *     + \c \__MOCANA_DUMP_CONSOLE_TO_STDOUT__
+ *     + \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__
  *     .
  */
 #define MOC_DEBUG_CONSOLE_START(_status, _port)                                \
@@ -322,16 +325,16 @@ MOC_EXTERN void DEBUG_CONSOLE_TAG_printf(const char *tag, const char *format, ..
  * @par Flags
  * To enable this macro, \b both of the following conditions must be met:
  *   1. The following flags \b must be defined:
- *     + \c \__ENABLE_MOCANA_DEBUG_CONSOLE__
+ *     + \c \__ENABLE_DIGICERT_DEBUG_CONSOLE__
  *     .
  *   2. The following flags must \b not be defined:
- *     + \c \__MOCANA_DUMP_CONSOLE_TO_STDOUT__
+ *     + \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__
  *     .
  */
 #define MOC_DEBUG_CONSOLE_STOP(_status, _dStatus) \
     DEBUG_CONSOLE_stop ();
 
-#endif /* !defined (__MOCANA_DUMP_CONSOLE_TO_STDOUT__) */
+#endif /* !defined (__DIGICERT_DUMP_CONSOLE_TO_STDOUT__) */
 
 #endif
 
@@ -347,10 +350,10 @@ MOC_EXTERN void DEBUG_CONSOLE_TAG_printf(const char *tag, const char *format, ..
 #define MOC_DEBUG_CONSOLE_STOP(_status,_dStatus)
 #endif
 
-#ifdef __ENABLE_MOCANA_DEBUG_FORWARD__
+#ifdef __ENABLE_DIGICERT_DEBUG_FORWARD__
 typedef void(*DEBUG_FORWARD_callback) (const sbyte *message);
 MOC_EXTERN void DEBUG_FORWARD_set(DEBUG_FORWARD_callback forwardCallback);
-#endif /* __ENABLE_MOCANA_DEBUG_FORWARD__ */
+#endif /* __ENABLE_DIGICERT_DEBUG_FORWARD__ */
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,18 @@
 /*
-	poly1305 implementation using 32 bit * 32 bit = 64 bit multiplication and 64 bit addition
-*/
+ * poly1305 implementation using 32 bit * 32 bit = 64 bit multiplication and 64 bit addition
+ *
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
+ *
+ * Adapted from the public domain implementation in
+ *  <https://github.com/floodyberry/poly1305-donna>
+ */
 #ifndef __POLY1305_HARDWARE_ACCELERATOR__
 
 #if defined(_MSC_VER)

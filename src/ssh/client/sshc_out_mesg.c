@@ -18,7 +18,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include "../../common/mtypes.h"
 #include "../../common/mocana.h"
@@ -39,7 +39,7 @@
 #include "../../crypto/crypto.h"
 #include "../../crypto/dsa.h"
 #include "../../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../../crypto/primefld.h"
 #include "../../crypto/primeec.h"
 #endif
@@ -60,8 +60,8 @@
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
 static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 {
     if (NULL == out)
@@ -81,7 +81,7 @@ static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
     return OK;
 }
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -147,8 +147,8 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
     ubyte4      totalMessageSize;
     ubyte4      numBytesWritten;
     MSTATUS     status;
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     ubyte       pSequenceNumOut[8];
 #endif
 #endif
@@ -248,7 +248,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
     (OUTBOUND_BUFFER(pContextSSH))[4] = (ubyte)padLen;
 
     /* copy payload to message */
-    MOC_MEMCPY(&((OUTBOUND_BUFFER(pContextSSH))[5]), pPayload, payloadLength);
+    DIGI_MEMCPY(&((OUTBOUND_BUFFER(pContextSSH))[5]), pPayload, payloadLength);
 
     /* fill pad with random garbage */
     if (OK > (status = RANDOM_numberGenerator(g_pRandomContext, &((OUTBOUND_BUFFER(pContextSSH))[packetLen - padLen]), (sbyte4)padLen)))
@@ -280,8 +280,8 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
             goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
     {
         status = UTILS_ubyte8ToArray((ubyte8)OUTBOUND_SEQUENCE_NUM(pContextSSH), pSequenceNumOut);
@@ -289,15 +289,15 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
             goto exit;
     }
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
     OUTBOUND_INC_SEQUENCE_NUM(pContextSSH);
     u8_Incr32(&pContextSSH->bytesTransmitted, packetLen);
 
     /* encrypt the message */
     if (NULL != OUTBOUND_CIPHER_ALGORITHM(pContextSSH))
     {
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
         if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
         {
             status = (OUTBOUND_CIPHER_ALGORITHM(pContextSSH))(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT2(pContextSSH),
@@ -306,7 +306,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
         }
         else
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
         {
             status = (OUTBOUND_CIPHER_ALGORITHM(pContextSSH))(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT(pContextSSH),
                                                               (OUTBOUND_BUFFER(pContextSSH)),
@@ -320,8 +320,8 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
         sshAeadAlgo* pAeadSuite = pContextSSH->pEncryptSuiteInfoOut->pAeadSuiteInfo;
 
         /* cipher */
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
         if (CHACHA20_POLY1305_OPENSSH == OUTBOUND_CIPHER_TYPE(pContextSSH))
         {
             status = pAeadSuite->funcCipher(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT(pContextSSH),
@@ -332,7 +332,7 @@ SSHC_OUT_MESG_sendMessage(sshClientContext *pContextSSH,
         }
         else
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
         {
             status = pAeadSuite->funcCipher(MOC_SYM(pContextSSH->hwAccelCookie) OUTBOUND_CIPHER_CONTEXT(pContextSSH),
                                             OUTBOUND_CIPHER_IV(pContextSSH), pAeadSuite->nonceFixedLength + pAeadSuite->nonceInvocationCounter,
@@ -404,6 +404,6 @@ SSHC_OUT_MESG_deallocStructures(sshClientContext *pContextSSH)
 }
 
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */
 
 

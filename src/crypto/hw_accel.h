@@ -33,7 +33,7 @@ enum hwCryptoAllocTypes
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_HARNESS_MEMORY_DEBUG__
+#ifdef __ENABLE_DIGICERT_HARNESS_MEMORY_DEBUG__
 #define TEST_MEMORY(HWACCELCTX,PTR)     HARNESS_testAddress(HWACCELCTX,PTR)
 #else
 #define TEST_MEMORY(HWACCELCTX,PTR)
@@ -44,7 +44,7 @@ enum hwCryptoAllocTypes
 
 
 /*------------------------------------------------------------------*/
-#if (!defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__) && !defined(__ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__)&& !defined(__ENABLE_MOCANA_PKCS11_CRYPTO__))
+#if (!defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__) && !defined(__ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__)&& !defined(__ENABLE_DIGICERT_PKCS11_CRYPTO__))
 typedef signed int          hwAccelDescr;
 
 #define MOC_HW(X)
@@ -179,7 +179,7 @@ typedef ocfAccelDescr*      hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define X__HMAC_MD5_HARDWARE_HASH__
 #define X__HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
+#define __DISABLE_DIGICERT_RNG__
 #define X__PRIME_GEN_HARDWARE__
 
 #define X__VLONG_MOD_OPERATOR_HARDWARE_ACCELERATOR__
@@ -227,7 +227,7 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
+#define __DISABLE_DIGICERT_RNG__
 #define __PRIME_GEN_HARDWARE__
 
 #define __VLONG_MOD_OPERATOR_HARDWARE_ACCELERATOR__
@@ -266,8 +266,8 @@ typedef sbyte4  hwAccelDescr;
 #define __ARC4_HARDWARE_CIPHER__
 #define __RSAINT_HARDWARE__
 #define __DES_HARDWARE_CIPHER__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
-#define __DISABLE_MOCANA_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
 #define xx__HMAC_MD5_HARDWARE_HASH__
 #define xx__HMAC_SHA1_HARDWARE_HASH__
 #define __MD5_HARDWARE_HASH__
@@ -324,8 +324,8 @@ typedef struct
 
 #elif (defined(__ENABLE_CAVIUM_CN58XX_HARDWARE_ACCEL__) && defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__))
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 typedef sbyte4  hwAccelDescr;
 
@@ -346,8 +346,8 @@ typedef sbyte4  hwAccelDescr;
 #define __AES_HARDWARE_CIPHER__
 #define __DES_HARDWARE_CIPHER__
 #define __3DES_HARDWARE_CIPHER__
-#define X__DISABLE_MOCANA_RNG__
-#define X__DISABLE_MOCANA_ADD_ENTROPY__
+#define X__DISABLE_DIGICERT_RNG__
+#define X__DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 
@@ -355,8 +355,8 @@ typedef sbyte4  hwAccelDescr;
 #define __ASM_CAVIUM__
 #endif
 
-#ifndef __ENABLE_MOCANA_64_BIT__
-#define __ENABLE_MOCANA_64_BIT__
+#ifndef __ENABLE_DIGICERT_64_BIT__
+#define __ENABLE_DIGICERT_64_BIT__
 #endif
 
 #ifdef __MD5_HARDWARE_HASH__
@@ -398,8 +398,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -440,8 +440,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -498,8 +498,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -541,8 +541,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define x__DISABLE_MOCANA_RNG__
-#define x__DISABLE_MOCANA_ADD_ENTROPY__
+#define x__DISABLE_DIGICERT_RNG__
+#define x__DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define x__RSAINT_HARDWARE__
@@ -635,8 +635,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -678,8 +678,8 @@ ubyte*     pNextDpd;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define x__DISABLE_MOCANA_RNG__
-#define x__DISABLE_MOCANA_ADD_ENTROPY__
+#define x__DISABLE_DIGICERT_RNG__
+#define x__DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define x__RSAINT_HARDWARE__
@@ -773,8 +773,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -816,8 +816,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define x__DISABLE_MOCANA_RNG__
-#define x__DISABLE_MOCANA_ADD_ENTROPY__
+#define x__DISABLE_DIGICERT_RNG__
+#define x__DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define x__RSAINT_HARDWARE__
@@ -910,8 +910,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -952,8 +952,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -1056,8 +1056,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -1099,8 +1099,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -1194,8 +1194,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -1237,8 +1237,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -1332,8 +1332,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -1375,8 +1375,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -1471,8 +1471,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)           X,
 #define MOC_SYM(X)          X,
@@ -1513,8 +1513,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -1611,8 +1611,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -1654,8 +1654,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -1751,8 +1751,8 @@ typedef struct
 
 typedef sbyte4  hwAccelDescr;
 
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 
 #define MOC_HW(X)                               X,
 #define MOC_SYM(X)                              X,
@@ -1794,8 +1794,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define __MD5_HARDWARE_HASH__
 #define __SHA1_HARDWARE_HASH__
 #define __RSAINT_HARDWARE__
@@ -1935,8 +1935,8 @@ typedef sbyte4  hwAccelDescr;
 #define __SHA1_ONE_STEP_HARDWARE_HASH__
 #define __HMAC_MD5_HARDWARE_HASH__
 #define __HMAC_SHA1_HARDWARE_HASH__
-#define __DISABLE_MOCANA_RNG__
-#define __DISABLE_MOCANA_ADD_ENTROPY__
+#define __DISABLE_DIGICERT_RNG__
+#define __DISABLE_DIGICERT_ADD_ENTROPY__
 #define x__MD5_HARDWARE_HASH__
 #define x__SHA1_HARDWARE_HASH__
 
@@ -2245,7 +2245,7 @@ typedef struct
 
 #endif /* END OF HARDWARE ACCELERATOR DEFINITIONS */
 
-#if (defined(__ENABLE_MOCANA_HARNESS__) && defined(__ENABLE_MOCANA_PKCS11_CRYPTO__))
+#if (defined(__ENABLE_DIGICERT_HARNESS__) && defined(__ENABLE_DIGICERT_PKCS11_CRYPTO__))
 
 typedef sbyte4  hwAccelDescr;
 
@@ -2262,26 +2262,26 @@ typedef sbyte4  hwAccelDescr;
 #define MOC_RSA(X)          X,
 #define MOC_ECC(X)          X,
 
-#endif /* defined(__ENABLE_MOCANA_HARNESS__) && defined(__ENABLE_MOCANA_FIPS_MODULE__) */
+#endif /* defined(__ENABLE_DIGICERT_HARNESS__) && defined(__ENABLE_DIGICERT_FIPS_MODULE__) */
 #endif /* __HW_ACCEL_CUSTOM__ */
 
 #ifndef MOC_DECLARE_HW_CTX
-#if defined(__ENABLE_MOCANA_HARNESS__) || defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__)
+#if defined(__ENABLE_DIGICERT_HARNESS__) || defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__)
 #define MOC_DECLARE_HW_CTX(_hwCtx) hwAccelDescr _hwCtx = (hwAccelDescr)0; ((void)_hwCtx);
 #else
 #define MOC_DECLARE_HW_CTX(_hwCtx)
-#endif /* defined(__ENABLE_MOCANA_HARNESS__) || defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__) */
+#endif /* defined(__ENABLE_DIGICERT_HARNESS__) || defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__) */
 #endif
 
 
 /*------------------------------------------------------------------*/
 
 #ifndef HW_MALLOC    /* TYPE is a member of hwCryptoAllocTypes */
-#define HW_MALLOC(PART,PTR,SIZE,TYPE)           MOC_MALLOC(PTR,SIZE)
+#define HW_MALLOC(PART,PTR,SIZE,TYPE)           DIGI_MALLOC(PTR,SIZE)
 #endif
 
 #ifndef HW_FREE      /* TYPE is a member of hwCryptoAllocTypes */
-#define HW_FREE(PART,PTR,TYPE)                  MOC_FREE(PTR)
+#define HW_FREE(PART,PTR,TYPE)                  DIGI_FREE(PTR)
 #endif
 
 
@@ -2292,7 +2292,7 @@ MOC_EXTERN sbyte4 HARDWARE_ACCEL_INIT(void);
 MOC_EXTERN sbyte4 HARDWARE_ACCEL_UNINIT(void);
 MOC_EXTERN sbyte4 HARDWARE_ACCEL_OPEN_CHANNEL(enum moduleNames moduleId, hwAccelDescr *pHwAccelCookie);
 MOC_EXTERN sbyte4 HARDWARE_ACCEL_CLOSE_CHANNEL(enum moduleNames moduleId, hwAccelDescr *pHwAccelCookie);
-#elif (defined(__ENABLE_MOCANA_HARNESS__))
+#elif (defined(__ENABLE_DIGICERT_HARNESS__))
 
 #include "../common/mtypes.h"
 #include "../common/merrors.h"

@@ -489,7 +489,7 @@ MOC_EXTERN MSTATUS ASN1_getDigestAlgIdFromFlag (
  * digestAlg arg. That is one of the ht_ values defined in crypto.h (ht_sha1,
  * ht_sha256, etc.).
  * <p>The function will allocate memory and set it with DigestInfo. The caller
- * must free that memory using MOC_FREE.
+ * must free that memory using DIGI_FREE.
  * <pre>
  * <code>
  *   DigestInfo ::= SEQENCE {

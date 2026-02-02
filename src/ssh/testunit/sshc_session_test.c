@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -90,7 +90,7 @@ static sshcConnectDescr* createTestConnectDescr(void)
     if (NULL == pDescr)
         return NULL;
 
-    MOC_MEMSET((ubyte *)pDescr, 0, sizeof(sshcConnectDescr));
+    DIGI_MEMSET((ubyte *)pDescr, 0, sizeof(sshcConnectDescr));
     pDescr->pContextSSH = createTestContext();
     if (NULL == pDescr->pContextSSH)
     {
@@ -574,7 +574,7 @@ static int testSetup(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -591,7 +591,7 @@ static int testTeardown(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
 exit:
     return (OK == status) ? 0 : -1;
@@ -606,7 +606,7 @@ int main(int argc, char* argv[])
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* SSHC_SESSION_sendMessage tests */
         cmocka_unit_test(test_SSHC_SESSION_sendMessage_zero_length),
@@ -647,4 +647,4 @@ int main(int argc, char* argv[])
 #endif
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

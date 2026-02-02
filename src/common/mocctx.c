@@ -34,7 +34,7 @@ extern MSTATUS CreateMocCtx (
 
   /* Allocate the new shell.
    */
-  status = MOC_CALLOC ((void **)&pNewCtx, sizeof (MocContext), 1);
+  status = DIGI_CALLOC ((void **)&pNewCtx, sizeof (MocContext), 1);
   if (OK != status)
     goto exit;
 
@@ -202,7 +202,7 @@ exit:
         status = fStatus;
     }
 
-    fStatus = MOC_FREE ((void **)ppCtx);
+    fStatus = DIGI_FREE ((void **)ppCtx);
     if (OK == status)
       status = fStatus;
   }

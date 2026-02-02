@@ -7,7 +7,7 @@
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_SMP__
+ *    + \c \__ENABLE_DIGICERT_SMP__
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 
@@ -30,7 +30,7 @@
 #include "../common/mdefs.h"
 #include "../common/mstdlib.h"
 
-#if defined(__ENABLE_MOCANA_SMP__)
+#if defined(__ENABLE_DIGICERT_SMP__)
 #include "smp_cc.h"
 #include "../tap/tap_smp.h"
 
@@ -945,35 +945,35 @@ typedef struct
 /*
  * Include SMP specific interface header files here.
  */
-#if defined (__ENABLE_MOCANA_NAME__)
+#if defined (__ENABLE_DIGICERT_NAME__)
 #include "smp_name/smp_name_interface.h"
 #endif
 
-#if defined (__ENABLE_MOCANA_TPM2__)
+#if defined (__ENABLE_DIGICERT_TPM2__)
 #include "smp_tpm2/smp_tpm2_interface.h"
 #endif
 
-#if defined (__ENABLE_MOCANA_TPM__)
+#if defined (__ENABLE_DIGICERT_TPM__)
 #include "smp_tpm12/smp_tpm12_interface.h"
 #endif
 
-#if defined (__ENABLE_MOCANA_GEMALTO__)
+#if defined (__ENABLE_DIGICERT_GEMALTO__)
 #include "smp_gemalto/smp_gemalto_interface.h"
 #endif
 
-#if defined (__ENABLE_MOCANA_SMP_PKCS11__)
+#if defined (__ENABLE_DIGICERT_SMP_PKCS11__)
 #include "smp_pkcs11/smp_pkcs11_interface.h"
 #endif
 
-#if defined(__ENABLE_MOCANA_TEE__)
+#if defined(__ENABLE_DIGICERT_TEE__)
 #include "smp_tee/smp_tee_interface.h"
 #endif
 
-#if defined(__ENABLE_MOCANA_SMP_NANOROOT__)
+#if defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
 #ifndef __SMP_NANOROOT_INTERFACE_HEADER__
 #include "smp_nanoroot/smp_nanoroot_interface.h"
 #endif
 #endif
 
-#endif /* __ENABLE_MOCANA_SMP__ */
+#endif /* __ENABLE_DIGICERT_SMP__ */
 #endif /* __SMP_INTERFACE_HEADER__ */

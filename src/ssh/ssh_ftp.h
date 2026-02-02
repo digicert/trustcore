@@ -18,7 +18,7 @@
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__) && defined(__ENABLE_MOCANA_SSH_FTP_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__) && defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__))
 
 #ifndef __SSH_FTP_HEADER__
 #define __SSH_FTP_HEADER__
@@ -69,5 +69,5 @@ MOC_EXTERN MSTATUS SSH_FTP_closeAllOpenHandles(sshContext *pContextSSH);
 #endif
 
 #endif /* __SSH_FTP_HEADER__ */
-#endif /* (defined(__ENABLE_MOCANA_SSH_SERVER__) && defined(__ENABLE_MOCANA_SSH_FTP_SERVER__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SERVER__) && defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__)) */
 

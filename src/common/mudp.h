@@ -550,7 +550,7 @@ typedef void *Socket_t;
 
 #endif
 #endif
-#if defined __MOCANA_UDP__
+#if defined __DIGICERT_UDP__
 
 #define MOC_UDP_SOCKET          int
 #define MOC_UDP_init            MO_UDP_init
@@ -610,10 +610,10 @@ MOC_EXTERN MSTATUS MOC_UDP_recvFrom         (void *pUdpDescr, MOC_IP_ADDRESS* pP
  * to do nothing.
  */
 #if (defined(UDP_init) && \
-    (defined(__ENABLE_MOCANA_RADIUS_CLIENT__) || \
-    defined(__ENABLE_MOCANA_IKE_SERVER__) || \
-    defined(__ENABLE_MOCANA_DTLS_CLIENT__) || \
-    defined(__ENABLE_MOCANA_DTLS_SERVER__) ))
+    (defined(__ENABLE_DIGICERT_RADIUS_CLIENT__) || \
+    defined(__ENABLE_DIGICERT_IKE_SERVER__) || \
+    defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || \
+    defined(__ENABLE_DIGICERT_DTLS_SERVER__) ))
 #if !(defined(__KERNEL__) || defined(_KERNEL) || defined(IPCOM_KERNEL))
 
 /**
@@ -628,10 +628,10 @@ MOC_EXTERN MSTATUS MOC_UDP_recvFrom         (void *pUdpDescr, MOC_IP_ADDRESS* pP
  *     + \c UDP_init
  *     .
  *   2. At least \b one of the following flags \b must be defined:
- *     + \c \__ENABLE_MOCANA_RADIUS_CLIENT__
- *     + \c \__ENABLE_MOCANA_IKE_SERVER__
- *     + \c \__ENABLE_MOCANA_DTLS_CLIENT__
- *     + \c \__ENABLE_MOCANA_DTLS_SERVER__
+ *     + \c \__ENABLE_DIGICERT_RADIUS_CLIENT__
+ *     + \c \__ENABLE_DIGICERT_IKE_SERVER__
+ *     + \c \__ENABLE_DIGICERT_DTLS_CLIENT__
+ *     + \c \__ENABLE_DIGICERT_DTLS_SERVER__
  *     .
  *   3. At least \b one of the following conditions must be met:
  *     + \c \__KERNEL__   must \b not be defined
@@ -657,10 +657,10 @@ MOC_EXTERN MSTATUS MOC_UDP_recvFrom         (void *pUdpDescr, MOC_IP_ADDRESS* pP
  *     + \c UDP_init
  *     .
  *   2. At least \b one of the following flags \b must be defined:
- *     + \c \__ENABLE_MOCANA_RADIUS_CLIENT__
- *     + \c \__ENABLE_MOCANA_IKE_SERVER__
- *     + \c \__ENABLE_MOCANA_DTLS_CLIENT__
- *     + \c \__ENABLE_MOCANA_DTLS_SERVER__
+ *     + \c \__ENABLE_DIGICERT_RADIUS_CLIENT__
+ *     + \c \__ENABLE_DIGICERT_IKE_SERVER__
+ *     + \c \__ENABLE_DIGICERT_DTLS_CLIENT__
+ *     + \c \__ENABLE_DIGICERT_DTLS_SERVER__
  *     .
  *   3. At least \b one of the following conditions must be met:
  *     + \c \__KERNEL__   must \b not be defined

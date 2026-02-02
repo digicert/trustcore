@@ -7,10 +7,16 @@
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_SMP__
+ *    + \c \__ENABLE_DIGICERT_SMP__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -30,7 +36,7 @@ extern "C" {
 
 /*! @cond */
 
-#ifdef __ENABLE_MOCANA_SMP__
+#ifdef __ENABLE_DIGICERT_SMP__
 
 extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleListCmdParams;
 extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_getModuleListRspParams;
@@ -231,7 +237,7 @@ extern const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_CmdRspParams;
 MOC_EXTERN_DATA_DECL const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_CmdReq;
 MOC_EXTERN_DATA_DECL const tap_shadow_struct SMP_INTERFACE_SHADOW_SMP_CmdRsp;
 
-#endif /* __ENABLE_MOCANA_SMP__ */
+#endif /* __ENABLE_DIGICERT_SMP__ */
 
 #ifdef __cplusplus
 }

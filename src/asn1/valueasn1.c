@@ -16,7 +16,7 @@
 
 #include "../asn1/mocasn1.h"
 
-#if (!defined(__DISABLE_MOCANA_ASN1_SET_ARRAY_ELEMENT__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_SET_ARRAY_ELEMENT__))
 
 MSTATUS MAsn1SetValue (
   MAsn1Element *pElement,
@@ -66,4 +66,4 @@ exit:
   return (status);
 }
 
-#endif /* __DISABLE_MOCANA_ASN1_SET_ARRAY_ELEMENT__ */
+#endif /* __DISABLE_DIGICERT_ASN1_SET_ARRAY_ELEMENT__ */

@@ -4,6 +4,8 @@ on:
   workflow_dispatch: {}
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -18,17 +20,39 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y cmake libcmocka-dev
+          sudo apt install -y cmake libcmocka-dev lcov
           cmake --version
 
       - name: Build SSH
+        env:
+          CM_ENV_CODE_COVERAGE: 1
         run: |
-          cmake -DDISABLE_MQTT_CLIENT=ON -DENABLE_SSH_UNITTEST=ON -B build -S .
+          cmake -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_UNITTEST=ON  -B build -S .
           cmake --build build
+
+      - name: Baseline Coverage
+        run: |
+          lcov --no-external --capture --initial --directory . --output-file /tmp/ssh_base.info
 
       - name: Run Unit Tests
         run: |
           ./projects/nanossh_testunit/run.sh
+
+      - name: Capture Coverage
+        run: |
+          lcov --no-external --capture --directory . --output-file /tmp/ssh_test.info
+
+      - name: Combine Coverage
+        run: |
+          lcov --add-tracefile /tmp/ssh_base.info \
+               --add-tracefile /tmp/ssh_test.info \
+               --output-file /tmp/ssh_combined.info
+
+      - name: Print Coverage Summary
+        run: |
+          echo "NanoSSH Coverage Summary:"
+          lcov --extract /tmp/ssh_combined.info '*/ssh/*' --output-file /tmp/ssh_filtered.info
+          lcov --list /tmp/ssh_filtered.info
 
       - name: Show Job Status
         run: echo "🍏 This job's status is ${{ job.status }}."

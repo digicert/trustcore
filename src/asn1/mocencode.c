@@ -60,7 +60,7 @@ MSTATUS MAsn1EncodeAlloc (
   if (ERR_BUFFER_TOO_SMALL != status)
     goto exit;
 
-  status = MOC_MALLOC ((void **)&pBuffer, eLen);
+  status = DIGI_MALLOC ((void **)&pBuffer, eLen);
   if (OK != status)
     goto exit;
 
@@ -76,7 +76,7 @@ exit:
 
   if (NULL != pBuffer)
   {
-    MOC_FREE ((void **)&pBuffer);
+    DIGI_FREE ((void **)&pBuffer);
   }
 
   return (status);

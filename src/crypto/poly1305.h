@@ -24,7 +24,7 @@
  * @details    This file contains the NanoCrypto Poly1305 API methods.
  *
  * @flags      To enable this file's methods define the following flag:
- *             + \c \__ENABLE_MOCANA_POLY1305__
+ *             + \c \__ENABLE_DIGICERT_POLY1305__
  *
  * @filedoc    poly1305.h
  */
@@ -34,7 +34,7 @@
 
 #include "../cap/capdecl.h"
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
 #include "../crypto_interface/crypto_interface_poly1305_priv.h"
 #endif
 
@@ -66,7 +66,7 @@ typedef struct Poly1305Ctx
  @ingroup    poly1305_functions
  
  @flags      To enable this file's methods define the following flag:
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_POLY1305__
  
  @param ctx  A pointer to the context to be initialized.
  @param key  The 32 byte key consisting of the 16 byte r followed by the
@@ -89,7 +89,7 @@ MOC_EXTERN MSTATUS Poly1305Init(MOC_HASH(hwAccelDescr hwAccelCtx) Poly1305Ctx *c
  @ingroup    poly1305_functions
  
  @flags      To enable this file's methods define the following flag:
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_POLY1305__
  
  @param ctx    Pointer to a Poly1305Ctx context previously initialized.
  @param m      A pointer to the message or portion of the message to be input.
@@ -111,7 +111,7 @@ MOC_EXTERN MSTATUS Poly1305Update(MOC_HASH(hwAccelDescr hwAccelCtx) Poly1305Ctx 
  @ingroup    poly1305_functions
  
  @flags      To enable this file's methods define the following flag:
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_POLY1305__
  
  @param ctx     Pointer to a Poly1305Ctx context previously initialized and updated.
  @param mac     A 16 element byte array that will hold the resulting mac.
@@ -132,7 +132,7 @@ MOC_EXTERN MSTATUS Poly1305Final(MOC_HASH(hwAccelDescr hwAccelCtx) Poly1305Ctx *
  @ingroup    poly1305_functions
  
  @flags      To enable this file's methods define the following flag:
-             + \c \__ENABLE_MOCANA_POLY1305__
+             + \c \__ENABLE_DIGICERT_POLY1305__
  
  @param mac    A 16 element byte array that will hold the resulting mac.
  @param m      A pointer to the entire input message.

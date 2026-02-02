@@ -8,13 +8,19 @@
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_HW_SECURITY_MODULE__
+ *    + \c \__ENABLE_DIGICERT_HW_SECURITY_MODULE__
  *
  * <p>Whether the following flags are defined determines whether or not support is enabled for a particular HW security module:
- *    + \c \__ENABLE_MOCANA_TPM__
+ *    + \c \__ENABLE_DIGICERT_TPM__
  *
- * Copyright (c) Mocana Corp 2017. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -26,19 +32,19 @@
 
 /*! @cond */
 /*if a secmod is enabled, this will allow the context to be passed into the CRYPTO_* functions in pubcrypto.c*/
-#ifdef __ENABLE_MOCANA_HW_SECURITY_MODULE__
+#ifdef __ENABLE_DIGICERT_HW_SECURITY_MODULE__
 #define MOC_SECMOD(X)   X,
 #else
-/*! MOC_SECMOD is ignored if  __ENABLE_MOCANA_HW_SECURITY_MODULE__ flag not enabled; if flag is enabled, MOC_SECMOD passes X through withouth translation. */
+/*! MOC_SECMOD is ignored if  __ENABLE_DIGICERT_HW_SECURITY_MODULE__ flag not enabled; if flag is enabled, MOC_SECMOD passes X through withouth translation. */
 #define MOC_SECMOD(X)
 #endif
 /*! @endcond */
 
 #include "../common/mtypes.h"
 #include "../common/merrors.h"
-#ifdef __ENABLE_MOCANA_HW_SECURITY_MODULE__
+#ifdef __ENABLE_DIGICERT_HW_SECURITY_MODULE__
 #include "../smp/smp_tpm12/tpm12_lib/secmod_types.h"
-#ifdef __ENABLE_MOCANA_TPM__
+#ifdef __ENABLE_DIGICERT_TPM__
 #include "../smp/smp_tpm12/tpm12_lib/tpm/tpm12_rsa.h"
 #include "../smp/smp_tpm12/tpm12_lib/tpm/sapi/sapi_context.h"
 #endif
@@ -46,7 +52,7 @@
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_TPM__
+#ifdef __ENABLE_DIGICERT_TPM__
 /*! Current TPM 1.2 NanoTAP Code Version */
 #define SECMOD_TPM_VERSION "1.2.2"
 #endif
@@ -65,7 +71,7 @@ typedef struct secModDescr
     void                *lastErr;
     /*! The eKeyBox storage */
     void                *pEkeyBoxListHead;
-#ifdef __ENABLE_MOCANA_TPM__
+#ifdef __ENABLE_DIGICERT_TPM__
     /*! Context based on security module type */
     union
     {
@@ -151,6 +157,6 @@ MOC_EXTERN MSTATUS SECMOD_copy_secModDescr(secModDescr *pDestContext, secModDesc
 }
 #endif
 
-#endif /* __ENABLE_MOCANA_HW_SECURITY_MODULE__ */
+#endif /* __ENABLE_DIGICERT_HW_SECURITY_MODULE__ */
 
 #endif /* __SECMOD_HEADER__ */

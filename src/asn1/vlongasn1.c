@@ -69,7 +69,7 @@ MSTATUS MAsn1SetIntegerFromVlong (
   /* Allocate a buffer to hold the value, along with tag, len, and leading octet,
    * and EXPLICIT tag and len if necessary.
    */
-  status = MOC_CALLOC ((void **)&pNewBuf, (ubyte4)intLen + extraLen, 1);
+  status = DIGI_CALLOC ((void **)&pNewBuf, (ubyte4)intLen + extraLen, 1);
   if (OK != status)
     goto exit;
 
@@ -83,7 +83,7 @@ MSTATUS MAsn1SetIntegerFromVlong (
    */
   if (0 != (pIntegerElement->bufFlag & MASN1_BUF_FLAG_FREE))
   {
-    status = MOC_FREE ((void **)&(pIntegerElement->buffer.pBuf));
+    status = DIGI_FREE ((void **)&(pIntegerElement->buffer.pBuf));
     if (OK != status)
       goto exit;
   }
@@ -102,7 +102,7 @@ exit:
 
   if (NULL != pNewBuf)
   {
-    MOC_FREE ((void **)&pNewBuf);
+    DIGI_FREE ((void **)&pNewBuf);
   }
 
   return (status);

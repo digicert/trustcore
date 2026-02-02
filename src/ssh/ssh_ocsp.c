@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_MOCANA_OCSP_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_DIGICERT_OCSP_CLIENT__)))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -65,7 +65,7 @@
 #include "../ocsp/client/ocsp_client.h"
 #include "../harness/harness.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 #include "./client/sshc.h"
 #endif
 
@@ -88,9 +88,9 @@ SSH_OCSP_validateOcspResponse(ubyte* pCertificate, ubyte4 certLen,
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__))
 extern MSTATUS
-#if (defined(__ENABLE_MOCANA_OCSP_TIMEOUT_CONFIG__))
+#if (defined(__ENABLE_DIGICERT_OCSP_TIMEOUT_CONFIG__))
 SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte4 ocspTimeout, ubyte *pCertificate,
                          ubyte4 certLen, ubyte *pIssuerCert, ubyte4 issuerCertLen,
                          ubyte **ppResponse, ubyte4 *pRetResponseLen)
@@ -130,7 +130,7 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
     pOcspContext->pOcspSettings->signingAlgo                = FALSE;
     pOcspContext->pOcspSettings->timeSkewAllowed            = 360;
 
-#if (defined(__ENABLE_MOCANA_OCSP_TIMEOUT_CONFIG__))
+#if (defined(__ENABLE_DIGICERT_OCSP_TIMEOUT_CONFIG__))
     pOcspContext->pOcspSettings->recvTimeout                = ocspTimeout;
 #endif
 
@@ -170,7 +170,7 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
         goto exit;
     }
 
-    if (OK > (status = MOC_MEMSET((ubyte *)pOcspContext->pOcspSettings->pCertInfo, 0x00, sizeof(OCSP_singleRequestInfo))))
+    if (OK > (status = DIGI_MEMSET((ubyte *)pOcspContext->pOcspSettings->pCertInfo, 0x00, sizeof(OCSP_singleRequestInfo))))
         goto exit;
 
     if (NULL == (pOcspContext->pOcspSettings->pIssuerCertInfo = MALLOC(sizeof(OCSP_singleRequestInfo) *
@@ -180,7 +180,7 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
         goto exit;
     }
 
-    if (OK > (status = MOC_MEMSET((ubyte *)pOcspContext->pOcspSettings->pIssuerCertInfo, 0x00, sizeof(OCSP_singleRequestInfo))))
+    if (OK > (status = DIGI_MEMSET((ubyte *)pOcspContext->pOcspSettings->pIssuerCertInfo, 0x00, sizeof(OCSP_singleRequestInfo))))
         goto exit;
 
     for (i = 0; i < pOcspContext->pOcspSettings->certCount; i++)
@@ -204,7 +204,7 @@ SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certL
         goto exit;
 
     /* the action is delayed to ensure the connection is up before proceeding further */
-    if (OK > (status = MOCANA_writeFile("generatedrequest.der", pRequest, requestLen)))
+    if (OK > (status = DIGICERT_writeFile("generatedrequest.der", pRequest, requestLen)))
         goto exit;
 
     if (OK > (status = OCSP_CLIENT_sendRequest(pOcspContext, pHttpContext, pRequest, requestLen)))
@@ -267,7 +267,7 @@ exit:
         pOcspContext->pOcspSettings->pResponderUrl = NULL;
     }
 
-    /* API to free the context and shutdown MOCANA OCSP CLIENT */
+    /* API to free the context and shutdown DIGICERT OCSP CLIENT */
     OCSP_CLIENT_releaseContext(&pOcspContext);
     
     if (pHttpContext)
@@ -277,7 +277,7 @@ exit:
 
 } /* SSH_OCSP_getOcspResponse */
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_SERVER__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SERVER__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -316,11 +316,11 @@ SSH_OCSP_validateOcspResponse(ubyte *pCertificate, ubyte4 certLen, ubyte *pIssue
 
     /* Set the user configuration */
     pOcspContext->pOcspSettings->certCount                  = 1;
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT__))
     pOcspContext->pOcspSettings->trustedResponderCount      = SSHC_sshClientSettings()->trustedResponderCount;
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT__))
     if (SSHC_sshClientSettings()->trustedResponderCount > 0)
     {
         if (NULL == (pOcspContext->pOcspSettings->pTrustedResponders = MALLOC(sizeof(OCSP_certInfo)*
@@ -362,7 +362,7 @@ SSH_OCSP_validateOcspResponse(ubyte *pCertificate, ubyte4 certLen, ubyte *pIssue
        goto exit;
     }
 
-    if (OK > (status = MOC_MEMSET((ubyte *)(pOcspContext->pOcspSettings->pCertInfo), 0x00, sizeof(OCSP_singleRequestInfo))))
+    if (OK > (status = DIGI_MEMSET((ubyte *)(pOcspContext->pOcspSettings->pCertInfo), 0x00, sizeof(OCSP_singleRequestInfo))))
        goto exit;
 
     if (NULL == (pOcspContext->pOcspSettings->pIssuerCertInfo = MALLOC(sizeof(OCSP_singleRequestInfo)*
@@ -372,7 +372,7 @@ SSH_OCSP_validateOcspResponse(ubyte *pCertificate, ubyte4 certLen, ubyte *pIssue
        goto exit;
     }
 
-    if (OK > (status = MOC_MEMSET((ubyte *)(pOcspContext->pOcspSettings->pIssuerCertInfo), 0x00, sizeof(OCSP_singleRequestInfo))))
+    if (OK > (status = DIGI_MEMSET((ubyte *)(pOcspContext->pOcspSettings->pIssuerCertInfo), 0x00, sizeof(OCSP_singleRequestInfo))))
        goto exit;
 
     for (i = 0; i < pOcspContext->pOcspSettings->certCount; i++)
@@ -549,7 +549,7 @@ SSH_OCSP_validateOcspResponse(ubyte *pCertificate, ubyte4 certLen, ubyte *pIssue
 
     }
 exit:
-    /* API to free the context and shutdown MOCANA OCSP CLIENT */
+    /* API to free the context and shutdown DIGICERT OCSP CLIENT */
     if (pRequest)
         FREE(pRequest);
 
@@ -578,4 +578,4 @@ exit:
     return status;
 }
 
-#endif /* ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_MOCANA_OCSP_CLIENT__))) */
+#endif /* ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_DIGICERT_OCSP_CLIENT__))) */

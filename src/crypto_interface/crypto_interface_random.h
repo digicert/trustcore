@@ -37,7 +37,7 @@ extern "C" {
  * is not thread safe. Make sure to register any entropy functions before a
  * call to CRYPTO_INTERFACE_RANDOM_acquireContextEx. If you would like the
  * global rng to use this for entropy, you must register it before the call
- * to MOCANA_initialize.
+ * to DIGICERT_initialize.
  *
  * @param EntropyFunc Function pointer to be used to collect entropy for the
  *                    initial seeding of a random object.
@@ -60,7 +60,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_registerEntropyFunc (
  * is not thred safe. Make sure to register any callback functions before a
  * call to CRYPTO_INTERFACE_RANDOM_acquireContextEx. If you would like the
  * global rng to use this for entropy, you must register it before the call
- * to MOCANA_initialize.
+ * to DIGICERT_initialize.
  *
  * @param GetPersoStr Function pointer to be used to retrieve the personalization
  *                    string for use in the initial seeding of a random object.

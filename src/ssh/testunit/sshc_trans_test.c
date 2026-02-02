@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
@@ -160,7 +160,7 @@ static void test_SSHC_TRANS_hmacVerify_known_hmacs(void **ppState)
     ubyte hmacSha256[] = "hmac-sha2-256";
     status = SSHC_TRANS_hmacVerify(hmacSha256, &isAvailable);
     assert_int_equal(OK, status);
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
     assert_true(isAvailable);
 #else
     assert_false(isAvailable);
@@ -492,7 +492,7 @@ static int testSetup(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -509,7 +509,7 @@ static int testTeardown(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
 exit:
     return (OK == status) ? 0 : -1;
@@ -524,7 +524,7 @@ int main(int argc, char* argv[])
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* Algorithm verification tests */
         cmocka_unit_test(test_SSHC_TRANS_cipherVerify_null_params),
@@ -559,4 +559,4 @@ int main(int argc, char* argv[])
 #endif
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

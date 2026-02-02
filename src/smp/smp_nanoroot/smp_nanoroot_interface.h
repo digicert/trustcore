@@ -26,7 +26,7 @@
 
 /*------------------------------------------------------------------*/
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #ifndef __SMP_INTERFACE_HEADER__
 #include "../smp_interface.h"
@@ -72,12 +72,12 @@ MSTATUS SMP_NanoROOT_dispatcher(
         TAP_RequestContext *pCtx,
         SMP_CmdReq *pCmdReq,
         SMP_CmdRsp *pCmdRsp
-#ifndef __DISABLE_MOCANA_SMP_EXTENDED_ERROR__
+#ifndef __DISABLE_DIGICERT_SMP_EXTENDED_ERROR__
        , TAP_ErrorAttributes *pErrorRules
        , TAP_ErrorAttributes **ppErrAttrReturned
 #endif
 );
 
-#endif /* __ENABLE_MOCANA_SMP__ && __ENABLE_MOCANA_SMP_NANOROOT__ */
+#endif /* __ENABLE_DIGICERT_SMP__ && __ENABLE_DIGICERT_SMP_NANOROOT__ */
 
 #endif /* __SMP_NANOROOT_INTERFACE_HEADER__ */

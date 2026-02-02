@@ -23,7 +23,7 @@
 #ifndef __SMP_NANOROOT_PARSECONFIG_HEADER__
 #define __SMP_NANOROOT_PARSECONFIG_HEADER__
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #define PATH_MAX 4096
 /* Allowlist of permitted characters for path and arguments */
@@ -50,6 +50,6 @@ MSTATUS NanoROOT_validatePath(const sbyte *pPath);
 
 MSTATUS NanoROOT_parseCredFile(ubyte *pAttributeFile);
 
-#endif /* __ENABLE_MOCANA_SMP__ && __ENABLE_MOCANA_SMP_NANOROOT__ */
+#endif /* __ENABLE_DIGICERT_SMP__ && __ENABLE_DIGICERT_SMP_NANOROOT__ */
 
 #endif /* __SMP_NANOROOT_PARSECONFIG_HEADER__ */

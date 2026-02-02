@@ -50,7 +50,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#if 0 /*defined(__ENABLE_MOCANA_IKE_SERVER__) && defined(__ENABLE_MOCANA_PFKEY__) && defined(__ENABLE_MOCANA_SUPPORT_FOR_IP6__)*/
+#if 0 /*defined(__ENABLE_DIGICERT_IKE_SERVER__) && defined(__ENABLE_DIGICERT_PFKEY__) && defined(__ENABLE_DIGICERT_SUPPORT_FOR_IP6__)*/
 #include "../pfkey/pfkeyv2_common.h"
 #include <netinet/udp.h>
 #endif
@@ -58,7 +58,7 @@
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
   #define M_SOCKADDR    struct sockaddr_in6
   #define MS_FAMILY     sin6_family
 #else
@@ -153,7 +153,7 @@ LINUX_UDP_getAddressOfHost(sbyte *pHostName, MOC_IP_ADDRESS_S *pRetIpAddress)
 			status = ERR_UDP_HOSTNAME_NOT_FOUND;
 			return status;
 		}
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 		if(AddrInfo->ai_family == AF_INET)
 		{
 			pRetIpAddress->family = AF_INET;
@@ -163,7 +163,7 @@ LINUX_UDP_getAddressOfHost(sbyte *pHostName, MOC_IP_ADDRESS_S *pRetIpAddress)
 		else if(AddrInfo->ai_family == AF_INET6)
 		{
 			pRetIpAddress->family = AF_INET6;
-			MOC_MEMCPY((ubyte *) pRetIpAddress->uin.addr6,
+			DIGI_MEMCPY((ubyte *) pRetIpAddress->uin.addr6,
 					   (ubyte *) ((struct sockaddr_in6 *) AddrInfo->ai_addr)->sin6_addr.s6_addr, 16);
 			pRetIpAddress->uin.addr6[4] = ((struct sockaddr_in6 *) AddrInfo->ai_addr)->sin6_scope_id;
 			status = OK;
@@ -217,10 +217,10 @@ LINUX_UDP_bindConnect(void **ppRetUdpDescr,
     }
 
     myAddr = &pUdpIf->serverAddress;
-    MOC_MEMSET((ubyte *)pUdpIf, 0x00, sizeof(LINUX_UDP_interface));
+    DIGI_MEMSET((ubyte *)pUdpIf, 0x00, sizeof(LINUX_UDP_interface));
 
     /* handle socket source end-point */
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if ((srcAddress && (AF_INET6 == srcAddress->family)) ||
         (!srcAddress &&
          connected && (AF_INET6 == dstAddress->family)))
@@ -234,7 +234,7 @@ LINUX_UDP_bindConnect(void **ppRetUdpDescr,
         {
             ((struct sockaddr_in6 *)myAddr)->sin6_scope_id =
                                                     srcAddress->uin.addr6[4];
-            MOC_MEMCPY(((struct sockaddr_in6 *)myAddr)->sin6_addr.s6_addr,
+            DIGI_MEMCPY(((struct sockaddr_in6 *)myAddr)->sin6_addr.s6_addr,
                        srcAddress->uin.addr6, 16);
         }
 
@@ -252,7 +252,7 @@ LINUX_UDP_bindConnect(void **ppRetUdpDescr,
         if (MOC_UDP_ANY_PORT != srcPortNo)
             ((struct sockaddr_in *)myAddr)->sin_port = htons(srcPortNo);
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
         if (srcAddress)
             ((struct sockaddr_in *)myAddr)->sin_addr.s_addr =
                                                 htonl(srcAddress->uin.addr);
@@ -273,7 +273,7 @@ LINUX_UDP_bindConnect(void **ppRetUdpDescr,
         goto exit;
     }
 
-#if 0 /*defined(__ENABLE_MOCANA_IKE_SERVER__) && defined(__ENABLE_MOCANA_PFKEY__) && defined(__ENABLE_IPSEC_NAT_T__)*/
+#if 0 /*defined(__ENABLE_DIGICERT_IKE_SERVER__) && defined(__ENABLE_DIGICERT_PFKEY__) && defined(__ENABLE_IPSEC_NAT_T__)*/
     /* To enable Linux's "native" IPsec UDP-encap, the following code needs to be invoked at least once. */
     if ((4500 == srcPortNo) || (connected && (4500 == dstPortNo)))
     {
@@ -292,19 +292,19 @@ LINUX_UDP_bindConnect(void **ppRetUdpDescr,
     if (connected)
     {
         /* handle socket destination end-point */
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
         if (AF_INET6 == dstAddress->family)
         {
             myAddr->MS_FAMILY = AF_INET6;
             ((struct sockaddr_in6 *)myAddr)->sin6_port = htons(dstPortNo);
-            MOC_MEMCPY(((struct sockaddr_in6 *)myAddr)->sin6_addr.s6_addr,
+            DIGI_MEMCPY(((struct sockaddr_in6 *)myAddr)->sin6_addr.s6_addr,
                        dstAddress->uin.addr6, 16);
         }
         else
 #endif
         {
             myAddr->MS_FAMILY = AF_INET;
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
             ((struct sockaddr_in *)myAddr)->sin_addr.s_addr =
                                                     htonl(dstAddress->uin.addr);
 #else
@@ -431,14 +431,14 @@ LINUX_UDP_sendTo(void *pUdpDescr, MOC_IP_ADDRESS peerAddress,
 
     M_SOCKADDR              destAddress = { 0 };
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if (AF_INET6 == peerAddress->family)
     {
         struct sockaddr_in6 *addr = (struct sockaddr_in6 *)&destAddress;
 
         addr->sin6_family = AF_INET6;
         addr->sin6_port = htons(peerPortNo);
-        MOC_MEMCPY(addr->sin6_addr.s6_addr, peerAddress->uin.addr6, 16);
+        DIGI_MEMCPY(addr->sin6_addr.s6_addr, peerAddress->uin.addr6, 16);
 
         if (0 == (addr->sin6_scope_id =
             ((struct sockaddr_in6 *)&pUdpIf->serverAddress)->sin6_scope_id))
@@ -535,13 +535,13 @@ LINUX_UDP_recvFrom(void *pUdpDescr, MOC_IP_ADDRESS_S *pPeerAddress,
 
     *pRetDataLength = (ubyte4)result;
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if (AF_INET6 == pUdpIf->serverAddress.MS_FAMILY)
     /*if (AF_INET6 == fromAddress.MS_FAMILY)*/
     {
         pPeerAddress->family = AF_INET6;
         *pPeerPortNo = ntohs(((struct sockaddr_in6 *)&fromAddress)->sin6_port);
-        MOC_MEMCPY((ubyte *) pPeerAddress->uin.addr6,
+        DIGI_MEMCPY((ubyte *) pPeerAddress->uin.addr6,
                 ((struct sockaddr_in6 *)&fromAddress)->sin6_addr.s6_addr, 16);
         /* we need to preserve the scope id for later */
         pPeerAddress->uin.addr6[4] = ((struct sockaddr_in6 *)&fromAddress)->
@@ -584,13 +584,13 @@ LINUX_UDP_getSrcPortAddr(void *pUdpDescr, ubyte2 *pRetPortNo,
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if (AF_INET6 == pUdpIf->serverAddress.MS_FAMILY)
     /*if (AF_INET6 == myAddress.MS_FAMILY)*/
     {
         pRetAddr->family = AF_INET6;
         *pRetPortNo = ntohs(((struct sockaddr_in6 *)&myAddress)->sin6_port);
-        MOC_MEMCPY((ubyte *) pRetAddr->uin.addr6,
+        DIGI_MEMCPY((ubyte *) pRetAddr->uin.addr6,
                    ((struct sockaddr_in6 *)&myAddress)->sin6_addr.s6_addr, 16);
     }
     else

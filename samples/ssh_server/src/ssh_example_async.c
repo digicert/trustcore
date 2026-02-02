@@ -17,7 +17,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 #include "../common/mtypes.h"
 #include "../common/mdefs.h"
@@ -35,7 +35,7 @@
 #include "../ssh/ssh_filesys.h"
 #include "../ssh/sftp.h"
 #include "../ssh/ssh.h"
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
 #include "../common/mem_part.h"
 #endif
 
@@ -52,11 +52,11 @@ static certStorePtr pSshCertStore;
 
 #define SSH_EXAMPLE_banner "Mocana NanoSSH server!!\n"
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
 extern memPartDescr *gMemPartDescr;
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 typedef struct
 {
     TCP_SOCKET      pfSocket;
@@ -64,7 +64,7 @@ typedef struct
     sbyte4          channel;
     intBoolean      isUsedFlag;
 } portForwardTable;
-#endif /*__ENABLE_MOCANA_SSH_PORT_FORWARDING__*/
+#endif /*__ENABLE_DIGICERT_SSH_PORT_FORWARDING__*/
 
 typedef struct
 {
@@ -74,7 +74,7 @@ typedef struct
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
 extern void SFTP_EXAMPLE_init(void);
 #endif
 
@@ -95,7 +95,7 @@ extern void SFTP_EXAMPLE_init(void);
 
 #define MAX_SSH_CONNECTIONS_ALLOWED     (4)
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 static portForwardTable    pfTable[MAX_PORT_FORWARD_CONNECTION];
 static ubyte               pfRxBuff[MAX_PORT_FORWARD_RX_BUFF_SIZE];
 
@@ -105,11 +105,11 @@ static ubyte               pfRxBuff[MAX_PORT_FORWARD_RX_BUFF_SIZE];
 static sbyte4
 SSHPF_EXAMPLE_init( void )
 {
-    MOC_MEMSET((ubyte*)pfTable,0x00,sizeof(portForwardTable)*MAX_PORT_FORWARD_CONNECTION);
+    DIGI_MEMSET((ubyte*)pfTable,0x00,sizeof(portForwardTable)*MAX_PORT_FORWARD_CONNECTION);
     return 0;
 }
 
-#endif /*__ENABLE_MOCANA_SSH_PORT_FORWARDING__*/
+#endif /*__ENABLE_DIGICERT_SSH_PORT_FORWARDING__*/
 /*------------------------------------------------------------------*/
 
 static sbyte4
@@ -152,7 +152,7 @@ m_passwordPrompts[] =
 
 
 /*------------------------------------------------------------------*/
-#if defined(__ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
+#if defined(__ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
 extern int
 SSH_RADIUS_EXAMPLE_authPasswordFunction(int connectionInstance,
                     const unsigned char *pUser,     unsigned int userLength,
@@ -214,7 +214,7 @@ SSH_EXAMPLE_keyboardInteractiveAuth(sbyte4                  connectionInstance,
         /* if pAuthResponse is null, assume inital log on state */
         if (0 != pAuthResponse)
         {
-#if defined(__ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
+#if defined(__ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
             isAuth = SSH_RADIUS_EXAMPLE_authPasswordFunction(connectionInstance,
 #else
             isAuth = SSH_EXAMPLE_authPasswordFunction(connectionInstance,
@@ -355,14 +355,14 @@ SSH_EXAMPLE_testHostKeys(void)
     ubyte4    privateKeyLength;
     sbyte4             status;
 
-    if (0 > (status = MOCANA_readFile(PUBLIC_HOST_KEY_FILE_NAME, &pRetPublicKey, &publicKeyLength)))
+    if (0 > (status = DIGICERT_readFile(PUBLIC_HOST_KEY_FILE_NAME, &pRetPublicKey, &publicKeyLength)))
         goto exit;
 
-    status = MOCANA_readFile(PRIVATE_HOST_KEY_FILE_NAME, &pRetPrivateKey, &privateKeyLength);
+    status = DIGICERT_readFile(PRIVATE_HOST_KEY_FILE_NAME, &pRetPrivateKey, &privateKeyLength);
 
 exit:
-    MOCANA_freeReadFile(&pRetPublicKey);
-    MOCANA_freeReadFile(&pRetPrivateKey);
+    DIGICERT_freeReadFile(&pRetPublicKey);
+    DIGICERT_freeReadFile(&pRetPrivateKey);
 
     return status;
 }
@@ -399,7 +399,7 @@ SSH_EXAMPLE_pubkeyNotify(sbyte4 connectionInstance,
         goto exit;
 
     /* make sure the client provided pubkey matches a pub key on file */
-    if (0 > MOCANA_readFile(AUTH_KEYFILE_NAME, &pStoredPublicKey, &storedPublicKeyLength))
+    if (0 > DIGICERT_readFile(AUTH_KEYFILE_NAME, &pStoredPublicKey, &storedPublicKeyLength))
         goto exit;
 
     /* write code to compare keys here */
@@ -410,7 +410,7 @@ SSH_EXAMPLE_pubkeyNotify(sbyte4 connectionInstance,
 
 exit:
     if (NULL != pStoredPublicKey)
-        MOCANA_freeReadFile(&pStoredPublicKey);
+        DIGICERT_freeReadFile(&pStoredPublicKey);
 
     return result;
 
@@ -419,7 +419,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
 static sbyte4
 SSH_EXAMPLE_sftpSessionStarted(sbyte4 connectionInstance, enum sshSessionTypes sessionEvent,
                                ubyte *pMesg, ubyte4 mesgLen)
@@ -456,7 +456,7 @@ SSH_EXAMPLE_simpleAsyncCLI(sbyte4 connInstance, enum sshSessionTypes sessionEven
         case SSH_SESSION_NOTHING:
             break;
         case SSH_SESSION_OPEN:
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
         case SSH_SESSION_OPEN_PF:
         /* All the work is done by "pSSHContext->funcPtrConnect" callback function */
 #endif
@@ -494,7 +494,7 @@ SSH_EXAMPLE_simpleAsyncCLI(sbyte4 connInstance, enum sshSessionTypes sessionEven
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 static sbyte4
 SSH_EXAMPLE_addPortForwardConnection(sbyte4      connectionInstance,
                                      TCP_SOCKET  socket,
@@ -699,7 +699,7 @@ SSH_EXAMPLE_portForwardReceiveData(sbyte4 connectionInstance,
         goto exit;
     }
 
-    MOC_MEMSET( pfRxBuff, 0x00, MAX_PORT_FORWARD_RX_BUFF_SIZE );
+    DIGI_MEMSET( pfRxBuff, 0x00, MAX_PORT_FORWARD_RX_BUFF_SIZE );
     if (OK > (status = TCP_READ_AVL(mySocket, pfRxBuff, MAX_PORT_FORWARD_RX_BUFF_SIZE, &numBytesRead, 500)))
     {
         if ( ERR_TCP_READ_TIMEOUT == status )
@@ -806,7 +806,7 @@ CheckPortForwardDataReceive(sbyte4 connInstance)
 exit:
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 extern sbyte4
 SSH_EXAMPLE_asyncServer(void)
@@ -844,7 +844,7 @@ SSH_EXAMPLE_asyncServer(void)
     DEBUG_INT(DEBUG_SSH_EXAMPLE, (sbyte4)SSH_sshSettings()->sshListenPort);
     DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, NULL);
 
-    MOCANA_log(MOCANA_SSH, LS_INFO, "SSH server listening for clients");
+    DIGICERT_log(MOCANA_SSH, LS_INFO, "SSH server listening for clients");
   
     /* Make the socket nonblocking It will not stuck at TCP_ACCEPT_SOCKET */ 
     nFlags = fcntl(listenSocket, F_GETFL, 0);
@@ -864,7 +864,7 @@ SSH_EXAMPLE_asyncServer(void)
     
             if(Client[index].socketClient != 0)
             { 
-                MOCANA_log(MOCANA_SSH, LS_INFO, "client accepted.");
+                DIGICERT_log(MOCANA_SSH, LS_INFO, "client accepted.");
 
 
                 if (0 > (Client[index].connInstance = SSH_ASYNC_acceptConnection(Client[index].socketClient, NULL, 0, NULL, 0)))
@@ -873,7 +873,7 @@ SSH_EXAMPLE_asyncServer(void)
                 if (OK > (status = SSH_assignCertificateStore(Client[index].connInstance, pSshCertStore)))
                     goto exit;
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
           /* We need to do it to allow protocols like FTP, HTTP to be port forwarded */
                 if (OK > (status = SSH_setUserPortForwardingPermissions(Client[index].connInstance, ( MOCANA_SSH_ALLOW_DIRECT_TCPIP | MOCANA_SSH_ALLOW_PRIVILEGED_DIRECT_TCPIP ) )))
                     goto exit;
@@ -890,7 +890,7 @@ SSH_EXAMPLE_asyncServer(void)
         {
             if(Client[index].socketClient != 0)
             {
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
                 CheckPortForwardDataReceive(Client[index].connInstance);
 #endif
                 if (OK <= (status = TCP_READ_AVL(Client[index].socketClient, pInBuffer, SSH_SYNC_BUFFER_SIZE, &numBytesRead, 500)))
@@ -906,7 +906,7 @@ SSH_EXAMPLE_asyncServer(void)
                 if((OK > status) || (TRUE == mBreakServer))
                 {
                     SSH_ASYNC_closeConnection(Client[index].connInstance);
-                    MOCANA_log(MOCANA_SSH, LS_INFO, "session closed.");
+                    DIGICERT_log(MOCANA_SSH, LS_INFO, "session closed.");
                     TCP_CLOSE_SOCKET(Client[index].socketClient);
                     Client[index].socketClient = 0;
                     Client[index].connInstance = 0;
@@ -944,13 +944,13 @@ typedef struct sshExamplekeyFilesDescr
 
 static sshExamplekeyFilesDescr mNakedKeyFiles[] =
 {
-#ifdef __ENABLE_MOCANA_SSH_DSA_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
     { "ssh_dss.key", akt_dsa, 2048 },
 #endif
-#ifdef __ENABLE_MOCANA_SSH_RSA_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_RSA_SUPPORT__
     { "ssh_rsa.key", akt_rsa, 2048 },
 #endif
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
     { "ssh_ecdsa.key", akt_ecc, 384 },
 #endif
     { NULL, akt_undefined, 0 }
@@ -981,7 +981,7 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
             continue;
 
         /* check for pre-existing set of host keys */
-        if (0 > (status = MOCANA_readFile(mNakedKeyFiles[index].pFilename, &pKeyBlob, &keyBlobLength)))
+        if (0 > (status = DIGICERT_readFile(mNakedKeyFiles[index].pFilename, &pKeyBlob, &keyBlobLength)))
         {
             DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_sshCertStoreInit: host key does not exist, computing new key...");
 
@@ -989,7 +989,7 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
             if (0 > (status = CA_MGMT_generateNakedKey(mNakedKeyFiles[index].keyType, mNakedKeyFiles[index].keySize, &pKeyBlob, &keyBlobLength)))
                 goto exit;
 
-            if (0 > (status = MOCANA_writeFile(mNakedKeyFiles[index].pFilename, pKeyBlob, keyBlobLength)))
+            if (0 > (status = DIGICERT_writeFile(mNakedKeyFiles[index].pFilename, pKeyBlob, keyBlobLength)))
                 goto exit;
 
             DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_sshCertStoreInit: host key computation completed.");
@@ -1004,7 +1004,7 @@ SSH_EXAMPLE_sshCertStoreInit(certStorePtr *ppNewStore)
             if (OK > (status = CERT_STORE_addIdentityNakedKey(*ppNewStore, pKeyBlob, keyBlobLength)))
                 goto exit;
 
-            MOCANA_freeReadFile(&pKeyBlob);
+            DIGICERT_freeReadFile(&pKeyBlob);
         }
     }
 
@@ -1066,7 +1066,7 @@ void SSH_EXAMPLE_main(sbyte4 dummy)
 
     DEBUG_PRINTNL(DEBUG_SSH_EXAMPLE, "SSH_EXAMPLE_main: Starting up single user async example SSH Server");
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
     if (NULL != gMemPartDescr)
     {
         /* make sure it's thread-safe! */
@@ -1082,12 +1082,12 @@ void SSH_EXAMPLE_main(sbyte4 dummy)
     if (0 > SSH_EXAMPLE_sshCertStoreInit(&pSshCertStore))
         goto exit;
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     SFTP_EXAMPLE_init();
     SSH_sshSettings()->funcPtrOpenSftp         = SSH_EXAMPLE_sftpSessionStarted;
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     SSHPF_EXAMPLE_init();
     SSH_sshSettings()->funcPtrConnect                   = SSH_EXAMPLE_simplePortForwardConnect;
     SSH_sshSettings()->funcPortFwdReceivedData          = SSH_EXAMPLE_portForwardReceiveData;
@@ -1104,7 +1104,7 @@ void SSH_EXAMPLE_main(sbyte4 dummy)
 
     SSH_sshSettings()->pBannerString                    = SSH_EXAMPLE_banner;
     SSH_sshSettings()->funcPtrGetAuthAdvertizedMethods  = SSH_EXAMPLE_authMethod;
-#if defined(__ENABLE_MOCANA_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
+#if defined(__ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__)
     SSH_sshSettings()->funcPtrPasswordAuth              = SSH_RADIUS_EXAMPLE_authPasswordFunction;
 #else
     SSH_sshSettings()->funcPtrPasswordAuth              = SSH_EXAMPLE_authPasswordFunction;
@@ -1125,5 +1125,5 @@ exit:
     CERT_STORE_releaseStore(&pSshCertStore);
 }
 
-#endif /* defined( __ENABLE_MOCANA_SSH_SERVER_EXAMPLE__ ) && defined( __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ ) */
+#endif /* defined( __ENABLE_DIGICERT_SSH_SERVER_EXAMPLE__ ) && defined( __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ ) */
 

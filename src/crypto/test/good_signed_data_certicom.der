@@ -1,0 +1,453 @@
+0€	*†H†÷ €0€1	0+0€	*†H†÷ €$€‚è5.3 Release Notes, Rev. A
+=========================
+
+This document describes changes for Mocana Device Security Framework (DSF)
+version 5.3.
+
+1. New Products
+2. Feature Additions
+3. New API/Callback Functions
+4. Revised API Functions
+5. Deleted/Deprecated API Functions
+6. Compilation Flags
+7. Documentation
+8. Fixed Bugs
+9. Known Issues
+
+
+================================================================================
+1. New Products
+
+    a. NanoSign
+    b. NanoCrypto Zigbee Edition
+    c. (Beta edition) VPN client for mobile devices
+
+================================================================================
+2. Feature Additions
+
+   a. Platform
+   b. Hardware Acceleration
+   c. Certificate Management
+   d. NanoCert
+   e. NanoCert LTE
+   f. NanoCrypto and NanoCrypto Zigbee Edition
+   g. NanoSec
+   h. NanoWireless
+
+-----------
+a. Platform
+
+- Support for Coldfire CAU has been added. (Note that Coldfire SHA1 is disabled
+by default for CAU; use S‚èHA1 in software mode instead.)
+
+------------------------
+b. Hardware Acceleration
+
+- Hardware acceleration support has been added for VxWorks 6.6, Freescale
+MPC8313E. (Ticket 839)
+
+-------------------------
+c. Certificate Management
+
+- The CA_MGMT_extractCertASN1Name can now be used for certificate request
+messages. (Ticket 888)
+
+-----------
+d. NanoCert
+
+Suite B support has been added to PKCS 7, providing partial compliance with
+RFC 3278, and full compliance with RFC 5008.
+
+---------------
+e. NanoCert LTE
+
+- OCSP and SCEP integration are now included.
+
+- Custom extensions for certificates are now supported.
+
+-------------------------------------------
+f. NanoCrypto and NanoCrypto Zigbee Edition
+
+The following algorithms have been added:
+- AES-MMO
+- ECMQV
+
+----------
+g. NanoSec
+
+- Full compliance for RFC 4301 is now included.
+
+- NanoSec now operates on VxWorks 5.5. (Ticket 892)
+
+- You can now specify the lifetime of child SAs (in minutes or bytes‚è) in the
+NanoSec policy scripts.
+
+---------------
+h. NanoWireless
+
+- Support for AES-GCMP (128) protected data path has been added. To enable
+this support, define the __ENABLE_MOCANA_WPA2_GCMP__ flag in moptions.h.
+
+
+================================================================================
+3. New API/Callback Functions
+
+   a. NanoCrypto and NanoCrypto Zigbee Edition
+   b. NanoCert LTE
+
+-------------------------------------------
+a. NanoCrypto and NanoCrypto Zigbee Edition
+
+API functions have been added for the new algorithms (as listed in Feature
+Additions). For details, see the "NanoCrypto API Reference" and "NanoCrypto
+Zigbee Edition API Reference".
+
+---------------
+b. NanoCert LTE
+
+- Callback function pkiClientCallbacks->revocationStatusOnDemandFunc (which
+replaces the pkiClientCallbacks->crlOnDemandFunc callback). (Ticket 881)
+
+- PKI_CLIENT_checkOcspStatus
+
+- OCSP_CLIENT_httpInit
+- OCSP_CLIENT_sendRequest
+- OCSP_CLIENT_recv
+- OCSP_CLIENT_gen‚èerateRequestEx
+
+- SCEP_CLIENT_getUserPrivilegeExt
+
+- scepSettings->funcPtrGetUserPrivilegeExt
+
+
+================================================================================
+4. Revised API Functions
+
+   a. Certificate Management
+   b. NanoCert LTE
+   c. HTTP
+
+-------------------------
+a. Certificate Management
+
+- The CA_MGMT_extractCertASN1Name has a new parameter, includeASN1SeqHeader,
+which enables extraction of the ASN1 name with the sequence header.
+(Ticket 888)
+
+---------------
+b. NanoCert LTE
+
+- PKI_CLIENT_ioctl
+
+--------------
+c. HTTP
+- HTTP_setCookie
+
+================================================================================
+5. Deleted/Deprecated Functions
+
+   a. NanoCert LTE
+   b. NanoWireless
+
+---------------
+a. NanoCert LTE
+
+- The pkiClientCallbacks->crlOnDemandFunc has been deleted; use the new
+pkiClientCallbacks->revocationStatusOnDemandFunc. (Ticket 881)
+
+---------------
+b. NanoWireless
+
+- DOT11_mlmeDisassociate
+
+
+=‚è===============================================================================
+6. Compilation Flags
+
+   a. NanoSRTP
+   b. NanoWireless
+
+-----------
+a. NanoSRTP
+
+- __ENABLE_MOCANA_SRTP_POLICY_STRING_DATA__ - Enables retrieving a string
+representation of an SRTP session's security policies.
+
+---------------
+b. NanoWireless
+
+- __ENABLE_MOCANA_WPA2_GCMP__ enables support for AES-GCMP (128 and 256)
+protected data path.
+
+
+================================================================================
+7. Documentation
+
+In addition to being updated to reflect version 5.3 feature additions and doc
+bug fixes, note the following changes:
+
+- Process flowcharts have been added for NanoRADIUS and NanoWireless.
+
+- The new "NanoCert LTE Product Guide" is an expanded version of the original
+"NanoCert LTE User's Guide", and includes additional information about
+the Berkeley Oracle DB, customizing the database, and testing using EJBCA.
+
+- The "NanoSec Product Guide" has b‚èeen greatly expanded, and now features
+information about policy scripts, typical architecture configurations, and
+MOBIKE.
+
+
+================================================================================
+8. Fixed Bugs
+
+   a. Platform
+   b. NanoCert LTE
+   c. NanoEAP
+   d. NanoSec
+   e. NanoSSL
+   f. NanoWireless
+   g. Documentation
+
+-----------
+a. Platform
+
+- On VxWorks, for TCP clients and servers, a potential memory leak that could
+occur due to calling getaddrinfo has been eliminated. (Ticket 886)
+
+---------------
+b. NanoCert LTE
+
+- PKI_CLIENT_ioctl now properly handles attempts to set key sizes to 512, which
+are not supported by the certificate enrollment process due to their weakness.
+(Ticket 665)
+
+- When there are multiple foreground processes, every foreground process, by
+design, receives not only its requested CRLs but also the CRLs requested by
+every other foreground process, and now correctly matches the received CRL
+to its (the task's) own req‚èuest. (Ticket 824)
+
+- For revoked certificates, the verify callback now returns the correct status,
+ERR_PKI_CLIENT_CERT_REVOKED (not ERR_PKI_CLIENT_NOT_FOUND). (Ticket 826)
+
+- For certificate enrollments with future start dates, the returned status is
+now ERR_CERT_START_TIME_VALID_IN_FUTURE (not ERR_CERT_EXPIRED). (Ticket 827)
+
+- An intermittent segment fault that occurred very infrequently during
+certificate enrollment has been eliminated. See also, HTTP revised functions.
+(Ticket 830)
+
+- PKI_CLIENT_init now correctly executes on ARM and SunOS. (Ticket 833)
+
+- Certificate enrollment attempts with unreachable CMP CA URLs are now
+properly handled. (Ticket 843)
+
+- When multiple foreground processes are concurrently verifying certificates --
+some good and some revoked -- the correct status is now always returned to
+every process (instead of an ERR_NULL_POINTER status). (Ticket 849)
+
+- Importing a "good" remote EE certificate, after having imported a revoked EE
+certif‚èicate, now properly executes. (Ticket 859)
+
+- Several small memory leaks that could occur when neither the primary nor
+secondary CA could be reached have been eliminated. (Ticket 884)
+
+- Certificate renewal, following certificate enrollment, now operates correctly.
+(Ticket 889)
+
+- A memory leak that occurred when importing a CA certificate, when the trust
+anchor for that certificate had not been imported, has been eliminated.
+(Ticket 951)
+
+----------
+c. NanoEAP
+
+- EAP_TLSRecvData now correctly returns application data for all success cases.
+(Ticket 837)
+
+- For the EAP TTLS method, with MSCHAPv2 as phase 2, NanoEAP now correctly goes
+to the FAILURE state (instead of discarding the packet). (Ticket 838)
+
+----------
+d. NanoSec
+
+- NanoSec now operates on Linux kernel 2.6.26. (Ticket 442)
+
+- On Fedora 10, 2.6.27, an I/O error that occurred when loading moc_memdrv.ko
+has been eliminated. (Ticket 832)
+
+----------
+e. NanoSSL
+
+- DHE_PSK negotiation now succeeds f‚èor key lengths > 255, as defined in RFC
+4279. (Ticket 850)
+
+- When ECC is enabled, an error is now properly returned by
+SSL_SOCK_setServerCert if the selected algorithm does not match the server
+certificate or private key type. (Ticket 964)
+
+---------------
+f. NanoWireless
+
+- AP connectivity now works with SSIDs of 32 characters. (Ticket 840)
+
+- AP connectivity now works from stations using AR922X wireless network adapter.
+(Ticket 842)
+
+- Message 3 of the 4-way handshake verification is now fully compliant with the
+802.11i-2004 standard. (Ticket 879)
+
+- Connectivity is now properly achieved when a supported cipher suite does not
+appear first in the beacon or probe response RSN IE. (Ticket 918)
+
+- If a reserved AKM suite is advertised by the AP, NanoWireless now correctly
+does not send an association request (instead of sending a request with
+an invalid RSN IE). (Ticket 920)
+
+- When EAP Success is received with a code '5' instead of '3', NanoWireless now
+proper‚èly handles the case by not proceeding to the 4-way handshake (instead
+of failing completely). (Ticket 925)
+
+- If an AP is switched off before NanoWireless sends an association request,
+NanoWireless now correctly times out (instead of hanging). (Ticket 929)
+
+- When a bad WPA IE is received, it is now properly discarded. (ticket 935)
+
+- When no authenticator is present, the EAPOL-Start is now properly sent at
+every startPeriod interval, for maxStart times (not just once). (Ticket 938)
+
+- For WPA, the connection now correctly succeeds only after a successful group
+key handshake. (Ticket 939)
+
+- EAPOL Key message 1 with Key MIC flag set and WPA Key MIC present is now
+properly ignored (rejected). (Ticket 942)
+
+- EAPOL Key messages with the request bit set are now properly ignored
+(rejected). (Ticket 943)
+
+- 3/4 EAPOL Key messages containing Encrypted Key Data bits of '0' and an
+unencrypted key data field are now properly ignored (rejected). (Ticket 944)
+
+- Handshake m‚èessage verification (1/4 and 3/4 of 4-way handshake messages,
+and 1/2 of group key handshake messages), is now completely in compliance
+with the standard. (Previously some checks such as the presence of RSN IE (WPA2)
+or WPA IE (WPA), or GTK KDE in the Key Data encapsulation field, were omitted).
+(No ticket)
+
+- The message parser now correctly reports errors to the calling function when
+an invalid RSN IE, with a valid (>0) AKM suite count but with no actual data
+bytes, is encountered. (No ticket)
+
+- A connection success status is now properly sent only after the first
+successful PTKSA (instead of after every successful PTKSA). (No ticket)
+
+
+----------------
+g. Documentation
+
+- The "Cryptographic API Reference" now includes all SHA224_*, SHA384_*, and
+HMAC_* functions. (Tickets 822, 823)
+
+
+================================================================================
+9. Known Issues
+
+   a. NanoCert
+   b. NanoCert LTE
+   c. NanoDefender
+   d. NanoSec
+   e. Na‚ènoSSH
+   f. NanoSSL
+   g. NanoWireless
+
+---------------
+a. NanoCert
+
+- If certificates contain an unknown OID in the subject field, the
+CA_MGMT_extractCertDistinguishedName function returns an ERR_CERT_INVALID_STRUCT
+error. (Ticket 237)
+
+- Interoperability issues exist with JITC responders due to their
+non-compliance with RFCs. (Ticket 421)
+
+---------------
+b. NanoCert LTE
+
+- If separate foreground processes are used to import a certificate chain, then
+after the application deletes any of the chain's intermediate certificates, a
+foreground process call to PKI_CLIENT_verifyCertificate may fail to re-fetch
+those intermediate certificates. To work around this scenario, the process in
+which the PKI_CLIENT_verifyCertificate function fails should call
+PKI_CLIENT_getCertId and PKI_CLIENT_deleteCert for the end certificate, which in
+effect rebuilds the certificate chain. Subsequent calls to
+PKI_CLIENT_verifyCertificate will then succeed. (Ticket 785)
+
+- In multiple fo‚èreground process scenarios, if the first process fails to
+connect due to inaccessible responder URLs, the second foreground process
+will fail, regardless of whether its responder URLs are reachable. The
+work-around is to define the __ENABLE_NONBLOCKING_SOCKET_CONNECT__ flag.
+(Ticket 955)
+
+
+---------------
+c. NanoDefender
+
+- The NanoDefender Mocana Code analyzer parses C code, not assembly code.
+Therefore, function calls implemented in assembly code are inconveniently
+blocked. The workaround is to modify the .mca file manually to include the
+missing function call, and if necessary, regenerate the .msa file. (Ticket 307)
+
+- MCA incorrectly uses the MSA library list for user functions. (Ticket 449)
+
+----------
+d. NanoSec
+
+- On VxWorks 6.4, 8555, with hardware acceleration, MAX_ISR_JOBS must be set to 16,
+not 10. (Ticket 890)
+
+----------
+e. NanoSSH
+
+- If the NanoSSH server uses separate threads for send and receive, the SSH
+client (Mocana NanoSSH or any other SSH‚è client) may experience a "bad packet"
+error during key re-exchange. Instead of using separate threads, an intermediate
+thread (that calls the SSH_send() and SSH_receive() functions) should be used as
+a proxy to the separate send and receive threads (which will then use cleartext
+only). For more information about using this unusual configuration, contact
+Mocana support. (Ticket 337)
+
+- When ASYNC and ECC/GCM are both enabled, the NanoSSH server fails.
+(Ticket 956)
+
+----------
+f. NanoSSL
+
+- The NanoSSL client returns an error when negotiating with TLS 1.2 Hello. You
+can work around this problem by setting the client version to TLS 1.0 (3.1).
+(Ticket 959)
+
+---------------
+g. NanoWireless
+
+- On some Linux platforms (such as 2.6.29.4-167.fc11.i586) a segment fault can
+occur when the command line client is asked to use PSK while the AP is
+configured to use 802.1x. (Ticket 882)
+
+- Upon receiving an EAP Success with type (length not equal to 4), the message
+should be ¥discarded, but a connection is erroneously made. (Ticket 930)
+
+- If a client has more than one wireless adapter, none of them can connect to
+an AP. (Ticket 933)
+       ‚è0‚ä0‚Ì 
+]PoT   Î0	*†H†÷ 0T10
+	’&‰“ò,dcom10
+	’&‰“ò,dqagood10
+	’&‰“ò,dadmin10Ueta010100629004600Z110629005600Z0Œ10	UUS10	UCA10URedwood City10U
+	Good Tech10UEngineering10UJack Cai10	*†H†÷	jcai@good.com0Ÿ0	*†H†÷  0‰ Ï6±¢!Ş“®™ÕCz_€x!Û§š„„qî›o±®X¯~¼ü²âüq:¿{Dİ¬ããæõ9Ÿ?/®ódÊÂÕMÀ	{ñı)Ù	£˜r‘µI8îºƒV“Èƒ\¥÷ÇAFôËòW*x|íæÍ~#€š† 5«ågÜ<Öt!Í £‚0‚ı0Uÿğ0D	*†H†÷	7050*†H†÷ €0*†H†÷ €0+0
+*†H†÷0Uâlh®!7ôıáû¬ Ù*B0U%0
++0U#0€¼˜ÿwÖ)ğû>å:çÑ«÷C¾Â0ıUõ0ò0ï ì é†²ldap:///CN=eta01,CN=eta01,CN=CDP,CN=Public%20Key%20Services,CN=Services,CN=Configuration,DC=admin,DC=qagood,DC=com?certificateRevocationList?base?objectClass=cRLDistributionPoint†2http://eta01.admin.qagood.com/CertEnroll/eta01.crl0‚N+‚@0‚<0¬+0†Ÿldap:///CN=eta01,CN=AIA,CN=Public%20Key%20Services,CN=Services,CN=Configuration,DC=admin,DC=qagood,DC=com?cACertificate?base?objectClass=certificationAuthority0X+0†Lhttp://eta01.admin.qagood.com/CertEnroll/eta01.admin.qagood.com_eta01(1).crt01+0†%http://pkisupport.de.qagood.com:8888/0	*†H†÷ ‚ …t%eéŠ¸ß™EzQÑe 6¡a‡	<yçù¹Ÿ”:%şË²oë¦ûh­M#úèÃñ2……Hd’œ2dAóĞn6»f‘|M—ÊªÔQyä}ôhO ›ÒmÛÌŠûëQ'8’íÇ'ƒ‡ŞGùù/˜e¤ÕåÌáÓN¼Fé4ÈFÑ‰½”jó°#JSÇöpYÙ-ı‰õÒìšTˆÙ®›4½¼
+†œµ.¹ê 
+RÄg©z ÂÔæÕ%--77?-àá:÷Å8Òê9 PŠ5‘İX¥ag¦	5ÿÌ6fÜLuyRÇ¾%q¬ı °•	1‚0‚0b0T10
+	’&‰“ò,dcom10
+	’&‰“ò,dqagood10
+	’&‰“ò,dadmin10Ueta01
+]PoT   Î0+0	*†H†÷ €¿ÈŠê‚J¢ä¯MôÌ«õ5êSQhÈıŒ§~ÁĞÊhá‘uæ(ÑöéFˆÿÑÁ“sÇdÑÅs)jö¹‹¾Í1›60‚²_2‚>£¯T9ôbµÊf(-\[–f`‚ ×JÊ(>§¤˜Ú¢¹t^4xĞìÿyñs’ô¿—$      

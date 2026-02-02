@@ -9,9 +9,9 @@ else()
 endif()
 
 option(CM_ENABLE_DEBUG "Enable Debug logs." OFF)
-option(CM_ENABLE_CMS "Enable CMS." OFF)
 option(CM_ENABLE_IPV6 "Enable IPV6." OFF)
 option(CM_DISABLE_PQC "Disable PQC support" OFF)
+option(CM_DISABLE_SUITEB "Disable suiteb support" OFF)
 option(CM_BUILD_DATALIB "Build data library for global symbols." ON)
 option(CM_DISABLE_CI   "Disable crypto interface." OFF)
 option(CM_ENABLE_CVC   "Enable CV Certificates." OFF)
@@ -19,6 +19,11 @@ option(CM_BUILD_X32    "Build for 32Bit Machine." OFF)
 option(CM_BUILD_X64    "Build for 64Bit Machine." OFF)
 if (WIN32)
     option(CM_WIN_FORCE_LINKAGE "Force linkage for shared library." OFF)
+endif()
+if(BUILD_FOR_OSI)
+  option(CM_ENABLE_CMS "Enable CMS API" ON)
+else()
+  option(CM_ENABLE_CMS "Enable CMS." OFF)
 endif()
 
 # Where to find CMake files
@@ -141,7 +146,11 @@ endif()
 
 # override the enable flag if pqc is disabled
 if (CM_DISABLE_PQC)
-    list(REMOVE_ITEM mocana_flags "-D__ENABLE_MOCANA_PQC__")
+    list(REMOVE_ITEM mocana_flags "-D__ENABLE_DIGICERT_PQC__")
+endif()
+
+if (CM_DISABLE_SUITEB)
+    list(REMOVE_ITEM mocana_flags "-D__ENABLE_DIGICERT_ECC__")
 endif()
 
 # Now load all flags into MOCANA_FLAGS

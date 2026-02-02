@@ -24,8 +24,8 @@
 @filedoc    moccms_decode.h
 */
 
-#ifndef __MOCANA_CMS_DECODE_HEADER__
-#define __MOCANA_CMS_DECODE_HEADER__
+#ifndef __DIGICERT_CMS_DECODE_HEADER__
+#define __DIGICERT_CMS_DECODE_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -148,7 +148,7 @@ typedef struct MOC_CMS_CTX
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN void
-MOC_CMS_deleteContextIn(MOC_CMS_CTX* pCtx);
+DIGI_CMS_deleteContextIn(MOC_CMS_CTX* pCtx);
 
 /** 
  * @brief Function to 'clone' a 'MOC_CMS_MsgSignInfo' instance, making a 'deep copy'.
@@ -164,7 +164,7 @@ MOC_CMS_deleteContextIn(MOC_CMS_CTX* pCtx);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_cloneSigner(MOC_CMS_MsgSignInfo* pOut,
+DIGI_CMS_cloneSigner(MOC_CMS_MsgSignInfo* pOut,
                     const MOC_CMS_MsgSignInfo* pIn);
 
 /** 
@@ -181,7 +181,7 @@ MOC_CMS_cloneSigner(MOC_CMS_MsgSignInfo* pOut,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_cloneKTRid(MOC_CMS_KeyTransRecipientId* pOut,
+DIGI_CMS_cloneKTRid(MOC_CMS_KeyTransRecipientId* pOut,
                    const MOC_CMS_KeyTransRecipientId* pIn);
 
 /** 
@@ -198,7 +198,7 @@ MOC_CMS_cloneKTRid(MOC_CMS_KeyTransRecipientId* pOut,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_cloneKARid(MOC_CMS_KeyAgreeRecipientId* pOut,
+DIGI_CMS_cloneKARid(MOC_CMS_KeyAgreeRecipientId* pOut,
                    const MOC_CMS_KeyAgreeRecipientId* pIn);
 
 /** 
@@ -214,7 +214,7 @@ MOC_CMS_cloneKARid(MOC_CMS_KeyAgreeRecipientId* pOut,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_freeKTRid(MOC_CMS_KeyTransRecipientId* pData);
+DIGI_CMS_freeKTRid(MOC_CMS_KeyTransRecipientId* pData);
 
 /** 
  * @brief Function to 'free' a 'MOC_CMS_KeyAgreeRecipientId' instance, releasing all held memory.
@@ -229,7 +229,7 @@ MOC_CMS_freeKTRid(MOC_CMS_KeyTransRecipientId* pData);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_freeKARid(MOC_CMS_KeyAgreeRecipientId* pData);
+DIGI_CMS_freeKARid(MOC_CMS_KeyAgreeRecipientId* pData);
 
 
 /** 
@@ -259,7 +259,7 @@ MOC_CMS_freeKARid(MOC_CMS_KeyAgreeRecipientId* pData);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_parseSigned(MOC_CMS_CTX *pCtx,
+DIGI_CMS_parseSigned(MOC_CMS_CTX *pCtx,
                     const ubyte *pData,
                     ubyte4 dataLen,
                     MOC_CMS_DataInfo *pInfo,
@@ -292,7 +292,7 @@ MOC_CMS_parseSigned(MOC_CMS_CTX *pCtx,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_parseEnveloped(MOC_CMS_CTX *pCtx,
+DIGI_CMS_parseEnveloped(MOC_CMS_CTX *pCtx,
                        const ubyte *pData,
                        ubyte4 dataLen,
                        MOC_CMS_DataInfo *pInfo,
@@ -302,4 +302,4 @@ MOC_CMS_parseEnveloped(MOC_CMS_CTX *pCtx,
 }
 #endif
 
-#endif  /* __MOCANA_CMS_DECODE_HEADER__ */
+#endif  /* __DIGICERT_CMS_DECODE_HEADER__ */

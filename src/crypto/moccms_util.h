@@ -21,8 +21,8 @@
 @details    Header file for the Mocana Cryptographic Message Syntax (CMS) utilities.
 */
 
-#ifndef __MOCANA_CMS_UTIL_HEADER__
-#define __MOCANA_CMS_UTIL_HEADER__
+#ifndef __DIGICERT_CMS_UTIL_HEADER__
+#define __DIGICERT_CMS_UTIL_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,7 +81,7 @@ typedef struct MOC_CMS_ASN1_Memory
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_createAsn1MemoryCache(MOC_CMS_ASN1_Memory **ppMem);
+DIGI_CMS_U_createAsn1MemoryCache(MOC_CMS_ASN1_Memory **ppMem);
 
 /*----------------------------------------------------------------------*/
 
@@ -98,7 +98,7 @@ MOC_CMS_U_createAsn1MemoryCache(MOC_CMS_ASN1_Memory **ppMem);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_deleteAsn1MemoryCache(MOC_CMS_ASN1_Memory **ppMem);
+DIGI_CMS_U_deleteAsn1MemoryCache(MOC_CMS_ASN1_Memory **ppMem);
 
 /*----------------------------------------------------------------------*/
 
@@ -115,7 +115,7 @@ MOC_CMS_U_deleteAsn1MemoryCache(MOC_CMS_ASN1_Memory **ppMem);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_addToAsn1MemoryCache(MOC_CMS_ASN1_Memory* pMem,
+DIGI_CMS_U_addToAsn1MemoryCache(MOC_CMS_ASN1_Memory* pMem,
                                void* pASN1);
 
 /*----------------------------------------------------------------------*/
@@ -132,14 +132,14 @@ MOC_CMS_U_addToAsn1MemoryCache(MOC_CMS_ASN1_Memory* pMem,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_cleanAsn1MemoryCache(MOC_CMS_ASN1_Memory* pMem);
+DIGI_CMS_U_cleanAsn1MemoryCache(MOC_CMS_ASN1_Memory* pMem);
 
 /*----------------------------------------------------------------------*/
 
 /** This function creates an array of 'MOC_CMS_SignedDataHash' instances, reading
  *  the input bit-pattern in 'hashes'.
  *  <p>The created array and its size is returned via pointers.
- *  <p>A valid bit pattern can be constructed with the 'MOC_CMS_U_getDigestAlgorithmHash'
+ *  <p>A valid bit pattern can be constructed with the 'DIGI_CMS_U_getDigestAlgorithmHash'
  *    function.
  *
  *  @param hashes    The bit pattern describing the requested hash algos.
@@ -153,12 +153,12 @@ MOC_CMS_U_cleanAsn1MemoryCache(MOC_CMS_ASN1_Memory* pMem);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_constructHashes(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte4 hashes,
+DIGI_CMS_U_constructHashes(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte4 hashes,
                           ubyte4 *numHashes,
                           MOC_CMS_SignedDataHash **ppHashes);
 
 /** This function frees an array of 'MOC_CMS_SignedDataHash' instances, that
- *  was previously created with 'MOC_CMS_U_constructHashes'.
+ *  was previously created with 'DIGI_CMS_U_constructHashes'.
  *  <p>The pointer variable holding the array memory is set to NULL.
  *
  *  @param numHashes The number of created hashes stored in the array.
@@ -171,11 +171,11 @@ MOC_CMS_U_constructHashes(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte4 hashes,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_destructHashes(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte4 numHashes,
+DIGI_CMS_U_destructHashes(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte4 numHashes,
                          MOC_CMS_SignedDataHash  **ppHashes);
 
 /** This function maps an OID (taken from ASN1) into an internal digest algorithm id.
- *  <p>This function calls the \c MOC_CMS_U_getHashAlgoIdFromHashAlgoOIDData() function after
+ *  <p>This function calls the \c DIGI_CMS_U_getHashAlgoIdFromHashAlgoOIDData() function after
  *   obtaining the ASN1 byte array from the \c MAsn1Element instance.
  *
  *  @param pDigestAlgoOID The pointer to an ASN1 element instance, holding an OID.
@@ -189,7 +189,7 @@ MOC_CMS_U_destructHashes(MOC_HASH(hwAccelDescr hwAccelCtx) ubyte4 numHashes,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getHashAlgoIdFromHashAlgoOID(MAsn1Element *pDigestAlgoOID,
+DIGI_CMS_U_getHashAlgoIdFromHashAlgoOID(MAsn1Element *pDigestAlgoOID,
                                        ubyte4 *pDigestAlg);
 
 /** This function maps a hash OID into an internal digest algorithm id.
@@ -206,7 +206,7 @@ MOC_CMS_U_getHashAlgoIdFromHashAlgoOID(MAsn1Element *pDigestAlgoOID,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getHashAlgoIdFromHashAlgoOIDData(const ubyte *pDigestAlgoOID,
+DIGI_CMS_U_getHashAlgoIdFromHashAlgoOIDData(const ubyte *pDigestAlgoOID,
                                            ubyte4 digestAlgoOIDLen,
                                            ubyte4 *pDigestAlg);
 
@@ -226,7 +226,7 @@ MOC_CMS_U_getHashAlgoIdFromHashAlgoOIDData(const ubyte *pDigestAlgoOID,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getDigestAlgorithmHash(MAsn1Element *pDigestAlgorithm,
+DIGI_CMS_U_getDigestAlgorithmHash(MAsn1Element *pDigestAlgorithm,
                                  ubyte4 *pHashes);
 
 /** This function creates ASN1 DER data to describe the digest algorithm.
@@ -245,7 +245,7 @@ MOC_CMS_U_getDigestAlgorithmHash(MAsn1Element *pDigestAlgorithm,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setDigestAlgorithmHash(MOC_CMS_ASN1_Memory* pMem,
+DIGI_CMS_U_setDigestAlgorithmHash(MOC_CMS_ASN1_Memory* pMem,
                                  const ubyte *pDigestAlgoOID,
                                  ubyte4 digestAlgoOIDLen,
                                  MAsn1Element *pDigestAlgorithm);
@@ -261,7 +261,7 @@ MOC_CMS_U_setDigestAlgorithmHash(MOC_CMS_ASN1_Memory* pMem,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setEncodedNIL(MAsn1Element *pEnc);
+DIGI_CMS_U_setEncodedNIL(MAsn1Element *pEnc);
 
 /** Encode a list of 'attribute' entries into ASN1 DER.
  *
@@ -280,7 +280,7 @@ MOC_CMS_U_setEncodedNIL(MAsn1Element *pEnc);
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setAttributesImpl(MOC_CMS_ASN1_Memory *pMem,
+DIGI_CMS_U_setAttributesImpl(MOC_CMS_ASN1_Memory *pMem,
                             MOC_CMS_Attribute **pAttributes,
                             ubyte4            numAttributes,
                             ubyte             tagVal,
@@ -301,7 +301,7 @@ MOC_CMS_U_setAttributesImpl(MOC_CMS_ASN1_Memory *pMem,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getSignerSignatureAlgo(MAsn1Element* pSignerInfo,
+DIGI_CMS_U_getSignerSignatureAlgo(MAsn1Element* pSignerInfo,
                                  ubyte4 *pubKeyType);
 
 /** Function to encode the key type and digest algorithm of a CMS 'Signer'.
@@ -319,13 +319,13 @@ MOC_CMS_U_getSignerSignatureAlgo(MAsn1Element* pSignerInfo,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setSignerSignatureAlgo(MOC_CMS_ASN1_Memory* pMem,
+DIGI_CMS_U_setSignerSignatureAlgo(MOC_CMS_ASN1_Memory* pMem,
                                  ubyte         pubKeyType,
                                  ubyte4        digestAlg,
                                  MAsn1Element* pSignerInfo);
 
 /** Function to encode the key type and digest algorithm of a CMS 'Signer'. This uses the \c AsymmetricKey
- *  directly and should be called rather than \c MOC_CMS_U_setSignerSignatureAlgo when using quantum safe keys.
+ *  directly and should be called rather than \c DIGI_CMS_U_setSignerSignatureAlgo when using quantum safe keys.
  *
  *  @param pMem         The ASN1 memory cache for the allocated memory.
  *  @param pKey         Pointer to the signing key.
@@ -340,7 +340,7 @@ MOC_CMS_U_setSignerSignatureAlgo(MOC_CMS_ASN1_Memory* pMem,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setSignerSignatureAlgoKey(MOC_CMS_ASN1_Memory* pMem,
+DIGI_CMS_U_setSignerSignatureAlgoKey(MOC_CMS_ASN1_Memory* pMem,
                                     AsymmetricKey *pKey,
                                     ubyte4        digestAlg,
                                     MAsn1Element* pSignerInfo);
@@ -349,7 +349,7 @@ MOC_CMS_U_setSignerSignatureAlgoKey(MOC_CMS_ASN1_Memory* pMem,
  *  <p>The input is the ASN1 string containing the CMS 'AlgorithmIdentifier' data.
  *  <p>The returned data is a byte value matching the 'akt' type enum value as defined in
  *     'ca_mgmt.h'.
- *  <p>This function calls \c MOC_CMS_U_getSignerAlgorithmHashEncoded() after obtaining
+ *  <p>This function calls \c DIGI_CMS_U_getSignerAlgorithmHashEncoded() after obtaining
  *     the ASN1 byte array from the \c MAsn1Element instance.
  *
  *  @param pCertSigner The ASN1 element containing the 'AlgorithmIdentifier' data.
@@ -362,7 +362,7 @@ MOC_CMS_U_setSignerSignatureAlgoKey(MOC_CMS_ASN1_Memory* pMem,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getSignerAlgorithmHash(MAsn1Element* pCertSigner,
+DIGI_CMS_U_getSignerAlgorithmHash(MAsn1Element* pCertSigner,
                                  ubyte4* pDigestAlg);
 
 /** Function to determine the digest type of a certificate signature.
@@ -381,7 +381,7 @@ MOC_CMS_U_getSignerAlgorithmHash(MAsn1Element* pCertSigner,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getSignerAlgorithmHashEncoded(ubyte  *pEnc,
+DIGI_CMS_U_getSignerAlgorithmHashEncoded(ubyte  *pEnc,
                                         ubyte4 encLen,
                                         ubyte4 *pDigestAlg);
 
@@ -400,7 +400,7 @@ MOC_CMS_U_getSignerAlgorithmHashEncoded(ubyte  *pEnc,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getSignerAlgorithmHashType(const ubyte  *pOID,
+DIGI_CMS_U_getSignerAlgorithmHashType(const ubyte  *pOID,
                                      ubyte4       oidLen,
                                      ubyte4       *pHashAlg);
 
@@ -421,7 +421,7 @@ MOC_CMS_U_getSignerAlgorithmHashType(const ubyte  *pOID,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_checkCertificateIssuer(const ubyte *pParent,
+DIGI_CMS_U_checkCertificateIssuer(const ubyte *pParent,
                                  ubyte4      parentLen,
                                  const ubyte *pCert,
                                  ubyte4      certLen);
@@ -447,7 +447,7 @@ MOC_CMS_U_checkCertificateIssuer(const ubyte *pParent,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_parseX509CertForSerialNumber(const ubyte *pCert,
+DIGI_CMS_U_parseX509CertForSerialNumber(const ubyte *pCert,
                                        ubyte4      certLen,
                                        ubyte       **ppSerial,
                                        ubyte4      *pSerialLen);
@@ -473,7 +473,7 @@ MOC_CMS_U_parseX509CertForSerialNumber(const ubyte *pCert,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_parseX509CertForSubject(const ubyte *pCert,
+DIGI_CMS_U_parseX509CertForSubject(const ubyte *pCert,
                                   ubyte4      certLen,
                                   ubyte       **ppSubj,
                                   ubyte4      *pSubjLen);
@@ -499,7 +499,7 @@ MOC_CMS_U_parseX509CertForSubject(const ubyte *pCert,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_parseX509CertForIssuerName(const ubyte *pCert,
+DIGI_CMS_U_parseX509CertForIssuerName(const ubyte *pCert,
                                      ubyte4      certLen,
                                      ubyte       **ppIssuerName,
                                      ubyte4      *pIssuerNameLen);
@@ -526,7 +526,7 @@ MOC_CMS_U_parseX509CertForIssuerName(const ubyte *pCert,
  */
 
 MOC_EXTERN MSTATUS
-MOC_CMS_U_parseX509CertForSubjectKeyIdentifier(const ubyte *pCert,
+DIGI_CMS_U_parseX509CertForSubjectKeyIdentifier(const ubyte *pCert,
                                                ubyte4      certLen,
                                                ubyte       **ppExt,
                                                ubyte4      *pExtLen);
@@ -552,7 +552,7 @@ MOC_CMS_U_parseX509CertForSubjectKeyIdentifier(const ubyte *pCert,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_parseX509CertForPublicKey(const ubyte *pCert,
+DIGI_CMS_U_parseX509CertForPublicKey(const ubyte *pCert,
                                     ubyte4      certLen,
                                     ubyte       **ppSubjPubKey,
                                     ubyte4      *pSubjPubKeyLen);
@@ -572,7 +572,7 @@ MOC_CMS_U_parseX509CertForPublicKey(const ubyte *pCert,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setKeyFromSubjectPublicKeyInfo(MOC_ASYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_setKeyFromSubjectPublicKeyInfo(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                          const ubyte    *pCert,
                                          ubyte4         certLen,
                                          AsymmetricKey* pCertKey);
@@ -600,7 +600,7 @@ MOC_CMS_U_setKeyFromSubjectPublicKeyInfo(MOC_ASYM(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_processSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_processSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                     MAsn1Element *pSigner,
                                     MAsn1Element *pCertificate,
                                     MAsn1Element *pSignData,
@@ -624,7 +624,7 @@ MOC_CMS_U_processSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_verifyCertificateSignature(MOC_ASYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_verifyCertificateSignature(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                      ubyte* pCert,
                                      ubyte4 certLen,
                                      AsymmetricKey *parentCertKey,
@@ -658,7 +658,7 @@ MOC_CMS_U_verifyCertificateSignature(MOC_ASYM(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setSignatureValue(MOC_ASYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_setSignatureValue(MOC_ASYM(hwAccelDescr hwAccelCtx)
                             MOC_CMS_ASN1_Memory* pMem,
                             RNGFun rngFun, void* rngArg,
                             const AsymmetricKey*  pKey,
@@ -684,7 +684,7 @@ MOC_CMS_U_setSignatureValue(MOC_ASYM(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_validateLink(MOC_ASYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_validateLink(MOC_ASYM(hwAccelDescr hwAccelCtx)
                        ubyte*       pCert,
                        ubyte4       certLen,
                        const ubyte* pParent,
@@ -705,7 +705,7 @@ MOC_CMS_U_validateLink(MOC_ASYM(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_isRootCertificate(MOC_ASYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_isRootCertificate(MOC_ASYM(hwAccelDescr hwAccelCtx)
                             ubyte* pCert,
                             ubyte4 certLen);
 
@@ -735,7 +735,7 @@ MOC_CMS_U_isRootCertificate(MOC_ASYM(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getBulkAlgo (MOC_SYM(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_getBulkAlgo (MOC_SYM(hwAccelDescr hwAccelCtx)
                        ubyte* pEncryptOID,
                        ubyte4 encryptOIDLen,
                        ubyte* pEncryptIV,
@@ -767,7 +767,7 @@ MOC_CMS_U_getBulkAlgo (MOC_SYM(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getCryptoAlgoParams (const ubyte* encryptAlgoOID,
+DIGI_CMS_U_getCryptoAlgoParams (const ubyte* encryptAlgoOID,
                                ubyte4 encryptAlgoOIDLen,
                                const BulkEncryptionAlgo** ppBulkAlgo,
                                sbyte4 *keyLength);
@@ -801,7 +801,7 @@ MOC_CMS_U_getCryptoAlgoParams (const ubyte* encryptAlgoOID,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_processKeyAgreeRecipientInfo(MOC_HW(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_processKeyAgreeRecipientInfo(MOC_HW(hwAccelDescr hwAccelCtx)
                                        MAsn1Element* root,
                                        const void* callbackArg,
                                        MOC_CMS_GetPrivateKey getPrivateKeyFun,
@@ -839,7 +839,7 @@ MOC_CMS_U_processKeyAgreeRecipientInfo(MOC_HW(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_processKeyTransRecipientInfo(MOC_HW(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_processKeyTransRecipientInfo(MOC_HW(hwAccelDescr hwAccelCtx)
                                        MAsn1Element* pRoot,
                                        const void* callbackArg,
                                        MOC_CMS_GetPrivateKey getPrivateKeyFun,
@@ -871,7 +871,7 @@ MOC_CMS_U_processKeyTransRecipientInfo(MOC_HW(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_writeRecipientID(MOC_HW(hwAccelDescr hwAccelCtx)
+DIGI_CMS_U_writeRecipientID(MOC_HW(hwAccelDescr hwAccelCtx)
                            MOC_CMS_ASN1_Memory *pMem,
                            RNGFun              rngFun,
                            void                *rngFunArg,
@@ -898,7 +898,7 @@ MOC_CMS_U_writeRecipientID(MOC_HW(hwAccelDescr hwAccelCtx)
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getIssuerSerialNumber(MAsn1Element* pIssuerSerialNumber,
+DIGI_CMS_U_getIssuerSerialNumber(MAsn1Element* pIssuerSerialNumber,
                                 MOC_CMS_IssuerSerialNumber* pISN);
 
 /** A function to convert an ASN1 representation of identifying data, the originator
@@ -916,7 +916,7 @@ MOC_CMS_U_getIssuerSerialNumber(MAsn1Element* pIssuerSerialNumber,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_getOriginatorPublicKey(MAsn1Element* pRoot,
+DIGI_CMS_U_getOriginatorPublicKey(MAsn1Element* pRoot,
                                  MOC_CMS_OriginatorPublicKey* pOriginatorKey);
 
 /** A function to store data held by \c MOC_CMS_IssuerSerialNumber as an ASN1 DER
@@ -935,7 +935,7 @@ MOC_CMS_U_getOriginatorPublicKey(MAsn1Element* pRoot,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setIssuerSerialNumber(MOC_CMS_ASN1_Memory* pMem,
+DIGI_CMS_U_setIssuerSerialNumber(MOC_CMS_ASN1_Memory* pMem,
                                 MOC_CMS_IssuerSerialNumber* pISN,
                                 MAsn1Element* pIssuerSerialNumber);
 
@@ -955,7 +955,7 @@ MOC_CMS_U_setIssuerSerialNumber(MOC_CMS_ASN1_Memory* pMem,
  *                  use the \c DISPLAY_ERROR macro.
  */
 MOC_EXTERN MSTATUS
-MOC_CMS_U_setSubjectKeyIdentifier(MOC_CMS_ASN1_Memory *pMem,
+DIGI_CMS_U_setSubjectKeyIdentifier(MOC_CMS_ASN1_Memory *pMem,
                                   ubyte *pSKI,
                                   ubyte4 skiLen,
                                   MAsn1Element *pSKIelement);
@@ -964,4 +964,4 @@ MOC_CMS_U_setSubjectKeyIdentifier(MOC_CMS_ASN1_Memory *pMem,
 }
 #endif
 
-#endif  /* __MOCANA_CMS_UTIL_HEADER__ */
+#endif  /* __DIGICERT_CMS_UTIL_HEADER__ */

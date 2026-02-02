@@ -51,7 +51,7 @@ extern "C" {
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa2.h
  * @funcdoc    dsa2.h
  */
@@ -89,7 +89,7 @@ MOC_EXTERN MSTATUS DSA_computeSignature2(MOC_DSA(hwAccelDescr hwAccelCtx)
  *             of \c TRUE before accepting that a signature is valid.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa2.h
  * @funcdoc    dsa2.h
  */
@@ -128,7 +128,7 @@ MOC_EXTERN MSTATUS DSA_verifySignature2(MOC_DSA(hwAccelDescr hwAccelCtx)
  *             returned error status, use the \c DISPLAY_ERROR macro.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa2.h
  * @funcdoc    dsa2.h
  */
@@ -166,7 +166,7 @@ MOC_EXTERN MSTATUS DSA_computeSignature2Aux(MOC_DSA(hwAccelDescr hwAccelCtx) RNG
  *             of \c TRUE before accepting that a signature is valid.
  *
  * @ingroup    dsa_functions
- * @flags      To use this API one must define + \c \__ENABLE_MOCANA_DSA__
+ * @flags      To use this API one must define + \c \__ENABLE_DIGICERT_DSA__
  * @inc_file   dsa2.h
  * @funcdoc    dsa2.h
  */

@@ -123,7 +123,7 @@ if (${CMAKE_C_COMPILER} MATCHES "arm-oe-linux-gnueabi-gcc")
 endif()
 
 if(CM_BUILD_X64)
-    set(EXTRA_DEFINITIONS "-D__ENABLE_MOCANA_64_BIT__")
+    set(EXTRA_DEFINITIONS "-D__ENABLE_DIGICERT_64_BIT__")
 endif()
 
 # Set the endianness if we are not cross compiling
@@ -166,7 +166,7 @@ if(APPLE)
         message(FATAL_ERROR "Apple OS is not Darwin\n")
     endif()
 elseif(WIN32)
-    set(RTOS_FLAG_MOCANA "-D__RTOS_WIN32__ -D__ENABLE_MOCANA_WIN_STUDIO_BUILD__ -DWIN32")
+    set(RTOS_FLAG_MOCANA "-D__RTOS_WIN32__ -D__ENABLE_DIGICERT_WIN_STUDIO_BUILD__ -DWIN32")
 else()
     if("${CM_TARGET_PLATFORM}" MATCHES "qnx-x86_64")
         set(RTOS_FLAG_MOCANA "-D__RTOS_QNX__")
@@ -181,7 +181,7 @@ else()
         set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -DMOC_LITTLE_ENDIAN")
     elseif("${CM_TARGET_PLATFORM}" MATCHES "esp32")
         set(RTOS_FLAG_MOCANA "-D__RTOS_FREERTOS__ -D__RTOS_FREERTOS_ESP32__")
-        set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -DMOC_LITTLE_ENDIAN -D__LWIP_STACK__ -D__MOCANA_MAX_INT_32__")
+        set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -DMOC_LITTLE_ENDIAN -D__LWIP_STACK__")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -fdata-sections -ffunction-sections -Wl,--gc-sections")
     else()
     # we assume generic Linux
@@ -401,3 +401,15 @@ endif()
 
 set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_START           "-Wl,--whole-archive")
 set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_END             "-Wl,--no-whole-archive")
+
+# To enable memory sanitizer set CM_ENV_FSANITIZE=1 in the build environment
+if ("$ENV{CM_ENV_BACKWARDS_COMPATABILITY}" STREQUAL "1")
+    set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_MOCANA_BACKWARDS_COMPATABILITY__")
+endif()
+
+if ("$ENV{CM_ENV_ENABLE_LEGACY_FIPS}" STREQUAL "1")
+    set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -D__ENABLE_DIGICERT_FIPS_LEGACY_LIB__")
+    message(STATUS "================================================================================")
+    message(STATUS "INFO: Building with LEGACY_FIPS compatibility (CM_ENV_ENABLE_LEGACY_FIPS=1)")
+    message(STATUS "================================================================================")
+endif()

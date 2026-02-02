@@ -15,7 +15,7 @@
 #include "../../common/vlong.h"
 #include "../../common/vlong_priv.h"
 
-#ifndef __DISABLE_MOCANA_VLONG_MATH__
+#ifndef __DISABLE_DIGICERT_VLONG_MATH__
 
 /*----------------------------------------------------------------------------*/
 
@@ -33,7 +33,9 @@ MOC_EXTERN MSTATUS VLONG_modExp (
   {
     status = VLONG_allocVlong(ppRetModExp, ppVlongQueue);
     if (NULL != ppRetModExp)
+    {
       DEBUG_RELABEL_MEMORY(*ppRetModExp);
+    }
     goto exit;
   }
 
@@ -43,7 +45,7 @@ MOC_EXTERN MSTATUS VLONG_modExp (
     goto exit;
   }
 
-#ifdef __DISABLE_MOCANA_MODEXP_SLIDING_WINDOW__
+#ifdef __DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__
   status = VLONG_montgomeryExpBin(MOC_MOD(hwAccelCtx) meh, x, e,
                                   ppRetModExp, ppVlongQueue);
 #else
@@ -86,8 +88,10 @@ MOC_EXTERN MSTATUS VLONG_modexp (
     MSTATUS status = VLONG_allocVlong(ppRet, ppVlongQueue);
 
     if (NULL != ppRet)
+    {
       DEBUG_RELABEL_MEMORY(*ppRet);
-
+    }
+    
     return status;
   }
 
@@ -101,7 +105,7 @@ MOC_EXTERN MSTATUS VLONG_modexp (
   }
   else
   {
-#if defined(__DISABLE_MOCANA_BARRETT__)
+#if defined(__DISABLE_DIGICERT_BARRETT__)
     return VLONG_modexp_classic(MOC_MOD(hwAccelCtx) x, e, n, ppRet,
                                 ppVlongQueue);
 #else
@@ -113,7 +117,7 @@ MOC_EXTERN MSTATUS VLONG_modexp (
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__DISABLE_MOCANA_BARRETT__) || defined(__ENABLE_MOCANA_MODEXP_CLASSIC__)
+#if defined(__DISABLE_DIGICERT_BARRETT__) || defined(__ENABLE_DIGICERT_MODEXP_CLASSIC__)
 
 MOC_EXTERN MSTATUS VLONG_modexp_classic (
   MOC_MOD(hwAccelDescr hwAccelCtx) const vlong *x, 
@@ -181,13 +185,13 @@ exit:
   VLONG_freeVlong(&tmp, ppVlongQueue);
   VLONG_freeVlong(&S, ppVlongQueue);
 
-  MOCANA_YIELD_PROCESSOR();
+  DIGICERT_YIELD_PROCESSOR();
 
   return status;
 
 } /* VLONG_modexp_classic */
 
-#endif  /* __DISABLE_MOCANA_BARRETT__ || __ENABLE_MOCANA_MODEXP_CLASSIC__ */
+#endif  /* __DISABLE_DIGICERT_BARRETT__ || __ENABLE_DIGICERT_MODEXP_CLASSIC__ */
 
 #endif /* __VLONG_MODEXP_OPERATOR_HARDWARE_ACCELERATOR__ */
-#endif /* __DISABLE_MOCANA_VLONG_MATH__ */
+#endif /* __DISABLE_DIGICERT_VLONG_MATH__ */

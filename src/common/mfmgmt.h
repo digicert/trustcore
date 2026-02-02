@@ -55,7 +55,7 @@ typedef struct FileDescriptorInfo {
     enum fileDescriptorTypes type;
     sbyte4 fileSize;    /* signed integer */
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
     sbyte8 accessTime;  /* long */
     sbyte8 createTime;  /* long */
     sbyte8 modifyTime;  /* long */
@@ -94,7 +94,7 @@ typedef struct DirectoryEntry
 #define FMGMT_rename                            ZEPHYR_rename
 #define FMGMT_pathExists                        ZEPHYR_pathExists
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 #define FMGMT_fopenEx                           ZEPHYR_fopenEx
 #define FMGMT_fcloseEx                          ZEPHYR_fcloseEx
 #endif
@@ -127,7 +127,7 @@ typedef struct DirectoryEntry
 #define FMGMT_getEnvironmentVariableValueAlloc  ZEPHYR_getEnvironmentVariableValueAlloc
 
 #define FMGMT_setMountPoint                     TP_setMountPoint
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 #define FMGMT_needFullPath                      ZEPHYR_needFullPath
 #endif
 #elif defined(__LINUX_FMGMT__)
@@ -168,7 +168,7 @@ typedef struct DirectoryEntry
 #define FMGMT_getProcessPathAlloc               LINUX_getProcessPathAlloc
 
 #define FMGMT_setMountPoint                     TP_setMountPoint
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 #define FMGMT_needFullPath                      LINUX_needFullPath
 #endif
 
@@ -502,7 +502,7 @@ MOC_EXTERN MSTATUS FMGMT_getFirstFile (const sbyte *pDirPath, DirectoryDescripto
  */
 MOC_EXTERN MSTATUS FMGMT_closeDir (DirectoryDescriptor *ppDirCtx);
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 /**
  * This function opens a file desciptor to the specified file.
  *
@@ -596,7 +596,7 @@ MOC_EXTERN MSTATUS FMGMT_fwrite (const ubyte *pBuffer, ubyte4 itemSize, ubyte4 n
  *                 code from merrors.h
  */
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 MOC_EXTERN MSTATUS FMGMT_fseek (FileDescriptor pFileCtx, sbyte8 offset, ubyte4 m_whence);
 #else
 MOC_EXTERN MSTATUS FMGMT_fseek (FileDescriptor pFileCtx, sbyte4 offset, ubyte4 m_whence);
@@ -641,7 +641,7 @@ MOC_EXTERN MSTATUS FMGMT_ftell (FileDescriptor pFileCtx, ubyte4 *pOffset);
 /**
  * This function reads up to stringLen - 1 bytes from the file stream stored in
  * pFileCtx. The data is stored into the pString buffer and a NULL termination
- * character is stored after the last character read. Use MOC_STRLEN to retrieve
+ * character is stored after the last character read. Use DIGI_STRLEN to retrieve
  * the number of bytes written to pString.
  *
  * @param pFileCtx      File descriptor context.
@@ -675,7 +675,7 @@ MOC_EXTERN sbyte4  FMGMT_fputs (sbyte *pString, FileDescriptor pFileCtx);
 /**
  * This function takes in a path to a file as pFilePath and strips the file name
  * and separator from the file path, leaving the directory path. The directory
- * path is stored in pDirectoryPath. Use MOC_STRLEN to get the length of the
+ * path is stored in pDirectoryPath. Use DIGI_STRLEN to get the length of the
  * directory path.
  *
  * @param pFilePath             Path to file.
@@ -690,8 +690,8 @@ MOC_EXTERN MSTATUS FMGMT_getDirectoryPath (const sbyte *pFilePath, sbyte *pDirec
  * This function takes in a path to a file as pFilePath and strips the file name
  * and separator from the file path, leaving the directory path. The directory
  * path is stored as a NULL terminated string at the location specified by
- * ppDirectoryPath. Use MOC_STRLEN to get the length of the directory path. The
- * directory path buffer is allocated and must be freed using MOC_FREE.
+ * ppDirectoryPath. Use DIGI_STRLEN to get the length of the directory path. The
+ * directory path buffer is allocated and must be freed using DIGI_FREE.
  *
  * @param pFilePath             Path to file.
  * @param ppDirectoryPath       Pointer address where NULL terminated directory
@@ -704,7 +704,7 @@ MOC_EXTERN MSTATUS FMGMT_getDirectoryPathAlloc (const sbyte *pFilePath, sbyte **
 /**
  * This function takes in a relative path to a file/directory and returns the
  * absolute path to the same file/directory. The absolute path is stored as a
- * NULL terminated string to pAbsolutePath. Use MOC_STRLEN to get the length of
+ * NULL terminated string to pAbsolutePath. Use DIGI_STRLEN to get the length of
  * the value.
  *
  * @param pRelativePath         Relative path to file/directory.
@@ -719,8 +719,8 @@ MOC_EXTERN MSTATUS FMGMT_getFullPath (const sbyte *pRelativePath, sbyte *pAbsolu
  * This function takes in a relative path to a file/directory and returns the
  * absolute path to the same file/directory. The absolute path is stored as a
  * NULL terminated string at the location specified by ppAbsolutePath. Use
- * MOC_STRLEN to get the length of the value. The buffer is allocated
- * and must be freed using MOC_FREE.
+ * DIGI_STRLEN to get the length of the value. The buffer is allocated
+ * and must be freed using DIGI_FREE.
  *
  * @param pRelativePath         Relative path to file/directory.
  * @param ppAbsolutePath        Pointer address where NULL terminated absolute
@@ -733,7 +733,7 @@ MOC_EXTERN MSTATUS FMGMT_getFullPathAlloc (const sbyte *pRelativePath, sbyte **p
 /**
  * This function retrieves the value of the environment variable specified
  * through pVariableName. The environment variable value is stored as a NULL
- * terminated string to pValueBuffer. Use MOC_STRLEN on pValueBuffer to retrieve
+ * terminated string to pValueBuffer. Use DIGI_STRLEN on pValueBuffer to retrieve
  * the length of the value. If the environment variable is not set, an error is
  * returned.
  *
@@ -750,7 +750,7 @@ MOC_EXTERN MSTATUS FMGMT_getEnvironmentVariableValue (const sbyte *pVariableName
  * This function retrieves the value of the environment variable specified
  * through pVariableName. The environment variable value is stored as a NULL
  * terminated string at the location specified by ppValueBuffer on success. Use
- * MOC_STRLEN to get the length of the value. If the environment variable is not
+ * DIGI_STRLEN to get the length of the value. If the environment variable is not
  * set, an error is returned.
  *
  * @param pVariableName     Name of the environment variable to get.
@@ -778,7 +778,7 @@ MOC_EXTERN MSTATUS FMGMT_getProcessPath (sbyte *pProcessPath, ubyte4 processPath
 /**                                                                          * This function retrieves the full path of the current process being executed,
  * including the process name and stores it to the location specified by
  * ppProcessPath. The buffer is allocated and must be freed using
- * MOC_FREE. Use MOC_STRLEN to retrieve the length of the path.
+ * DIGI_FREE. Use DIGI_STRLEN to retrieve the length of the path.
  *
  * @param ppProcessPath     Pointer address where NULL terminated process
  *                          path is stored.
@@ -801,7 +801,7 @@ MOC_EXTERN MSTATUS FMGMT_getProcessPathAlloc (sbyte **ppProcessPath);
  */
 MOC_EXTERN signed int FMGMT_setMountPoint (unsigned char *pNewMountPath);
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 /**
  * This function frees memory used by mount point.
  *

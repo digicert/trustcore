@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_HMAC_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_HMAC_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_HMAC_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_HMAC_INTERNAL__))
 
 #define HmacCreate          CRYPTO_INTERFACE_HmacCreate
 #define HmacKey             CRYPTO_INTERFACE_HmacKey

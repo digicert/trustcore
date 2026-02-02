@@ -1,0 +1,95 @@
+#########################################################
+#  makefile_ipv6
+#
+#   makefile used to build mocana programs
+#
+#
+# Copyright Mocana Corp 2009. All Rights Reserved.
+# Proprietary and Confidential Material.
+#
+#########################################################
+
+ipver := $(shell /sbin/ifconfig | grep inet6 )
+
+osname := $(shell uname | grep Linux)
+uname_n := $(shell uname -n)
+
+ifneq (0, $(words $(ipver)))
+ifneq (0, $(words $(osname)))
+ifneq (VXWORKS, $(OS_NAME))
+
+# These 3 variables can be modified.
+# The first two are exported to the sub makes
+export CFLAGS = -O0 -g -Wall
+
+export CPPFLAGS = -D__ENABLE_DIGICERT_SSL_CLIENT__ \
+-D__ENABLE_DIGICERT_SSL_INTERNAL_STRUCT_ACCESS__ \
+-D__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__ \
+-D__ENABLE_DIGICERT_IPV6__ \
+-D__ENABLE_DIGICERT_SSL_REHANDSHAKE__ \
+-D__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__ \
+-D__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__ \
+-D__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__ \
+-D__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__ \
+-D__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__ \
+-D__ENABLE_DIGICERT_SSL_DHE_SUPPORT__ \
+-D__ENABLE_DIGICERT_SSL_PSK_SUPPORT__ \
+-D__ENABLE_DIGICERT_ECC__ \
+-D__ENABLE_DIGICERT_ECC_P192__ \
+-D__ENABLE_DES_CIPHER__ \
+-D__ENABLE_NIL_CIPHER__ \
+-D__ENABLE_DIGICERT_CHACHA20__ \
+-D__ENABLE_DIGICERT_POLY1305__ \
+-D__ENABLE_DIGICERT_GCM__ \
+-D__ENABLE_DIGICERT_CCM_8__ \
+-D__ENABLE_DIGICERT_CCM__ \
+-D__ENABLE_DIGICERT_AEAD_CIPHER__ \
+-D__ENABLE_DIGICERT_RSA_ALL_KEYSIZE__ \
+-D__ENABLE_DIGICERT_SSL_SRP__ \
+-DMIN_SSL_RSA_SIZE=1024 \
+-DMIN_SSL_MINORVERSION=1
+
+
+
+ifneq (, $(findstring mickey.mocana.local, $(uname_n)))
+export CPPFLAGS +=  -D__ENABLE_DIGICERT_NO_MAPPING__
+endif
+
+
+
+
+# The list of library to link against
+# makefile.inc will add the unittest library
+# and some OS specific libraries so they don't
+# need to be specified here
+LIBS = ../../ssl/ssl.a\
+ ../../crypto/crypto.a\
+ ../../asn1/asn1.a\
+ ../../common/common.a\
+ ../../crypto/crypto.a \
+ ../../platform/platform.a
+
+
+# included makefile that does most of the work
+include ../../../unit_tests/makefile.inc
+endif
+endif
+endif
+
+ifeq (0, $(words $(ipver)))
+
+include ../../../unit_tests/makefile_nulltest.inc
+
+endif
+
+ifeq (0, $(words $(osname)))
+
+include ../../../unit_tests/makefile_nulltest.inc
+
+endif
+
+ifeq (VXWORKS, $(OS_NAME))
+
+include ../../../unit_tests/makefile_nulltest.inc
+
+endif

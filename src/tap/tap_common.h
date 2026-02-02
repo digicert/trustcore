@@ -2,18 +2,24 @@
  * @file tap_common.h
  *
  * @brief Trust Anchor Platform (TAP) Definitions and Types for Client-Server communication.
- * @details This file contains definitions and functions needed by both Mocana Trust Anchor Platform (TAP) client and server modules.
+ * @details This file contains definitions and functions needed by both Trust Anchor Platform (TAP) client and server modules.
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
  * @flags
  * Whether the following flags are defined determines whether or not support is enabled for a particular security module:
- *    + \c \__ENABLE_MOCANA_TPM2__
+ *    + \c \__ENABLE_DIGICERT_TPM2__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  * 
  */
 
@@ -39,15 +45,15 @@ extern "C" {
 #endif
 
 /*! @cond */
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 /*! @endcond */
 
-#ifdef __ENABLE_MOCANA_SMP__
+#ifdef __ENABLE_DIGICERT_SMP__
 #include "../smp/smp_interface.h"
 #endif
 
 
-#ifdef __ENABLE_MOCANA_SMP_NANOROOT__
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
 /* --- Bitmask Macros --- */
 #define NanoROOT_MAKE_ALGO_ID(algo, subtype)   ((((ubyte8)(algo)) << 32) | ((ubyte8)(subtype)))
 #define NanoROOT_GET_ALGO_ID(value)            ((ubyte4)(((value) >> 32) & 0xFFFFFFFF))
@@ -89,14 +95,9 @@ extern "C" {
    Function Definitions
 ****************************************************************/
 
-#ifdef __ENABLE_MOCANA_SMP_NANOROOT__
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
 MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte8 value, TAP_KEY_ALGORITHM *keyAlgorithm,
 				TAP_KEY_SIZE *keySize, ubyte4 *subKeyType);
-#endif
-
-#if 0
-MOC_EXTERN MSTATUS TAP_COMMON_updateAttributeList(TAP_AttributeList *pSrc, TAP_AttributeList *pDest,
-                                       ubyte4 *pAttributeListLen);
 #endif
 
 /**
@@ -112,7 +113,7 @@ MOC_EXTERN MSTATUS TAP_COMMON_updateAttributeList(TAP_AttributeList *pSrc, TAP_A
 MOC_EXTERN MSTATUS TAP_COMMON_checkTapProvider(TAP_PROVIDER tapProvider);
 
 
-#ifdef __ENABLE_MOCANA_SMP__
+#ifdef __ENABLE_DIGICERT_SMP__
 /**
  * @ingroup tap_functions
  * @details Function to check if a command is supported by a provider.
@@ -224,7 +225,7 @@ MOC_EXTERN MSTATUS TAP_COMMON_registerLocalProviders(TAP_ConfigInfoList *pConfig
 MOC_EXTERN MSTATUS TAP_COMMON_unregisterLocalProviders(TAP_ProviderList *pProviderList);
 
 /*! @cond */
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 /*! @endcond */
 
 #ifdef __cplusplus

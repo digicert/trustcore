@@ -23,9 +23,25 @@
 #include "mqtt_core.h"
 #include "mqtt_msg.h"
 #include "mqtt_transport.h"
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+#if defined(__RTOS_FREERTOS__) && defined(__RTOS_FREERTOS_ESP32__)
+/* TODO: Temporary fix
+ *
+ * Issue: The header file mqtt_client.h includes merrors.h and redefines OK to
+ * MOC_OK for ESP32 builds. The ssl.h header below includes a ESP32 toolchain
+ * header file which also defines OK which then gets redefined to MOC_OK causing
+ * compilation errors.
+ *
+ * Fix: Undefine OK before including ssl.h, then redefine it back to MOC_OK
+ */
+#undef OK
+#endif
 #include "../ssl/ssl.h"
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#if defined(__RTOS_FREERTOS__) && defined(__RTOS_FREERTOS_ESP32__)
+/* TODO: Temporary fix - see comment above */
+#define OK MOC_OK
+#endif
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
 #ifndef MQTT_RECV_TIMEOUT
 #define MQTT_RECV_TIMEOUT   (15000)
@@ -305,11 +321,11 @@ extern MSTATUS MQTT_setPersistMode(
         goto exit;
 
     pCtx->persistMode = MQTT_PERSIST_MODE_FILE;
-    status = MOC_MALLOC_MEMCPY((void **)(&(pCtx->pDir)), MOC_STRLEN(pArgs->pDir) + 1, pArgs->pDir, MOC_STRLEN(pArgs->pDir));
+    status = DIGI_MALLOC_MEMCPY((void **)(&(pCtx->pDir)), DIGI_STRLEN(pArgs->pDir) + 1, pArgs->pDir, DIGI_STRLEN(pArgs->pDir));
     if (OK != status)
         goto exit;
 
-    pCtx->pDir[MOC_STRLEN(pArgs->pDir)] = '\0';
+    pCtx->pDir[DIGI_STRLEN(pArgs->pDir)] = '\0';
 
 exit:
 
@@ -320,7 +336,7 @@ exit:
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 
 extern MSTATUS MQTT_setTransportSSL(
     sbyte4 connectionInstance,
@@ -355,7 +371,7 @@ exit:
     return status;
 }
 
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -416,7 +432,7 @@ extern MSTATUS MQTT_negotiateConnection(
     {
         if (NULL == pCtx->pSyncBuffer)
         {
-            status = MOC_MALLOC(
+            status = DIGI_MALLOC(
                 (void **) &pCtx->pSyncBuffer, pCtx->syncBufferSize);
             if (OK != status)
                 goto exit;
@@ -1288,7 +1304,7 @@ extern MSTATUS MQTT_getSendBuffer(
             if (copyLen > remainingLen)
                 copyLen = remainingLen;
 
-            MOC_MEMCPY(pData, pNode->pMsg->pData + pCtx->dataProcessed, copyLen);
+            DIGI_MEMCPY(pData, pNode->pMsg->pData + pCtx->dataProcessed, copyLen);
             pCtx->dataProcessed += copyLen;
             remainingLen -= copyLen;
             pData += copyLen;

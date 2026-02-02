@@ -16,7 +16,7 @@
 #ifndef __SMP_NanoROOT_DEVICE_PROTECT_HEADER__
 #define __SMP_NanoROOT_DEVICE_PROTECT_HEADER__
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #include "common/moptions.h"
 #include "common/mtypes.h"
@@ -241,6 +241,6 @@ MSTATUS NanoROOT_Decrypt(NROOT_FP_CTX *pCtx, ubyte symAlgo, ubyte *pCredData, ub
  */
 MSTATUS NanoROOT_freeFingerprintCtx(NROOT_FP_CTX **ppCtx);
 
-#endif /* __ENABLE_MOCANA_SMP__ && __ENABLE_MOCANA_SMP_NANOROOT__ */
+#endif /* __ENABLE_DIGICERT_SMP__ && __ENABLE_DIGICERT_SMP_NANOROOT__ */
 
 #endif /* __SMP_NanoROOT_DEVICE_PROTECT_HEADER__ */

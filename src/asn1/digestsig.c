@@ -31,7 +31,7 @@
 #include "../asn1/parseasn1.h"
 #include "../crypto/crypto.h"
 
-#if (!defined(__DISABLE_MOCANA_ASN1_GET_DIGEST_FROM_ALG_ID__))
+#if (!defined(__DISABLE_DIGICERT_ASN1_GET_DIGEST_FROM_ALG_ID__))
 
 /* Get the ht_ flag for the digest algorithm from the PSS algId.
  */
@@ -305,4 +305,4 @@ exit:
   return (status);
 }
 
-#endif /* (!defined(__DISABLE_MOCANA_ASN1_GET_DIGEST_FROM_ALG_ID__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_ASN1_GET_DIGEST_FROM_ALG_ID__)) */

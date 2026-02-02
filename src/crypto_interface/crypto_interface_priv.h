@@ -22,8 +22,8 @@
 
 @filedoc    crypto_interface_priv.h
 */
-#ifndef __MOCANA_CRYPTO_INTERFACE_PRIV_HEADER__
-#define __MOCANA_CRYPTO_INTERFACE_PRIV_HEADER__
+#ifndef __DIGICERT_CRYPTO_INTERFACE_PRIV_HEADER__
+#define __DIGICERT_CRYPTO_INTERFACE_PRIV_HEADER__
 
 #include "../common/initmocana.h"
 
@@ -125,7 +125,7 @@ typedef struct
 
 /* Initialize the Crypto Interface Core.
  *
- * NOTE: This function is designed to be called by MOCANA_initialize(), where it
+ * NOTE: This function is designed to be called by DIGICERT_initialize(), where it
  * is guaranteed to be called from within mutex locked code. This function builds
  * a table of information about each algorithm which is then used by the crypto
  * interface layer. That table can always be accessed without any threading
@@ -261,4 +261,4 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_getIv(
 }
 #endif
 
-#endif  /* __MOCANA_CRYPTO_INTERFACE_PRIV_HEADER__ */
+#endif  /* __DIGICERT_CRYPTO_INTERFACE_PRIV_HEADER__ */

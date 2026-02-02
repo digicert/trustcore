@@ -1,0 +1,1 @@
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tools/tpm2_server_helpers.c

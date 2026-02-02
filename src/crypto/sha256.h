@@ -22,7 +22,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_sha224_priv.h"
 #include "../crypto_interface/crypto_interface_sha256_priv.h"
 #endif
@@ -56,7 +56,7 @@ typedef struct SW_SHA256_CTX
     sbyte4  hashBufferIndex;
     ubyte   hashBuffer[SHA256_BLOCK_SIZE];
 
-#ifdef __ENABLE_MOCANA_MINIMUM_STACK__
+#ifdef __ENABLE_DIGICERT_MINIMUM_STACK__
     ubyte4  W[64];
 #endif
 
@@ -69,7 +69,7 @@ typedef struct SW_SHA256_CTX      sha256Descr, sha256DescrHS, SHA256_CTX;
 /*------------------------------------------------------------------*/
 
 /* single steps */
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
 
 /**
 @brief      Allocate SHA256 operation context data structure.
@@ -100,7 +100,7 @@ this function be used to ensure future portability.
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @inc_file sha256.h
 
@@ -150,7 +150,7 @@ MOC_EXTERN MSTATUS SHA256_allocDigest   (MOC_HASH(hwAccelDescr hwAccelCtx) BulkC
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @inc_file sha256.h
 
@@ -203,7 +203,7 @@ MOC_EXTERN MSTATUS SHA256_freeDigest    (MOC_HASH(hwAccelDescr hwAccelCtx) BulkC
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @inc_file sha256.h
 
@@ -251,7 +251,7 @@ digest value is stored within the SHA256 context data structure.
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @inc_file sha256.h
 
@@ -303,7 +303,7 @@ MOC_EXTERN MSTATUS SHA256_updateDigest  (MOC_HASH(hwAccelDescr hwAccelCtx) sha25
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @inc_file sha256.h
 
@@ -362,7 +362,7 @@ MOC_EXTERN MSTATUS SHA256_finalDigest   (MOC_HASH(hwAccelDescr hwAccelCtx) sha25
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @inc_file sha256.h
 
@@ -400,7 +400,7 @@ MOC_EXTERN MSTATUS SHA256_completeDigest(MOC_HASH(hwAccelDescr hwAccelCtx) const
  */
 MOC_EXTERN MSTATUS SHA256_cloneCtx(MOC_HASH(hwAccelDescr hwAccelCtx) SHA256_CTX *pDest, SHA256_CTX *pSrc);
 
-#endif /* __DISABLE_MOCANA_SHA256__ */
+#endif /* __DISABLE_DIGICERT_SHA256__ */
 
 /**
  * @cond
@@ -418,7 +418,7 @@ MOC_EXTERN MSTATUS SHA256_finalDigestHandShake  (MOC_HASH(hwAccelDescr hwAccelCt
  * @endcond
  */
 
-#ifndef __DISABLE_MOCANA_SHA224__
+#ifndef __DISABLE_DIGICERT_SHA224__
 
 /**
 @brief      Allocate SHA224 operation context data structure.
@@ -449,7 +449,7 @@ this function be used to ensure future portability.
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA224__
++ \c \__DISABLE_DIGICERT_SHA224__
 
 @inc_file sha256.h
 
@@ -502,7 +502,7 @@ not SHA256_freeDigest().
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA224__
++ \c \__DISABLE_DIGICERT_SHA224__
 
 @inc_file sha256.h
 
@@ -551,7 +551,7 @@ digest value is stored within the SHA224 context data structure.
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @inc_file sha256.h
 
@@ -631,7 +631,7 @@ not SHA256_initDigest().
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA224__
++ \c \__DISABLE_DIGICERT_SHA224__
 
 @inc_file sha256.h
 
@@ -683,7 +683,7 @@ MOC_EXTERN MSTATUS SHA224_initDigest    (MOC_HASH(hwAccelDescr hwAccelCtx) SHA22
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA224__
++ \c \__DISABLE_DIGICERT_SHA224__
 
 @inc_file sha256.h
 
@@ -742,7 +742,7 @@ MOC_EXTERN MSTATUS SHA224_finalDigest   (MOC_HASH(hwAccelDescr hwAccelCtx) SHA22
 
 @flags
 To enable this function, the following flag must \b not be defined:
-+ \c \__DISABLE_MOCANA_SHA224__
++ \c \__DISABLE_DIGICERT_SHA224__
 
 @inc_file sha256.h
 
@@ -780,7 +780,7 @@ MOC_EXTERN MSTATUS SHA224_completeDigest(MOC_HASH(hwAccelDescr hwAccelCtx) const
  */
 MOC_EXTERN MSTATUS SHA224_cloneCtx(MOC_HASH(hwAccelDescr hwAccelCtx) SHA224_CTX *pDest, SHA224_CTX *pSrc);
 
-#endif /* ifndef __DISABLE_MOCANA_SHA224__ */
+#endif /* ifndef __DISABLE_DIGICERT_SHA224__ */
 
 #ifdef __cplusplus
 }

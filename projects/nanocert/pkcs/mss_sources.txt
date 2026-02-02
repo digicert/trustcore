@@ -1,0 +1,8 @@
+MSS_SRC_DIR/crypto/pkcs.c
+MSS_SRC_DIR/crypto/pkcs_common.c
+MSS_SRC_DIR/crypto/pkcs_key.c
+MSS_SRC_DIR/crypto/pkcs5.c
+MSS_SRC_DIR/crypto/pkcs7.c
+MSS_SRC_DIR/crypto/pkcs8.c
+MSS_SRC_DIR/crypto/pkcs10.c
+MSS_SRC_DIR/crypto/pkcs12.c

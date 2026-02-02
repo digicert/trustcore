@@ -33,7 +33,7 @@ extern "C" {
 #include <string.h>
 #include <stdio.h>
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -73,7 +73,7 @@ MIP_COPY_ADDRS(struct SOCKADDR_IN * pTargetAddr, MOC_IP_ADDRESS moc_addr);
 
 /*Populates a MOC_IP_ADDRESS in network byte order*/
 MOC_EXTERN MSTATUS
-MIP_CONVERT_MOC_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
+MIP_CONVERT_DIGI_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
 
 /*MOC_IP_ADDRESS copy constructor*/
 MOC_EXTERN MSTATUS
@@ -111,7 +111,7 @@ MIP_CONVERT_NBO_MADDR_FROM_BUFFER(MOC_IP_ADDRESS moc_addr , char * addr);
 
 /*Populates a MOC_IP_ADDRESS in network byte order*/
 MOC_EXTERN MSTATUS
-MIP_CONVERT_MOC_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
+MIP_CONVERT_DIGI_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
 
 /*copies a MOC_IP_ADDRESS into a SOCKADDR_IN with no transformation */
 MOC_EXTERN MSTATUS
@@ -122,12 +122,12 @@ MOC_EXTERN MSTATUS
 MIP_COPY_MOCADDRS(MOC_IP_ADDRESS_S * pTargetAddr,  struct SOCKADDR_IN * addr);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 
 #elif defined(__RTOS_OSX__)
@@ -145,7 +145,7 @@ MOC_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 #include <string.h>
 #include <stdio.h>
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -185,7 +185,7 @@ MIP_COPY_ADDRS(struct SOCKADDR_IN * pTargetAddr, MOC_IP_ADDRESS moc_addr);
 
 /*Populates a MOC_IP_ADDRESS in network byte order*/
 MOC_EXTERN MSTATUS
-MIP_CONVERT_MOC_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
+MIP_CONVERT_DIGI_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
 
 /*MOC_IP_ADDRESS copy constructor*/
 MOC_EXTERN MSTATUS
@@ -223,7 +223,7 @@ MIP_CONVERT_NBO_MADDR_FROM_BUFFER(MOC_IP_ADDRESS moc_addr , char * addr);
 
 /*Populates a MOC_IP_ADDRESS in network byte order*/
 MOC_EXTERN MSTATUS
-MIP_CONVERT_MOC_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
+MIP_CONVERT_DIGI_ADDR_NBO(MOC_IP_ADDRESS moc_addr,  struct SOCKADDR_IN * addr );
 
 /*copies a MOC_IP_ADDRESS into a SOCKADDR_IN with no transformation */
 MOC_EXTERN MSTATUS
@@ -234,12 +234,12 @@ MOC_EXTERN MSTATUS
 MIP_COPY_MOCADDRS(MOC_IP_ADDRESS_S * pTargetAddr,  struct SOCKADDR_IN * addr);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 
 #elif defined(__RTOS_OPENBSD__)
@@ -248,7 +248,7 @@ MOC_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 #include <sys/socket.h>
 
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -287,11 +287,11 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 #elif defined(__RTOS_FREEBSD__)
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -330,7 +330,7 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 
 #elif defined(__RTOS_LINUX__)
@@ -340,7 +340,7 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 #include <arpa/inet.h>
 #endif
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -362,9 +362,9 @@ MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS destAddr, ubyte * name);
 MOC_EXTERN MSTATUS
-MOC_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 #else
 
@@ -386,21 +386,21 @@ MOC_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 MOC_EXTERN MSTATUS
-    MOC_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+    DIGI_NET_NAME_TO_IPADDR_NBO(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 MOC_EXTERN MSTATUS
-MOC_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 
 #elif defined(__RTOS_SOLARIS__)
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -439,12 +439,12 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 
 #elif defined(__RTOS_WIN32__)
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -469,7 +469,7 @@ MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS destAddr, ubyte * name);
 
 #else
 
@@ -492,7 +492,7 @@ MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS destAddr, ubyte * name);
 MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 
 #elif defined(__RTOS_CYGWIN__)
@@ -501,7 +501,7 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -540,14 +540,14 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 #elif defined(__RTOS_VXWORKS__)
 
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define M_SOCKADDR_IN          sockaddr_in6
 
@@ -568,10 +568,10 @@ MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS destAddr, ubyte * name);
 
 MOC_EXTERN MSTATUS
-MOC_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 #else
 
@@ -593,17 +593,17 @@ MOC_EXTERN MSTATUS
 MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
 MOC_EXTERN MSTATUS
-MOC_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_NAME_TO_IPADDR(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
 MOC_EXTERN MSTATUS
-MOC_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
+DIGI_NET_IPADDR_TO_NAME(MOC_IP_ADDRESS_S * destAddr, ubyte * name);
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 
 #else /* any other OS */
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
 
 #define SOCKADDR_IN            sockaddr_in6
 
@@ -645,7 +645,7 @@ MIP_CONVERT_NBO(MOC_IP_ADDRESS moc_addr);
 
 
 
-#endif /* if __ENABLE_MOCANA_IPV6__*/
+#endif /* if __ENABLE_DIGICERT_IPV6__*/
 
 #endif /* OS Type */
 

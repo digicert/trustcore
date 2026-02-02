@@ -38,7 +38,7 @@ extern "C" {
 enum PKCS8EncryptionType
 {
     PCKS8_EncryptionType_undefined = 0,
-#if defined(__ENABLE_MOCANA_PKCS5__)
+#if defined(__ENABLE_DIGICERT_PKCS5__)
 #if defined(__ENABLE_DES_CIPHER__)
     PCKS8_EncryptionType_pkcs5_v1_sha1_des  = 10, /* oid suffix */
 #endif
@@ -47,11 +47,11 @@ enum PKCS8EncryptionType
     PCKS8_EncryptionType_pkcs5_v1_sha1_rc2  = 11, /* oid suffix */
 #endif
 
-#if defined(__ENABLE_DES_CIPHER__) && defined(__ENABLE_MOCANA_MD2__)
+#if defined(__ENABLE_DES_CIPHER__) && defined(__ENABLE_DIGICERT_MD2__)
     PCKS8_EncryptionType_pkcs5_v1_md2_des   = 1,   /* oid suffix */
 #endif
 
-#if defined(__ENABLE_ARC2_CIPHERS__) && defined(__ENABLE_MOCANA_MD2__)
+#if defined(__ENABLE_ARC2_CIPHERS__) && defined(__ENABLE_DIGICERT_MD2__)
     PCKS8_EncryptionType_pkcs5_v1_md2_rc2   = 4,  /* oid suffix */
 #endif
 
@@ -91,7 +91,7 @@ enum PKCS8EncryptionType
 
 #endif /* !defined(__DISABLE_AES_CIPHERS__) */
 
-#endif /*  __ENABLE_MOCANA_PKCS5__  */
+#endif /*  __ENABLE_DIGICERT_PKCS5__  */
 
     PKCS8_EncryptionType_pkcs12             = 12000,
 #if !defined(__DISABLE_3DES_CIPHERS__)
@@ -124,10 +124,10 @@ enum PKCS8PrfType
     PKCS8_PrfType_pkcs5_v2_hmacSHA512Digest = 11
 };
 
-#if !defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__)
+#if !defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__)
 
 MOC_EXTERN MSTATUS PKCS_getPKCS1Key(MOC_RSA(hwAccelDescr hwAccelCtx)const ubyte* pPKCS1DER, ubyte4 pkcs1DERLen, AsymmetricKey* pKey);
-#if defined(__ENABLE_MOCANA_DSA__)
+#if defined(__ENABLE_DIGICERT_DSA__)
 /* This read an unencrypted raw file like those produced by openssl */
 MOC_EXTERN MSTATUS PKCS_getDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx)
                                   const ubyte* pDSAKeyDer, ubyte4 pDSAKeyDerLen, AsymmetricKey* pKey);
@@ -143,7 +143,7 @@ MOC_EXTERN MSTATUS PKCS_getDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flag must \b not be defined:
-- \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+- \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
 
 @inc_file   pkcs_key.h
 
@@ -173,7 +173,7 @@ MOC_EXTERN MSTATUS PKCS_getPKCS8Key(MOC_ASYM(hwAccelDescr hwAccelCtx)const ubyte
 
 @flags
 To enable this function, the following flag must #not# be defined:
-- \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+- \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
 
 @inc_file   pkcs_key.h
 
@@ -197,19 +197,19 @@ To enable this function, the following flag must #not# be defined:
 MOC_EXTERN MSTATUS PKCS_getPKCS8KeyEx(MOC_HW(hwAccelDescr hwAccelCtx) const ubyte* pPKCS8DER, ubyte4 pkcs8DERLen,
                                       const ubyte* password, ubyte4 passwordLen, AsymmetricKey* pKey);
 
-#if defined( __ENABLE_MOCANA_DER_CONVERSION__) || defined(__ENABLE_MOCANA_PEM_CONVERSION__)
+#if defined( __ENABLE_DIGICERT_DER_CONVERSION__) || defined(__ENABLE_DIGICERT_PEM_CONVERSION__)
 MOC_EXTERN MSTATUS PKCS_setPKCS1Key(MOC_RSA(hwAccelDescr hwAccelCtx)
                                     const AsymmetricKey* pKey,
                                     ubyte **ppRetKeyDER, ubyte4 *pRetKeyDERLength);
 
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
 MOC_EXTERN MSTATUS PKCS_setDsaDerKey(MOC_DSA(hwAccelDescr hwAccelCtx) const AsymmetricKey* pKey,
                                      ubyte **ppRetKeyDER, ubyte4 *pRetKeyDERLength);
 #endif
 
 #endif
 
-#if defined( __ENABLE_MOCANA_DER_CONVERSION__)
+#if defined( __ENABLE_DIGICERT_DER_CONVERSION__)
 MOC_EXTERN MSTATUS PKCS_setPKCS8Key(MOC_HW(hwAccelDescr hwAccelCtx)
                                     const AsymmetricKey* pKey,
                                     randomContext* pRandomContext,
@@ -219,11 +219,11 @@ MOC_EXTERN MSTATUS PKCS_setPKCS8Key(MOC_HW(hwAccelDescr hwAccelCtx)
                                     ubyte **ppRetKeyDER, ubyte4 *pRetKeyDERLength);
 #endif
 
-#endif /* !defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__) */
+#endif /* !defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__) */
 
-#if defined(__ENABLE_MOCANA_PKCS8__)
+#if defined(__ENABLE_DIGICERT_PKCS8__)
 
-#if defined(__ENABLE_MOCANA_PEM_CONVERSION__)
+#if defined(__ENABLE_DIGICERT_PEM_CONVERSION__)
 
 /**
 @brief      Extract a private key from a password protected PEM-encoded PKCS&nbsp;\#8 object.
@@ -235,8 +235,8 @@ MOC_EXTERN MSTATUS PKCS_setPKCS8Key(MOC_HW(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS8__
-+ \c \__ENABLE_MOCANA_PEM_CONVERSION__
++ \c \__ENABLE_DIGICERT_PKCS8__
++ \c \__ENABLE_DIGICERT_PEM_CONVERSION__
 
 @inc_file pkcs8.h
 
@@ -272,8 +272,8 @@ MOC_EXTERN MSTATUS PKCS8_decodePrivateKeyPEMEx(const ubyte* pFilePemPkcs8, ubyte
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS8__
-+ \c \__ENABLE_MOCANA_PEM_CONVERSION__
++ \c \__ENABLE_DIGICERT_PKCS8__
++ \c \__ENABLE_DIGICERT_PEM_CONVERSION__
 
 @inc_file pkcs8.h
 
@@ -334,9 +334,9 @@ MOC_EXTERN MSTATUS PKCS8_encodePrivateKeyPEM(
     ubyte** ppRetFilePemPkcs8, 
     ubyte4 *pRetFileSizePemPkcs8);
 
-#endif /* __ENABLE_MOCANA_PEM_CONVERSION__ */
+#endif /* __ENABLE_DIGICERT_PEM_CONVERSION__ */
 
-#if defined(__ENABLE_MOCANA_DER_CONVERSION__)
+#if defined(__ENABLE_DIGICERT_DER_CONVERSION__)
 
 /**
 @brief      Extract a private key from a password protected DER-encoded PKCS&nbsp;\#8 object.
@@ -348,8 +348,8 @@ MOC_EXTERN MSTATUS PKCS8_encodePrivateKeyPEM(
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS8__
-+ \c \__ENABLE_MOCANA_DER_CONVERSION__
++ \c \__ENABLE_DIGICERT_PKCS8__
++ \c \__ENABLE_DIGICERT_DER_CONVERSION__
 
 @inc_file pkcs8.h
 
@@ -385,8 +385,8 @@ MOC_EXTERN MSTATUS PKCS8_decodePrivateKeyDEREx(const ubyte* pFileDerPkcs8, ubyte
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS8__
-+ \c \__ENABLE_MOCANA_DER_CONVERSION__
++ \c \__ENABLE_DIGICERT_PKCS8__
++ \c \__ENABLE_DIGICERT_DER_CONVERSION__
 
 @inc_file pkcs8.h
 
@@ -447,9 +447,9 @@ MOC_EXTERN MSTATUS PKCS8_encodePrivateKeyDER(
     ubyte** ppRetFileDerPkcs8, 
     ubyte4 *pRetFileSizeDerPkcs8);
 
-#endif /* __ENABLE_MOCANA_DER_CONVERSION__ */
+#endif /* __ENABLE_DIGICERT_DER_CONVERSION__ */
 
-#endif /* __ENABLE_MOCANA_PKCS8__ */
+#endif /* __ENABLE_DIGICERT_PKCS8__ */
 
 #ifdef __cplusplus
 }

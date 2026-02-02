@@ -18,7 +18,7 @@
 
 #include "../common/moptions.h"
 
-#ifndef __DISABLE_MOCANA_CERTIFICATE_PARSING__
+#ifndef __DISABLE_DIGICERT_CERTIFICATE_PARSING__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -207,4 +207,4 @@ exit:
 }
 
 
-#endif /* __DISABLE_MOCANA_CERTIFICATE_PARSING__ */
+#endif /* __DISABLE_DIGICERT_CERTIFICATE_PARSING__ */

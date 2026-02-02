@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_RSA_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_RSA_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RSA_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RSA_INTERNAL__))
 
 #define RSA_createKey               CRYPTO_INTERFACE_RSA_createKeyAux
 #define RSA_freeKey                 CRYPTO_INTERFACE_RSA_freeKeyAux
@@ -57,9 +57,9 @@ extern "C" {
 #define RSA_applyPrivateKey         CRYPTO_INTERFACE_RSA_applyPrivateKeyAux
 #define RSA_verifyDigest            CRYPTO_INTERFACE_RSA_verifyDigest
 
-#endif /* ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_RSA_MAPPING__ */
+#endif /* ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_RSA_MAPPING__ */
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_RSA__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RSA__))
 
 struct RSAKey;
 
@@ -74,7 +74,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_RSA_loadKey (
   MocAsymKey *ppKey
   );
 
-#endif /* ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_RSA__ */
+#endif /* ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_RSA__ */
 
 #ifdef __cplusplus
 }

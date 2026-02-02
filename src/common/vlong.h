@@ -24,7 +24,7 @@
 #include "../common/asm_math.h"
 #include "../crypto/hw_accel.h"
 
-#ifdef __ENABLE_MOCANA_FIPS_MODULE__
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
 #include "../crypto/fips.h"
 #endif
 
@@ -40,7 +40,7 @@ extern "C" {
 #endif
 
 /* Needed for vlong struct definition */
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 typedef ubyte8 vlong_unit;
 #else
 typedef ubyte4 vlong_unit;
@@ -254,9 +254,9 @@ typedef struct vlong /* Provides storage allocation and index checking */
 /*----------------------------------------------------------------------------*/
 /* Preprocessor, Variable, and Type Declarations */
 
-#ifdef __MOCANA_ENABLE_LONG_LONG__
-#ifdef __MOCANA_ENABLE_64_BIT__
-#error "Mocana: cannot define both __MOCANA_ENABLE_LONG_LONG__ and __MOCANA_ENABLE_64_BIT__"
+#ifdef __DIGICERT_ENABLE_LONG_LONG__
+#ifdef __DIGICERT_ENABLE_64_BIT__
+#error "Mocana: cannot define both __DIGICERT_ENABLE_LONG_LONG__ and __DIGICERT_ENABLE_64_BIT__"
 #endif
 #ifndef __RTOS_WIN32__
 #define UBYTE8  unsigned long long
@@ -267,15 +267,15 @@ typedef struct vlong /* Provides storage allocation and index checking */
 
 /*----------------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SMALL_CODE_FOOTPRINT__
-#ifndef __DISABLE_MOCANA_MODEXP_SLIDING_WINDOW__
-#define __DISABLE_MOCANA_MODEXP_SLIDING_WINDOW__
+#ifdef __ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__
+#ifndef __DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__
+#define __DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__
 #endif
-#ifndef __DISABLE_MOCANA_BARRETT__
-#define __DISABLE_MOCANA_BARRETT__
+#ifndef __DISABLE_DIGICERT_BARRETT__
+#define __DISABLE_DIGICERT_BARRETT__
 #endif
-#ifndef __DISABLE_MOCANA_KARATSUBA__
-#define __DISABLE_MOCANA_KARATSUBA__
+#ifndef __DISABLE_DIGICERT_KARATSUBA__
+#define __DISABLE_DIGICERT_KARATSUBA__
 #endif
 #endif
 
@@ -322,7 +322,7 @@ typedef struct vlong /* Provides storage allocation and index checking */
 /*----------------------------------------------------------------------------*/
 
 #ifndef MULT_ADDC
-#ifndef __MOCANA_ENABLE_LONG_LONG__
+#ifndef __DIGICERT_ENABLE_LONG_LONG__
 #define MULT_ADDC(a,b,index0,index1,result0,result1,result2) \
     {   vlong_unit a0, a1, b0, b1;                               \
     a0=LO_HUNIT(a[index0]); a1=HI_HUNIT(a[index0]);          \
@@ -348,13 +348,13 @@ typedef struct vlong /* Provides storage allocation and index checking */
       if (result1 < temp_result) \
         result2++; \
     }
-#endif /* ifndef __MOCANA_ENABLE_LONG_LONG__ */
+#endif /* ifndef __DIGICERT_ENABLE_LONG_LONG__ */
 #endif /* ifndef MULT_ADDC */
 
 /*----------------------------------------------------------------------------*/
 
 #ifndef MULT_ADDC1
-#ifndef __MOCANA_ENABLE_LONG_LONG__
+#ifndef __DIGICERT_ENABLE_LONG_LONG__
 #define MULT_ADDC1(a,b,index0,index1,result0,result1) \
     { vlong_unit a0,a1,b0,b1;                         \
     a0=LO_HUNIT(a[index0]); a1=HI_HUNIT(a[index0]);   \
@@ -375,7 +375,7 @@ typedef struct vlong /* Provides storage allocation and index checking */
         ++result1; \
       result1 += (ubyte4)(result >> 32); \
     }
-#endif /* ifndef __MOCANA_ENABLE_LONG_LONG__ */
+#endif /* ifndef __DIGICERT_ENABLE_LONG_LONG__ */
 #endif /* ifndef MULT_ADDC1 */
 
 /*----------------------------------------------------------------------------*/
@@ -401,7 +401,7 @@ typedef struct vlong /* Provides storage allocation and index checking */
 /*----------------------------------------------------------------------------*/
 
 /* Definitions for efficient division, see VLONG_DoubleDiv for more info */
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 typedef ubyte4 hvlong_unit;
 #else
 typedef ubyte2 hvlong_unit;
@@ -573,8 +573,8 @@ MOC_EXTERN ubyte4 VLONG_bitLength (
   const vlong *pThis
   );
 
-#if !defined(ASM_BIT_LENGTH) && !defined(__ENABLE_MOCANA_64_BIT__)
-# define BITLENGTH(w) MOC_BITLENGTH(w)
+#if !defined(ASM_BIT_LENGTH) && !defined(__ENABLE_DIGICERT_64_BIT__)
+# define BITLENGTH(w) DIGI_BITLENGTH(w)
 #else
 MOC_EXTERN ubyte4 BITLENGTH (
   vlong_unit w

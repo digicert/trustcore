@@ -1,0 +1,72 @@
+name: "NanoSSH Integration Tests"
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 3 * * 1'   # Monday 9am IST
+    - cron: '30 3 * * 4'   # Thursday 9am IST
+
+jobs:
+  ssh-integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake python3-pip valgrind expect
+        cmake --version
+        pip3 install --upgrade pip
+        pip3 install psutil
+        valgrind --version
+        expect -v
+
+    - name: Clone mocn-qa-m-products
+      env:
+        MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+      run: |
+        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+
+    - name: Copy SSH Test Files
+      run: |
+        cp -r mocn-qa-m-products/ssh_test/test_open_source/* .
+        cp -r mocn-qa-m-products/ssl_test/keystore .
+
+    - name: Prepare SSHD
+      run: |
+        sudo mkdir -p /run/sshd
+        sudo chmod 0755 /run/sshd
+
+    - name: Setup jenkins_agent user and authorized_keys
+      run: |
+        # Variables
+        USERNAME="jenkins_agent"
+        PASSWORD="${{ secrets.JENKINS_AGENT_PASSWORD }}"
+        AUTH_KEYS_SRC="mocn-qa-m-products/ssh_test/test_open_source/openssh_keys/authorized_keys"
+        USER_HOME="/home/$USERNAME"
+
+        # 1. Create the user with password
+        sudo useradd -m -s /bin/bash $USERNAME
+        echo "$USERNAME:$PASSWORD" | sudo chpasswd
+        sudo usermod -aG sudo $USERNAME
+
+        # 2. Setup .ssh folder
+        sudo mkdir -p $USER_HOME/.ssh
+        sudo chown $USERNAME:$USERNAME $USER_HOME/.ssh
+        sudo chmod 700 $USER_HOME/.ssh
+
+        # 3. Copy authorized_keys
+        sudo cp $AUTH_KEYS_SRC $USER_HOME/.ssh/authorized_keys
+        sudo chown $USERNAME:$USERNAME $USER_HOME/.ssh/authorized_keys
+        sudo chmod 600 $USER_HOME/.ssh/authorized_keys
+
+    - name: Run SSH Integration Test
+      run: |
+        PYTHONUNBUFFERED=1 python3 run.py global_nanossh_cap_no_tap.json
+
+    - name: Cleanup mocn-qa-m-products
+      if: always()
+      run: |
+        rm -rf mocn-qa-m-products

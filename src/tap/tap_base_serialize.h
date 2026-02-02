@@ -1,11 +1,17 @@
 /**
  * @file tap_base_serialize.h
  *
- * @brief The base definitions and functions needed for Mocana Trust Anchor Platform (TAP) serialization
- * @details This file contains the base definitions and functions needed for Mocana Trust Anchor Platform (TAP) serialization
+ * @brief The base definitions and functions needed for Trust Anchor Platform (TAP) serialization
+ * @details This file contains the base definitions and functions needed for Trust Anchor Platform (TAP) serialization
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 #ifndef __TAP_BASE_SERIALIZE_H

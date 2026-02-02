@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #define __ENABLE_OUTBOUND_SSH_DEFINITIONS__
 
@@ -387,7 +387,7 @@ static int testSetup(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -404,7 +404,7 @@ static int testTeardown(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
 exit:
     return (OK == status) ? 0 : -1;
@@ -419,7 +419,7 @@ int main(int argc, char* argv[])
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* Basic allocation/deallocation tests */
         cmocka_unit_test(test_SSHC_OUT_MESG_allocStructures_null_context),
@@ -448,4 +448,4 @@ int main(int argc, char* argv[])
 #endif
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

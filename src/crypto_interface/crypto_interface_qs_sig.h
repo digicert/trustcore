@@ -73,7 +73,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_SIG_sign(MOC_HASH(hwAccelDescr hwAccelCtx
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_PQC_SIG_STREAMING__
+ *     __ENABLE_DIGICERT_PQC_SIG_STREAMING__
  *
  * @param pCtx           Pointer to a previously allocated context.
  * @param rngFun         Function pointer to a random number generation function.
@@ -145,7 +145,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_SIG_verify(MOC_HASH(hwAccelDescr hwAccelC
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_PQC_SIG_STREAMING__
+ *     __ENABLE_DIGICERT_PQC_SIG_STREAMING__
  *
  * @param pCtx           Pointer to a previously allocated context.
  * @param digestId       The digest identifier from crypto.h.
@@ -174,7 +174,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_SIG_verifyDigest(MOC_HASH(hwAccelDescr hw
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_PQC_SIG_STREAMING__
+ *     __ENABLE_DIGICERT_PQC_SIG_STREAMING__
  *
  * @param pCtx           Pointer to a previously allocated context.
  * @param isExternalMu   Indicates to implicitly digest input data as per draft.
@@ -197,7 +197,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_SIG_streamingInit(QS_CTX *pCtx, byteBoole
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_PQC_SIG_STREAMING__
+ *     __ENABLE_DIGICERT_PQC_SIG_STREAMING__
  *
  * @param pCtx           Pointer to a previously initialized context.
  * @param pData          Buffer holding the input data.
@@ -215,7 +215,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_SIG_streamingUpdate(QS_CTX *pCtx, ubyte *
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_PQC_SIG_STREAMING__
+ *     __ENABLE_DIGICERT_PQC_SIG_STREAMING__
  *
  * @param pCtx           Pointer to a previously updated context.
  * @param rngFun         Function pointer to a random number generation function.
@@ -238,7 +238,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_SIG_streamingSignFinal(QS_CTX *pCtx, RNGF
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_PQC_SIG_STREAMING__
+ *     __ENABLE_DIGICERT_PQC_SIG_STREAMING__
  *
  * @param pCtx           Pointer to a previously updated context.
  * @param pSignature     Buffer holding the signature to be verified.

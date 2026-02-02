@@ -2,19 +2,25 @@
  * @file tap_serialize_smp.h
  *
  * @brief  Trust Anchor Platform (TAP) serialization code for structures defined in tap_smp.h
- * @details This file contains definitions for Mocana Trust Anchor Platform (TAP) serialization of structures defined in tap_smp.h.
+ * @details This file contains definitions for Trust Anchor Platform (TAP) serialization of structures defined in tap_smp.h.
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
  * @flags
  * Whether the following flags are defined determines whether or not support is enabled for a particular HW security module:
- *    + \c \__ENABLE_MOCANA_TPM__
- *    + \c \__ENABLE_MOCANA_TPM2__
+ *    + \c \__ENABLE_DIGICERT_TPM__
+ *    + \c \__ENABLE_DIGICERT_TPM2__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  * 
  */
 
@@ -30,7 +36,7 @@ extern "C" {
 
 #include "../common/moptions.h"
 
-#if (defined(__ENABLE_MOCANA_TAP__))
+#if (defined(__ENABLE_DIGICERT_TAP__))
 
 #include "../common/mtypes.h"
 #include "../common/merrors.h"
@@ -295,5 +301,5 @@ TAP_SERALIZE_SMP_getPublicKeyShadowStruct(void);
 }
 #endif
 
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 #endif /* __TAP_SERIALIZE_SMP_HEADER__ */

@@ -20,16 +20,16 @@
 #include "../common/base64.h"
 #include "../crypto/pubcrypto.h"
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_rsa.h"
 #include "../crypto_interface/crypto_interface_pubcrypto_priv.h"
 #include "../crypto_interface/crypto_interface_dsa.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
 #endif
@@ -179,7 +179,7 @@ fetchLine(sbyte *pSrc,  ubyte4 *pSrcIndex, ubyte4 srcLength,
     {
         sbyte4  result;
 
-        MOC_MEMCMP((ubyte *)pSrc, (ubyte *)"Comment:", 8, &result);
+        DIGI_MEMCMP((ubyte *)pSrc, (ubyte *)"Comment:", 8, &result);
 
         if (0 == result)
         {
@@ -269,7 +269,7 @@ parsePublicKeyFileStyle2(sbyte* pKeyFile, const ubyte4 fileSize,
     ubyte4  destIndex   = 0;
     MSTATUS status;
 
-    status = MOC_MALLOC((void **) &pBase64Mesg, fileSize);
+    status = DIGI_MALLOC((void **) &pBase64Mesg, fileSize);
     if (OK != status)
         goto exit;
 
@@ -284,7 +284,7 @@ parsePublicKeyFileStyle2(sbyte* pKeyFile, const ubyte4 fileSize,
 
 exit:
     if (NULL != pBase64Mesg)
-        MOC_FREE((void **) &pBase64Mesg);
+        DIGI_FREE((void **) &pBase64Mesg);
 
     return status;
 }
@@ -292,8 +292,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_KEY_GENERATION__
-#ifdef  __ENABLE_MOCANA_ECC__
+#ifndef __DISABLE_DIGICERT_KEY_GENERATION__
+#ifdef  __ENABLE_DIGICERT_ECC__
 static MSTATUS
 SSH_KEY_exportECCKey(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
                     ubyte **ppRetKeyBlob, ubyte4 *pRetKeyBlobLength)
@@ -320,7 +320,7 @@ SSH_KEY_exportECCKey(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
 
     pECCContext = pKey->key.pECC;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCContext, &keyLength);
 #else
     status = EC_getPointByteStringLenEx(pECCContext, &keyLength);
@@ -341,13 +341,13 @@ SSH_KEY_exportECCKey(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
         bufferLength = 4 + keyLength;
     }
     
-    status = MOC_MALLOC((void **) &pBuffer, bufferLength);
+    status = DIGI_MALLOC((void **) &pBuffer, bufferLength);
     if (OK != status)
         goto exit;
 
     if (akt_ecc == pKey->type)
     {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCContext, &curveId);
 #else
         status = EC_getCurveIdFromKey(pECCContext, &curveId);
@@ -361,29 +361,29 @@ SSH_KEY_exportECCKey(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
 
         switch(curveId)
         {
-#ifdef __ENABLE_MOCANA_ECC_P192__
+#ifdef __ENABLE_DIGICERT_ECC_P192__
             case cid_EC_P192:
-                status = MOC_MEMCPY(pBuffer + index, "nistp192", 8);
+                status = DIGI_MEMCPY(pBuffer + index, "nistp192", 8);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P224__
+#ifndef __DISABLE_DIGICERT_ECC_P224__
             case cid_EC_P224:
-                status = MOC_MEMCPY(pBuffer + index, "nistp224", 8);
+                status = DIGI_MEMCPY(pBuffer + index, "nistp224", 8);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P256__
+#ifndef __DISABLE_DIGICERT_ECC_P256__
             case cid_EC_P256:
-                status = MOC_MEMCPY(pBuffer + index, "nistp256", 8);
+                status = DIGI_MEMCPY(pBuffer + index, "nistp256", 8);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P384__
+#ifndef __DISABLE_DIGICERT_ECC_P384__
             case cid_EC_P384:
-                status = MOC_MEMCPY(pBuffer + index, "nistp384", 8);
+                status = DIGI_MEMCPY(pBuffer + index, "nistp384", 8);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P521__
+#ifndef __DISABLE_DIGICERT_ECC_P521__
             case cid_EC_P521:
-                status = MOC_MEMCPY(pBuffer + index, "nistp521", 8);
+                status = DIGI_MEMCPY(pBuffer + index, "nistp521", 8);
                 break;
 #endif
             default:
@@ -400,7 +400,7 @@ SSH_KEY_exportECCKey(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(MOC_ECC(hwAccelCtx) pECCContext, pBuffer + index, keyLength);
 #else
     status = EC_writePublicKeyToBuffer(MOC_ECC(hwAccelCtx) pECCContext, pBuffer + index, keyLength);
@@ -414,11 +414,11 @@ SSH_KEY_exportECCKey(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
 
 exit:
     if (NULL != pBuffer)
-        MOC_FREE((void **) &pBuffer);
+        DIGI_FREE((void **) &pBuffer);
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 
 
 /*------------------------------------------------------------------*/
@@ -447,7 +447,7 @@ SSH_KEY_exportRSAKey(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
 
     p_rsaDescr = pKey->key.pRSA;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_RSA_getKeyParametersAllocAux(MOC_RSA(hwAccelCtx) p_rsaDescr, &template,
         MOC_GET_PUBLIC_KEY_DATA);
 #else
@@ -475,17 +475,17 @@ SSH_KEY_exportRSAKey(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
         goto exit;
     }
 
-    status = MOC_MALLOC((void **) &pKeyBlob, keySize);
+    status = DIGI_MALLOC((void **) &pKeyBlob, keySize);
     if (OK != status)
         goto exit;
 
     /* e */
-    if (OK > (status = MOC_MEMCPY(pKeyBlob, pMpintStringE, mpintByteSizeE)))
+    if (OK > (status = DIGI_MEMCPY(pKeyBlob, pMpintStringE, mpintByteSizeE)))
         goto exit;
     index = mpintByteSizeE;
 
     /* n */
-    if (OK > (status = MOC_MEMCPY(index + pKeyBlob, pMpintStringN, mpintByteSizeN)))
+    if (OK > (status = DIGI_MEMCPY(index + pKeyBlob, pMpintStringN, mpintByteSizeN)))
         goto exit;
 
     *ppRetKeyBlob       = pKeyBlob;
@@ -501,9 +501,9 @@ exit:
         FREE(pMpintStringN);
 
     if (NULL != pKeyBlob)
-        MOC_FREE((void **) &pKeyBlob);
+        DIGI_FREE((void **) &pKeyBlob);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_RSA_freeKeyTemplateAux(p_rsaDescr, &template);
 #else
     RSA_freeKeyTemplate(p_rsaDescr, &template);
@@ -515,7 +515,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_DSA__) && !defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__)
+#if defined(__ENABLE_DIGICERT_DSA__) && !defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__)
 static MSTATUS
 SSH_KEY_exportDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
                     ubyte **ppRetKeyBlob, ubyte4 *pRetKeyBlobLength)
@@ -541,7 +541,7 @@ SSH_KEY_exportDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
 
     pDSAContext = pKey->key.pDSA;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_getKeyParametersAlloc(MOC_DSA(hwAccelCtx) pDSAContext, &template, MOC_GET_PUBLIC_KEY_DATA);
 #else
     status = DSA_getKeyParametersAlloc(MOC_DSA(hwAccelCtx) pDSAContext, &template, MOC_GET_PUBLIC_KEY_DATA);
@@ -549,7 +549,7 @@ SSH_KEY_exportDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_createKey(&pDSAPubContext);
 #else
     status = DSA_createKey(&pDSAPubContext);
@@ -557,7 +557,7 @@ SSH_KEY_exportDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_setKeyParametersAux(MOC_DSA(hwAccelCtx) pDSAPubContext, &template);
 #else
     status = DSA_setKeyParametersAux(MOC_DSA(hwAccelCtx) pDSAPubContext, &template);
@@ -565,7 +565,7 @@ SSH_KEY_exportDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_makeKeyBlob(MOC_DSA(hwAccelCtx) pDSAPubContext, NULL, &bufferLength);
 #else
     status = DSA_makeKeyBlob(MOC_DSA(hwAccelCtx) pDSAPubContext, NULL, &bufferLength);
@@ -573,11 +573,11 @@ SSH_KEY_exportDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC((void **) &buffer, bufferLength);
+    status = DIGI_MALLOC((void **) &buffer, bufferLength);
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_DSA_makeKeyBlob(MOC_DSA(hwAccelCtx) pDSAPubContext, buffer, &bufferLength);
 #else
     status = DSA_makeKeyBlob(MOC_DSA(hwAccelCtx) pDSAPubContext, buffer, &bufferLength);
@@ -590,7 +590,7 @@ SSH_KEY_exportDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey,
     *pRetKeyBlobLength = bufferLength;
 
 exit:
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DSA_freeKeyTemplate(NULL, &template);
 #else
     DSA_freeKeyTemplate(NULL, &template);
@@ -598,7 +598,7 @@ exit:
 
     if (NULL != pDSAPubContext)
     {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         CRYPTO_INTERFACE_DSA_freeKey(&pDSAPubContext, NULL);
 #else
         DSA_freeKey(&pDSAPubContext, NULL);
@@ -606,13 +606,13 @@ exit:
     }
 
     if (NULL != buffer)
-        MOC_FREE((void **) &buffer);
+        DIGI_FREE((void **) &buffer);
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_DSA__ */
+#endif /* __ENABLE_DIGICERT_DSA__ */
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 /*  public key format:
  *  4   bytes for algorithm name length
  *  n   bytes for algorithm name
@@ -649,7 +649,7 @@ SSH_KEY_exportQsKey(MOC_HASH(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey, ubyte
     /* write buffer */
     outputBuffLen = 4 + qsPubKeyLen;
 
-    status = MOC_MALLOC((void **) &pOutputBuff, outputBuffLen);
+    status = DIGI_MALLOC((void **) &pOutputBuff, outputBuffLen);
     if (OK != status)
         goto exit;
 
@@ -664,7 +664,7 @@ SSH_KEY_exportQsKey(MOC_HASH(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey, ubyte
     pTmpBuff += index;
     tmpBuffLen -= index;
 
-    status = MOC_MEMCPY(pTmpBuff, pQsPubKey, qsPubKeyLen);
+    status = DIGI_MEMCPY(pTmpBuff, pQsPubKey, qsPubKeyLen);
     if (OK != status)
         goto exit;
 
@@ -678,10 +678,10 @@ SSH_KEY_exportQsKey(MOC_HASH(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey, ubyte
 exit:
 
     if (NULL != pQsPubKey)
-        MOC_FREE((void **) &pQsPubKey);
+        DIGI_FREE((void **) &pQsPubKey);
 
     if (NULL != pOutputBuff)
-        MOC_FREE((void **) &pOutputBuff);
+        DIGI_FREE((void **) &pOutputBuff);
 
     return status;
 }
@@ -695,7 +695,7 @@ exit:
  *  4   bytes for Composite public key length
  *  m   bytes for Composite public key
  **/
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
 static MSTATUS
 SSH_KEY_exportHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey, ubyte **ppRetKeyBlob, ubyte4 *pRetKeyBlobLength, ubyte4 *pCurveId, ubyte4 *pQsAlgId)
 {
@@ -730,7 +730,7 @@ SSH_KEY_exportHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey, u
     /* write buffer */
     outputBuffLen = 4 + qsPubKeyLen + ecPubKeyLen;
 
-    status = MOC_MALLOC((void **) &pOutputBuff, outputBuffLen);
+    status = DIGI_MALLOC((void **) &pOutputBuff, outputBuffLen);
     if (OK != status)
         goto exit;
 
@@ -768,7 +768,7 @@ SSH_KEY_exportHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey* pKey, u
 exit:
 
     if (NULL != pOutputBuff)
-        (void) MOC_FREE((void **) &pOutputBuff);
+        (void) DIGI_FREE((void **) &pOutputBuff);
 
     return status;
 }
@@ -788,7 +788,7 @@ SSH_KEY_extractPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx) const ubyte *pKeyBlob
 {
     AsymmetricKey       key;
     MSTATUS             status;
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
     ubyte4              curveId;
 #endif
 
@@ -814,14 +814,14 @@ SSH_KEY_extractPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx) const ubyte *pKeyBlob
 
     if ((akt_ecc == key.type) || (akt_ecc_ed == key.type))
     {
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
         if (NULL == pCurveId)
         {
             status = ERR_NULL_POINTER;
             goto exit;
         }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(key.key.pECC, &curveId);
 #else
         status = EC_getCurveIdFromKey(key.key.pECC, &curveId);
@@ -843,7 +843,7 @@ SSH_KEY_extractPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx) const ubyte *pKeyBlob
     }
     else if (akt_dsa == key.type)
     {
-#if defined(__ENABLE_MOCANA_DSA__) && !defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_EXPORT__)
+#if defined(__ENABLE_DIGICERT_DSA__) && !defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__)
         status = SSH_KEY_exportDSAKey(MOC_DSA(hwAccelCtx) &key, ppRetPublicKeyBlob, pRetPublicKeyBlobLength);
 #else
         status = ERR_CRYPTO_DSA_DISABLED;
@@ -852,7 +852,7 @@ SSH_KEY_extractPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx) const ubyte *pKeyBlob
     }
     else if (akt_qs == key.type)
     {
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         status = SSH_KEY_exportQsKey(MOC_HASH(hwAccelCtx) &key, ppRetPublicKeyBlob, pRetPublicKeyBlobLength, pQsAlgId);
 #else
         MOC_UNUSED(pQsAlgId);
@@ -861,7 +861,7 @@ SSH_KEY_extractPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx) const ubyte *pKeyBlob
     }
     else if (akt_hybrid == key.type)
     {
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
         status = SSH_KEY_exportHybridKey(MOC_ASYM(hwAccelCtx) &key, ppRetPublicKeyBlob, pRetPublicKeyBlobLength, pCurveId, pQsAlgId);
 #else
         MOC_UNUSED(pQsAlgId);
@@ -898,7 +898,7 @@ SSH_KEY_generateHostKeyFileAsymKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricK
 
 exit:
     if (NULL != pKeyBlob)
-        MOC_FREE((void **) &pKeyBlob);
+        DIGI_FREE((void **) &pKeyBlob);
 
     return status;
 }
@@ -913,7 +913,7 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
     sshStringBuffer *pTemp = NULL;
     ubyte *pAlgoName;
     ubyte4 algoNameLen = 0;
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     ubyte pAlgoBuffer[64] = {0}; /* buffer for pqc and composite names */
 #endif
     ubyte4 index = 0;
@@ -940,30 +940,30 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
         }
         case akt_ecc:
         {
-#if defined(__ENABLE_MOCANA_ECC__)
+#if defined(__ENABLE_DIGICERT_ECC__)
             switch(curveId)
             {
-#ifdef __ENABLE_MOCANA_ECC_P192__
+#ifdef __ENABLE_DIGICERT_ECC_P192__
                 case cid_EC_P192:
                     pAlgoName = (ubyte *) "ecdsa-sha2-nistp192";
                     break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P224__
+#ifndef __DISABLE_DIGICERT_ECC_P224__
                 case cid_EC_P224:
                     pAlgoName = (ubyte *) "ecdsa-sha2-nistp224";
                     break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P256__
+#ifndef __DISABLE_DIGICERT_ECC_P256__
                 case cid_EC_P256:
                     pAlgoName = (ubyte *) "ecdsa-sha2-nistp256";
                     break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P384__
+#ifndef __DISABLE_DIGICERT_ECC_P384__
                 case cid_EC_P384:
                     pAlgoName = (ubyte *) "ecdsa-sha2-nistp384";
                     break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P521__
+#ifndef __DISABLE_DIGICERT_ECC_P521__
                 case cid_EC_P521:
                     pAlgoName = (ubyte *) "ecdsa-sha2-nistp521";
                     break;
@@ -980,7 +980,7 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
         }
         case akt_ecc_ed:
         {
-#ifdef __ENABLE_MOCANA_ECC_EDDSA_25519__
+#ifdef __ENABLE_DIGICERT_ECC_EDDSA_25519__
             if (cid_EC_Ed25519 != curveId)
             {
                 status = ERR_BAD_KEY_TYPE;
@@ -995,20 +995,20 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
         }
         case akt_qs:
         {
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 
-            (void) MOC_MEMCPY(pAlgoBuffer, (ubyte *) "ssh-", 4);
+            (void) DIGI_MEMCPY(pAlgoBuffer, (ubyte *) "ssh-", 4);
 
             switch (qsAlgId)
             { 
                 case cid_PQC_MLDSA_44:
-                    (void) MOC_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa44", MOC_STRLEN("mldsa44"));
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa44", DIGI_STRLEN("mldsa44"));
                     break;
                 case cid_PQC_MLDSA_65:
-                    (void) MOC_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa65", MOC_STRLEN("mldsa65"));
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa65", DIGI_STRLEN("mldsa65"));
                     break;
                 case cid_PQC_MLDSA_87:
-                    (void) MOC_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa87", MOC_STRLEN("mldsa87"));
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa87", DIGI_STRLEN("mldsa87"));
                     break;
                 default:
                     status = ERR_BAD_KEY_TYPE;
@@ -1023,20 +1023,20 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
         }
         case akt_hybrid:
         {
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
 
-            (void) MOC_MEMCPY(pAlgoBuffer, (ubyte *) "ssh-", 4);
+            (void) DIGI_MEMCPY(pAlgoBuffer, (ubyte *) "ssh-", 4);
 
             switch (qsAlgId)
             { 
                 case cid_PQC_MLDSA_44:
-                    (void) MOC_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa44-", MOC_STRLEN("mldsa44-"));
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa44-", DIGI_STRLEN("mldsa44-"));
                     break;
                 case cid_PQC_MLDSA_65:
-                    (void) MOC_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa65-", MOC_STRLEN("mldsa65-"));
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa65-", DIGI_STRLEN("mldsa65-"));
                     break;
                 case cid_PQC_MLDSA_87:
-                    (void) MOC_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa87-", MOC_STRLEN("mldsa87-"));
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 4, (ubyte *) "mldsa87-", DIGI_STRLEN("mldsa87-"));
                     break;
                 default:
                     status = ERR_BAD_KEY_TYPE;
@@ -1047,22 +1047,22 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
             {
                 case cid_EC_P256:
 
-                    (void) MOC_MEMCPY(pAlgoBuffer + 12, (ubyte *) "es256", 5);
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 12, (ubyte *) "es256", 5);
                     break;
 
                 case cid_EC_P384:
 
-                    (void) MOC_MEMCPY(pAlgoBuffer + 12, (ubyte *) "es384", 5);
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 12, (ubyte *) "es384", 5);
                     break;
 
                 case cid_EC_Ed25519:
 
-                    (void) MOC_MEMCPY(pAlgoBuffer + 12, (ubyte *) "ed25519", 7);
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 12, (ubyte *) "ed25519", 7);
                     break;
 
                 case cid_EC_Ed448:
 
-                    (void) MOC_MEMCPY(pAlgoBuffer + 12, (ubyte *) "ed448", 5);
+                    (void) DIGI_MEMCPY(pAlgoBuffer + 12, (ubyte *) "ed448", 5);
                     break;
 
                 default:
@@ -1084,7 +1084,7 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
         goto exit;
     /* create sshc_ecdsa_signature values here */
     
-    algoNameLen = MOC_STRLEN((sbyte *) pAlgoName);
+    algoNameLen = DIGI_STRLEN((sbyte *) pAlgoName);
     status = SSH_STR_makeStringBuffer(&pTemp, algoNameLen + 4);
     if (OK != status)
         goto exit;
@@ -1093,7 +1093,7 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY(pTemp->pString + 4, pAlgoName, algoNameLen);
+    status = DIGI_MEMCPY(pTemp->pString + 4, pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -1104,10 +1104,10 @@ static MSTATUS SSH_KEY_getKeySshStringBuffer(ubyte4 keyType, ubyte4 curveId, uby
 exit:
     SSH_STR_freeStringBuffer(&pTemp);
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     if (algoNameLen > 0)
     {
-        (void) MOC_MEMSET(pAlgoBuffer, 0x00, algoNameLen);
+        (void) DIGI_MEMSET(pAlgoBuffer, 0x00, algoNameLen);
     }
 #endif
     return status;
@@ -1145,13 +1145,13 @@ SSH_KEY_generateBase64EncodedPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx)
 
     /* allocate buffer */
     preEncodedMesgLen = publicKeyBlobLen + pTempSignature->stringLen;
-    status = MOC_MALLOC((void **) &pPreEncodedMesg, preEncodedMesgLen);
+    status = DIGI_MALLOC((void **) &pPreEncodedMesg, preEncodedMesgLen);
     if (OK != status)
         goto exit;
 
     /* copy buffer to beginning.. */
-    MOC_MEMCPY(pPreEncodedMesg, pTempSignature->pString, pTempSignature->stringLen);
-    MOC_MEMCPY(pPreEncodedMesg + pTempSignature->stringLen, pPublicKeyBlob, publicKeyBlobLen);
+    DIGI_MEMCPY(pPreEncodedMesg, pTempSignature->pString, pTempSignature->stringLen);
+    DIGI_MEMCPY(pPreEncodedMesg + pTempSignature->stringLen, pPublicKeyBlob, publicKeyBlobLen);
 
     if (0 > (status = BASE64_encodeMessage(pPreEncodedMesg, preEncodedMesgLen, &pBase64EncodedMesg, &base64EncodedMesgLen)))
         goto exit;
@@ -1162,10 +1162,10 @@ SSH_KEY_generateBase64EncodedPublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx)
 exit:
 
     if (NULL != pPreEncodedMesg)
-        MOC_FREE((void **) &pPreEncodedMesg);
+        DIGI_FREE((void **) &pPreEncodedMesg);
 
     if (NULL != pPublicKeyBlob)
-        MOC_FREE((void **) &pPublicKeyBlob);
+        DIGI_FREE((void **) &pPublicKeyBlob);
 
     return status;
 }
@@ -1184,9 +1184,9 @@ SSH_KEY_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRet
     ubyte*          pEncoded = NULL;
     ubyte4          extraBufLen;
     ubyte* pHeader = (ubyte *)"---- BEGIN SSH2 PUBLIC KEY ----\n";
-    ubyte4 headerLen = MOC_STRLEN((sbyte *)pHeader);
+    ubyte4 headerLen = DIGI_STRLEN((sbyte *)pHeader);
     ubyte* pFooter = (ubyte *)"---- END SSH2 PUBLIC KEY ----\n";
-    ubyte4 footerLen = MOC_STRLEN((sbyte *)pFooter);
+    ubyte4 footerLen = DIGI_STRLEN((sbyte *)pFooter);
     hwAccelDescr    hwAccelCtx;
     MSTATUS         status = OK;
 
@@ -1222,13 +1222,13 @@ SSH_KEY_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRet
     }
 
     /* a leading comment is required */
-    MOC_MEMCPY(pFinalFile, pHeader, headerLen);
+    DIGI_MEMCPY(pFinalFile, pHeader, headerLen);
     pFinalFile += headerLen;
 
     /* dup out the base64 text, maximum 72 key characters per line */
     while (SSH_HOST_KEY_ROW_LEN < retMesgLen)
     {
-        MOC_MEMCPY(pFinalFile, pEncoded, SSH_HOST_KEY_ROW_LEN);
+        DIGI_MEMCPY(pFinalFile, pEncoded, SSH_HOST_KEY_ROW_LEN);
         retMesgLen -= SSH_HOST_KEY_ROW_LEN;
         pFinalFile += SSH_HOST_KEY_ROW_LEN;
         pEncoded += SSH_HOST_KEY_ROW_LEN;
@@ -1239,7 +1239,7 @@ SSH_KEY_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRet
 
     if (0 < retMesgLen)
     {
-        MOC_MEMCPY(pFinalFile, pEncoded, retMesgLen);
+        DIGI_MEMCPY(pFinalFile, pEncoded, retMesgLen);
         pFinalFile += retMesgLen;
 
         pFinalFile[0] = '\n';
@@ -1247,7 +1247,7 @@ SSH_KEY_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRet
     }
 
     /* add a tail */
-    MOC_MEMCPY(pFinalFile, pFooter, footerLen);
+    DIGI_MEMCPY(pFinalFile, pFooter, footerLen);
 
 exit:
     HARDWARE_ACCEL_CLOSE_CHANNEL(MOCANA_SSH, &hwAccelCtx);
@@ -1278,7 +1278,7 @@ SSH_KEY_generateServerAuthKeyFileAsymKey(MOC_ASYM(hwAccelDescr hwAccelCtx) Asymm
 
 exit:
     if (NULL != pKeyBlob)
-        MOC_FREE((void **) &pKeyBlob);
+        DIGI_FREE((void **) &pKeyBlob);
     return status;
 }
 
@@ -1312,7 +1312,7 @@ SSH_KEY_generateServerAuthKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength,
     /* identifier + white space + base64 key material + CRLF */
     encodedMesgLen = (algoNameLen) + 1 + base64EncodedMesgLen + 2;
 
-    status = MOC_MALLOC((void **) &pEncodedMesg, encodedMesgLen);
+    status = DIGI_MALLOC((void **) &pEncodedMesg, encodedMesgLen);
     if (OK != status)
         goto exit;
 
@@ -1320,7 +1320,7 @@ SSH_KEY_generateServerAuthKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength,
     *pRetEncodedAuthKeyLen = encodedMesgLen;
 
     /* add algorithm identifier */
-    MOC_MEMCPY(pEncodedMesg, pAlgoName, algoNameLen);
+    DIGI_MEMCPY(pEncodedMesg, pAlgoName, algoNameLen);
     pEncodedMesg += (algoNameLen);
 
     /* add whitespace separating identifier and BASE64 encoded key */
@@ -1328,11 +1328,11 @@ SSH_KEY_generateServerAuthKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength,
     pEncodedMesg++;
 
     /* base64 public key blob */
-    MOC_MEMCPY(pEncodedMesg, pBase64EncodedMesg, base64EncodedMesgLen);
+    DIGI_MEMCPY(pEncodedMesg, pBase64EncodedMesg, base64EncodedMesgLen);
     pEncodedMesg += base64EncodedMesgLen;
 
     /* add newline at end of file */
-    MOC_MEMCPY(pEncodedMesg, (ubyte *)" \n", 2);
+    DIGI_MEMCPY(pEncodedMesg, (ubyte *)" \n", 2);
 
     /* mark null to prevent bad free */
     pEncodedMesg = NULL;
@@ -1344,18 +1344,18 @@ exit:
         BASE64_freeMessage(&pBase64EncodedMesg);
 
     if (NULL != pEncodedMesg)
-        MOC_FREE((void **) &pEncodedMesg);
+        DIGI_FREE((void **) &pEncodedMesg);
 
     SSH_STR_freeStringBuffer(&pIdentifier);
 nocleanup:
     return status;
 }
-#endif /* __DISABLE_MOCANA_KEY_GENERATION__ */
+#endif /* __DISABLE_DIGICERT_KEY_GENERATION__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 extern MSTATUS
 SSH_KEY_parseEccPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength, ubyte4 keyType, ubyte4 curveId,
     ubyte4 *pBytesRead, AsymmetricKey *pKey)
@@ -1381,7 +1381,7 @@ SSH_KEY_parseEccPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength, ubyte4 keyType,
      *pBytesRead = bytesRead = 0;
 
     /* Allocate key */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_newKeyAux(curveId, &(pKey->key.pECC));
 #else
     status = EC_newKeyEx(curveId, &(pKey->key.pECC));
@@ -1389,7 +1389,7 @@ SSH_KEY_parseEccPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength, ubyte4 keyType,
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getPointByteStringLenByCurveId(curveId, &keyLength);
 #else
     status = EC_getPointByteStringLenByCurveId(curveId, &keyLength);
@@ -1418,29 +1418,29 @@ SSH_KEY_parseEccPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength, ubyte4 keyType,
         res = -1;
         switch (curveId)
         {
-#ifdef __ENABLE_MOCANA_ECC_P192__
+#ifdef __ENABLE_DIGICERT_ECC_P192__
             case cid_EC_P192:
-                status = MOC_MEMCMP((void *) pKeyBlob, (void *) "nistp192", 8, &res);
+                status = DIGI_MEMCMP((void *) pKeyBlob, (void *) "nistp192", 8, &res);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P224__
+#ifndef __DISABLE_DIGICERT_ECC_P224__
             case cid_EC_P224:
-                status = MOC_MEMCMP((void *) pKeyBlob, (void *) "nistp224", 8, &res);
+                status = DIGI_MEMCMP((void *) pKeyBlob, (void *) "nistp224", 8, &res);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P256__
+#ifndef __DISABLE_DIGICERT_ECC_P256__
             case cid_EC_P256:
-                status = MOC_MEMCMP((void *) pKeyBlob, (void *) "nistp256", 8, &res);
+                status = DIGI_MEMCMP((void *) pKeyBlob, (void *) "nistp256", 8, &res);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P384__
+#ifndef __DISABLE_DIGICERT_ECC_P384__
             case cid_EC_P384:
-                status = MOC_MEMCMP((void *) pKeyBlob, (void *) "nistp384", 8, &res);
+                status = DIGI_MEMCMP((void *) pKeyBlob, (void *) "nistp384", 8, &res);
                 break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P521__
+#ifndef __DISABLE_DIGICERT_ECC_P521__
             case cid_EC_P521:
-                status = MOC_MEMCMP((void *) pKeyBlob, (void *) "nistp521", 8, &res);
+                status = DIGI_MEMCMP((void *) pKeyBlob, (void *) "nistp521", 8, &res);
                 break;
 #endif
             default:
@@ -1475,7 +1475,7 @@ SSH_KEY_parseEccPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength, ubyte4 keyType,
     pKeyBlob += index;
     keyBlobLength -= index;
     bytesRead += index;
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_setKeyParametersAux(MOC_ECC(hwAccelCtx) pKey->key.pECC,
         (ubyte *) pKeyBlob, keyBlobLength, NULL, 0);
 #else
@@ -1511,12 +1511,12 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
         (ubyte *) "ecdsa-sha2-nistp384",
         (ubyte *) "ecdsa-sha2-nistp521",
         (ubyte *) "ssh-ed25519",
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         (ubyte *) "ssh-mldsa44",
         (ubyte *) "ssh-mldsa65",
         (ubyte *) "ssh-mldsa87",
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
         (ubyte *) "ssh-mldsa44-es256",
         (ubyte *) "ssh-mldsa65-es256",
         (ubyte *) "ssh-mldsa87-es384",
@@ -1533,21 +1533,25 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
     ubyte4            keyType;
     ubyte4            index;
     ubyte4            index1;
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
     ubyte*            pN = NULL;
     ubyte4            nLen;
     ubyte*            pE = NULL;
     ubyte4            eLen;
-#ifdef __ENABLE_MOCANA_ECC__
+#endif
+#ifdef __ENABLE_DIGICERT_ECC__
     ubyte4            curveId = 0;
+#endif
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
     ubyte4            keyLength;
 #endif
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     QS_CTX            *pQsCtx = NULL;
     ubyte4            qsPubKeyLen = 0;
     ubyte4            qsAlgId = 0;
 #endif
     MSTATUS           status;
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
     MDsaKeyTemplate dsaTemplate = {0};
 #endif
     hwAccelDescr    hwAccelCtx;
@@ -1574,7 +1578,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
     while (NULL != signatureType[index])
     {
         pAlgoName = signatureType[index];
-        algoNameLen = MOC_STRLEN((const sbyte *)pAlgoName);
+        algoNameLen = DIGI_STRLEN((const sbyte *)pAlgoName);
         
         index1 = 0;
         status = SSH_KEY_getInteger((ubyte *) pKeyBlob, keyBlobLength, &index1, &keyBlobNameLen);
@@ -1584,7 +1588,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
         result = -1;
         if (keyBlobNameLen == algoNameLen)
         {
-            status = MOC_MEMCMP((ubyte *) pKeyBlob + 4, pAlgoName, algoNameLen, &result);
+            status = DIGI_MEMCMP((ubyte *) pKeyBlob + 4, pAlgoName, algoNameLen, &result);
             if (OK != status)
                 goto exit;
         }
@@ -1597,57 +1601,57 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
 
     switch (index)
     {
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
         case 0:
             keyType = akt_dsa;
             break;
 #endif
-#ifdef __ENABLE_MOCANA_SSH_RSA_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_RSA_SUPPORT__
         case 1:
         case 2:
         case 3:
             keyType = akt_rsa;
             break;
 #endif
-#ifdef __ENABLE_MOCANA_ECC__
-#ifdef __ENABLE_MOCANA_ECC_P192__
+#ifdef __ENABLE_DIGICERT_ECC__
+#ifdef __ENABLE_DIGICERT_ECC_P192__
         case 4:
             keyType = akt_ecc;
             curveId = cid_EC_P192;
             break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P224__
+#ifndef __DISABLE_DIGICERT_ECC_P224__
         case 5:
             keyType = akt_ecc;
             curveId = cid_EC_P224;
             break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P256__
+#ifndef __DISABLE_DIGICERT_ECC_P256__
         case 6:
             keyType = akt_ecc;
             curveId = cid_EC_P256;
             break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P384__
+#ifndef __DISABLE_DIGICERT_ECC_P384__
         case 7:
             keyType = akt_ecc;
             curveId = cid_EC_P384;
             break;
 #endif
-#ifndef __DISABLE_MOCANA_ECC_P521__
+#ifndef __DISABLE_DIGICERT_ECC_P521__
         case 8:
             keyType = akt_ecc;
             curveId = cid_EC_P521;
             break;
 #endif
-#ifdef __ENABLE_MOCANA_ECC_EDDSA_25519__
+#ifdef __ENABLE_DIGICERT_ECC_EDDSA_25519__
         case 9:
             keyType = akt_ecc_ed;
             curveId = cid_EC_Ed25519;
             break;
 #endif
 #endif
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         case 10:
             keyType = akt_qs;
             qsAlgId = cid_PQC_MLDSA_44;
@@ -1661,7 +1665,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
             qsAlgId = cid_PQC_MLDSA_87;
             break;
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
         case 13:
             keyType = akt_hybrid;
             curveId = cid_EC_P256;
@@ -1706,7 +1710,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
 
     if (akt_dsa == keyType)
     {
-#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__))
         if (OK > (status = DSA_createKey(&(p_keyDescr->key.pDSA))))
             goto exit;
 
@@ -1762,7 +1766,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
         pKeyBlob += (4 + dsaTemplate.yLen);
         keyBlobLength -= (4 + dsaTemplate.yLen);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         status = CRYPTO_INTERFACE_DSA_setKeyParametersAux(MOC_DSA(hwAccelCtx) p_keyDescr->key.pDSA, &dsaTemplate);
 #else
         status = DSA_setKeyParametersAux(MOC_DSA(hwAccelCtx) p_keyDescr->key.pDSA, &dsaTemplate);
@@ -1776,8 +1780,8 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
     }
     else if (akt_rsa == keyType)
     {
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         if (OK > (status = CRYPTO_INTERFACE_RSA_createKeyAux(&(p_keyDescr->key.pRSA))))
             goto exit;
 #else
@@ -1811,7 +1815,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
             goto exit;
         }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         status = CRYPTO_INTERFACE_RSA_setPublicKeyData(MOC_RSA(hwAccelCtx) p_keyDescr->key.pRSA, pE, eLen, pN, nLen, NULL);
 #else
         status = RSA_setPublicKeyData(MOC_RSA(hwAccelCtx) p_keyDescr->key.pRSA, pE, eLen, pN, nLen, NULL);
@@ -1825,7 +1829,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
     }
     else if((akt_ecc == keyType) || (akt_ecc_ed == keyType))
     {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_ECC__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC__
         index = 0;
         status = SSH_KEY_parseEccPublicKey(pKeyBlob, keyBlobLength, keyType, curveId, &index, p_keyDescr);
 #else
@@ -1835,7 +1839,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
     }
     else if(akt_qs == keyType)
     {
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
         ubyte4 expPubLen = 0;
 
         status = CRYPTO_INTERFACE_QS_newCtx(MOC_HASH(hwAccelCtx) &pQsCtx, qsAlgId);
@@ -1871,7 +1875,7 @@ SSH_KEY_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyBlobLength,
     }
     else if(akt_hybrid == keyType)
     {
-#if defined(__ENABLE_MOCANA_PQC_COMPOSITE__)
+#if defined(__ENABLE_DIGICERT_PQC_COMPOSITE__)
         ubyte4 compositeLen = 0;
         ubyte4 expPubLen = 0;
 
@@ -1935,19 +1939,21 @@ exit:
         CRYPTO_uninitAsymmetricKey(p_keyDescr, NULL);
     }
 
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
     if (NULL != pE)
-        MOC_FREE((void **) &pE);
+        DIGI_FREE((void **) &pE);
 
     if (NULL != pN)
-        MOC_FREE((void **) &pN);
+        DIGI_FREE((void **) &pN);
+#endif
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     if (NULL != pQsCtx)
         CRYPTO_INTERFACE_QS_deleteCtx(&pQsCtx);
 #endif
 
-#ifdef __ENABLE_MOCANA_DSA__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_DSA__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_DSA_freeKeyTemplate(NULL, &dsaTemplate);
 #else
     DSA_freeKeyTemplate(NULL, &dsaTemplate);
@@ -2000,7 +2006,7 @@ SSH_KEY_sshParseAuthPublicKeyFile(sbyte* pKeyFile, ubyte4 fileSize,
 
 exit:
     if (NULL != pRecall)
-        MOC_FREE((void **) &pRecall);
+        DIGI_FREE((void **) &pRecall);
 
     if ((OK != status) && (NULL != p_keyDescr))
     {

@@ -1,5 +1,7 @@
 # Set mss root directory
-set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+if(NOT DEFINED MSS_DIR)
+    set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+endif()
 # Set mss source directory
 set(MSS_SRC_DIR "${MSS_DIR}/src")
 # Set mss unittest directory
@@ -168,7 +170,7 @@ function(builder_add_test_sources CUR_TARGET)
     message("----------------")
     # Modify the target output with test suffix
     set_property(TARGET ${CUR_TARGET} PROPERTY OUTPUT_NAME ${CUR_TARGET}_test)
-    target_compile_options(${CUR_TARGET} PRIVATE "-D__ENABLE_MOCANA_UNITTEST__")
+    target_compile_options(${CUR_TARGET} PRIVATE "-D__ENABLE_DIGICERT_UNITTEST__")
     # Add _unittest suffix to sources
     get_target_property(CUR_TARGET_SOURCES ${CUR_TARGET} SOURCES)
     set(UNITTEST_SOURCES "")
@@ -186,7 +188,7 @@ endfunction()
 function(builder_add_test CUR_TARGET TEST_TARGET TEST_MAIN)
     # Create test executable target
     add_executable(${TEST_TARGET} ${TEST_MAIN} ../../unit_tests/unittest.c)
-    target_compile_options(${TEST_TARGET} PRIVATE "-D__ENABLE_MOCANA_UNITTEST__")
+    target_compile_options(${TEST_TARGET} PRIVATE "-D__ENABLE_DIGICERT_UNITTEST__")
 
     find_library(JANSSON_LIB jansson)
     if(JANSSON_LIB)

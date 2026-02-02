@@ -3,10 +3,16 @@
  *
  * @details  This file contains the TAP Extern functions declaration
  *
- * Mocana Trust Anchor Platform APIs
+ * Trust Anchor Platform APIs
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
@@ -29,7 +35,7 @@
 #include "../crypto/mocasymkeys/tap/ecctap.h"
 #include "../crypto_interface/cryptointerface.h"
 
-#if (defined(__ENABLE_MOCANA_TAP__) && defined(__ENABLE_MOCANA_TAP_EXTERN__))
+#if (defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_TAP_EXTERN__))
 /**
 @brief      Initialize TAP and the TapContext callback
 
@@ -52,7 +58,7 @@
             returned error status, use the \c DISPLAY_ERROR macro.
 */
 
-MOC_EXTERN sbyte4 MOCANA_TAPExternInit(void **ppFuncPtrGetTapContext);
+MOC_EXTERN sbyte4 DIGICERT_TAPExternInit(void **ppFuncPtrGetTapContext);
 
 /**
 @brief      Uninitialize TAP and the TapContext callback
@@ -67,7 +73,7 @@ MOC_EXTERN sbyte4 MOCANA_TAPExternInit(void **ppFuncPtrGetTapContext);
             returned error status, use the \c DISPLAY_ERROR macro.
 */
 
-MOC_EXTERN sbyte4 MOCANA_TAPExternDeinit(void **ppFuncPtrGetTapContext);
+MOC_EXTERN sbyte4 DIGICERT_TAPExternDeinit(void **ppFuncPtrGetTapContext);
 
 /**
 @brief      TapContext callback
@@ -88,7 +94,7 @@ MOC_EXTERN sbyte4 MOCANA_TAPExternDeinit(void **ppFuncPtrGetTapContext);
             returned error status, use the \c DISPLAY_ERROR macro.
 */
 MOC_EXTERN sbyte4
-MOCANA_TAP_EXTERN_getTapContext(TAP_Context **ppTapContext,
+DIGICERT_TAP_EXTERN_getTapContext(TAP_Context **ppTapContext,
                                 TAP_EntityCredentialList **ppTapEntityCred,
                                 TAP_CredentialList **ppTapKeyCred,
                                 void *pKey, TapOperation op, ubyte getContext);

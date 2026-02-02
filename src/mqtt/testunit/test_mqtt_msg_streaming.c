@@ -37,9 +37,9 @@ static void mqtt_test_MQTT_parsePacketBasic(void **ppState)
     ubyte *pBuffer = NULL;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
     pCtx->maxPacketSize = 1024;
     pCtx->version = 5;
@@ -48,7 +48,7 @@ static void mqtt_test_MQTT_parsePacketBasic(void **ppState)
 
     /* packet type: Publish*/
 
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
     pCtx->version = 5;
 
     pCtx->pClientId = "testClient";
@@ -67,7 +67,7 @@ static void mqtt_test_MQTT_parsePacketBasic(void **ppState)
     assert_int_equal(0, pCtx->streamingCurPkt);
     assert_int_equal(pCtx->publishState, MQTT_PUBLISH_TYPE_STATE);
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
 }
 
 static void mqtt_test_MQTT_parsePacketLargePayload(void **ppState)
@@ -77,9 +77,9 @@ static void mqtt_test_MQTT_parsePacketLargePayload(void **ppState)
     MSTATUS status;
     ubyte4 i;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -150,7 +150,7 @@ static void mqtt_test_MQTT_parsePacketLargePayload(void **ppState)
     assert_int_equal(0, pCtx->streamingCurPkt);
     assert_int_equal(pCtx->publishState, MQTT_PUBLISH_TYPE_STATE);
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
 }
 
 static void mqtt_test_MQTT_parsePacketWithProperties(void **ppState)
@@ -160,9 +160,9 @@ static void mqtt_test_MQTT_parsePacketWithProperties(void **ppState)
     ubyte4 i;
     MSTATUS status;
 
-    MOC_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
-    MOC_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
 
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -246,7 +246,7 @@ static void mqtt_test_MQTT_parsePacketWithProperties(void **ppState)
     assert_int_equal(pCtx->publishState, MQTT_PUBLISH_TYPE_STATE);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **)&pCtx);
+    DIGI_FREE((void **)&pCtx);
 }
 
 static int testSetup(void **ppState)
@@ -254,7 +254,7 @@ static int testSetup(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK == status)
         ret = 0;
 
@@ -266,7 +266,7 @@ static int testTeardown(void **ppState)
     MSTATUS status;
     int ret = -1;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
     if (OK == status)
         ret = 0;
 

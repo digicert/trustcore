@@ -41,7 +41,7 @@
 
 #define PROCESS_PATH_LEN_MAX 1024
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 #define MOUNT_PATH_MAX_LEN 256
 static ubyte pMountPath[MOUNT_PATH_MAX_LEN];
 static ubyte4 mountPathLen = 0;
@@ -59,14 +59,14 @@ extern signed int TP_setMountPoint (unsigned char *pNewMountPath)
         return ERR_NULL_POINTER;
     }
 
-    mountPathLength = MOC_STRLEN (pNewMountPath);
+    mountPathLength = DIGI_STRLEN (pNewMountPath);
     if ((1 > mountPathLength) || (MOUNT_PATH_MAX_LEN <= (mountPathLength + 1)))
     {
         status = ERR_BUFFER_OVERFLOW;
         goto exit;
     }
 
-    status = MOC_MEMCPY (pMountPath, pNewMountPath, mountPathLength);
+    status = DIGI_MEMCPY (pMountPath, pNewMountPath, mountPathLength);
     if (OK != status)
         goto exit;
 
@@ -93,7 +93,7 @@ extern intBoolean LINUX_pathExists (const sbyte *pFilePath, FileDescriptorInfo *
 {
     struct stat statFile = { 0 };
     ubyte *pFPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
 
@@ -101,7 +101,7 @@ extern intBoolean LINUX_pathExists (const sbyte *pFilePath, FileDescriptorInfo *
         return FALSE;
 
     pFPath = (ubyte *) pFilePath;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         if (OK > LINUX_getFullPathAllocAux (pFilePath, (sbyte **) &pFPath, TRUE))
@@ -119,19 +119,19 @@ extern intBoolean LINUX_pathExists (const sbyte *pFilePath, FileDescriptorInfo *
     {
         if (NULL != pFileInfo)
         {
-            MOC_MEMSET ((ubyte *) pFileInfo, 0x00, sizeof (FileDescriptorInfo));
+            DIGI_MEMSET ((ubyte *) pFileInfo, 0x00, sizeof (FileDescriptorInfo));
             pFileInfo->type = FTNone;
         }
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
         if (TRUE == freePath)
-            MOC_FREE ((void **) &pFPath);
+            DIGI_FREE ((void **) &pFPath);
 #endif
         return FALSE;
     }
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
-        MOC_FREE ((void **) &pFPath);
+        DIGI_FREE ((void **) &pFPath);
 #endif
 
     if (NULL == pFileInfo)
@@ -178,7 +178,7 @@ extern MSTATUS LINUX_rename (const sbyte *pOldName, sbyte *pNewName)
     MSTATUS status = ERR_NULL_POINTER;
     sbyte *pOldPath = NULL;
     sbyte *pNewPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freeOldPath = FALSE;
     intBoolean freeNewPath = FALSE;
 #endif
@@ -187,7 +187,7 @@ extern MSTATUS LINUX_rename (const sbyte *pOldName, sbyte *pNewName)
         goto exit;
 
     pOldPath = (sbyte *) pOldName;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pOldName, (sbyte **) &pOldPath, TRUE);
@@ -197,7 +197,7 @@ extern MSTATUS LINUX_rename (const sbyte *pOldName, sbyte *pNewName)
     }
 #endif
     pNewPath = pNewName;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pNewName, (sbyte **) &pNewPath, TRUE);
@@ -250,12 +250,12 @@ extern MSTATUS LINUX_rename (const sbyte *pOldName, sbyte *pNewName)
     };
 
 exit:
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freeOldPath)
-        MOC_FREE ((void **) &pOldPath);
+        DIGI_FREE ((void **) &pOldPath);
 
     if (TRUE == freeNewPath)
-        MOC_FREE ((void **) &pNewPath);
+        DIGI_FREE ((void **) &pNewPath);
 #endif
     return status;
 }
@@ -264,7 +264,7 @@ extern MSTATUS LINUX_mkdir (const sbyte *pDirectoryName, ubyte4 mode)
 {
     MSTATUS status = ERR_NULL_POINTER;
     sbyte *pDPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
 
@@ -272,7 +272,7 @@ extern MSTATUS LINUX_mkdir (const sbyte *pDirectoryName, ubyte4 mode)
         goto exit;
 
     pDPath = (sbyte *)pDirectoryName;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pDirectoryName, &pDPath, TRUE);
@@ -284,16 +284,16 @@ extern MSTATUS LINUX_mkdir (const sbyte *pDirectoryName, ubyte4 mode)
 
     if (0 == mkdir ((const char*)pDPath, mode))
     {
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
         if (TRUE == freePath)
-            MOC_FREE ((void **) &pDPath);
+            DIGI_FREE ((void **) &pDPath);
 #endif
         return OK;
     }
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
-        MOC_FREE ((void **) &pDPath);
+        DIGI_FREE ((void **) &pDPath);
 #endif
 
     switch(errno)
@@ -320,7 +320,7 @@ extern MSTATUS LINUX_remove (const sbyte *pFilePath, intBoolean recursive);
 #ifndef __RTOS_FREERTOS_ESP32__
 static int removeCallBack (const char *pFilePath, const struct stat *pStat, int flag, struct FTW *pFtw)
 {
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     /* mountPathLen is 0 if pMountPath is not set */
    return LINUX_remove (pFilePath + mountPathLen, FALSE);
 #else
@@ -350,25 +350,25 @@ MSTATUS recursiveDelete(const sbyte *pPath)
                 if (pDent->d_name[0] && (pDent->d_name[0] != '.'))
                 {
                     /* Append path to name */
-                    plen = MOC_STRLEN(pPath);
-                    dlen = MOC_STRLEN(pDent->d_name);
+                    plen = DIGI_STRLEN(pPath);
+                    dlen = DIGI_STRLEN(pDent->d_name);
                     len = plen + dlen + 2;
-                    status = MOC_MALLOC((void **) &pDestDir, len);
+                    status = DIGI_MALLOC((void **) &pDestDir, len);
                     if (OK != status)
                     {
                         break;
                     }
-                    status = MOC_MEMCPY(pDestDir, pPath, plen);
+                    status = DIGI_MEMCPY(pDestDir, pPath, plen);
                     if (OK != status)
                     {
-                        MOC_FREE((void **) &pDestDir);
+                        DIGI_FREE((void **) &pDestDir);
                         break;
                     }
                     pDestDir[plen] = '/';
-                    status = MOC_MEMCPY(&pDestDir[plen+1], pDent->d_name, dlen);
+                    status = DIGI_MEMCPY(&pDestDir[plen+1], pDent->d_name, dlen);
                     if (OK != status)
                     {
-                        MOC_FREE((void **) &pDestDir);
+                        DIGI_FREE((void **) &pDestDir);
                         break;
                     }
                     pDestDir[len-1] = 0;
@@ -381,12 +381,12 @@ MSTATUS recursiveDelete(const sbyte *pPath)
                     {
                         if (remove(pDestDir) != 0)
                         {
-                            MOC_FREE((void **) &pDestDir);
+                            DIGI_FREE((void **) &pDestDir);
                             status = ERR_GENERAL;
                             break;
                         }
                     }
-                    MOC_FREE((void **) &pDestDir);
+                    DIGI_FREE((void **) &pDestDir);
                 }
             }
 
@@ -413,7 +413,7 @@ extern MSTATUS LINUX_remove (const sbyte *pFilePath, intBoolean recursive)
     MSTATUS status = ERR_NULL_POINTER;
     ubyte4 tflags;
     ubyte *pFPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
 
@@ -421,7 +421,7 @@ extern MSTATUS LINUX_remove (const sbyte *pFilePath, intBoolean recursive)
         return ERR_NULL_POINTER;
 
     pFPath = (ubyte *) pFilePath;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pFilePath, (sbyte **) &pFPath, TRUE);
@@ -439,18 +439,18 @@ extern MSTATUS LINUX_remove (const sbyte *pFilePath, intBoolean recursive)
 
         if (0 == nftw ((const char*)pFPath, removeCallBack, tflags, FTW_DEPTH | FTW_PHYS))
         {
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
             if (TRUE == freePath)
-                MOC_FREE ((void **) &pFPath);
+                DIGI_FREE ((void **) &pFPath);
 #endif
             return OK;
         }
 #else
         if (0 == recursiveDelete(pFPath))
         {
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
             if (TRUE == freePath)
-                MOC_FREE ((void **) &pFPath);
+                DIGI_FREE ((void **) &pFPath);
 #endif
             return OK;
         }
@@ -461,17 +461,17 @@ extern MSTATUS LINUX_remove (const sbyte *pFilePath, intBoolean recursive)
         errno = 0;
         if (0 == remove ((const char*)pFPath))
         {
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
             if (TRUE == freePath)
-                MOC_FREE ((void **) &pFPath);
+                DIGI_FREE ((void **) &pFPath);
 #endif
             return OK;
         }
     }
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
-        MOC_FREE ((void **) &pFPath);
+        DIGI_FREE ((void **) &pFPath);
 #endif
 
     switch (errno)
@@ -513,16 +513,15 @@ extern MSTATUS LINUX_remove (const sbyte *pFilePath, intBoolean recursive)
 extern MSTATUS LINUX_changeCWD (const sbyte *pNewCwd)
 {
     MSTATUS status = ERR_NULL_POINTER;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     ubyte *pDPath = NULL;
     ubyte4 newCwdLength = 0;
-    intBoolean freePath = FALSE;
     FileDescriptorInfo fileInfo = { 0 };
 #endif
     if (NULL == pNewCwd)
         return status;
 
-#ifndef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifndef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (0 == chdir ((const char*)pNewCwd))
     {
         return OK;
@@ -563,14 +562,14 @@ extern MSTATUS LINUX_changeCWD (const sbyte *pNewCwd)
     {
         if (FTDirectory == fileInfo.type)
         {
-            newCwdLength = MOC_STRLEN ((const sbyte *) pNewCwd);
+            newCwdLength = DIGI_STRLEN ((const sbyte *) pNewCwd);
             if ((1 > newCwdLength) || (WORKING_DIR_PATH_MAX_LEN <= (newCwdLength + 1)))
             {
                 status = ERR_BUFFER_TOO_SMALL;
                 goto exit;
             }
 
-            status = MOC_MEMCPY (pWorkingDirPath, pNewCwd, newCwdLength);
+            status = DIGI_MEMCPY (pWorkingDirPath, pNewCwd, newCwdLength);
             if (OK != status)
                 goto exit;
 
@@ -599,7 +598,7 @@ extern MSTATUS LINUX_getCWD (sbyte *pCwd, ubyte4 cwdLength)
     if (NULL == pCwd)
         goto exit;
 
-#ifndef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifndef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 
     if (NULL != getcwd ((char*)pCwd, cwdLength))
         return OK;
@@ -634,7 +633,7 @@ extern MSTATUS LINUX_getCWD (sbyte *pCwd, ubyte4 cwdLength)
             goto exit;
         }
 
-        status = MOC_MEMCPY (pCwd, pWorkingDirPath, workingDirPathLen);
+        status = DIGI_MEMCPY (pCwd, pWorkingDirPath, workingDirPathLen);
         if (OK != status)
             goto exit;
 
@@ -695,7 +694,7 @@ extern MSTATUS LINUX_getNextFile (DirectoryDescriptor pDirCtx, DirectoryEntry *p
 
     pFileCtx->pCtx = (void *) pDirEntry;
     pFileCtx->pName = (ubyte*)pDirEntry->d_name;
-    pFileCtx->nameLength = MOC_STRLEN ((const sbyte *) pFileCtx->pName);
+    pFileCtx->nameLength = DIGI_STRLEN ((const sbyte *) pFileCtx->pName);
 
     switch (pDirEntry->d_type)
     {
@@ -745,7 +744,7 @@ extern MSTATUS LINUX_getFirstFile (const sbyte *pDirPath, DirectoryDescriptor *p
     MSTATUS status = ERR_NULL_POINTER;
     DIR *pDir = NULL;
     sbyte *pDPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
     sbyte pCurDir[256] = { 0 };
@@ -753,7 +752,7 @@ extern MSTATUS LINUX_getFirstFile (const sbyte *pDirPath, DirectoryDescriptor *p
     if ((NULL == pDirPath) || (NULL == ppNewDirCtx) || (NULL == pFirstFile))
         goto exit;
 
-    if (0 == MOC_STRCMP(pDirPath, (const sbyte*)"."))
+    if (0 == DIGI_STRCMP(pDirPath, (const sbyte*)"."))
     {
         status = FMGMT_getCWD(pCurDir, sizeof(pCurDir));
         if (OK != status)
@@ -764,7 +763,7 @@ extern MSTATUS LINUX_getFirstFile (const sbyte *pDirPath, DirectoryDescriptor *p
     }
 
     pDPath = (sbyte *)pDirPath;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pDirPath, (sbyte **) &pDPath, TRUE);
@@ -811,9 +810,9 @@ extern MSTATUS LINUX_getFirstFile (const sbyte *pDirPath, DirectoryDescriptor *p
     };
 
 exit:
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
-        MOC_FREE ((void **) &pDPath);
+        DIGI_FREE ((void **) &pDPath);
 #endif
     return status;
 }
@@ -848,7 +847,7 @@ extern MSTATUS LINUX_fopen (const sbyte *pFileName, const sbyte *pMode, FileDesc
     MSTATUS status = ERR_NULL_POINTER;
     FILE *pFile;
     sbyte *pFPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
 
@@ -857,7 +856,7 @@ extern MSTATUS LINUX_fopen (const sbyte *pFileName, const sbyte *pMode, FileDesc
 
     *ppNewFileCtx = NULL;
     pFPath = (sbyte *) pFileName;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pFileName, (sbyte **) &pFPath, TRUE);
@@ -867,30 +866,30 @@ extern MSTATUS LINUX_fopen (const sbyte *pFileName, const sbyte *pMode, FileDesc
     }
 
 #ifdef __ENABLE_DIGICERT_SECURE_PATH__
-    if (MOC_STRNCMP(pFPath, MANDATORY_BASE_PATH, MOC_STRLEN(MANDATORY_BASE_PATH)) != 0)
+    if (DIGI_STRNCMP(pFPath, MANDATORY_BASE_PATH, DIGI_STRLEN(MANDATORY_BASE_PATH)) != 0)
     {
         /* File path must start with the mandatory base path */
         if (TRUE == freePath)
-            MOC_FREE ((void **) &pFPath);
+            DIGI_FREE ((void **) &pFPath);
         return ERR_FILE_INSECURE_PATH;
     }
 #endif /* __ENABLE_DIGICERT_SECURE_PATH__ */
-#endif /* __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__ */
+#endif /* __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__ */
 
     pFile = fopen((const char* __restrict)pFPath, (const char* __restrict)pMode);
     if (NULL != pFile)
     {
         *ppNewFileCtx = (FileDescriptor) pFile;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
         if (TRUE == freePath)
-            MOC_FREE ((void **) &pFPath);
+            DIGI_FREE ((void **) &pFPath);
 #endif
         return OK;
     }
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
-        MOC_FREE ((void **) &pFPath);
+        DIGI_FREE ((void **) &pFPath);
 #endif
 
     switch (errno)
@@ -1013,7 +1012,7 @@ exit:
 }
 
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 extern MSTATUS LINUX_fseek (FileDescriptor pFileCtx, sbyte8 offset, ubyte4 m_whence)
 #else
 extern MSTATUS LINUX_fseek (FileDescriptor pFileCtx, sbyte4 offset, ubyte4 m_whence)
@@ -1198,7 +1197,7 @@ extern MSTATUS LINUX_getDirectoryPath (const sbyte *pFilePath, sbyte *pDirectory
     ubyte4 lastSlash = 0;
     ubyte4 i;
     ubyte *pFPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
 
@@ -1209,7 +1208,7 @@ extern MSTATUS LINUX_getDirectoryPath (const sbyte *pFilePath, sbyte *pDirectory
     }
 
     pFPath = (ubyte *) pFilePath;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pFilePath, (sbyte **) &pFPath, FALSE);
@@ -1218,7 +1217,7 @@ extern MSTATUS LINUX_getDirectoryPath (const sbyte *pFilePath, sbyte *pDirectory
         freePath = TRUE;
     }
 #endif
-    filePathLength = MOC_STRLEN ((const sbyte*)pFPath);
+    filePathLength = DIGI_STRLEN ((const sbyte*)pFPath);
 
     /* copy buffer and store the location of the last slash */
     for (i = 0; i < filePathLength; i++)
@@ -1231,9 +1230,9 @@ extern MSTATUS LINUX_getDirectoryPath (const sbyte *pFilePath, sbyte *pDirectory
 
     status = OK;
 exit:
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
-        MOC_FREE ((void **) &pFPath);
+        DIGI_FREE ((void **) &pFPath);
 #endif
     return status;
 }
@@ -1247,7 +1246,7 @@ extern MSTATUS LINUX_getDirectoryPathAlloc (const sbyte *pFilePath, sbyte **ppDi
     ubyte4 lastSlash = 0;
     ubyte4 i;
     sbyte *pFPath = NULL;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     intBoolean freePath = FALSE;
 #endif
 
@@ -1256,7 +1255,7 @@ extern MSTATUS LINUX_getDirectoryPathAlloc (const sbyte *pFilePath, sbyte **ppDi
 
     *ppDirectoryPath = NULL;
     pFPath = (sbyte *) pFilePath;
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == LINUX_needFullPath ())
     {
         status = LINUX_getFullPathAllocAux (pFilePath, (sbyte **) &pFPath, FALSE);
@@ -1266,7 +1265,7 @@ extern MSTATUS LINUX_getDirectoryPathAlloc (const sbyte *pFilePath, sbyte **ppDi
     }
 #endif
 
-    filePathLength = MOC_STRLEN (pFPath);
+    filePathLength = DIGI_STRLEN (pFPath);
     /* copy buffer and store the location of the last slash */
     for (i = 0; i < filePathLength; i++)
     {
@@ -1279,13 +1278,13 @@ extern MSTATUS LINUX_getDirectoryPathAlloc (const sbyte *pFilePath, sbyte **ppDi
         goto exit;
     }
 
-    status = MOC_MALLOC ((void **) &pDirectoryPath, lastSlash + 1);
+    status = DIGI_MALLOC ((void **) &pDirectoryPath, lastSlash + 1);
     if (OK != status)
         goto exit;
 
     directoryPathLength = lastSlash;
 
-    status = MOC_MEMCPY ((void *) pDirectoryPath, pFPath, directoryPathLength);
+    status = DIGI_MEMCPY ((void *) pDirectoryPath, pFPath, directoryPathLength);
     if (OK != status)
         goto exit;
 
@@ -1295,16 +1294,16 @@ extern MSTATUS LINUX_getDirectoryPathAlloc (const sbyte *pFilePath, sbyte **ppDi
 
 exit:
     if (NULL != pDirectoryPath)
-        MOC_FREE((void **) &pDirectoryPath);
+        DIGI_FREE((void **) &pDirectoryPath);
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     if (TRUE == freePath)
-        MOC_FREE ((void **) &pFPath);
+        DIGI_FREE ((void **) &pFPath);
 #endif
     return status;
 }
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 static int moveToNextSlash (ubyte *ptr, sbyte4 *ptrIndex, sbyte4 size)
 {
     intBoolean foundSlash = FALSE;
@@ -1395,9 +1394,7 @@ static intBoolean isDoubleDotOp (ubyte *ptr, sbyte4 index, sbyte4 size)
 static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolutePath, ubyte4 absolutePathLength, intBoolean prefixMount)
 {
     MSTATUS status = ERR_NULL_POINTER;
-    sbyte pAbsPath [PATH_MAX + 1] = { 0 };
     ubyte4 absolutePathComputedLength;
-    ubyte4 fileNameLength;
     ubyte4 mountPathLength = 0;
     ubyte4 directoryPathLength = 0;
     ubyte4 relativePathLength;
@@ -1408,15 +1405,14 @@ static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolut
     sbyte4 dstIndex;
     sbyte4 dstLen;
     ubyte *pOutTmp = NULL;
-    sbyte4 outTmpIndex;
     sbyte4 outTmpLen = 0;
 
     if ((0 == mountPathLen) && (0 == workingDirPathLen))
     {
         /* If both mount point and working directory are NULL,
          * leave relative path as is. */
-        relativePathLength = MOC_STRLEN (pRelativePath);
-        status = MOC_MEMCPY (pAbsolutePath, pRelativePath, relativePathLength);
+        relativePathLength = DIGI_STRLEN (pRelativePath);
+        status = DIGI_MEMCPY (pAbsolutePath, pRelativePath, relativePathLength);
         if (OK != status)
             goto exit;
 
@@ -1432,11 +1428,11 @@ static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolut
         mountPathLength = 0;
     /* MOUNT PATH -- block end */
 
-    relativePathLength = MOC_STRLEN (pRelativePath);
+    relativePathLength = DIGI_STRLEN (pRelativePath);
 
     if (0 < workingDirPathLen)
     {
-        directoryPathLength = MOC_STRLEN (pWorkingDirPath);
+        directoryPathLength = DIGI_STRLEN (pWorkingDirPath);
 
         if ((1 == relativePathLength) && ('.' == pRelativePath[0]))
         {
@@ -1444,7 +1440,7 @@ static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolut
             {
                 return ERR_BUFFER_TOO_SMALL;
             }
-            status = MOC_MEMCPY (pAbsolutePath, pWorkingDirPath, workingDirPathLen);
+            status = DIGI_MEMCPY (pAbsolutePath, pWorkingDirPath, workingDirPathLen);
             goto exit;
         }
         else if ((1 < relativePathLength) && (('.' == pRelativePath[0]) &&
@@ -1469,7 +1465,7 @@ static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolut
     /* Add mount point if present and requested. */
     if ((TRUE == prefixMount) && (1 < mountPathLength))
     {
-        status = MOC_MEMCPY (pTmp, pMountPath, mountPathLength);
+        status = DIGI_MEMCPY (pTmp, pMountPath, mountPathLength);
         pTmp += mountPathLength;
     }
 
@@ -1477,7 +1473,7 @@ static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolut
      * with a forward slash. */
     if ((0 < workingDirPathLen) && (relativePathLength > 1) && ('/' != pRelativePath[0]))
     {
-        status = MOC_MEMCPY (pTmp, pWorkingDirPath, workingDirPathLen);
+        status = DIGI_MEMCPY (pTmp, pWorkingDirPath, workingDirPathLen);
         pTmp += workingDirPathLen;
     }
 
@@ -1487,13 +1483,13 @@ static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolut
         pTmp++;
     }
 
-    status = MOC_MEMCPY (pTmp, pRelativePath, relativePathLength);
+    status = DIGI_MEMCPY (pTmp, pRelativePath, relativePathLength);
     pTmp += relativePathLength; 
     pTmp[0] = '\0';
 
    /* resolve .. operator */
-    tmpLen = outTmpLen =  (sbyte4) MOC_STRLEN (pAbsolutePath);
-    status = MOC_MALLOC((void **) &pOutTmp, outTmpLen + 1);
+    tmpLen = outTmpLen =  (sbyte4) DIGI_STRLEN (pAbsolutePath);
+    status = DIGI_MALLOC((void **) &pOutTmp, outTmpLen + 1);
     if (OK != status)
         goto exit;
 
@@ -1519,32 +1515,35 @@ static MSTATUS LINUX_getFullPathAux (const sbyte *pRelativePath, sbyte *pAbsolut
     }
     pDst[dstIndex] = '\0';
 
-    status = MOC_MEMCPY (pAbsolutePath, pDst, dstIndex);
+    status = DIGI_MEMCPY (pAbsolutePath, pDst, dstIndex);
     if (OK != status)
         goto exit;
     pAbsolutePath[dstIndex] = '\0';
 exit:
     if (NULL != pOutTmp)
-        MOC_FREE((void **) &pOutTmp);
+        DIGI_FREE((void **) &pOutTmp);
     return status;
 }
-#endif /* __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__ */
+#endif /* __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__ */
 
 extern MSTATUS LINUX_getFullPath (const sbyte *pRelativePath, sbyte *pAbsolutePath, ubyte4 absolutePathLength)
 {
     MSTATUS status = ERR_NULL_POINTER;
+#ifndef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     sbyte pAbsPath [PATH_MAX + 1] = { 0 };
     ubyte4 absolutePathComputedLength;
+#endif
+
     if ((NULL == pAbsolutePath) || (NULL == pRelativePath))
         goto exit;
 
-    if (0 == MOC_STRLEN(pRelativePath))
+    if (0 == DIGI_STRLEN(pRelativePath))
     {
         status = ERR_BAD_LENGTH;
         goto exit;
     }
 
-#ifndef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifndef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
 
     if (NULL == realpath ((const char* __restrict)pRelativePath, (char* __restrict)pAbsPath))
     {
@@ -1575,11 +1574,11 @@ extern MSTATUS LINUX_getFullPath (const sbyte *pRelativePath, sbyte *pAbsolutePa
         }
     }
 
-    absolutePathComputedLength = MOC_STRLEN ((const sbyte *) pAbsPath);
+    absolutePathComputedLength = DIGI_STRLEN ((const sbyte *) pAbsPath);
     if (1 + absolutePathComputedLength > absolutePathLength)
         return ERR_BUFFER_OVERFLOW;
 
-    status = MOC_MEMCPY ((void *) pAbsolutePath, pAbsPath, absolutePathComputedLength);
+    status = DIGI_MEMCPY ((void *) pAbsolutePath, pAbsPath, absolutePathComputedLength);
     if (OK != status)
         goto exit;
 
@@ -1605,7 +1604,7 @@ extern MSTATUS LINUX_getFullPathAllocAux (const sbyte *pRelativePath, sbyte **pp
 
     *ppAbsolutePath = NULL;
 
-#ifdef __ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__
+#ifdef __ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__
     status = LINUX_getFullPathAux (pRelativePath, pAbsPath, PATH_MAX, prefixMount);
 #else
     status = LINUX_getFullPath (pRelativePath, pAbsPath, PATH_MAX);
@@ -1613,13 +1612,13 @@ extern MSTATUS LINUX_getFullPathAllocAux (const sbyte *pRelativePath, sbyte **pp
     if (OK != status)
         goto exit;
 
-    absolutePathComputedLength = MOC_STRLEN ((const sbyte *) pAbsPath);
+    absolutePathComputedLength = DIGI_STRLEN ((const sbyte *) pAbsPath);
 
-    status = MOC_MALLOC((void **) &pAbsolutePath, absolutePathComputedLength + 1);
+    status = DIGI_MALLOC((void **) &pAbsolutePath, absolutePathComputedLength + 1);
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY ((void *) pAbsolutePath, pAbsPath, absolutePathComputedLength);
+    status = DIGI_MEMCPY ((void *) pAbsolutePath, pAbsPath, absolutePathComputedLength);
     if (OK != status)
         goto exit;
 
@@ -1630,7 +1629,7 @@ extern MSTATUS LINUX_getFullPathAllocAux (const sbyte *pRelativePath, sbyte **pp
 
 exit:
     if (NULL != pAbsolutePath)
-        MOC_FREE((void **) &pAbsolutePath);
+        DIGI_FREE((void **) &pAbsolutePath);
 
     return status;
 }
@@ -1654,13 +1653,13 @@ extern MSTATUS LINUX_getEnvironmentVariableValue (const sbyte *pVariableName, sb
     if (NULL == pValue)
         return ERR_FILE_NOT_EXIST;
 
-    valueLength = MOC_STRLEN ((const sbyte *) pValue);
+    valueLength = DIGI_STRLEN ((const sbyte *) pValue);
 
     /* value length + null terminator */
     if ((valueLength + 1) > valueBufferLength)
         return ERR_BUFFER_OVERFLOW;
 
-    status = MOC_MEMCPY ((void *) pValueBuffer, pValue, valueLength);
+    status = DIGI_MEMCPY ((void *) pValueBuffer, pValue, valueLength);
     if (OK != status)
         goto exit;
 
@@ -1685,13 +1684,13 @@ extern MSTATUS LINUX_getEnvironmentVariableValueAlloc (const sbyte *pVariableNam
     if (NULL == pValue)
         return ERR_FILE_NOT_EXIST;
 
-    valueLength = MOC_STRLEN ((const sbyte *) pValue);
+    valueLength = DIGI_STRLEN ((const sbyte *) pValue);
 
-    status = MOC_MALLOC ((void **) &pValueBuffer, valueLength + 1);
+    status = DIGI_MALLOC ((void **) &pValueBuffer, valueLength + 1);
     if (OK != status)
         goto exit;
 
-    status = MOC_MEMCPY((void *) pValueBuffer, pValue, valueLength);
+    status = DIGI_MEMCPY((void *) pValueBuffer, pValue, valueLength);
     if (OK != status)
         goto exit;
 
@@ -1704,7 +1703,7 @@ exit:
 
     if (NULL != pValueBuffer)
     {
-        (void) MOC_FREE((void **) &pValueBuffer);
+        (void) DIGI_FREE((void **) &pValueBuffer);
     }
 
     return status;
@@ -1712,7 +1711,7 @@ exit:
 
 extern MSTATUS LINUX_getProcessPath (sbyte *pDirectoryPath, ubyte4 directoryPathLength, ubyte4 *pBytesRead)
 {
-#if defined(__ENABLE_MOCANA_FMGMT_FORCE_ABSOLUTE_PATH__)
+#if defined(__ENABLE_DIGICERT_FMGMT_FORCE_ABSOLUTE_PATH__)
     return ERR_NOT_IMPLEMENTED;
 #else
     MSTATUS status = ERR_NULL_POINTER;
@@ -1787,7 +1786,7 @@ extern MSTATUS LINUX_getProcessPathAlloc (sbyte **ppDirectoryPath)
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC_MEMCPY((void **) ppDirectoryPath, length + 1, pBuffer, length);
+    status = DIGI_MALLOC_MEMCPY((void **) ppDirectoryPath, length + 1, pBuffer, length);
     if (OK != status)
         goto exit;
 

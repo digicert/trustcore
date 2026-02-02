@@ -1,0 +1,2 @@
+MSS_SRC_DIR/smp/smp_tpm2
+MSS_SRC_DIR/smp/smp_utils

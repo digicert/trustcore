@@ -46,7 +46,7 @@ MOC_EXTERN MSTATUS PKCS_BulkDecryptEx(MOC_SYM(hwAccelDescr hwAccelCtx)
                                 ubyte** decryptedInfo,
                                 sbyte4* decryptedInfoLen);
 
-#if defined(__ENABLE_MOCANA_PKCS5__) || defined(__ENABLE_MOCANA_PKCS12__)
+#if defined(__ENABLE_DIGICERT_PKCS5__) || defined(__ENABLE_DIGICERT_PKCS12__)
 MOC_EXTERN MSTATUS PKCS_DecryptPKCS8Key( MOC_SYM(hwAccelDescr hwAccelCtx)
                             ASN1_ITEMPTR pEncryptedKeyInfo,
                             CStream s, const ubyte* uniPassword,

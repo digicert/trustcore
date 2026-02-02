@@ -4,22 +4,27 @@
  * @ingroup nanotap_tree
  *
  * @brief Common Trust Anchor Platform (TAP) Definitions and Types
- * @details This file contains definitions and utility functions common to all Mocana Trust Anchor Platform (TAP) client and server modules.
+ * @details This file contains definitions and utility functions common to all Trust Anchor Platform (TAP) client and server modules.
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
  * @flags
  * Whether the following flags are defined determines whether or not support is enabled for a particular HW security module:
- *    + \c \__ENABLE_MOCANA_TPM__
- *    + \c \__ENABLE_MOCANA_TPM2__
+ *    + \c \__ENABLE_DIGICERT_TPM__
+ *    + \c \__ENABLE_DIGICERT_TPM2__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  * 
  */
-
 
 /*------------------------------------------------------------------*/
 
@@ -34,7 +39,7 @@ extern "C" {
 
 /*! @cond */
 
-#ifdef __ENABLE_MOCANA_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
 
 /*! @endcond */
 
@@ -100,7 +105,7 @@ typedef struct _TAP_OPERATIONAL_INFO
 } TAP_OPERATIONAL_INFO;
 
 /*! @cond */
-#ifdef __ENABLE_MOCANA_TPM2__
+#ifdef __ENABLE_DIGICERT_TPM2__
 /*! @endcond */
 
 /** @private
@@ -351,7 +356,7 @@ parseCommConfiguration(TAP_OPERATIONAL_INFO *pTapClientInfo, const char *fullPat
 
 
 
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
 #ifdef __cplusplus
 }

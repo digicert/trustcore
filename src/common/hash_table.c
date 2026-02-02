@@ -25,7 +25,7 @@
 #include "../common/hash_value.h"
 #include "../common/hash_table.h"
 
-#if (!defined(__DISABLE_MOCANA_COMMON_HASH_TABLE_FACTORY__))
+#if (!defined(__DISABLE_DIGICERT_COMMON_HASH_TABLE_FACTORY__))
 
 /*------------------------------------------------------------------*/
 
@@ -56,7 +56,7 @@ HASH_TABLE_createIndiceTable(hashTableIndices **ppRetHashTable, ubyte4 hashTable
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)pHashTable, 0x00, sizeof(hashTableIndices) + ((1 + hashTableSizeMask) * sizeof(hashTableIndexElement *)));
+    DIGI_MEMSET((ubyte *)pHashTable, 0x00, sizeof(hashTableIndices) + ((1 + hashTableSizeMask) * sizeof(hashTableIndexElement *)));
     pHashTable->hashTableSizeMask = hashTableSizeMask;
     pHashTable->pHashCookie       = pHashCookie;
 
@@ -351,7 +351,7 @@ HASH_TABLE_createPtrsTable(hashTableOfPtrs **ppRetHashTable, ubyte4 hashTableSiz
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)pHashTable, 0x00, sizeof(hashTableOfPtrs) + ((1 + hashTableSizeMask) * sizeof(hashTablePtrElement *)));
+    DIGI_MEMSET((ubyte *)pHashTable, 0x00, sizeof(hashTableOfPtrs) + ((1 + hashTableSizeMask) * sizeof(hashTablePtrElement *)));
     pHashTable->hashTableSizeMask   = hashTableSizeMask;
     pHashTable->pHashCookie         = pHashCookie;
 
@@ -718,4 +718,4 @@ exit:
 /*------------------------------------------------------------------*/
 /*------------------------------------------------------------------*/
 
-#endif /* __DISABLE_MOCANA_COMMON_HASH_TABLE_FACTORY__ */
+#endif /* __DISABLE_DIGICERT_COMMON_HASH_TABLE_FACTORY__ */

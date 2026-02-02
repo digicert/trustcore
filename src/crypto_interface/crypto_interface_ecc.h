@@ -599,7 +599,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_ECDSA_verifySignatureDigestAux (
  * are Edward's form keys then this is the edDH algorithm (which only differs from
  * ECDH in the curve form and key forms). Note that this function will allocate the
  * shared secret and it is the callers responsibility to free that memory using
- * MOC_FREE.
+ * DIGI_FREE.
  *
  * @param pPrivateKey      Pointer to the private key for this operation.
  * @param pPublicKey       Pointer to the public key for this operation.

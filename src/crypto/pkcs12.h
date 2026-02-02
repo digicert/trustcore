@@ -32,7 +32,7 @@ extern "C" {
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PKCS12__
+#ifdef __ENABLE_DIGICERT_PKCS12__
 /* public constants */
 MOC_EXTERN const ubyte pkcs12_bagtypes_root_OID[]; /* 1.2.840.113549.1.12.10.1 */
 MOC_EXTERN const ubyte pkcs12_Pbe_root_OID[]; /* 1.2.840.113549.1.12.1 */
@@ -53,7 +53,7 @@ typedef enum
 */
 typedef enum
 {
-#ifndef __DISABLE_MOCANA_PKCS12_X509_CERTTYPE_DEFINITION__
+#ifndef __DISABLE_DIGICERT_PKCS12_X509_CERTTYPE_DEFINITION__
     X509 = 1,
 #endif
     SDSI=2
@@ -393,7 +393,7 @@ typedef MSTATUS (*PKCS12_contentHandler)(const void* context, contentTypes type,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @inc_file pkcs12.h
 
@@ -458,7 +458,7 @@ MOC_EXTERN MSTATUS PKCS12_ExtractInfo(MOC_HW(hwAccelDescr hwAccelCtx)
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @inc_file pkcs12.h
 
@@ -508,7 +508,7 @@ To create an encrypted PFX PDU, use PKCS12_EncryptPFXPdu(). This function
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @param  pbeSubType  Encryption sub type; any of the following \c
                       PKCS8EncryptionType enum values from pkcs_key.h:
@@ -666,7 +666,7 @@ Typical schemes are:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @inc_file pkcs12.h
 
@@ -697,7 +697,7 @@ MOC_EXTERN const BulkEncryptionAlgo* PKCS12_GetEncryptionAlgo( ubyte pbeSubType)
 @flags
 To enable this function, the following flag must be defined in moptions.h:
 flags:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @inc_file pkcs12.h
 
@@ -790,7 +790,7 @@ PKCS12_EncryptPFXPdu(MOC_HW(hwAccelDescr hwAccelCtx)
 @flags
 To enable this function, the following flag must be defined in moptions.h:
 flags:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @inc_file pkcs12.h
 
@@ -845,7 +845,7 @@ MOC_EXTERN MSTATUS PKCS12_DecryptPFXPduPwMode(
 @flags
 To enable this function, the following flag must be defined in moptions.h:
 flags:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @inc_file pkcs12.h
 
@@ -912,7 +912,7 @@ MOC_EXTERN MSTATUS PKCS12_EncryptPFXPduPwMode(
 @flags
 To enable this function, the following flag must be defined in moptions.h:
 flags:
-+ \c \__ENABLE_MOCANA_PKCS12__
++ \c \__ENABLE_DIGICERT_PKCS12__
 
 @inc_file pkcs12.h
 
@@ -976,7 +976,7 @@ MOC_EXTERN MSTATUS PKCS12_EncryptPFXPduCertMode(
     ubyte **ppRetPkcs12CertDer, 
     ubyte4 *pRetPkcs12CertDerLen);
 
-#endif /* __ENABLE_MOCANA_PKCS12__ */
+#endif /* __ENABLE_DIGICERT_PKCS12__ */
 
 
 #ifdef __cplusplus

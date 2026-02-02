@@ -25,8 +25,8 @@
  *
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pECCKey          Pointer to ECC key
  * @param curveId          Curve identifier
@@ -46,8 +46,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_generateEccKeyBlob(MOC_ECC(hwAccelDescr hwAccelCtx)
  *
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pKey           Pointer to ECC key
  * @param isServer       TRUE for server, FALSE for client
@@ -67,8 +67,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelC
  * 
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  * 
  * @param pECCKey       Pointer to ECC key
  * @param pHash         Pointer to the hash to be signed
@@ -92,8 +92,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_signHash(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *p
  *
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pKey              Pointer to ECC key
  * @param isServer          TRUE for server, FALSE for client
@@ -117,8 +117,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx
  *
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pKey              Pointer to ECC key
  * @param hashAlgo          Hash algorithm identifier
@@ -141,8 +141,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelC
  * 
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pKey              Pointer to ECC key
  * @param isServer          TRUE for server, FALSE for client
@@ -162,8 +162,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_calcEcdsaSignatureLength(AsymmetricKey *pKey, intBo
  * 
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pPublicKey        Pointer to ECC public key
  * @param isServer          TRUE for server, FALSE for client
@@ -187,8 +187,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_verifyEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCt
  * 
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pECCKey           Pointer to ECC public key
  * @param hash              Pointer to hash that was signed
@@ -211,8 +211,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_verifyRSValue(MOC_ECC(hwAccelDescr hwAccelCtx) ECCK
  *
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  * 
  * @param pPublicKey        Pointer to Ed25519 public key
  * @param hashAlgo          Hash algorithm identifier
@@ -236,8 +236,8 @@ MOC_EXTERN MSTATUS SSH_ECDSA_verifyEdDSASignature(MOC_ECC(hwAccelDescr hwAccelCt
  * 
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_ECC__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_ECC__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pPublicKeyBlob    SSH string buffer containing the public key blob
  * @param pPublicKey        Output: AsymmetricKey structure to populate

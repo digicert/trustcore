@@ -32,7 +32,7 @@ For documentation for this file's functions, see sha1.c.
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_sha1_priv.h"
 #endif
 
@@ -62,7 +62,7 @@ typedef struct SW_SHA1_CTX
     sbyte4  hashBufferIndex;
     ubyte   hashBuffer[SHA1_BLOCK_SIZE];
 
-#ifdef __ENABLE_MOCANA_MINIMUM_STACK__
+#ifdef __ENABLE_DIGICERT_MINIMUM_STACK__
     ubyte4 W[80];
 #endif
 
@@ -398,7 +398,7 @@ MOC_EXTERN MSTATUS SHA1_cloneCtx(MOC_HASH(hwAccelDescr hwAccelCtx) shaDescr *pDe
 
 /** @cond   Omit the following from Doxygen output. **/
 
-#if (!(defined(__DISABLE_MOCANA_RNG__)))
+#if (!(defined(__DISABLE_DIGICERT_RNG__)))
 /* G function used for FIPS 186 RNG change notice section 1 */
 MOC_EXTERN MSTATUS SHA1_G(ubyte *pData, ubyte *pShaOutput);
 /* G function used for FIPS 186 RNG change notice section 2 */

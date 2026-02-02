@@ -32,7 +32,7 @@
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc_utls.h
 
@@ -82,7 +82,7 @@ MOC_EXTERN MSTATUS SSHC_UTILS_setInteger64(ubyte *pPayload, ubyte4 payloadLength
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc_utils.h
 
@@ -114,7 +114,7 @@ MOC_EXTERN MSTATUS SSHC_UTILS_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlo
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc_utils.h
 
@@ -150,7 +150,7 @@ MOC_EXTERN MSTATUS SSHC_UTILS_sshParseAuthPublicKey(sbyte* pKeyBlob, ubyte4 keyB
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc_utils.h
 
@@ -186,7 +186,7 @@ MOC_EXTERN MSTATUS SSHC_UTILS_generateServerAuthKeyFile(ubyte *pPublicKeyBlob, u
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc_utils.h
 

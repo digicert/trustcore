@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #define __ENABLE_OUTBOUND_SSH_DEFINITIONS__
 #define __ENABLE_INBOUND_SSH_DEFINITIONS__
@@ -317,7 +317,7 @@ static void test_empty_packet_length(void **ppState)
 
     /* Mock packet with zero length */
     ubyte mockPacket[16] = {0x00, 0x00, 0x00, 0x00}; /* length = 0 */
-    MOC_MEMCPY(INBOUND_BUFFER(pContext), mockPacket, 16);
+    DIGI_MEMCPY(INBOUND_BUFFER(pContext), mockPacket, 16);
 
     /* Process message */
     ubyte* dummyPayload = mockPacket;
@@ -353,7 +353,7 @@ static void test_oversized_packet_length(void **ppState)
                             0x01, 0x02, 0x03,
                             0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00};
-    MOC_MEMCPY(INBOUND_BUFFER(pContext), mockPacket, 16);
+    DIGI_MEMCPY(INBOUND_BUFFER(pContext), mockPacket, 16);
 
     /* Process message */
     ubyte* dummyPayload = mockPacket;
@@ -387,7 +387,7 @@ static void test_invalid_padding_length(void **ppState)
                             0x01, 0x02, 0x03,
                             0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00};
-    MOC_MEMCPY(INBOUND_BUFFER(pContext), mockPacket, 16);
+    DIGI_MEMCPY(INBOUND_BUFFER(pContext), mockPacket, 16);
 
     /* Process message */
     ubyte* dummyPayload = mockPacket;
@@ -444,7 +444,7 @@ static int testSetup(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -461,7 +461,7 @@ static int testTeardown(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
 exit:
     return (OK == status) ? 0 : -1;
@@ -476,7 +476,7 @@ int main(int argc, char* argv[])
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* Basic allocation/deallocation tests */
         cmocka_unit_test(test_SSHC_IN_MESG_allocStructures_null_context),
@@ -510,4 +510,4 @@ int main(int argc, char* argv[])
 #endif
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

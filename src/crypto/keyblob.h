@@ -28,7 +28,7 @@
 @flags
 Whether the following flags are defined determines which structures and
 enumerations are defined:
-+ \c \__ENABLE_MOCANA_ECC__
++ \c \__ENABLE_DIGICERT_ECC__
 
 Whether the following flags are defined determines which function declarations are enabled:
 + \c \__PUBCRYPTO_HEADER__
@@ -118,7 +118,7 @@ KEYBLOB_makeRSAKeyBlob(MOC_RSA(hwAccelDescr hwAccelCtx)
                        RSAKey *pRSAContext, ubyte **ppRetKeyBlob,
                        ubyte4 *pRetKeyLength);
 
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
 /** This is an old function.
  * <p>You should use CRYPTO_serialize to to get key blobs, along with DER and PEM
  * encodings from keys, and CRYPTO_deserialize to build keys from key blobs, DER,
@@ -147,7 +147,7 @@ MOC_EXTERN MSTATUS
 KEYBLOB_makeQsBlob(MOC_ASYM(hwAccelDescr hwAccelCtx) QS_CTX *pCtx, ubyte **ppRetKeyBlob,
                    ubyte4 *pRetKeyLength);
 
-#if defined(__ENABLE_MOCANA_HW_SECURITY_MODULE__)
+#if defined(__ENABLE_DIGICERT_HW_SECURITY_MODULE__)
 /** This is an old function.
  * <p>You should use CRYPTO_serialize to to get key blobs, along with DER and PEM
  * encodings from keys, and CRYPTO_deserialize to build keys from key blobs, DER,
@@ -159,7 +159,7 @@ KEYBLOB_makeHSMRSAKeyBlob(RSAKey *pRSAKey, ubyte **ppRetKeyBlob,
 #endif
 
 
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
 /** This is an old function.
  * <p>You should use CRYPTO_serialize to to get key blobs, along with DER and PEM
  * encodings from keys, and CRYPTO_deserialize to build keys from key blobs, DER,
@@ -170,7 +170,7 @@ KEYBLOB_readDSAKeyPart(MOC_DSA(hwAccelDescr hwAccelCtx) const ubyte *pKeyBlob, u
                        AsymmetricKey* pKey);
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /** This is an old function.
  * <p>You should use CRYPTO_serialize to to get key blobs, along with DER and PEM
  * encodings from keys, and CRYPTO_deserialize to build keys from key blobs, DER,
@@ -201,7 +201,7 @@ KEYBLOB_readRSAKeyPart(MOC_RSA(hwAccelDescr hwAccelCtx)
                        const ubyte *pKeyBlob, ubyte4 keyBlobLength,
                        AsymmetricKey* pKey);
 
-#if defined(__ENABLE_MOCANA_HW_SECURITY_MODULE__)
+#if defined(__ENABLE_DIGICERT_HW_SECURITY_MODULE__)
 /** This is an old function.
  * <p>You should use CRYPTO_serialize to to get key blobs, along with DER and PEM
  * encodings from keys, and CRYPTO_deserialize to build keys from key blobs, DER,

@@ -60,12 +60,12 @@ typedef struct JSON_TokenType_S
     ubyte4             elemCnt;
     union
     {
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
         sbyte8         intVal;
 #else
         sbyte4         intVal;
 #endif
-#ifndef __DISABLE_MOCANA_JSON_FLOAT_PARSER__
+#ifndef __DISABLE_DIGICERT_JSON_FLOAT_PARSER__
         double         floatVal;
 #endif
     } num;

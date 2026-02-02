@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-#if !defined(__DISABLE_MOCANA_KARATSUBA__) && !defined(__DISABLE_MOCANA_VLONG_MATH__)
+#if !defined(__DISABLE_DIGICERT_KARATSUBA__) && !defined(__DISABLE_DIGICERT_VLONG_MATH__)
 
 #ifdef __ASM_COLDFIRE_MCF__
 extern "C" {
@@ -388,7 +388,7 @@ MOC_EXTERN void karatsubaSqr (
     {
       pWorkspace[half_n + i] = pWorkspace[i];
     }
-    /*MOC_MEMCPY( (ubyte*) ( pWorkspace+half_n),
+    /*DIGI_MEMCPY( (ubyte*) ( pWorkspace+half_n),
           (ubyte*) pWorkspace, half_n * sizeof(ubyte4)); */
     break;
   case 1: /* positive times positive */
@@ -398,7 +398,7 @@ MOC_EXTERN void karatsubaSqr (
       pWorkspace[half_n + i] = pWorkspace[i];
     }
 
-    /*MOC_MEMCPY( (ubyte*) (pWorkspace+half_n),
+    /*DIGI_MEMCPY( (ubyte*) (pWorkspace+half_n),
           (ubyte*) pWorkspace, half_n * sizeof(ubyte4));*/
     break;
   default: /* some combination of a zero times some x */
@@ -891,4 +891,4 @@ exit:
 
 } /* MATH_subtractValues */
 
-#endif /* ifndef __DISABLE_MOCANA_KARATSUBA__ */
+#endif /* ifndef __DISABLE_DIGICERT_KARATSUBA__ */

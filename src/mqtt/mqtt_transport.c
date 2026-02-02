@@ -22,9 +22,25 @@
 #include "mqtt_client_priv.h"
 #include "mqtt_util.h"
 #include "mqtt_core.h"
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+#if defined(__RTOS_FREERTOS__) && defined(__RTOS_FREERTOS_ESP32__)
+/* TODO: Temporary fix
+ *
+ * Issue: The header file mqtt_client.h includes merrors.h and redefines OK to
+ * MOC_OK for ESP32 builds. The ssl.h header below includes a ESP32 toolchain
+ * header file which also defines OK which then gets redefined to MOC_OK causing
+ * compilation errors.
+ *
+ * Fix: Undefine OK before including ssl.h, then redefine it back to MOC_OK
+ */
+#undef OK
+#endif
 #include "../ssl/ssl.h"
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#if defined(__RTOS_FREERTOS__) && defined(__RTOS_FREERTOS_ESP32__)
+/* TODO: Temporary fix - see comment above */
+#define OK MOC_OK
+#endif
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
 
 static MSTATUS MQTT_transportTCPSend(
@@ -89,7 +105,7 @@ extern MSTATUS MQTT_setTransportTCPInternal(
     return OK;
 }
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 
 static MSTATUS MQTT_transportSSLSend(
     sbyte4 connectionInstance,
@@ -157,7 +173,7 @@ extern MSTATUS MQTT_setTransportSSLInternal(
     return OK;
 }
 
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
 extern MSTATUS MQTT_setTransportInternal(
     MqttCtx *pCtx,

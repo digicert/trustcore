@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -38,7 +38,7 @@
 #include "../crypto/crypto.h"
 #include "../crypto/dsa.h"
 #include "../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -61,7 +61,7 @@ extern sshConnectDescr* g_connectTable;
 
 /*------------------------------------------------------------------*/
 
-#if (!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__) && defined(__USE_MOCANA_SSH_SERVER__))
+#if (!defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__) && defined(__USE_DIGICERT_SSH_SERVER__))
 
 static TCP_SOCKET mListenSocket;
 static intBoolean mBreakServer;
@@ -78,8 +78,8 @@ BOOL WINAPI HandlerRoutine(DWORD s)
 {
     MOC_UNUSED(s);
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __USE_DIGICERT_SSH_SERVER__
     TCP_CLOSE_SOCKET(mListenSocket);
 #endif
 #endif
@@ -193,7 +193,7 @@ SSH_SERVER_start(void)
 
     DEBUG_ERROR(DEBUG_SSH_EXAMPLE, "SSH_SERVER_start: SSH server listening on port ", SSH_sshSettings()->sshListenPort);
 
-    MOCANA_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH server listening for clients");
+    DIGICERT_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH server listening for clients");
 
     while (1)
     {
@@ -274,8 +274,8 @@ SSH_SERVER_stop(void)
     mBreakServer = TRUE;
 }
 
-#endif /* (!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__) && defined(__USE_MOCANA_SSH_SERVER__)) */
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* (!defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__) && defined(__USE_DIGICERT_SSH_SERVER__)) */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */
 
 
 

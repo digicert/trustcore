@@ -29,7 +29,7 @@
 
 #include "../cap/capdecl.h"
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
 #include "../crypto_interface/crypto_interface_hmac_priv.h"
 #endif
 
@@ -37,15 +37,15 @@
 extern "C" {
 #endif
 
-#if defined(__ENABLE_MOCANA_SHA3__)
+#if defined(__ENABLE_DIGICERT_SHA3__)
 #define HMAC_BLOCK_SIZE            (144) /* Maximum Hash Block Size = SHA3_224_BLOCK_SIZE */
 #else
-#if defined( __DISABLE_MOCANA_SHA512__) && defined(__DISABLE_MOCANA_SHA384__)
+#if defined( __DISABLE_DIGICERT_SHA512__) && defined(__DISABLE_DIGICERT_SHA384__)
 #define HMAC_BLOCK_SIZE            (64)  /* Maximum Hash Block Size = MD5_BLOCK_SIZE = SHA1_BLOCK_SIZE  = SHA256_BLOCK_SIZE */
 #else
 #define HMAC_BLOCK_SIZE            (128) /* Maximum Hash Block Size = SHA512_BLOCK_SIZE */
 #endif
-#endif /* __ENABLE_MOCANA_SHA3__ */
+#endif /* __ENABLE_DIGICERT_SHA3__ */
 
 /*------------------------------------------------------------------*/
 
@@ -178,7 +178,7 @@ HMAC_SHA1(MOC_HASH(hwAccelDescr hwAccelCtx) const ubyte* key, sbyte4 keyLen,
           const ubyte* text, sbyte4 textLen,
           const ubyte* textOpt, sbyte4 textOptLen, ubyte result[SHA_HASH_RESULT_SIZE]);
 
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
 /**
 @brief      Calculate (in a single call) the HMAC-SHA256.
 
@@ -209,7 +209,7 @@ HMAC_SHA1(MOC_HASH(hwAccelDescr hwAccelCtx) const ubyte* key, sbyte4 keyLen,
 
 @flags
 To enable this function, the following flag \b not must be defined:
-+ \c \__DISABLE_MOCANA_SHA256__
++ \c \__DISABLE_DIGICERT_SHA256__
 
 @warning    Before calling this function, be sure that the buffer used for the
             \p result parameter is at least SHA256_RESULT_SIZE bytes;
@@ -245,9 +245,9 @@ HMAC_SHA256(MOC_HASH(hwAccelDescr hwAccelCtx) const ubyte* key, sbyte4 keyLen,
           const ubyte* text, sbyte4 textLen,
           const ubyte* textOpt, sbyte4 textOptLen, ubyte result[SHA256_RESULT_SIZE]);
 
-#endif /* ifndef __DISABLE_MOCANA_SHA256__ */
+#endif /* ifndef __DISABLE_DIGICERT_SHA256__ */
 
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
 /**
 @brief      Calculate (in a single call) the HMAC-SHA512.
 
@@ -278,7 +278,7 @@ HMAC_SHA256(MOC_HASH(hwAccelDescr hwAccelCtx) const ubyte* key, sbyte4 keyLen,
 
 @flags
 To enable this function, the following flag \b not must be defined:
-+ \c \__DISABLE_MOCANA_SHA512__
++ \c \__DISABLE_DIGICERT_SHA512__
 
 @warning    Before calling this function, be sure that the buffer used for the
             \p result parameter is at least SHA512_RESULT_SIZE bytes;
@@ -314,7 +314,7 @@ HMAC_SHA512(MOC_HASH(hwAccelDescr hwAccelCtx) const ubyte* key, sbyte4 keyLen,
           const ubyte* text, sbyte4 textLen,
           const ubyte* textOpt, sbyte4 textOptLen, ubyte result[SHA512_RESULT_SIZE]);
 
-#endif /* ifndef __DISABLE_MOCANA_SHA512__ */
+#endif /* ifndef __DISABLE_DIGICERT_SHA512__ */
 
 /**
 @brief      Calculate (in a single call) the HMAC-SHA1 of multiple input buffers.

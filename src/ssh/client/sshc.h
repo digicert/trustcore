@@ -27,9 +27,9 @@
 @flags
 Whether the following flags are defined determines which enumerations,
 structures, and function declarations are enabled:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
-+ \c \__ENABLE_MOCANA_SSH_AUTH_BANNER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_AUTH_BANNER__
 
 @filedoc    sshc.h
 */
@@ -63,7 +63,7 @@ extern "C" {
 /* timeouts in milliseconds (zero indicates no timeout) */
 #if 1
  #define TIMEOUT_SSHC_OPEN                       (2000)
- #ifdef __ENABLE_MOCANA_PQC__
+ #ifdef __ENABLE_DIGICERT_PQC__
     #define TIMEOUT_SSHC_KEX                     (120000)
  #elif defined(__FSL_MSS_FIX_ENABLED__)
     #define TIMEOUT_SSHC_KEX                     (40000)
@@ -72,7 +72,7 @@ extern "C" {
  #endif
 
  #define TIMEOUT_SSHC_NEWKEYS                    (15000)
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
  #define TIMEOUT_SSHC_SERVICE_REQUEST            (120000)
 #else
  #define TIMEOUT_SSHC_SERVICE_REQUEST            (30000)
@@ -92,7 +92,7 @@ extern "C" {
 
 
 /* the most interesting of these values, the amount of time we allow the user to authenticate */
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
  #define TIMEOUT_SSHC_AUTH_LOGON                 (1000 * 60 * 200)
 #else
  #define TIMEOUT_SSHC_AUTH_LOGON                 (1000 * 60 * 10)
@@ -104,7 +104,7 @@ extern "C" {
 /* sizes */
 #if 1
   #ifndef SSHC_MAX_BUFFER_SIZE
-    #ifdef __ENABLE_MOCANA_PQC__
+    #ifdef __ENABLE_DIGICERT_PQC__
         #define SSHC_MAX_BUFFER_SIZE            (2097152)
     #elif defined(__FSL_MSS_FIX_ENABLED__)
         #define SSHC_MAX_BUFFER_SIZE            (2200)
@@ -212,7 +212,7 @@ typedef struct
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
 /**
 @brief      NanoSSH Client SFTP file handle descriptor.
 @details    NanoSSH Client SFTP file handle descriptor.
@@ -251,7 +251,7 @@ typedef struct
     ubyte4                  fileListingPayloadLen;
 
 } sftpcFileHandleDescr;
-#endif /* __ENABLE_MOCANA_SSH_FTP_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_CLIENT__ */
 
 /**
  * @dont_show
@@ -328,7 +328,7 @@ typedef struct certChain* certChainPtr;
 @flags
 Whether the following flag is defined determines which callback functions
 are enabled:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 */
 typedef struct
@@ -395,7 +395,7 @@ typedef struct
 */
     ubyte4          sshTimeOutDefaultOpenState;
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_MOCANA_OCSP_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_DIGICERT_OCSP_CLIENT__)))
 /**
  * @todo_eng_review (field added after 5.3.1...)
  */
@@ -715,7 +715,7 @@ There are no flag dependencies to enable this callback.
     sbyte4(*funcPtrRetrieveUserAuthRequestInfo)(sbyte4 connectionInstance, ubyte *pAuthNameList, ubyte4 authNameListLen, ubyte **ppUserName, ubyte4 *pUserNameLength, ubyte4 *pMethod);
 
 
-#ifdef __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__
     sbyte4(*funcPtrKeyIntAuthResp)(sbyte4 connectionInstance, keyIntInfoReq* pRequestInfo, keyIntInfoResp* pResponseInfo);
 
     sbyte4(*funcPtrReleaseKeyIntAuthResp)(sbyte4 connectionInstance, keyIntInfoResp *pResponse);
@@ -793,8 +793,8 @@ There are no flag dependencies to enable this callback.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -921,7 +921,7 @@ There are no flag dependencies to enable this callback.
 */
     sbyte4(*funcPtrSessionOpenFail) (sbyte4 connectionInstance, ubyte *pInfo, ubyte4 infoLength, ubyte *pLanguage, ubyte4 languageLength);
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /**
 @brief      Respond to a successful session open request.
 
@@ -942,7 +942,7 @@ callback pointer.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 @param sessionEvent         Any of the \c sshcSessionTypes enumerated values
@@ -980,7 +980,7 @@ callback pointer.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 @param pInfo                Pointer to text explaining why the session was
@@ -1023,7 +1023,7 @@ callback pointer.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 @param sessionEvent         Any of the \c sshcSessionTypes enumerated values
@@ -1059,7 +1059,7 @@ callback pointer.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 @param sessionEvent         Any of the \c sshcSessionTypes enumerated values
@@ -1095,7 +1095,7 @@ callback pointer.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 @param sessionEvent         Any of the \c sshcSessionTypes enumerated values
@@ -1123,9 +1123,9 @@ To enable this function, the following flag must be defined in moptions.h:
 */
     void(*funcPtrRemotePortReqStatus) (sbyte4 status, ubyte4 port );
 
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
-#ifdef __ENABLE_MOCANA_SSH_AUTH_BANNER__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_BANNER__
 /**
 @brief      Display a warning message from the %server.
 
@@ -1149,7 +1149,7 @@ callback pointer.
 
 @flags
 To enable this callback, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_AUTH_BANNER__
++ \c \__ENABLE_DIGICERT_SSH_AUTH_BANNER__
 
 @return     \c OK (0) if successful; otherwise a negative number error code
             definition from merrors.h. To retrieve a string containing an
@@ -1245,7 +1245,7 @@ struct certStore;
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1269,7 +1269,7 @@ MOC_EXTERN sshClientSettings *SSHC_sshClientSettings(void);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1299,7 +1299,7 @@ MOC_EXTERN sbyte4 SSHC_init(sbyte4 numClientConnections);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1327,7 +1327,7 @@ MOC_EXTERN sbyte4 SSHC_shutdown(void);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1364,7 +1364,7 @@ MOC_EXTERN sbyte4 SSHC_connect(TCP_SOCKET tempSocket, sbyte4 *pConnectionInstanc
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1398,7 +1398,7 @@ MOC_EXTERN sbyte4 SSHC_useThisCipher(sbyte4 connectionInstance, ubyte *pCipher);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1431,7 +1431,7 @@ MOC_EXTERN sbyte4 SSHC_useThisHmac(sbyte4 connectionInstance, ubyte *pHmac);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1462,7 +1462,7 @@ MOC_EXTERN sbyte4 SSHC_negotiateConnection(sbyte4 connectionInstance);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1492,7 +1492,7 @@ MOC_EXTERN sbyte4 SSHC_negotiateSession(sbyte4 connectionInstance);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1524,7 +1524,7 @@ MOC_EXTERN sbyte4 SSHC_negotiateCloseChannel(sbyte4 connectionInstance, sbyte4 c
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1554,8 +1554,8 @@ MOC_EXTERN sbyte4 SSHC_negotiateSubsystemSFTPChannelRequest(sbyte4 connectionIns
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -1587,7 +1587,7 @@ MOC_EXTERN sbyte4 SSHC_negotiateSFTPHello(sbyte4 connectionInstance);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 @inc_file sshc.h
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
@@ -1618,7 +1618,7 @@ MOC_EXTERN sbyte4 SSHC_negotiatePtyTerminalChannelRequest(sbyte4 connectionInsta
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1650,7 +1650,7 @@ MOC_EXTERN sbyte4 SSHC_negotiateShellChannelRequest(sbyte4 connectionInstance);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file ssh.h
 
@@ -1686,7 +1686,7 @@ MOC_EXTERN sbyte4 SSHC_sendMessage(sbyte4 connectionInstance, ubyte *pBuffer, ub
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1727,7 +1727,7 @@ MOC_EXTERN sbyte4 SSHC_recvMessage(sbyte4 connectionInstance, sbyte4 *pMessageTy
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1759,7 +1759,7 @@ MOC_EXTERN sbyte4 SSHC_setTerminalTextWindowSize(sbyte4 connectionInstance, ubyt
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1788,7 +1788,7 @@ MOC_EXTERN void SSHC_close(sbyte4 connectionInstance);
 @version 4.2 and later
 
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 @param msAllowToComply      Number of milliseconds to wait for an SSH %client to
@@ -1827,7 +1827,7 @@ MOC_EXTERN sbyte4 SSHC_initiateReKey(sbyte4 connectionInstance, ubyte4 msAllowTo
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @param connectionInstance   Connection instance returned from SSHC_connect().
 @param pRetNumBytes         On return, the number of bytes received and
@@ -1863,7 +1863,7 @@ MOC_EXTERN sbyte4 SSHC_numBytesTransmitted(sbyte4 connectionInstance, ubyte8 *pR
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1899,7 +1899,7 @@ MOC_EXTERN sbyte4 SSHC_getCookie(sbyte4 connectionInstance, void **pRetCookie);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -1919,7 +1919,7 @@ MOC_EXTERN sbyte4 SSHC_setCookie(sbyte4 connectionInstance, void* cookie);
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /**
 @brief      Register the port number on which to listen for port forwarding
             messages from the SSH server.
@@ -1934,8 +1934,8 @@ MOC_EXTERN sbyte4 SSHC_setCookie(sbyte4 connectionInstance, void* cookie);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @inc_file sshc.h
 
@@ -1967,8 +1967,8 @@ MOC_EXTERN sbyte4 SSHC_lpfRegisterConnection( sbyte4 connectionInstance, ubyte4*
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @inc_file sshc.h
 
@@ -2010,8 +2010,8 @@ MOC_EXTERN sbyte4 SSHC_lpfStartConnection( sbyte4 connectionInstance, ubyte4 cha
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @inc_file sshc.h
 
@@ -2044,8 +2044,8 @@ MOC_EXTERN sbyte4 SSHC_lpfStopConnection( sbyte4 connectionInstance, ubyte4 chan
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @inc_file sshc.h
 
@@ -2077,8 +2077,8 @@ This function forwards port forwarding messages from an SSH server to local port
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @inc_file sshc.h
 
@@ -2102,10 +2102,10 @@ extern MSTATUS
 SSHC_startRemotePortForwarding(sbyte4 connectionInstance, sbyte *pBindAddr, ubyte4 bindPort, sbyte *pHostAddr, ubyte4 hostPort);
 extern MSTATUS
 SSHC_cancelRemotePortForwarding(sbyte4 connectionInstance, sbyte *pHostAddr, ubyte4 hostPort);
-#endif /*__ENABLE_MOCANA_SSH_PORT_FORWARDING__*/
+#endif /*__ENABLE_DIGICERT_SSH_PORT_FORWARDING__*/
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
 /**
 @brief      Open a file on an SFTP server.
 
@@ -2119,8 +2119,8 @@ SSHC_cancelRemotePortForwarding(sbyte4 connectionInstance, sbyte *pHostAddr, uby
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2164,8 +2164,8 @@ MOC_EXTERN sbyte4 SSHC_openFile(sbyte4 connectionInstance, ubyte* pFName, ubyte4
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2201,8 +2201,8 @@ MOC_EXTERN sbyte4 SSHC_readFile(sbyte4 connectionInstance, sftpcFileHandleDescr 
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2236,8 +2236,8 @@ MOC_EXTERN sbyte4 SSHC_writeFile(sbyte4 connectionInstance, sftpcFileHandleDescr
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2267,8 +2267,8 @@ This function sends an open directory request to the connected SSH/SFTP server.
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2308,8 +2308,8 @@ MOC_EXTERN sbyte4 SSHC_openDirectory(sbyte4 connectionInstance, ubyte *pPath, ub
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2349,8 +2349,8 @@ MOC_EXTERN sbyte4 SSHC_readDirectory(sbyte4 connectionInstance, sftpcFileHandleD
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2389,8 +2389,8 @@ For a list of handle descriptor attribute flags, see @ref sshc_hnd_desc_flags.
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2434,8 +2434,8 @@ MOC_EXTERN void   SSHC_sftpGetDirEntryFileSize(sbyte4 connectionInstance, sftpcF
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2484,8 +2484,8 @@ For a list of handle descriptor attribute flags, see @ref sshc_hnd_desc_flags.
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2524,8 +2524,8 @@ MOC_EXTERN void   SSHC_sftpGetDirEntryFilePermission(sbyte4 connectionInstance, 
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2557,8 +2557,8 @@ MOC_EXTERN void   SSHC_sftpSetCookie(sftpcFileHandleDescr *p_sftpFileHandleDescr
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2587,8 +2587,8 @@ MOC_EXTERN void*  SSHC_sftpGetCookie(sftpcFileHandleDescr *p_sftpFileHandleDescr
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2616,8 +2616,8 @@ MOC_EXTERN sbyte4 SSHC_sftpRequestStatusCode(sftpcFileHandleDescr *p_sftpFileHan
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2648,8 +2648,8 @@ MOC_EXTERN sbyte4 SSHC_freeHandle(sbyte4 connectionInstance, sftpcFileHandleDesc
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2682,8 +2682,8 @@ MOC_EXTERN sbyte4 SSHC_freeFilename(sbyte4 connectionInstance, ubyte **ppFreeFil
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2710,8 +2710,8 @@ MOC_EXTERN sbyte4 SSHC_sftpReadLocation(sftpcFileHandleDescr *p_sftpFileHandleDe
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2740,8 +2740,8 @@ MOC_EXTERN sbyte* SSHC_sftpReadBuffer(sftpcFileHandleDescr *p_sftpFileHandleDesc
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2772,8 +2772,8 @@ MOC_EXTERN sbyte4 SSHC_sftpReadBufferSize(sftpcFileHandleDescr *p_sftpFileHandle
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2804,8 +2804,8 @@ MOC_EXTERN sbyte4 SSHC_sftpNumBytesRead(sftpcFileHandleDescr *p_sftpFileHandleDe
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2832,8 +2832,8 @@ MOC_EXTERN sbyte4 SSHC_sftpWriteLocation(sftpcFileHandleDescr *p_sftpFileHandleD
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2862,8 +2862,8 @@ MOC_EXTERN sbyte* SSHC_sftpWriteBuffer(sftpcFileHandleDescr *p_sftpFileHandleDes
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2894,8 +2894,8 @@ MOC_EXTERN sbyte4 SSHC_sftpWriteBufferSize(sftpcFileHandleDescr *p_sftpFileHandl
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2925,8 +2925,8 @@ MOC_EXTERN sbyte4 SSHC_sftpNumBytesWritten(sftpcFileHandleDescr *p_sftpFileHandl
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -2968,8 +2968,8 @@ MOC_EXTERN sbyte4 SSHC_getFileStat(sbyte4 connectionInstance, ubyte *pGetStatFil
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -3013,8 +3013,8 @@ MOC_EXTERN sbyte4 SSHC_realpath(sbyte4 connectionInstance, ubyte *pRealpath, uby
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -3053,8 +3053,8 @@ MOC_EXTERN sbyte4 SSHC_removeFile(sbyte4 connectionInstance, ubyte *pRemoveFileN
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -3093,8 +3093,8 @@ MOC_EXTERN sbyte4 SSHC_mkdir(sbyte4 connectionInstance, ubyte *pNewDirName, ubyt
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc.h
 
@@ -3135,7 +3135,7 @@ MOC_EXTERN sbyte4 SSHC_rmdir(sbyte4 connectionInstance, ubyte *pRemoveDirName, u
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -3174,7 +3174,7 @@ MOC_EXTERN MSTATUS SSHC_generateServerAuthKeyFile(ubyte *pKeyBlob, ubyte4 keyBlo
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -3211,7 +3211,7 @@ MOC_EXTERN MSTATUS SSHC_parseServerAuthKeyFile(ubyte* pKeyFile, ubyte4 keyFileLe
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 
@@ -3245,7 +3245,7 @@ MOC_EXTERN MSTATUS SSHC_parsePublicKeyBuffer(ubyte* pKeyFile, ubyte4 keyFileLen,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
 
 @inc_file sshc.h
 

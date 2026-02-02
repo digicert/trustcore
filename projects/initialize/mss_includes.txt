@@ -5,3 +5,4 @@ MSS_SRC_DIR/crypto
 MSS_SRC_DIR/crypto_interface
 MSS_SRC_DIR/harness
 MSS_SRC_DIR/data_protection
+MSS_SRC_DIR/EXAMPLE_DIR

@@ -28,7 +28,7 @@
 #ifndef __RC4ALGO_H__
 #define __RC4ALGO_H__
 
-#if defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
 #include "../crypto_interface/crypto_interface_arc4_priv.h"
 #endif
 

@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_MD4_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_MD4_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD4_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD4_INTERNAL__))
 
 #define MD4Alloc           CRYPTO_INTERFACE_MD4Alloc
 #define MD4Free            CRYPTO_INTERFACE_MD4Free

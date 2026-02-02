@@ -1,0 +1,17 @@
+MSS_TEST_DIR/aes_perf_test.c
+MSS_TEST_DIR/aes_gcm_perf_test.c
+MSS_TEST_DIR/bi_mul_perf_test.c
+MSS_TEST_DIR/blake2_perf_test.c
+MSS_TEST_DIR/chachapoly_perf_test.c
+MSS_TEST_DIR/dh_perf_test.c
+MSS_TEST_DIR/dsa_perf_test.c
+MSS_TEST_DIR/ecc_edwards_perf_test.c
+MSS_TEST_DIR/ecdh_perf_test.c
+MSS_TEST_DIR/ecdsa_perf_test.c
+MSS_TEST_DIR/hmac_perf_test.c
+MSS_TEST_DIR/primeec_eg_perf_test.c
+MSS_TEST_DIR/rsa_perf_test.c
+MSS_TEST_DIR/sha_perf_test.c
+MSS_TEST_DIR/sha3_perf_test.c
+MSS_TEST_DIR/qs_sig_perf_test.c
+MSS_TEST_DIR/qs_kem_perf_test.c

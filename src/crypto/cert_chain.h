@@ -140,7 +140,7 @@ MOC_EXTERN MSTATUS CERTCHAIN_createFromSSLRecordOriginal(MOC_ASYM(hwAccelDescr h
                                                  const ubyte* pSSLCertificateMsg,
                                                  ubyte4 sslCertificateMsgLen,
                                                  ubyte sslMinorVersion);
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 /**
  * @brief   Build a certificate chain from an SSL Certificate message.
  *
@@ -167,7 +167,7 @@ MOC_EXTERN MSTATUS CERTCHAIN_CVC_createFromSSLRecordEx(MOC_ASYM(hwAccelDescr hwA
                                                        byteBoolean *pIsCvc);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT__) || defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT__) || defined(__ENABLE_DIGICERT_SSH_SERVER__))
 
 typedef MSTATUS (*funcPtrWalkStr)(const ubyte *, ubyte4, ubyte4 *);
 
@@ -198,7 +198,7 @@ MOC_EXTERN MSTATUS CERTCHAIN_createFromSSHEx(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                            funcPtrWalkStr walkStrFunc);
 
 
-#ifndef __DISABLE_MOCANA_CERT_CHAIN_SSH_DEP__
+#ifndef __DISABLE_DIGICERT_CERT_CHAIN_SSH_DEP__
 /**
  * @brief   Build a certificate chain from an SSH Certificate chain buffer.
  *
@@ -222,8 +222,8 @@ MOC_EXTERN MSTATUS CERTCHAIN_createFromSSH(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                            const ubyte* pSSHCertChainBuf,
                                            ubyte4 sshCertChainBufLen,
                                            ubyte4 *pBufIndex);
-#endif /* __DISABLE_MOCANA_CERT_CHAIN_SSH_DEP__ */
-#endif /* (defined(__ENABLE_MOCANA_SSH_CLIENT__) || defined(__ENABLE_MOCANA_SSH_SERVER__)) */
+#endif /* __DISABLE_DIGICERT_CERT_CHAIN_SSH_DEP__ */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_CLIENT__) || defined(__ENABLE_DIGICERT_SSH_SERVER__)) */
 
 struct certDescriptor;
 
@@ -247,7 +247,7 @@ MOC_EXTERN MSTATUS CERTCHAIN_createFromIKE(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                            struct certDescriptor certiDesc[],
                                            ubyte4 numCertDesc);
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 
 /**
  * @brief   Build a certificate chain from a certificate descriptor containing CV certs.
@@ -326,7 +326,7 @@ MOC_EXTERN MSTATUS CERTCHAIN_getKey(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                     ubyte4 indexInChain,
                                     struct AsymmetricKey* pubKey);
 
-#ifdef __ENABLE_MOCANA_CERTIFICATE_SEARCH_SUPPORT__
+#ifdef __ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__
 /**
  * @brief   Gets the RSA hash algorithm in a certificate from a chain.
  *
@@ -363,7 +363,7 @@ MOC_EXTERN MSTATUS CERTCHAIN_getRSASigAlgo(certChainPtr pCertChain,
 MOC_EXTERN MSTATUS CERTCHAIN_isComplete(certChainPtr pCertChain,
                                         intBoolean* complete);
 
-#if !defined(__DISABLE_MOCANA_CERTIFICATE_PARSING__)
+#if !defined(__DISABLE_DIGICERT_CERTIFICATE_PARSING__)
 /**
  * @brief   Validates a certificate chain with respect to a validation configuration.
  *
@@ -390,7 +390,7 @@ MOC_EXTERN MSTATUS CERTCHAIN_validate(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                       certChainPtr pCertChain,
                                       ValidationConfig* validationConfig);
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 
 /**
  * @brief   Validates a CV certificate chain with respect to a validation configuration.

@@ -30,8 +30,8 @@
 extern "C" {
 #endif
     
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_XTS_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_AES_XTS_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_XTS_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_XTS_INTERNAL__))
     
 #define CreateAESXTSCtx          CRYPTO_INTERFACE_CreateAESXTSCtx
 #define DeleteAESXTSCtx          CRYPTO_INTERFACE_DeleteAESXTSCtx

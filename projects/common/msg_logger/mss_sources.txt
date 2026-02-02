@@ -1,0 +1,1 @@
+MSS_SRC_DIR/common/msg_logger.c

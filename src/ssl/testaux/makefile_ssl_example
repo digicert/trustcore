@@ -1,0 +1,26 @@
+#########################################################
+#  makefile_ssl_example
+#
+#   makefile used to build SSL server example
+#   using Makefile.common
+#
+#
+# Copyright Mocana Corp 2006-2015. All Rights Reserved.
+# Proprietary and Confidential Material.
+#
+#########################################################
+
+
+export CFLAGS = \
+ -D__ENABLE_DIGICERT_SSL_SERVER__ \
+ -D__ENABLE_DIGICERT_EXAMPLES__
+
+
+.PHONY: clean
+
+clean:
+	cd ../../../ && $(MAKE) clean
+
+all:
+	cd ../../../ && $(MAKE) clean ssls
+

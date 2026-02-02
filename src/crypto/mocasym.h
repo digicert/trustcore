@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef __MOCANA_ASYMMETRIC_HEADER__
-#define __MOCANA_ASYMMETRIC_HEADER__
+#ifndef __DIGICERT_ASYMMETRIC_HEADER__
+#define __DIGICERT_ASYMMETRIC_HEADER__
 
 #include "../common/moptions.h"
 #include "../common/mtypes.h"
@@ -792,4 +792,4 @@ MOC_EXTERN MSTATUS KeyOperatorSigQSSphincs(
 }
 #endif
 
-#endif /* __MOCANA_ASYMMETRIC_HEADER__ */
+#endif /* __DIGICERT_ASYMMETRIC_HEADER__ */

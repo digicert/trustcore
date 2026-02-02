@@ -240,7 +240,7 @@ struct SizedBuffer;
 
 typedef struct certStore* certStorePtr;
 
-#if defined(__ENABLE_MOCANA_MINIMAL_CA__)
+#if defined(__ENABLE_DIGICERT_MINIMAL_CA__)
 struct certStoreIssuer;
 typedef struct certStoreIssuer* certStoreIssuerPtr;
 #endif
@@ -322,7 +322,7 @@ MOC_EXTERN MSTATUS CERT_STORE_convertCertStoreKeyTypeToPubKeyType(ubyte4 certSto
  */
 
 /* add identity */
-#ifndef __DISABLE_MOCANA_CERTIFICATE_PARSING__
+#ifndef __DISABLE_DIGICERT_CERTIFICATE_PARSING__
 
 /**
  * Load a certificate and key pair into the certificate store.
@@ -341,7 +341,7 @@ MOC_EXTERN MSTATUS CERT_STORE_convertCertStoreKeyTypeToPubKeyType(ubyte4 certSto
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The cert store to which the entry will be added.
  * @param pDerCert The DER of the cert to add.
@@ -385,7 +385,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addIdentity (
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The cert store to which the entry will be added.
  * @param pAlias The alias, or name of the entry.
@@ -414,7 +414,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addIdentityEx (
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The cert store to which the entry will be added.
  * @param pAlias The alias, or name of the entry.
@@ -459,7 +459,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addGenericIdentity (
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The cert store to which the entry will be added.
  * @param certificates The array of DER certificates to add.
@@ -492,7 +492,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addIdentityWithCertificateChain (
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The cert store to which the entry will be added.
  * @param certificates An array of certificates. The cert at index 0 must be the
@@ -530,7 +530,7 @@ CERT_STORE_addIdentityWithCertificateChainExtData(certStorePtr pCertStore,
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The cert store to which the entry will be added.
  * @param certificates An array of certificates. The cert at index 0 must be the
@@ -577,7 +577,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addIdentityWithCertificateChainExtDataEx (
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The cert store to which the entry will be added.
  * @param pAlias The alias, or name of the entry.
@@ -603,7 +603,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addIdentityWithCertificateChainEx (
   ubyte4 keyBlobLength
   );
 
-#endif /* ifndef __DISABLE_MOCANA_CERTIFICATE_PARSING__ */
+#endif /* ifndef __DISABLE_DIGICERT_CERTIFICATE_PARSING__ */
 
 /**
  * This API adds a key blob to the certificate store.
@@ -689,7 +689,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addIdentityPSK(certStorePtr pCertStore,
                                              const ubyte *pPskSecret,
                                              ubyte4 pskSecretLength);
 
-#ifndef __DISABLE_MOCANA_CERTIFICATE_PARSING__
+#ifndef __DISABLE_DIGICERT_CERTIFICATE_PARSING__
 
 /**
  * Add a trust point to a Mocana SoT Platform certificate store.
@@ -699,7 +699,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addIdentityPSK(certStorePtr pCertStore,
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore Pointer to the SoT Platform certificate store to
  * which to add the trust point.
@@ -715,7 +715,7 @@ MOC_EXTERN MSTATUS CERT_STORE_addTrustPoint(certStorePtr pCertStore,
                                             const ubyte *pDerTrustPoint,
                                             ubyte4 derTrustPointLength);
 
-#ifdef __ENABLE_MOCANA_CV_CERT__
+#ifdef __ENABLE_DIGICERT_CV_CERT__
 
 /**
  * Add a trust point to a Mocana SoT Platform certificate store.
@@ -725,9 +725,9 @@ MOC_EXTERN MSTATUS CERT_STORE_addTrustPoint(certStorePtr pCertStore,
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  * To enable this function, the following flag must be defined:
- * + \c \__ENABLE_MOCANA_CV_CERT__
+ * + \c \__ENABLE_DIGICERT_CV_CERT__
  *
  * @param pCertStore Pointer to the SoT Platform certificate store to
  * which to add the trust point.
@@ -756,7 +756,7 @@ MOC_EXTERN MSTATUS CERT_STORE_CVC_addTrustPoint(certStorePtr pCertStore,
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore Pointer to the SoT Platform certificate store to search for
  * the certificate.
@@ -789,7 +789,7 @@ MOC_EXTERN MSTATUS CERT_STORE_findTrustPointBySubjectFirst(const certStorePtr pC
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param iterator Iterator object to start searching from.
  * @param ppRetDerCert Reference to the certificate found. This is an internal
@@ -845,7 +845,7 @@ typedef MSTATUS (*CERT_STORE_MatchFun) (MOC_ASYM(hwAccelDescr hwAccelCtx)
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore Pointer to the SoT Platform certificate store to search for
  * the certificate.
@@ -1479,7 +1479,7 @@ MOC_EXTERN MSTATUS CERT_STORE_findPskByIdentity(const certStorePtr pCertStore,
  * @ingroup cert_store_functions
  * @flags
  * To enable this function, the following flag must \b NOT be defined:
- * + \c \__DISABLE_MOCANA_CERTIFICATE_PARSING__
+ * + \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__
  *
  * @param pCertStore The store to search.
  * @param pIssuer The bytestring representation of the certificate issuer.
@@ -1509,7 +1509,7 @@ CERT_STORE_findCertificateByIssuerSerialNumber(const certStorePtr pCertStore,
                                                ubyte4* ppRetDerCertLength,
                                                const struct AsymmetricKey** pRetPrivateKey);
 
-#if defined(__ENABLE_MOCANA_MINIMAL_CA__)
+#if defined(__ENABLE_DIGICERT_MINIMAL_CA__)
 
 /**
  * @dont_show
@@ -1542,7 +1542,7 @@ MOC_EXTERN MSTATUS
 CERT_STORE_traverseChildCertsByFile(
     certStoreIssuerPtr pStore, void **ppCookie, ubyte4 *pIndex, sbyte **ppFile);
 
-#endif /* __ENABLE_MOCANA_MINIMAL_CA__ */
+#endif /* __ENABLE_DIGICERT_MINIMAL_CA__ */
 
 #ifdef __cplusplus
 }

@@ -38,33 +38,33 @@
 #if defined(__RTOS_ZEPHYR__)
 #include <zephyr/kernel.h>
 #endif
-#ifdef __ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__
+#ifdef __ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__
 #if (defined(__KERNEL__) && (defined(__LINUX_RTOS__) || defined(__ANDROID_RTOS__)))
 #include <linux/types.h>
 #include <linux/string.h>
 #else
 #include <string.h>
 #endif
-#endif /*__ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__ */
+#endif /*__ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__ */
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
 memPartDescr  *gMemPartDescr = 0;
 #endif
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
 #include "../common/mem_profiler.h"
 #endif
 
 /*------------------------------------------------------------------*/
-#if defined(__ENABLE_MOCANA_DEBUG_PADDING__)
+#if defined(__ENABLE_DIGICERT_DEBUG_PADDING__)
 #define DEAD_ZONE 4
 #define PREAMBLE 0xdeadbeef
 #define POSTAMBLE 0x12345678
 #endif
 
-#define MOC_MALLOC_MAX_BUF_SIZE     (0x00ffffff)
+#define DIGI_MALLOC_MAX_BUF_SIZE     (0x00ffffff)
 
-#ifndef __DISABLE_MOCANA_MSTD_LIB_DEP__
+#ifndef __DISABLE_DIGICERT_MSTD_LIB_DEP__
 
 /*------------------------------------------------------------------*/
 
@@ -88,7 +88,7 @@ extern ubyte4 SWAPDWORD(ubyte4 a)
 /*------------------------------------------------------------------*/
 
 extern ubyte4
-MOC_NTOHL(const ubyte *v)
+DIGI_NTOHL(const ubyte *v)
 {
     return (ubyte4)((((ubyte4)(v[0])) << 24) | (((ubyte4)(v[1])) << 16) | (((ubyte4)(v[2])) <<8 ) | ((ubyte4)(v[3])));
 }
@@ -97,7 +97,7 @@ MOC_NTOHL(const ubyte *v)
 /*------------------------------------------------------------------*/
 
 extern ubyte2
-MOC_NTOHS(const ubyte *v)
+DIGI_NTOHS(const ubyte *v)
 {
     return (ubyte2)((((ubyte4)(v[0])) << 8) | v[1]);
 }
@@ -106,7 +106,7 @@ MOC_NTOHS(const ubyte *v)
 /*------------------------------------------------------------------*/
 
 extern void
-MOC_HTONL(ubyte n[4], ubyte4 h)
+DIGI_HTONL(ubyte n[4], ubyte4 h)
 {
     n[0] = (ubyte)((h >> 24) & 0xFF);
     n[1] = (ubyte)((h >> 16) & 0xFF);
@@ -118,7 +118,7 @@ MOC_HTONL(ubyte n[4], ubyte4 h)
 /*------------------------------------------------------------------*/
 
 extern void
-MOC_HTONS(ubyte n[2], ubyte2 h)
+DIGI_HTONS(ubyte n[2], ubyte2 h)
 {
     n[0] = (ubyte)((h >> 8) & 0xFF);
     n[1] = (ubyte)( h       & 0xFF);
@@ -128,7 +128,7 @@ MOC_HTONS(ubyte n[2], ubyte2 h)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_MEMMOVE(ubyte *pDest, const ubyte *pSrc, sbyte4 len)
+DIGI_MEMMOVE(ubyte *pDest, const ubyte *pSrc, sbyte4 len)
 {
     MSTATUS status = OK;
 
@@ -138,7 +138,7 @@ MOC_MEMMOVE(ubyte *pDest, const ubyte *pSrc, sbyte4 len)
     }
     else
     {
-#ifdef __ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__
+#ifdef __ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__
         memmove(pDest, pSrc, len);
 #else
         if ((pSrc > pDest) || (pDest >= pSrc + len))
@@ -173,7 +173,7 @@ MOC_MEMMOVE(ubyte *pDest, const ubyte *pSrc, sbyte4 len)
 /*------------------------------------------------------------------*/
 
 MOC_EXTERN MSTATUS
-MOC_MEMCPY(void *pDest1, const void *pSrc1, sbyte4 len)
+DIGI_MEMCPY(void *pDest1, const void *pSrc1, sbyte4 len)
 {
     MSTATUS         status = OK;
 
@@ -181,7 +181,7 @@ MOC_MEMCPY(void *pDest1, const void *pSrc1, sbyte4 len)
         status = ERR_NULL_POINTER;
     else
     {
-#ifdef __ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__
+#ifdef __ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__
         memcpy(pDest1, pSrc1, len);
 #else
         ubyte*          pDest  = (ubyte*)pDest1;
@@ -204,7 +204,7 @@ MOC_MEMCPY(void *pDest1, const void *pSrc1, sbyte4 len)
 /*------------------------------------------------------------------*/
 
 MOC_EXTERN MSTATUS
-MOC_MEMCMP(const ubyte *pSrc1, const ubyte *pSrc2, usize len, sbyte4 *pResult)
+DIGI_MEMCMP(const ubyte *pSrc1, const ubyte *pSrc2, usize len, sbyte4 *pResult)
 {
     MSTATUS status = OK;
 
@@ -212,7 +212,7 @@ MOC_MEMCMP(const ubyte *pSrc1, const ubyte *pSrc2, usize len, sbyte4 *pResult)
         status = ERR_NULL_POINTER;
     else
     {
-#ifdef __ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__
+#ifdef __ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__
         *pResult = memcmp(pSrc1, pSrc2, len);
 #else
         *pResult = 0;
@@ -235,7 +235,7 @@ MOC_MEMCMP(const ubyte *pSrc1, const ubyte *pSrc2, usize len, sbyte4 *pResult)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_CTIME_MATCH(const void *a, const void *b, ubyte4 len,
+DIGI_CTIME_MATCH(const void *a, const void *b, ubyte4 len,
                  intBoolean *pDiffer)
 {
     const ubyte* ba = (const ubyte*) a;
@@ -260,7 +260,7 @@ MOC_CTIME_MATCH(const void *a, const void *b, ubyte4 len,
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_SAFEMATCH(const ubyte *pTrustedSrc,   ubyte4 trustedSrcLen,
+DIGI_SAFEMATCH(const ubyte *pTrustedSrc,   ubyte4 trustedSrcLen,
               const ubyte *pUntrustedSrc, ubyte4 untrustedLen,
               intBoolean *pResult)
 {
@@ -291,7 +291,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 MOC_EXTERN MSTATUS
-MOC_MEMSET(ubyte *pDest, ubyte value, usize len)
+DIGI_MEMSET(ubyte *pDest, ubyte value, usize len)
 {
     MSTATUS status = OK;
 
@@ -310,7 +310,7 @@ MOC_MEMSET(ubyte *pDest, ubyte value, usize len)
         {
             FillMemory(pDest, len, value);
         }
-#elif defined(__ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__)
+#elif defined(__ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__)
         memset(pDest, value, len);
 #else
         volatile ubyte *volatile p = pDest;
@@ -330,7 +330,7 @@ MOC_MEMSET(ubyte *pDest, ubyte value, usize len)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_XORCPY(void *pDst, const void *pSrc, ubyte4 numBytes)
+DIGI_XORCPY(void *pDst, const void *pSrc, ubyte4 numBytes)
 {
     MSTATUS status = OK;
 
@@ -383,7 +383,7 @@ MTOLOWER(sbyte c)
 /*------------------------------------------------------------------*/
 
 extern byteBoolean
-MOC_ISSPACE(sbyte c)
+DIGI_ISSPACE(sbyte c)
 {
     return ( (0x20 == c) || (( 0x09 <= c) && (c <= 0x0D)));
 }
@@ -392,7 +392,7 @@ MOC_ISSPACE(sbyte c)
 /* LWS  = [CRLF] 1*( SP | HT ) defined in RFC 2616
 */
 extern byteBoolean
-MOC_ISLWS( sbyte c)
+DIGI_ISLWS( sbyte c)
 {
     return ( (0x20 == c) || (0x09 == c) || (0x0A == c) || (0x0D == c));
 }
@@ -400,7 +400,7 @@ MOC_ISLWS( sbyte c)
 /*------------------------------------------------------------------*/
 
 extern byteBoolean
-MOC_ISXDIGIT( sbyte c)
+DIGI_ISXDIGIT( sbyte c)
 {
     return ( (c>= '0' && c <= '9') ||
              (c>= 'a' && c <= 'f') ||
@@ -411,7 +411,7 @@ MOC_ISXDIGIT( sbyte c)
 /*------------------------------------------------------------------*/
 
 extern byteBoolean
-MOC_ISASCII( sbyte c)
+DIGI_ISASCII( sbyte c)
 {
     return ( (c & ~0x7f) == 0 );
 }
@@ -420,7 +420,7 @@ MOC_ISASCII( sbyte c)
 /*------------------------------------------------------------------*/
 
 extern byteBoolean
-MOC_ISDIGIT( sbyte c)
+DIGI_ISDIGIT( sbyte c)
 {
     return ( (c>= '0' && c <= '9') );
 }
@@ -429,7 +429,7 @@ MOC_ISDIGIT( sbyte c)
 /*------------------------------------------------------------------*/
 
 extern byteBoolean
-MOC_ISLOWER( sbyte c)
+DIGI_ISLOWER( sbyte c)
 {
     return ( (c>= 'a' && c <= 'z') );
 }
@@ -438,7 +438,7 @@ MOC_ISLOWER( sbyte c)
 /*------------------------------------------------------------------*/
 
 extern ubyte4
-MOC_STRLEN(const sbyte *s)
+DIGI_STRLEN(const sbyte *s)
 {
     const sbyte *t = s;
 
@@ -456,7 +456,7 @@ MOC_STRLEN(const sbyte *s)
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_STRCMP(const sbyte *pString1, const sbyte *pString2)
+DIGI_STRCMP(const sbyte *pString1, const sbyte *pString2)
 {
     while (('\0' != *pString1) && (*pString1 == *pString2))
     {
@@ -471,7 +471,7 @@ MOC_STRCMP(const sbyte *pString1, const sbyte *pString2)
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_STRNCMP(const sbyte *pString1, const sbyte *pString2, ubyte4 n)
+DIGI_STRNCMP(const sbyte *pString1, const sbyte *pString2, ubyte4 n)
 {
     ubyte4 i;
 
@@ -490,7 +490,7 @@ MOC_STRNCMP(const sbyte *pString1, const sbyte *pString2, ubyte4 n)
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_STRNICMP(const sbyte *pString1, const sbyte *pString2, ubyte4 n)
+DIGI_STRNICMP(const sbyte *pString1, const sbyte *pString2, ubyte4 n)
 {
     ubyte4 i;
 
@@ -509,7 +509,7 @@ MOC_STRNICMP(const sbyte *pString1, const sbyte *pString2, ubyte4 n)
 /*------------------------------------------------------------------*/
 
 extern ubyte4
-MOC_STRCBCPY( sbyte* dest, ubyte4 destSize, const sbyte* src)
+DIGI_STRCBCPY( sbyte* dest, ubyte4 destSize, const sbyte* src)
 {
     ubyte4 i = 0;
 
@@ -536,7 +536,7 @@ MOC_STRCBCPY( sbyte* dest, ubyte4 destSize, const sbyte* src)
 /*------------------------------------------------------------------*/
 
 extern ubyte4
-MOC_STRCAT( sbyte* dest, const sbyte* addsrc)
+DIGI_STRCAT( sbyte* dest, const sbyte* addsrc)
 {
 	ubyte4 len = 0;
 
@@ -561,7 +561,7 @@ MOC_STRCAT( sbyte* dest, const sbyte* addsrc)
 /*------------------------------------------------------------------*/
 
 extern sbyte*
-MOC_STRCHR(sbyte *s, sbyte c, ubyte4 len)
+DIGI_STRCHR(sbyte *s, sbyte c, ubyte4 len)
 {
     while((0 < len) && ('\0' != *s))
     {
@@ -576,7 +576,7 @@ MOC_STRCHR(sbyte *s, sbyte c, ubyte4 len)
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_ATOL(const sbyte* s, const sbyte** stop)
+DIGI_ATOL(const sbyte* s, const sbyte** stop)
 {
     sbyte4 sign = 1;
     sbyte4 retVal = 0;
@@ -613,9 +613,9 @@ MOC_ATOL(const sbyte* s, const sbyte** stop)
 /*---------------------------------------------------------------------------*/
 
 /* for non-FIPS this will be in crypto_utils.c */
-#ifndef __ENABLE_MOCANA_FIPS_MODULE__
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
 extern MSTATUS
-MOC_ATOH(ubyte *pHexString, ubyte4 hexStrLen, ubyte *pOut)
+DIGI_ATOH(ubyte *pHexString, ubyte4 hexStrLen, ubyte *pOut)
 {
     MSTATUS status = ERR_INVALID_INPUT;
     ubyte4 i = 0;
@@ -670,17 +670,17 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_FIPS_MODULE__ */
+#endif /* __ENABLE_DIGICERT_FIPS_MODULE__ */
 
 /*------------------------------------------------------------------*/
-#endif /* __DISABLE_MOCANA_MSTD_LIB_DEP__ */
+#endif /* __DISABLE_DIGICERT_MSTD_LIB_DEP__ */
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
-extern MSTATUS MOC_LoadPartition (
+#ifdef __ENABLE_DIGICERT_MEM_PART__
+extern MSTATUS DIGI_LoadPartition (
   memPartDescr *pPartition
   )
 {
-  /* Place the partition at the global location, MOC_MALLOC will now have control
+  /* Place the partition at the global location, DIGI_MALLOC will now have control
    * of it.
    */
   if (NULL == gMemPartDescr)
@@ -692,7 +692,7 @@ extern MSTATUS MOC_LoadPartition (
   return (ERR_MEM_PART);
 }
 
-extern MSTATUS MOC_UnloadPartition (
+extern MSTATUS DIGI_UnloadPartition (
   memPartDescr **pPartition
   )
 {
@@ -700,7 +700,7 @@ extern MSTATUS MOC_UnloadPartition (
     return (ERR_NULL_POINTER);
 
   /* Return control of the partition to the caller. Simply return the partition
-   * at the address given, then NULL out the global location so that MOC_MALLOC
+   * at the address given, then NULL out the global location so that DIGI_MALLOC
    * can no longer see it.
    */
   *pPartition = NULL;
@@ -729,7 +729,7 @@ extern MSTATUS MOC_UnloadPartition (
  * The solution is to free the mutex just before unloading the partition, thus
  * ensuring the FREE call goes to the memory partition instead of normal free.
  */
-extern MSTATUS MOC_UnloadAndFreeGlobalPartition ()
+extern MSTATUS DIGI_UnloadAndFreeGlobalPartition ()
 {
   MSTATUS status = OK;
 
@@ -761,15 +761,15 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_MEM_PART_DEBUG__
-MOC_EXTERN MSTATUS MOC_debugMemPart(char *pOutFileName)
+#ifdef __ENABLE_DIGICERT_MEM_PART_DEBUG__
+MOC_EXTERN MSTATUS DIGI_debugMemPart(char *pOutFileName)
 {
     return MEM_PART_printMemoryPartitions(gMemPartDescr, pOutFileName);
 }
-#endif /* __ENABLE_MOCANA_MEM_PART_DEBUG__ */
-#endif /*  __ENABLE_MOCANA_MEM_PART__ */
+#endif /* __ENABLE_DIGICERT_MEM_PART_DEBUG__ */
+#endif /*  __ENABLE_DIGICERT_MEM_PART__ */
 
-#ifndef __DISABLE_MOCANA_MSTD_LIB_DEP__
+#ifndef __DISABLE_DIGICERT_MSTD_LIB_DEP__
 
 #if NEED_MALLOC_ALIGN!=0
 
@@ -791,7 +791,7 @@ static int posix_memalign_ex(void **memptr, size_t align, size_t size)
 }
 #endif /* __RTOS_ZEPHYR__ */
 
-extern MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_ALIGN) (
+extern MSTATUS MEM_PROFILE_ADD_SUFFIX(DIGI_MALLOC_ALIGN) (
   void **ppPtr,
   ubyte4 bufSize,
   ubyte4 alignment
@@ -815,15 +815,15 @@ extern MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_ALIGN) (
    * this limit and we can revisit this decision.
    */
   status = ERR_MEM_ALLOC_SIZE;
-#ifdef __DISABLE_MOCANA_MALLOC_LIMIT__
+#ifdef __DISABLE_DIGICERT_MALLOC_LIMIT__
   if (0 == bufSize)
     goto exit;
 #else
-  if ( (0 == bufSize) || (MOC_MALLOC_MAX_BUF_SIZE < bufSize) )
+  if ( (0 == bufSize) || (DIGI_MALLOC_MAX_BUF_SIZE < bufSize) )
     goto exit;
 #endif
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
   if (gMemPartDescr != (memPartDescr *)0)
   {
     status = MEM_PART_alloc (gMemPartDescr, bufSize + (16 - (bufSize % 16)), ppPtr);
@@ -833,7 +833,7 @@ extern MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_ALIGN) (
 
   status = ERR_MEM_ALLOC_FAIL;
 
-#if defined(__ENABLE_MOCANA_DEBUG_MEMORY__)
+#if defined(__ENABLE_DIGICERT_DEBUG_MEMORY__)
   retVal = MC_MALLOC_ALIGN(bufSize, 16);
   if (NULL == retVal)
     goto exit;
@@ -854,16 +854,16 @@ extern MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_ALIGN) (
 
 exit:
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
   if (OK == status)
     status = MEM_PROFILER_addRecord(TRUE, (uintptr) *ppPtr, bufSize + (16 - (bufSize % 16)) MEM_PROFILE_TRACK_VARS_ADD_REC);
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE_MAP__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE_MAP__
   if (OK == status)
     status = MEM_PROFILER_addToMap((uintptr) ppPtr, (uintptr) *ppPtr, bufSize + (16 - (bufSize % 16)));
 #endif
 
-#endif /* __ENABLE_MOCANA_MEM_PROFILE__ */
+#endif /* __ENABLE_DIGICERT_MEM_PROFILE__ */
 
   return (status);
 }
@@ -875,7 +875,7 @@ extern void * MEM_PROFILE_ADD_SUFFIX(CONVERT_MALLOC) (ubyte4 bufSize MEM_PROFILE
   MSTATUS status;
   void *pRetVal = NULL;
 
-  status = MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (&pRetVal, bufSize MEM_PROFILE_TRACK_VARS);
+  status = MEM_PROFILE_ADD_SUFFIX(DIGI_MALLOC) (&pRetVal, bufSize MEM_PROFILE_TRACK_VARS);
   if (OK == status)
     return (pRetVal);
 
@@ -887,7 +887,7 @@ extern void * MEM_PROFILE_ADD_SUFFIX(CONVERT_CALLOC) (ubyte4 typeSize, ubyte4 bu
   MSTATUS status;
   void *pRetVal = NULL;
 
-  status = MEM_PROFILE_ADD_SUFFIX(MOC_CALLOC) (&pRetVal, typeSize, bufSize MEM_PROFILE_TRACK_VARS);
+  status = MEM_PROFILE_ADD_SUFFIX(DIGI_CALLOC) (&pRetVal, typeSize, bufSize MEM_PROFILE_TRACK_VARS);
   if (OK == status)
     return (pRetVal);
 
@@ -896,7 +896,7 @@ extern void * MEM_PROFILE_ADD_SUFFIX(CONVERT_CALLOC) (ubyte4 typeSize, ubyte4 bu
 
 #if defined(__ENABLE_DIGICERT_CUSTOM_MALLOC__) && defined(__RTOS_ZEPHYR__)
 static struct k_heap custom_heap;
-MOC_EXTERN MSTATUS MOCANA_initCustomHeap(void *pHeap, size_t heapSize)
+MOC_EXTERN MSTATUS DIGICERT_initCustomHeap(void *pHeap, size_t heapSize)
 {
     if (NULL == pHeap || 0 == heapSize)
         return ERR_INVALID_ARG;
@@ -905,12 +905,12 @@ MOC_EXTERN MSTATUS MOCANA_initCustomHeap(void *pHeap, size_t heapSize)
     return OK;
 }
 
-MOC_EXTERN void *MOCANA_customMalloc(size_t size)
+MOC_EXTERN void *DIGICERT_customMalloc(size_t size)
 {
     return k_heap_alloc(&custom_heap, size, K_NO_WAIT);
 }
 
-MOC_EXTERN void MOCANA_customFree(void *memptr)
+MOC_EXTERN void DIGICERT_customFree(void *memptr)
 {
     if (memptr != NULL)
     {
@@ -919,7 +919,7 @@ MOC_EXTERN void MOCANA_customFree(void *memptr)
 }
 #endif
 
-MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (
+MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(DIGI_MALLOC) (
   void **ppPtr,
   ubyte4 bufSize
   MEM_PROFILE_TRACK_DECL
@@ -938,18 +938,18 @@ MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (
    * this limit and we can revisit this decision.
    */
   status = ERR_MEM_ALLOC_SIZE;
-#ifdef __DISABLE_MOCANA_MALLOC_LIMIT__
+#ifdef __DISABLE_DIGICERT_MALLOC_LIMIT__
   if (0 == bufSize)
     goto exit;
 #else
-  if ( (0 == bufSize) || (MOC_MALLOC_MAX_BUF_SIZE < bufSize) )
+  if ( (0 == bufSize) || (DIGI_MALLOC_MAX_BUF_SIZE < bufSize) )
     goto exit;
 #endif
 
   /* If the MEM_PART is compiled, it is possible the program is using static
    * memory. If so, call MEM_PART_alloc.
    */
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
   if (gMemPartDescr != (memPartDescr *)0)
   {
     status = MEM_PART_alloc (gMemPartDescr, bufSize, ppPtr);
@@ -958,7 +958,7 @@ MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (
 #endif
 
   status = ERR_MEM_ALLOC_FAIL;
-#if defined(__ENABLE_MOCANA_DEBUG_PADDING__)
+#if defined(__ENABLE_DIGICERT_DEBUG_PADDING__)
   retVal = MC_MALLOC (bufSize+DEAD_ZONE*3);
 #else
   retVal = MC_MALLOC (bufSize);
@@ -966,7 +966,7 @@ MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (
   if (NULL == retVal)
     goto exit;
 
-#if defined(__ENABLE_MOCANA_DEBUG_PADDING__)
+#if defined(__ENABLE_DIGICERT_DEBUG_PADDING__)
   *ppPtr = ((char *)retVal) + DEAD_ZONE*2;
 
   *(ubyte4 *)retVal = PREAMBLE;
@@ -980,21 +980,21 @@ MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (
 
 exit:
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
   if (OK == status)
     status = MEM_PROFILER_addRecord(TRUE, (uintptr) *ppPtr, bufSize MEM_PROFILE_TRACK_VARS_ADD_REC);
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE_MAP__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE_MAP__
   if (OK == status)
     status = MEM_PROFILER_addToMap((uintptr) ppPtr, (uintptr) *ppPtr, bufSize);
 #endif
 
-#endif /* __ENABLE_MOCANA_MEM_PROFILE__ */
+#endif /* __ENABLE_DIGICERT_MEM_PROFILE__ */
 
   return (status);
 }
 
-MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_MEMCPY) (
+MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(DIGI_MALLOC_MEMCPY) (
   void **ppPtr,
   ubyte4 bufSize,
   void *pDataToCopy,
@@ -1007,10 +1007,10 @@ MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_MEMCPY) (
   status = ERR_INVALID_INPUT;
   if (dataLen <= bufSize)
   {
-    status = MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (ppPtr, bufSize MEM_PROFILE_TRACK_VARS);
+    status = MEM_PROFILE_ADD_SUFFIX(DIGI_MALLOC) (ppPtr, bufSize MEM_PROFILE_TRACK_VARS);
     if ( (OK == status) && (NULL != pDataToCopy) && (0 != dataLen) )
     {
-      status = MOC_MEMCPY (*ppPtr, pDataToCopy, dataLen);
+      status = DIGI_MEMCPY (*ppPtr, pDataToCopy, dataLen);
     }
   }
 
@@ -1019,7 +1019,7 @@ MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC_MEMCPY) (
 
 /*------------------------------------------------------------------*/
 
-MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_CALLOC) (
+MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(DIGI_CALLOC) (
   void **ppPtr,
   ubyte4 count,
   ubyte4 size
@@ -1037,12 +1037,12 @@ MOC_EXTERN MSTATUS MEM_PROFILE_ADD_SUFFIX(MOC_CALLOC) (
 
   len = count * size;
 
-  /* MOC_MALLOC will check the input args for us.
+  /* DIGI_MALLOC will check the input args for us.
    */
-  status = MEM_PROFILE_ADD_SUFFIX(MOC_MALLOC) (ppPtr, len MEM_PROFILE_TRACK_VARS);
+  status = MEM_PROFILE_ADD_SUFFIX(DIGI_MALLOC) (ppPtr, len MEM_PROFILE_TRACK_VARS);
   if (OK == status)
   {
-    status = MOC_MEMSET ((ubyte *)(*ppPtr), 0, len);
+    status = DIGI_MEMSET ((ubyte *)(*ppPtr), 0, len);
   }
 
   return (status);
@@ -1054,17 +1054,17 @@ extern void CONVERT_FREE(void *pBuffer)
 {
   void *pTemp = pBuffer;
 
-  (void) MOC_FREE (&pTemp);
+  (void) DIGI_FREE (&pTemp);
 }
 
 MOC_EXTERN MSTATUS
-MOC_FREE(void **ppPtr)
+DIGI_FREE(void **ppPtr)
 {
     MSTATUS status;
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
     uintptr ptrCopy = 0;
-#ifdef __ENABLE_MOCANA_MEM_PROFILE_MAP__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE_MAP__
     uintptr ppPtrCopy = 0;
 #endif
 #endif
@@ -1075,21 +1075,21 @@ MOC_FREE(void **ppPtr)
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
     ptrCopy = (uintptr) *ppPtr;
-#ifdef __ENABLE_MOCANA_MEM_PROFILE_MAP__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE_MAP__
     ppPtrCopy = (uintptr) ppPtr;
 #endif
 #endif
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
     if (gMemPartDescr != (memPartDescr *)0)
     {
       status = MEM_PART_free (gMemPartDescr, ppPtr);
       goto exit;
     }
 #endif
-#if defined(__ENABLE_MOCANA_DEBUG_PADDING__)
+#if defined(__ENABLE_DIGICERT_DEBUG_PADDING__)
     char *ptr = (char *) *ppPtr;
     ubyte4 bufSize;
 
@@ -1118,11 +1118,11 @@ MOC_FREE(void **ppPtr)
 
 exit:
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE__
     if (OK == status)
       status = MEM_PROFILER_addRecord(FALSE, ptrCopy, 0, NULL, 0);
 
-#ifdef __ENABLE_MOCANA_MEM_PROFILE_MAP__
+#ifdef __ENABLE_DIGICERT_MEM_PROFILE_MAP__
     if (OK == status)
       status = MEM_PROFILER_deleteFromMap((uintptr) ppPtrCopy);
 
@@ -1131,7 +1131,7 @@ exit:
       status = OK;
 #endif
 
-#endif /* __ENABLE_MOCANA_MEM_PROFILE__ */
+#endif /* __ENABLE_DIGICERT_MEM_PROFILE__ */
 
     return status;
 }
@@ -1149,13 +1149,13 @@ shredMemory(ubyte **ppMemToShred, ubyte4 memToShredLen, byteBoolean freeMemory)
     {
         if (0 < memToShredLen)
         {
-            status = MOC_MEMSET(*ppMemToShred, 0, memToShredLen);
+            status = DIGI_MEMSET(*ppMemToShred, 0, memToShredLen);
             if (OK != status)
                 goto exit;
         }
         if (TRUE == freeMemory)
         {
-            status = MOC_FREE((void **)ppMemToShred);
+            status = DIGI_FREE((void **)ppMemToShred);
             if (OK != status)
                 goto exit;
 
@@ -1168,7 +1168,7 @@ exit:
 
 void moc_free(void **ppPtr)
 {
-    (void) MOC_FREE(ppPtr);
+    (void) DIGI_FREE(ppPtr);
 }
 
 void moc_memset_free(ubyte **ppMemToShred, ubyte4 memToShredLen)
@@ -1178,19 +1178,19 @@ void moc_memset_free(ubyte **ppMemToShred, ubyte4 memToShredLen)
 
 void moc_memset(void *pDest, ubyte value, usize len)
 {
-    (void) MOC_MEMSET(pDest, value, len);
+    (void) DIGI_MEMSET(pDest, value, len);
 }
 
 void moc_memcpy(void *pDest1, const void *pSrc1, sbyte4 len)
 {
-    (void)MOC_MEMCPY(pDest1, pSrc1, len);
+    (void)DIGI_MEMCPY(pDest1, pSrc1, len);
 }
 
 sbyte4 moc_memcmp(const void *pSrc1, const void *pSrc2, usize len)
 {
     sbyte4 result = -1;
 
-    MSTATUS status = MOC_MEMCMP(pSrc1, pSrc2, len, &result);
+    MSTATUS status = DIGI_MEMCMP(pSrc1, pSrc2, len, &result);
     if (status != OK) {
         goto exit;
     }
@@ -1201,13 +1201,13 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_MEM_PART__
+#ifdef __ENABLE_DIGICERT_MEM_PART__
 
 #ifndef MOC_DEFRAGMENT_MAX_VARS
 #define MOC_DEFRAGMENT_MAX_VARS 32
 #endif
 
-extern MSTATUS MOC_Defragment(uintptr *pAllocationList, ubyte4 listLen)
+extern MSTATUS DIGI_Defragment(uintptr *pAllocationList, ubyte4 listLen)
 {
     MSTATUS status = ERR_NULL_POINTER;
     ubyte4 pBlockLen[MOC_DEFRAGMENT_MAX_VARS] = {0};
@@ -1239,7 +1239,7 @@ extern MSTATUS MOC_Defragment(uintptr *pAllocationList, ubyte4 listLen)
     }
 
     /* Create one temp buffer to hold all the data */
-    status = MOC_MALLOC((void **) &pTemp, totalLen);
+    status = DIGI_MALLOC((void **) &pTemp, totalLen);
     if (OK != status)
     {
         /* Use a different return code so the app can continue even if this fails */
@@ -1251,11 +1251,11 @@ extern MSTATUS MOC_Defragment(uintptr *pAllocationList, ubyte4 listLen)
     pTempPtr = pTemp;
     for (i = 0; i < listLen; i++)
     {
-        status = MOC_MEMCPY(pTempPtr, (ubyte *) pAllocationList[i], pBlockLen[i]);
+        status = DIGI_MEMCPY(pTempPtr, (ubyte *) pAllocationList[i], pBlockLen[i]);
         if (OK != status)
             goto exit;
 
-        status = MOC_FREE((void **) &pAllocationList[i]);
+        status = DIGI_FREE((void **) &pAllocationList[i]);
         if (OK != status)
             goto exit;
 
@@ -1266,13 +1266,13 @@ extern MSTATUS MOC_Defragment(uintptr *pAllocationList, ubyte4 listLen)
     pTempPtr = pTemp;
     for (i = 0; i < listLen; i++)
     {
-        status = MOC_MALLOC((void **) &pNewPtr, pBlockLen[i]);
+        status = DIGI_MALLOC((void **) &pNewPtr, pBlockLen[i]);
         if (OK != status)
             goto exit; 
 
         /* we'll ignore return code here as we want to update the 
            ptr in the list no matter what, ie so it can be freed later */
-        (void) MOC_MEMCPY(pNewPtr, pTempPtr, pBlockLen[i]);
+        (void) DIGI_MEMCPY(pNewPtr, pTempPtr, pBlockLen[i]);
         pTempPtr += pBlockLen[i];
 
         /* set the new ptr in the list */
@@ -1283,19 +1283,19 @@ exit:
 
     if (NULL != pTemp)
     {
-        MSTATUS fstatus = MOC_FREE((void **) &pTemp);
+        MSTATUS fstatus = DIGI_FREE((void **) &pTemp);
         if (OK == status)
             status = fstatus;
     }
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_MEM_PART__ */
+#endif /* __ENABLE_DIGICERT_MEM_PART__ */
 
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_UTOA(ubyte4 value, ubyte *pRetResult, ubyte4 *pRetNumDigitsLong)
+DIGI_UTOA(ubyte4 value, ubyte *pRetResult, ubyte4 *pRetNumDigitsLong)
 {
     ubyte4     divisor = 1000000000UL;
     ubyte4     digit;
@@ -1335,7 +1335,7 @@ MOC_UTOA(ubyte4 value, ubyte *pRetResult, ubyte4 *pRetNumDigitsLong)
 /*------------------------------------------------------------------*/
 
 extern sbyte*
-MOC_LTOA(sbyte4 value, sbyte *buff, ubyte4 bufSize)
+DIGI_LTOA(sbyte4 value, sbyte *buff, ubyte4 bufSize)
 {
     sbyte* p = buff;
     sbyte* retVal;
@@ -1373,7 +1373,7 @@ MOC_LTOA(sbyte4 value, sbyte *buff, ubyte4 bufSize)
 /*---------------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_DAYOFWEEK( sbyte4 d, sbyte4 m, sbyte4 y)
+DIGI_DAYOFWEEK( sbyte4 d, sbyte4 m, sbyte4 y)
 {
     /* C FAQ Tomohiko Sakamoto */
     static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
@@ -1386,7 +1386,7 @@ MOC_DAYOFWEEK( sbyte4 d, sbyte4 m, sbyte4 y)
 /*------------------------------------------------------------------*/
 
 extern ubyte4
-MOC_BITLENGTH( ubyte4 w)
+DIGI_BITLENGTH( ubyte4 w)
 {
     ubyte4 numBits = 0;
 
@@ -1426,7 +1426,7 @@ MOC_BITLENGTH( ubyte4 w)
 /*------------------------------------------------------------------*/
 
 extern ubyte4
-MOC_BITCOUNT( ubyte4 v)
+DIGI_BITCOUNT( ubyte4 v)
 {
     v = v - ((v >> 1) & 0x55555555);
     v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
@@ -1438,7 +1438,7 @@ MOC_BITCOUNT( ubyte4 v)
 
 
 extern ubyte4
-MOC_floorPower2(ubyte4 value)
+DIGI_floorPower2(ubyte4 value)
 {
     value = (value | (value >> 1));
     value = (value | (value >> 2));
@@ -1454,12 +1454,12 @@ MOC_floorPower2(ubyte4 value)
 /*------------------------------------------------------------------*/
 
 extern sbyte4
-MOC_cmpTimeDate( const TimeDate* first, const TimeDate* second)
+DIGI_cmpTimeDate( const TimeDate* first, const TimeDate* second)
 {
     sbyte4 retVal;
     if (first->m_year == second->m_year)
     {
-        MOC_MEMCMP( &first->m_month, &second->m_month, sizeof(TimeDate) - 2, &retVal);
+        DIGI_MEMCMP( &first->m_month, &second->m_month, sizeof(TimeDate) - 2, &retVal);
     }
     else
     {
@@ -1472,7 +1472,7 @@ MOC_cmpTimeDate( const TimeDate* first, const TimeDate* second)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-MOC_convertHexString(const char *src, ubyte *outbuf, ubyte4 outbuflen)
+DIGI_convertHexString(const char *src, ubyte *outbuf, ubyte4 outbuflen)
 {
     MSTATUS status = OK;
     ubyte4 len = 0;
@@ -1546,7 +1546,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-MOC_EXTERN MSTATUS MOC_removeDuplicateSlashes (char *pPath)
+MOC_EXTERN MSTATUS DIGI_removeDuplicateSlashes (char *pPath)
 {
     int i = 0, j, len;
     intBoolean slashFound = FALSE;
@@ -1554,7 +1554,7 @@ MOC_EXTERN MSTATUS MOC_removeDuplicateSlashes (char *pPath)
     if (NULL == pPath)
         return ERR_NULL_POINTER;
 
-    len = MOC_STRLEN ((const sbyte*)pPath);
+    len = DIGI_STRLEN ((const sbyte*)pPath);
     while (i < len)
     {
 #if defined(__RTOS_WIN32__)

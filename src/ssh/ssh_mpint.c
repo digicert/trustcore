@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------------*/
 #include "../ssh/ssh_mpint.h"
 
-#if defined(__ENABLE_MOCANA_PEM_CONVERSION__) || !defined(__DISABLE_MOCANA_KEY_GENERATION__)
+#if defined(__ENABLE_DIGICERT_PEM_CONVERSION__) || !defined(__DISABLE_DIGICERT_KEY_GENERATION__)
 
 MOC_EXTERN MSTATUS SSH_mpintByteStringFromByteString (
   const ubyte* pValue,
@@ -82,7 +82,7 @@ MOC_EXTERN MSTATUS SSH_mpintByteStringFromByteString (
   /* 4 byte length plus potential extra byte plus raw value length */
   destLen = 4 + extraByte + valueLen;
 
-  status = MOC_MALLOC((void **) &pDest, destLen);
+  status = DIGI_MALLOC((void **) &pDest, destLen);
   if (OK != status)
       goto exit;
 
@@ -98,7 +98,7 @@ MOC_EXTERN MSTATUS SSH_mpintByteStringFromByteString (
   if (valueLen > 0)
   {
     /* raw value*/
-    (void) MOC_MEMCPY(pDest + 4 + extraByte, pValue, valueLen);
+    (void) DIGI_MEMCPY(pDest + 4 + extraByte, pValue, valueLen);
 
     /* convert to 2s complement if negative */
     if (sign)
@@ -127,10 +127,10 @@ MOC_EXTERN MSTATUS SSH_mpintByteStringFromByteString (
 
 exit:
 
-  /* no goto exit after MOC_MALLOC, no cleanup needed */
+  /* no goto exit after DIGI_MALLOC, no cleanup needed */
   return status;
 }
-#endif /* defined(__ENABLE_MOCANA_PEM_CONVERSION__) || !defined(__DISABLE_MOCANA_KEY_GENERATION__) */
+#endif /* defined(__ENABLE_DIGICERT_PEM_CONVERSION__) || !defined(__DISABLE_DIGICERT_KEY_GENERATION__) */
 
 /*----------------------------------------------------------------------------*/
 
@@ -180,12 +180,12 @@ MOC_EXTERN MSTATUS SSH_getByteStringFromMpintBytes(
     pArray += 4;
 
     /* allocate temporary buffer */
-    status = MOC_MALLOC((void**)&pTmpArray, length);
+    status = DIGI_MALLOC((void**)&pTmpArray, length);
     if(OK != status)
         goto exit;
 
     /* copy value of mpint array into temporary buffer */
-    status = MOC_MEMCPY(pTmpArray, pArray, length);
+    status = DIGI_MEMCPY(pTmpArray, pArray, length);
     if(OK != status)
         goto exit;
   }
@@ -194,7 +194,7 @@ MOC_EXTERN MSTATUS SSH_getByteStringFromMpintBytes(
   pTmpArray = NULL;
 
 exit:
-  MOC_FREE((void**)pTmpArray);
+  DIGI_FREE((void**)&pTmpArray);
   return status;
 
 }

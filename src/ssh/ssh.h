@@ -26,15 +26,15 @@
 @flags
 To build products using this header file, at least one of the following flags
 must be defined (in a file included before %ssh.h is included):
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 Whether the following flags are defined determine which enumerations, structures,
 and function declarations are enabled:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-+ \c \__USE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
++ \c \__USE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @filedoc    ssh.h
 */
@@ -50,8 +50,8 @@ and function declarations are enabled:
 extern "C" {
 #endif
 
-#if !defined( __ENABLE_MOCANA_SSH_SERVER__ ) && defined( __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ )
-#define __ENABLE_MOCANA_SSH_SERVER__
+#if !defined( __ENABLE_DIGICERT_SSH_SERVER__ ) && defined( __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ )
+#define __ENABLE_DIGICERT_SSH_SERVER__
 #endif
 
 
@@ -99,7 +99,7 @@ enum asyncWaitEvents
 #endif
 
 #ifndef TIMEOUT_SSH_KEX
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
  #define TIMEOUT_SSH_KEX                         (120000)
 #else
  #define TIMEOUT_SSH_KEX                         (10000)
@@ -107,7 +107,7 @@ enum asyncWaitEvents
 #endif
 
 #ifndef TIMEOUT_SSH_NEWKEYS
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
  #define TIMEOUT_SSH_NEWKEYS                     (120000)
 #else
  #define TIMEOUT_SSH_NEWKEYS                     (15000)
@@ -115,7 +115,7 @@ enum asyncWaitEvents
 #endif
 
 #ifndef TIMEOUT_SSH_SERVICE_REQUEST
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
  #define TIMEOUT_SSH_SERVICE_REQUEST             (120000)
 #else
  #define TIMEOUT_SSH_SERVICE_REQUEST             (4000)
@@ -128,7 +128,7 @@ enum asyncWaitEvents
 
 /* the most interesting of these values, the amount of time we allow the user to authenticate */
 #ifndef TIMEOUT_SSH_AUTH_LOGON
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
  #define TIMEOUT_SSH_AUTH_LOGON                  (1000 * 60 * 200)
 #else
  #define TIMEOUT_SSH_AUTH_LOGON                  (1000 * 60 * 10)
@@ -142,7 +142,7 @@ enum asyncWaitEvents
 
 /* sizes */
 #ifndef SSH_MAX_BUFFER_SIZE
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 #define SSH_MAX_BUFFER_SIZE                     (2097152)
 #else
 #define SSH_MAX_BUFFER_SIZE                     (1024*4)
@@ -197,7 +197,7 @@ enum asyncWaitEvents
 #define SFTP_SERVER_STREAM_BUF_SIZE             (4096)
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 #define MOCANA_SSH_ALLOW_DIRECT_TCPIP             (0x00010000)
 #define MOCANA_SSH_ALLOW_FORWARDED_TCPIP          (0x00020000)
 #define MOCANA_SSH_ALLOW_PRIVILEGED_DIRECT_TCPIP  (0x00040000)
@@ -306,8 +306,8 @@ typedef struct certStore* certStorePtr;
 
 @flags
 To use this structure, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSL_SERVER__
-+ \c \__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSL_SERVER__
++ \c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__
 
 */
 typedef struct
@@ -380,9 +380,9 @@ typedef struct
 */
     ubyte4          sshTimeOutDefaultOpenState;
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_MOCANA_OCSP_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_DIGICERT_OCSP_CLIENT__)))
     sbyte *         pOcspResponderUrl;
-#if (defined(__ENABLE_MOCANA_OCSP_TIMEOUT_CONFIG__))
+#if (defined(__ENABLE_DIGICERT_OCSP_TIMEOUT_CONFIG__))
     ubyte4          ocspTimeout;
 #endif
 #endif
@@ -405,8 +405,8 @@ typedef struct
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -439,8 +439,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstanc    Connection instance returned from
                               SSH_acceptConnection() or
@@ -472,8 +472,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -506,8 +506,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -540,8 +540,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -574,8 +574,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -609,8 +609,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from SSH_acceptConnection() or SSH_ASYNC_acceptConnection().
 @param sessionEvent         Any of the \c sshSessionTypes enumerated values (see ssh.h).
@@ -641,8 +641,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -674,8 +674,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -707,8 +707,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -741,8 +741,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -777,8 +777,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -811,8 +811,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -832,7 +832,7 @@ To enable this function, at least one of the following flags must be defined in 
     sbyte4(*funcPtrReplyPing)     (sbyte4 connectionInstance, enum sshSessionTypes sessionEvent, ubyte *pMesg, ubyte4 mesgLen);
 
     /* general purpose upcalls */
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 /**
 @brief      Initialize session data.
@@ -847,10 +847,10 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -874,10 +874,10 @@ Additionally, the following flag must \b not be defined:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -902,7 +902,7 @@ Additionally, the following flag must \b not be defined:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance       Connection instance returned from
                                   SSH_ASYNC_acceptConnection().
@@ -915,7 +915,7 @@ To enable this function, the following flag must be defined in moptions.h:
 @callbackdoc ssh.h
 */
     void(*funcPtrStartTimer)     (sbyte4 connectionInstance, ubyte4 msTimerExpire, sbyte4 boolUserAuthenticated);
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 /**
 @brief      Validate the provided password to complete authentication.
@@ -930,8 +930,8 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -974,8 +974,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1074,8 +1074,8 @@ The following enumerated values (defined in ca_mgmt.h) are supported:\n
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1115,8 +1115,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1155,8 +1155,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1187,8 +1187,8 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1203,7 +1203,7 @@ To enable this function, at least one of the following flags must be defined in 
 */
     sbyte4(*funcPtrGetAuthAdvertizedMethods)  (sbyte4 connectionInstance);
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /**
 @brief      (Optional) Custom connection handler.
 
@@ -1220,11 +1220,11 @@ To enable this function, at least one of the following flags must be defined in 
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1262,11 +1262,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1302,11 +1302,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or SSH_ASYNC_acceptConnection().
@@ -1342,11 +1342,11 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -1393,7 +1393,7 @@ Additionally, at least one of the following flags must be defined in moptions.h:
 @ingroup    cb_sshs_port_forwarding
 */
     sbyte4 (*funcPtrRemotePortFwdSessionOpen) (sbyte4 connectionInstance, ubyte4 channel, ubyte4 myChannel);
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 /**
 @brief      Inform the calling application that Session Rekey has been initiated.
@@ -1426,7 +1426,7 @@ status, use the $DISPLAY_ERROR$ macro.
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 /**
 @brief      Associate host keys with a connection.
 
@@ -1442,8 +1442,8 @@ status, use the $DISPLAY_ERROR$ macro.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @inc_file ssh.h
 
@@ -1464,7 +1464,7 @@ sample code (examples directory).
 */
 MOC_EXTERN sbyte4 SSH_assignCertificateStore(sbyte4 connectionInstance, certStorePtr pCertStore);
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 /**
 @brief      Initialize NanoSSH server internal structures.
 
@@ -1479,10 +1479,10 @@ MOC_EXTERN sbyte4 SSH_assignCertificateStore(sbyte4 connectionInstance, certStor
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param sshMaxConnections    Maximum number of SSH server connections to allow.
                             (Each connection requires only a few bytes of
@@ -1528,10 +1528,10 @@ MOC_EXTERN sbyte4 SSH_init(sbyte4 sshMaxConnections);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param tempSocket   Socket or TCB identifier returned by a call to \c accept().
 
@@ -1580,10 +1580,10 @@ MOC_EXTERN sbyte4 SSH_acceptConnection(TCP_SOCKET socket);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -1607,7 +1607,7 @@ status = SSH_negotiateConnection(connectionInstance);
 */
 MOC_EXTERN sbyte4 SSH_negotiateConnection(sbyte4 connectionInstance);
 
-#ifndef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifndef __ENABLE_DIGICERT_SSH_STREAM_API__
 /**
 @brief      Get an entire message from a %server and decrypt the data.
 
@@ -1624,11 +1624,11 @@ reads an entire message at once.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flags must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-+ \c \__ENABLE_MOCANA_SSH_STREAM_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_STREAM_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -1702,11 +1702,11 @@ enables streaming data reads of just part of a message.
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_STREAM_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_STREAM_API__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -1752,11 +1752,11 @@ MOC_EXTERN sbyte4 SSH_recv(sbyte4 connectionInstance, sbyte4 *pMessageType, ubyt
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_STREAM_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_STREAM_API__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance       Connection instance returned from
                                   SSH_acceptConnection().
@@ -1781,7 +1781,7 @@ MOC_EXTERN sbyte4 SSH_recvPending(sbyte4 connectionInstance, sbyte4 *pRetBoolean
 @brief      Send data to a client.
 
 @details    This function sends data to a server unless deadlock prevention is
-            enabled by the \c __ENABLE_MOCANA_SSH_SENDER_RECV__ flag and the
+            enabled by the \c __ENABLE_DIGICERT_SSH_SENDER_RECV__ flag and the
             SSH transport window size indicates insufficient %client
             acknowledgement of previously sent data.
 
@@ -1795,10 +1795,10 @@ MOC_EXTERN sbyte4 SSH_recvPending(sbyte4 connectionInstance, sbyte4 *pRetBoolean
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from SSH_acceptConnection().
 @param pBuffer              Pointer to the buffer containing the data to send.
@@ -1864,8 +1864,8 @@ MOC_EXTERN sbyte4 SSH_sendMessage(sbyte4 connectionInstance, sbyte *pBuffer, sby
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -1901,10 +1901,10 @@ MOC_EXTERN sbyte4 SSH_sendErrMessage(sbyte4 connectionInstance, sbyte *pBuffer, 
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance     Connection instance returned from SSH_acceptConnection().
 @param errorCode              Error code to identify the error status of the
@@ -1929,7 +1929,7 @@ status = SSH_closeConnection(connectionInstance, errorCode);
 */
 MOC_EXTERN sbyte4 SSH_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode);
 
-#ifdef __ENABLE_MOCANA_SSH_PING__
+#ifdef __ENABLE_DIGICERT_SSH_PING__
 /**
 @brief      Determine which connections are alive by pinging each open
             connection.
@@ -1944,11 +1944,11 @@ MOC_EXTERN sbyte4 SSH_closeConnection(sbyte4 connectionInstance, MSTATUS errorCo
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_PING__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_PING__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                             SSH_acceptConnection().
@@ -1966,9 +1966,9 @@ Additionally, the following flag must \b not be defined:
 */
 MOC_EXTERN sbyte4 SSH_sendPing(sbyte4 connectionInstance);
 #endif
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
-#if (defined(__ENABLE_MOCANA_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_DIGICERT_DSA__))
 /**
 @brief      Convert a key blob from NanoSSH version 1.41 and earlier formats to
             version 2.02 format.
@@ -1984,12 +1984,12 @@ MOC_EXTERN sbyte4 SSH_sendPing(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 Additionally, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_OLD_DSA_CONVERSION__
-+ \c \__ENABLE_MOCANA_DSA__
++ \c \__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__
++ \c \__ENABLE_DIGICERT_DSA__
 
 @inc_file ssh.h
 
@@ -2026,19 +2026,19 @@ Additionally, the following flags must be defined in moptions.h:
     ubyte4  keyBlobLength;
 
     // read old dsa key blob, filenames may be different
-    status = MOCANA_readFile("sshkeys.pub", &pPubKeyBlob, &pubKeyBlobLength);
-    status = MOCANA_readFile("sshkeys.prv", &pPrivKeyBlob, &privKeyBlobLength);
+    status = DIGICERT_readFile("sshkeys.pub", &pPubKeyBlob, &pubKeyBlobLength);
+    status = DIGICERT_readFile("sshkeys.prv", &pPrivKeyBlob, &privKeyBlobLength);
 
     // convert to new format
     status = SSH_convertOldKeyBlobToNew(pPubKeyBlob, pubKeyBlobLength, pPrivKeyBlob, privKeyBlobLength, &pKeyBlob, &keyBlobLength);
 
     // save new key blob
-    status = MOCANA_writeFile("ssh_dss.key", pKeyBlob, keyBlobLength);
+    status = DIGICERT_writeFile("ssh_dss.key", pKeyBlob, keyBlobLength);
 
     // it may be a good idea to delete the old key blob at this time
 
-    MOCANA_freeReadFile(&pPubKeyBlob);
-    MOCANA_freeReadFile(&pPrivKeyBlob);
+    DIGICERT_freeReadFile(&pPubKeyBlob);
+    DIGICERT_freeReadFile(&pPrivKeyBlob);
     CA_MGMT_freeNakedKey(&pKeyBlob);
 }
 @endcode
@@ -2062,8 +2062,8 @@ MOC_EXTERN sbyte4 SSH_convertOldKeyBlobToNew(ubyte *pOldDsaPublicKeyBlob, ubyte4
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2102,8 +2102,8 @@ MOC_EXTERN sbyte4 SSH_getTerminalSettingDescr(sbyte4 connectionInstance, termina
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance  Connection instance returned from SSH_acceptConnection().
 @param pCookie             On return, pointer to cookie containing custom information.
@@ -2142,8 +2142,8 @@ MOC_EXTERN sbyte4 SSH_getCookie(sbyte4 connectionInstance, sbyte4 *pCookie);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from SSH_acceptConnection().
 @param cookie               Custom data (the cookie).
@@ -2182,8 +2182,8 @@ MOC_EXTERN sbyte4 SSH_setCookie(sbyte4 connectionInstance, sbyte4 cookie);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param socket   TCP/IP socket whose connection instance you want.
 
@@ -2214,8 +2214,8 @@ MOC_EXTERN sbyte4 SSH_getInstanceFromSocket(TCP_SOCKET socket);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection(), SSH_ASYNC_acceptConnection(), or SSH_getNextConnectionInstance.()
@@ -2276,8 +2276,8 @@ MOC_EXTERN sbyte4 SSH_getSessionCryptoInfo(sbyte4 connectionInstance, sbyte **pp
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2306,8 +2306,8 @@ MOC_EXTERN sbyte4 SSH_getNextConnectionInstance(sbyte4 connectionInstance);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2342,8 +2342,8 @@ MOC_EXTERN sbyte4 SSH_setErrorCode(sbyte4 connectionInstance, sbyte4 errorCode);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2396,8 +2396,8 @@ MOC_EXTERN sbyte4 SSH_useThisCipherList(sbyte4 connectionInstance, ubyte *pCiphe
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2447,8 +2447,8 @@ MOC_EXTERN sbyte4 SSH_useThisHmacList(sbyte4 connectionInstance, ubyte *pHmacLis
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2501,8 +2501,8 @@ processes re-key requests from SSH %clients.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2543,8 +2543,8 @@ MOC_EXTERN sbyte4 SSH_initiateReKey(sbyte4 connectionInstance, ubyte4 msAllowToC
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -2565,8 +2565,8 @@ To enable this function, at least one of the following flags must be defined in 
 */
 MOC_EXTERN sbyte4 SSH_numBytesTransmitted(sbyte4 connectionInstance, ubyte8 *pRetNumBytes);
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __USE_DIGICERT_SSH_SERVER__
 /**
 @brief      Start the NanoSSH server.
 
@@ -2583,11 +2583,11 @@ existing code or adapt the @ref ssh_server.c sample code.
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__USE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__USE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @inc_file ssh.h
 
@@ -2617,7 +2617,7 @@ void SSH_EXAMPLE_main(void)
     if (0 > SSH_EXAMPLE_computeHostKeys())
         goto exit;
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     SFTP_EXAMPLE_init();
 #endif
 
@@ -2647,11 +2647,11 @@ MOC_EXTERN sbyte4  SSH_startServer(void);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__USE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__USE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @inc_file ssh.h
 
@@ -2684,11 +2684,11 @@ MOC_EXTERN void SSH_stopServer (void);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__USE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__USE_DIGICERT_SSH_SERVER__
 
 Additionally, the following flag must \b not be defined:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @inc_file ssh.h
 
@@ -2699,8 +2699,8 @@ Additionally, the following flag must \b not be defined:
 @funcdoc ssh.h
 */
 MOC_EXTERN void SSH_disconnectAllClients(void);
-#endif /* __USE_MOCANA_SSH_SERVER__ */
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __USE_DIGICERT_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 /**
 @brief      Authenticate a %client by public key authentication.
@@ -2718,8 +2718,8 @@ The key file may be any host key generated by any SSH-compliant %client.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param pPubKey          Pointer to public key provided by the client.
 @param pubKeyLength     Number of bytes in public key (\p pPubKey).
@@ -2761,8 +2761,8 @@ MOC_EXTERN sbyte4  SSH_compareAuthKeys(const ubyte *pPubKey,  ubyte4 pubKeyLengt
 @flags
 To enable this function, at least one of the following flags must be 
 defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param pKeyFileData     Pointer to authentication key to be verified.
 @param fileSize         Number of bytes in the public key (\p pKeyFileData).
@@ -2780,7 +2780,7 @@ ubyte4  storedPublicKeyLength;
 sbyte4  result;
 
     // a pub key on file
-    if (0 > MOCANA_readFile(AUTH_KEYFILE_NAME,
+    if (0 > DIGICERT_readFile(AUTH_KEYFILE_NAME,
                             &pStoredPublicKey,
                             &storedPublicKeyLength))
     {
@@ -2822,8 +2822,8 @@ NanoSSH server is threadless.
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @inc_file ssh.h
 
@@ -2860,8 +2860,8 @@ MOC_EXTERN sbyte4 SSH_shutdown(void);
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @inc_file ssh.h
 
@@ -2909,7 +2909,7 @@ SSH_sshSettings()->sshMaxConnections            = 4;
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @inc_file ssh.h
 
@@ -2921,7 +2921,7 @@ To enable this function, the following flag must be defined in moptions.h:
 */
 MOC_EXTERN sshSettings* SSH_sshSettings(void);
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 /**
 @brief      Initialize NanoSSH server internal structures.
 
@@ -2935,7 +2935,7 @@ MOC_EXTERN sshSettings* SSH_sshSettings(void);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param sshMaxConnections    Maximum number of SSH asynchronous server
                             connections to allow. (Each connection requires
@@ -2973,7 +2973,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_init(sbyte4 sshMaxConnections);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param listeningPort    Listening port number.
 
@@ -3010,7 +3010,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_setListeningPort(ubyte4 listeningPort);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param tempSocket               Socket or TCB identifier returned by a call
                                   to \c accept().
@@ -3062,7 +3062,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket, ubyte *pClie
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from SSH_ASYNC_acceptConnection.
 
@@ -3095,7 +3095,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_startProtocolV2(sbyte4 connectionInstance);
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_ASYNC_acceptConnection().
@@ -3161,7 +3161,7 @@ NanoSSH server version, be sure to add calls to this function.
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_ASYNC_acceptConnection().
@@ -3197,7 +3197,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_ackReceivedMessageBytes(sbyte4 connectionInstance, e
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @inc_file ssh.h
 
@@ -3231,7 +3231,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_recvContinueMessage(sbyte4 connectionInstance, sbyte
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_ASYNC_acceptConnection().
@@ -3283,7 +3283,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_sendMessage(sbyte4 connectionInstance, sbyte *pBuffe
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_ASYNC_acceptConnection().
@@ -3323,7 +3323,7 @@ MOC_EXTERN sbyte4 SSH_ASYNC_sendMessagePending(sbyte4 connectionInstance, ubyte4
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_ASYNC_acceptConnection().
@@ -3349,9 +3349,9 @@ status = SSH_closeConnection(connectionInstance, errorCode);
 @funcdoc ssh.h
 */
 MOC_EXTERN sbyte4 SSH_ASYNC_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode);
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /**
 @brief      Set a connection's port forwarding access permission.
 
@@ -3368,11 +3368,11 @@ MOC_EXTERN sbyte4 SSH_ASYNC_closeConnection(sbyte4 connectionInstance, MSTATUS e
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -3398,7 +3398,7 @@ MOC_EXTERN sbyte4 SSH_setUserPortForwardingPermissions(sbyte4 connectionInstance
 
 @details    This function sends a message (typically unencrypted text) to a
             %client over a secure SSH connection unless deadlock prevention
-            is enabled by the \c __ENABLE_MOCANA_SSH_SENDER_RECV__ flag and
+            is enabled by the \c __ENABLE_DIGICERT_SSH_SENDER_RECV__ flag and
             the SSH transport window size indicates insufficient %client acknowledgement of previously sent data.
 
 @ingroup    func_ssh_core_server_connection_mgmt
@@ -3408,11 +3408,11 @@ MOC_EXTERN sbyte4 SSH_setUserPortForwardingPermissions(sbyte4 connectionInstance
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -3478,11 +3478,11 @@ MOC_EXTERN sbyte4 SSH_sendPortFwdOpen(sbyte4 connectionInstance, ubyte* pConnect
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 Additionally, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection().
@@ -3518,7 +3518,7 @@ MOC_EXTERN sbyte4 SSH_sendPortForwardClose(sbyte4 connectionInstance, sbyte4 cha
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or SSH_ASYNC_acceptConnection().
@@ -3540,7 +3540,7 @@ To enable this function, the following flag must be defined in moptions.h:
 @funcdoc ssh.h
 */
 MOC_EXTERN sbyte4 SSH_ackPortFwdReceivedMessageBytes(sbyte4 connectionInstance, enum sshSessionTypes sessionEvent, ubyte4 numBytesAck, ubyte4 channel);
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 #else
 
@@ -3564,7 +3564,7 @@ MOC_EXTERN sbyte4 SSH_ackPortFwdReceivedMessageBytes(sbyte4 connectionInstance, 
 #define SSH_sshSettings(X)              (0)
 #define SSH_sftpSettings(X)             (0)
 
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */
 
 #ifdef __cplusplus
 }

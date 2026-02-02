@@ -4,12 +4,12 @@
  * Mocana Initialization
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
@@ -18,8 +18,8 @@
  * @file mocana.c
  */
 
-#define __IN_MOCANA_C__
-#define __ENABLE_MOCANA_FP_MAPPING_GUARD__
+#define __IN_DIGICERT_C__
+#define __ENABLE_DIGICERT_FP_MAPPING_GUARD__
 
 #include "../common/moptions.h"
 
@@ -40,7 +40,7 @@
 #endif
 
 #if !defined( __RTOS_WIN32__) && !defined(__RTOS_FREERTOS__)
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 #include <unistd.h>
 #ifndef __RTOS_THREADX__
 #if defined(__RTOS_ZEPHYR__)
@@ -53,7 +53,7 @@
 #if !defined(__RTOS_VXWORKS__) && !defined(__RTOS_THREADX__) && !defined(__RTOS_ZEPHYR__)
 #include <termios.h>
 #endif /* !__RTOS_VXWORKS__ && !__RTOS_THREADX__ && !__RTOS_ZEPHYR__ */
-#endif /* !__DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* !__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 #endif /* !__RTOS_WIN32__ && !__RTOS_FREERTOS__ */
 
 
@@ -63,7 +63,7 @@
 #include "../common/merrors.h"
 #include "../common/mrtos.h"
 #include "../common/mstdlib.h"
-#if (!defined(__DISABLE_MOCANA_TCP_INTERFACE__))
+#if (!defined(__DISABLE_DIGICERT_TCP_INTERFACE__))
 #include "../common/mtcp.h"
 #endif
 #include "../common/utils.h"
@@ -72,7 +72,7 @@
 #include "../common/random.h"
 #include "../common/rng_seed.h"
 
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 #include "../crypto/sha1.h"
 #include "../crypto/aes.h"
 #if !defined(__DISABLE_3DES_CIPHERS__)
@@ -83,38 +83,38 @@
 #include "../crypto/nist_rng_ex.h"
 #include "../crypto/nist_rng_types.h"
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__) && (!defined(__DISABLE_MOCANA_NIST_CTR_DRBG__)))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__) && (!defined(__DISABLE_DIGICERT_NIST_CTR_DRBG__)))
 #include "../crypto_interface/crypto_interface_nist_ctr_drbg.h"
 #endif
 #endif
 
 #include "../common/debug_console.h"
-#if (defined(__ENABLE_MOCANA_MEM_PART__))
+#if (defined(__ENABLE_DIGICERT_MEM_PART__))
 #include "../common/mem_part.h"
 #endif
-#if (defined(__ENABLE_MOCANA_HARNESS__))
+#if (defined(__ENABLE_DIGICERT_HARNESS__))
 #include "../harness/harness.h"
 #endif
 
-#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_MOCANA_NANOPNAC__)
+#if defined (__FREERTOS_RTOS__) && !defined(__ENABLE_DIGICERT_NANOPNAC__)
 #include "ff.h"
 #endif
 
-#if (defined(__ENABLE_MOCANA_RADIUS_CLIENT__) || defined(__ENABLE_MOCANA_IKE_SERVER__)) && \
+#if (defined(__ENABLE_DIGICERT_RADIUS_CLIENT__) || defined(__ENABLE_DIGICERT_IKE_SERVER__)) && \
     !(defined(__KERNEL__) || defined(_KERNEL) || defined(IPCOM_KERNEL))
 #include "../common/mudp.h"
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_PKCS10__) || defined(__ENABLE_MOCANA_PEM_CONVERSION__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_PKCS10__) || defined(__ENABLE_DIGICERT_PEM_CONVERSION__))
 #include "../common/base64.h"
 #endif
 
-#ifdef __MOCANA_FORCE_ENTROPY__
+#ifdef __DIGICERT_FORCE_ENTROPY__
 #include "../common/external_rand_thread.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__
-#include "../examples/custom_entropy.h"
+#ifdef __ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__
+#include "custom_entropy.h"
 #endif
 
 /*------------------------------------------------------------------*/
@@ -123,7 +123,7 @@
 #define MOC_MAX_BYTES_TO_COPY 4096
 #endif
 
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 #define MOC_ENTROPY_DEPOT_SIZE 64
 #ifndef SHA1_RESULT_SIZE
 #define SHA1_RESULT_SIZE 20
@@ -140,7 +140,7 @@
 logFn            g_logFn          = NULL;
  MOC_EXTERN_DATA_DEF volatile sbyte4 gMocanaAppsRunning = 0;
 
-#if !defined(__DISABLE_MOCANA_ADD_ENTROPY__) && !defined(__DISABLE_MOCANA_NIST_CTR_DRBG__)
+#if !defined(__DISABLE_DIGICERT_ADD_ENTROPY__) && !defined(__DISABLE_DIGICERT_NIST_CTR_DRBG__)
 static ubyte entropyDepot[MOC_ENTROPY_DEPOT_SIZE + SHA1_RESULT_SIZE];
 static ubyte4 entropyIndex = 0;
 #endif
@@ -150,10 +150,10 @@ static ubyte4 entropyIndex = 0;
  */
 
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
 /*------------------------------------------------------------------*/
 
-extern sbyte4 MOCANA_initMocanaStaticMemory (
+extern sbyte4 DIGICERT_initDigicertStaticMemory (
   ubyte *pStaticMem,
   ubyte4 staticMemSize
   )
@@ -170,7 +170,7 @@ extern sbyte4 MOCANA_initMocanaStaticMemory (
   setupInfo.symOperatorCount = 0;
   setupInfo.pKeyOperators = NULL;
   setupInfo.keyOperatorCount = 0;
-  return (sbyte4)MOCANA_initialize(&setupInfo, NULL);
+  return (sbyte4)DIGICERT_initialize(&setupInfo, NULL);
 }
 
 /**
@@ -180,34 +180,34 @@ extern sbyte4 MOCANA_initMocanaStaticMemory (
             of Things Platform product.
 */
 extern sbyte4
-MOCANA_initMocana(void)
+DIGICERT_initDigicert(void)
 {
-  return (sbyte4)MOCANA_initialize(NULL, NULL);
+  return (sbyte4)DIGICERT_initialize(NULL, NULL);
 }
-#endif /* __DISABLE_MOCANA_INIT__ */
+#endif /* __DISABLE_DIGICERT_INIT__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
 /**
-@brief      Release memory allocated by MOCANA_initMocana.
+@brief      Release memory allocated by DIGICERT_initDigicert.
 @details    This function releases memory previously allocated by a call to
-            MOCANA_initMocana().
+            DIGICERT_initDigicert().
 */
 extern sbyte4
-MOCANA_freeMocana(void)
+DIGICERT_freeDigicert(void)
 {
-  return (sbyte4)MOCANA_free(NULL);
+  return (sbyte4)DIGICERT_free(NULL);
 }
-#endif /* __DISABLE_MOCANA_INIT__ */
+#endif /* __DISABLE_DIGICERT_INIT__ */
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 
-#ifndef __DISABLE_MOCANA_NIST_CTR_DRBG__
-static void MOCANA_SEED_addEntropyBit(ubyte entropyBit)
+#ifndef __DISABLE_DIGICERT_NIST_CTR_DRBG__
+static void DIGICERT_SEED_addEntropyBit(ubyte entropyBit)
 {
     ubyte4 bitPos;
 
@@ -225,7 +225,7 @@ static void MOCANA_SEED_addEntropyBit(ubyte entropyBit)
 
 /*------------------------------------------------------------------*/
 
-static sbyte4 MOCANA_addEntropyBitDRBGCTR(randomContext *pRandomContext, ubyte entropyBit)
+static sbyte4 DIGICERT_addEntropyBitDRBGCTR(randomContext *pRandomContext, ubyte entropyBit)
 {
     MSTATUS status = OK;
     RandomCtxWrapper* pWrapper = NULL;
@@ -254,7 +254,7 @@ static sbyte4 MOCANA_addEntropyBitDRBGCTR(randomContext *pRandomContext, ubyte e
     MOC_UNUSED(hwAccelCtx);
 
     /* First add the bit into our EntropyDepot */
-    MOCANA_SEED_addEntropyBit(entropyBit);
+    DIGICERT_SEED_addEntropyBit(entropyBit);
 
     pWrapper->reseedBitCounter++;
 
@@ -267,7 +267,7 @@ static sbyte4 MOCANA_addEntropyBitDRBGCTR(randomContext *pRandomContext, ubyte e
     }
 
     /* Perform the reseed operation */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_NIST_CTRDRBG_reseed (
         MOC_HASH(hwAccelCtx) pRandomContext, entropyDepot, 48, NULL, 0);
 #else
@@ -283,7 +283,7 @@ static sbyte4 MOCANA_addEntropyBitDRBGCTR(randomContext *pRandomContext, ubyte e
 exit:
     return status;
 }
-#endif /* __DISABLE_MOCANA_NIST_CTR_DRBG__ */
+#endif /* __DISABLE_DIGICERT_NIST_CTR_DRBG__ */
 
 /*------------------------------------------------------------------*/
 
@@ -292,10 +292,10 @@ exit:
 @details    This function adds a random bit to your application's random number
             generator. Before calling this function, your application should
             have already initialized the Mocana %common code base by
-            calling MOCANA_initMocana().
+            calling DIGICERT_initDigicert().
 */
 extern sbyte4
-MOCANA_addEntropyBit(ubyte entropyBit)
+DIGICERT_addEntropyBit(ubyte entropyBit)
 {
     MSTATUS status = OK;
     RandomCtxWrapper* pWrapper = NULL;
@@ -316,13 +316,13 @@ MOCANA_addEntropyBit(ubyte entropyBit)
 
     pWrapper = (RandomCtxWrapper*)g_pRandomContext;
 
-#ifndef __DISABLE_MOCANA_NIST_CTR_DRBG__
+#ifndef __DISABLE_DIGICERT_NIST_CTR_DRBG__
     /* If this is injecting external entropy for a ctr-drbg rng, collect the entropy
      * manually and call the reseed directly */
     if ( (ENTROPY_SRC_EXTERNAL == entropySrc) &&
          (TRUE == IS_CTR_DRBG_CTX(pWrapper)) )
     {
-        status = MOCANA_addEntropyBitDRBGCTR(g_pRandomContext, entropyBit);
+        status = DIGICERT_addEntropyBitDRBGCTR(g_pRandomContext, entropyBit);
     }
     else
 #endif
@@ -334,27 +334,27 @@ exit:
     return status;
 }
 
-#endif /* __DISABLE_MOCANA_ADD_ENTROPY__ */
+#endif /* __DISABLE_DIGICERT_ADD_ENTROPY__ */
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_ADD_ENTROPY__
+#ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 /**
  * @brief      Add 32 random bits to application's random number generator.
  * @details    This function adds 32 random bits to your application's random
  *             number generator. Before calling this function, your application
  *             should have already initialized the Mocana %common code base by
- *             calling MOCANA_initMocana().
+ *             calling DIGICERT_initDigicert().
  */
 extern sbyte4
-MOCANA_addEntropy32Bits(ubyte4 entropyBits)
+DIGICERT_addEntropy32Bits(ubyte4 entropyBits)
 {
     ubyte4  count;
     MSTATUS status = OK;
 
     for (count = 32; count > 0; count--)
     {
-        if (OK > (status = MOCANA_addEntropyBit((ubyte)(entropyBits & 1))))
+        if (OK > (status = DIGICERT_addEntropyBit((ubyte)(entropyBits & 1))))
             break;
 
         entropyBits >>= 1;
@@ -362,15 +362,15 @@ MOCANA_addEntropy32Bits(ubyte4 entropyBits)
 
     return (sbyte4)status;
 }
-#endif /* __DISABLE_MOCANA_ADD_ENTROPY__ */
+#endif /* __DISABLE_DIGICERT_ADD_ENTROPY__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__
+#ifdef __ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__
 
 extern sbyte4
-MOCANA_addCustomEntropyInjection(void)
+DIGICERT_addCustomEntropyInjection(void)
 {
     MSTATUS status;
     ubyte4 i = 0;
@@ -379,7 +379,7 @@ MOCANA_addCustomEntropyInjection(void)
     ubyte pEntropy[MOC_CUSTOM_ENTROPY_LEN] = {0};
 
     /* Get the custom entropy */
-    status = MOCANA_CUSTOM_getEntropy(pEntropy, MOC_CUSTOM_ENTROPY_LEN);
+    status = DIGICERT_CUSTOM_getEntropy(pEntropy, MOC_CUSTOM_ENTROPY_LEN);
     if (OK != status)
         goto exit;
 
@@ -388,7 +388,7 @@ MOCANA_addCustomEntropyInjection(void)
         byte = pEntropy[i];
         for (j = 8; j > 0; j--)
         {
-            status = MOCANA_addEntropyBit(byte & 1);
+            status = DIGICERT_addEntropyBit(byte & 1);
             if (OK != status)
                 goto exit;
 
@@ -398,17 +398,17 @@ MOCANA_addCustomEntropyInjection(void)
 
 exit:
     byte = 0;
-    MOC_MEMSET(pEntropy, 0, MOC_CUSTOM_ENTROPY_LEN);
+    DIGI_MEMSET(pEntropy, 0, MOC_CUSTOM_ENTROPY_LEN);
     return status;
 }
 
-#endif /* ifdef __ENABLE_MOCANA_CUSTOM_ENTROPY_INJECT__ */
+#endif /* ifdef __ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__ */
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
-#if !defined(__ENABLE_MOCANA_NANOPNAC__) && !defined(__RTOS_ZEPHYR__)
-MSTATUS MOCANA_opendir(void **pDirInfo, const char *pPath)
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
+#if !defined(__ENABLE_DIGICERT_NANOPNAC__) && !defined(__RTOS_ZEPHYR__)
+int DIGICERT_opendir(void **pDirInfo, const char *pPath)
 {
     MSTATUS status = OK;
 #if !defined(__WIN32_RTOS__) && !defined(__RTOS_THREADX__)
@@ -454,10 +454,10 @@ MSTATUS MOCANA_opendir(void **pDirInfo, const char *pPath)
 #endif
 
 exit:
-    return status;
+    return (int) status;
 }
 
-MSTATUS MOCANA_readdir(void *pDir, void **pFileInfo)
+int DIGICERT_readdir(void *pDir, void **pFileInfo)
 {
     MSTATUS status = OK;
 #if (defined (__LINUX_RTOS__) || defined (__VXWORKS_RTOS__) || defined (__RTOS_OSX__))
@@ -495,11 +495,11 @@ MSTATUS MOCANA_readdir(void *pDir, void **pFileInfo)
     *pFileInfo = (void *)pEnt;
 #endif
 exit:
-    return status;
+    return (int) status;
 }
 
 
-MSTATUS MOCANA_closedir(void *pDir)
+int DIGICERT_closedir(void *pDir)
 {
     MSTATUS status = OK;
     if(!pDir )
@@ -530,7 +530,7 @@ MSTATUS MOCANA_closedir(void *pDir)
     }
 #endif
 exit:
-    return status;
+    return (int) status;
 }
 #endif
 
@@ -540,93 +540,93 @@ exit:
  *             from a file.
  */
 MOC_EXTERN sbyte4
-MOCANA_readFile(const char* pFilename, ubyte **ppRetBuffer, ubyte4 *pRetBufLength)
+DIGICERT_readFile(const char* pFilename, ubyte **ppRetBuffer, ubyte4 *pRetBufLength)
 {
     return (sbyte4)UTILS_readFile(pFilename, ppRetBuffer, pRetBufLength);
 }
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 /**
- * @brief      Release memory allocated by MOCANA_readFile().
+ * @brief      Release memory allocated by DIGICERT_readFile().
  * @details    This function releases memory previously allocated by a call to
- *             MOCANA_readFile().
+ *             DIGICERT_readFile().
  */
 extern sbyte4
-MOCANA_freeReadFile(ubyte **ppRetBuffer)
+DIGICERT_freeReadFile(ubyte **ppRetBuffer)
 {
     return (sbyte4)UTILS_freeReadFile(ppRetBuffer);
 }
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 /**
  * @brief      Write a buffer's contents to a file.
  * @details    This function writes a data buffer's contents to a file.
  */
 extern sbyte4
-MOCANA_writeFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength)
+DIGICERT_writeFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength)
 {
     return (sbyte4)UTILS_writeFile(pFilename, pBuffer, bufLength);
 }
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 /**
  * @brief      Appends a buffer's contents to a file, file is created if
  *             it does not exist.
  * @details    This function appends a data buffer's contents to a file.
  */
 extern sbyte4
-MOCANA_appendFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength)
+DIGICERT_appendFile(const char* pFilename, const ubyte *pBuffer, ubyte4 bufLength)
 {
     return (sbyte4)UTILS_appendFile(pFilename, pBuffer, bufLength);
 }
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 
 extern sbyte4
-MOCANA_copyFile(const char *pSrcFilename, const char *pDestFilename)
+DIGICERT_copyFile(const char *pSrcFilename, const char *pDestFilename)
 {
     return (sbyte4)UTILS_copyFile(pSrcFilename, pDestFilename, MOC_MAX_BYTES_TO_COPY);
 }
 
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 
 extern sbyte4
-MOCANA_deleteFile(const char *pFilename)
+DIGICERT_deleteFile(const char *pFilename)
 {
     return (sbyte4)UTILS_deleteFile(pFilename);
 }
 
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 
 /*------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
+#ifndef __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__
 
-extern sbyte4 MOCANA_checkFile(
+extern sbyte4 DIGICERT_checkFile(
     const char *pFilename, const char *pExt, intBoolean *pFileExist)
 {
     return (sbyte4) UTILS_checkFile(pFilename, pExt, pFileExist);
 }
 
-#endif /* __DISABLE_MOCANA_FILE_SYSTEM_HELPER__ */
+#endif /* __DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ */
 
 /*------------------------------------------------------------------*/
 
@@ -636,16 +636,16 @@ extern sbyte4 MOCANA_checkFile(
  *             Platform logging system.
  */
 extern sbyte4
-MOCANA_initLog(logFn lFn)
+DIGICERT_initLog(logFn lFn)
 {
     /* fine to set callback to null, if you wish to disable logging */
     g_logFn = lFn;
 
-    /* New flag __ENABLE_MOCANA_PRODUCT_DEBUG_CONSOLE__ is added to NOT print this message,
+    /* New flag __ENABLE_DIGICERT_PRODUCT_DEBUG_CONSOLE__ is added to NOT print this message,
      * when a production system enables Mocana debug logs
      */
-#if (defined(__ENABLE_MOCANA_DEBUG_CONSOLE__) && !defined(__ENABLE_MOCANA_PRODUCT_DEBUG_CONSOLE__))
-    MOCANA_log(MOCANA_MSS, LS_WARNING, (sbyte *)"NOT A PRODUCTION BUILD: MOCANA DEBUG CONSOLE HAS BEEN ENABLED.");
+#if (defined(__ENABLE_DIGICERT_DEBUG_CONSOLE__) && !defined(__ENABLE_DIGICERT_PRODUCT_DEBUG_CONSOLE__))
+    DIGICERT_log(MOCANA_MSS, LS_WARNING, (sbyte *)"NOT A PRODUCTION BUILD: DIGICERT DEBUG CONSOLE HAS BEEN ENABLED.");
 #endif
 
     return (sbyte4)OK;
@@ -661,7 +661,7 @@ MOCANA_initLog(logFn lFn)
  * should not be included in the API documentation (regardless of product).
  */
 extern void
-MOCANA_log(sbyte4 module, sbyte4 severity, sbyte *msg)
+DIGICERT_log(sbyte4 module, sbyte4 severity, sbyte *msg)
 {
     if ((NULL != g_logFn) && (NULL != msg))
         (*g_logFn)(module, severity, msg);

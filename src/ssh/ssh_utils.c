@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -32,11 +32,11 @@
 #include "../common/memory_debug.h"
 #include "../crypto/crypto.h"
 #include "../common/base64.h"
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
 #include "../crypto/dsa.h"
 #endif
 #include "../crypto/rsa.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #include "../crypto/ecc.h"
@@ -54,7 +54,7 @@
 #include "../ssh/ssh_mpint.h"
 #include "../ssh/ssh_key.h"
 #include "../harness/harness.h"
-#ifdef __ENABLE_MOCANA_DER_CONVERSION__
+#ifdef __ENABLE_DIGICERT_DER_CONVERSION__
 #include "../common/absstream.h"
 #include "../common/memfile.h"
 #include "../common/tree.h"
@@ -62,14 +62,14 @@
 #include "../asn1/ASN1TreeWalker.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_rsa.h"
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_DIGICERT_DSA__))
 extern MSTATUS
 SSH_UTILS_extractKeyBlob(ubyte *pKeyBlob, ubyte4 keyBlobLength,
                          ubyte4 keyType, DSAKey *p_dsaDescr)
@@ -148,7 +148,7 @@ exit:
 
 } /* SSH_UTILS_extractKeyBlob */
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_MOCANA_DSA__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_DIGICERT_DSA__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -161,7 +161,7 @@ SSH_UTILS_sshParseAuthPublicKeyFile(sbyte* pKeyFile, ubyte4 fileSize,
 } /* SSH_UTILS_sshParseAuthPublicKeyFile */
 
 
-#if !defined(__DISABLE_MOCANA_KEY_GENERATION__)
+#if !defined(__DISABLE_DIGICERT_KEY_GENERATION__)
 
 /*------------------------------------------------------------------*/
 
@@ -281,7 +281,7 @@ SSH_UTILS_generateServerAuthKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength,
     return SSH_KEY_generateServerAuthKeyFile(pKeyBlob, keyBlobLength, ppRetEncodedAuthKey,
         pRetEncodedAuthKeyLen);
 }
-#endif /* !defined(__DISABLE_MOCANA_KEY_GENERATION__) */
+#endif /* !defined(__DISABLE_DIGICERT_KEY_GENERATION__) */
 
 
 /*------------------------------------------------------------------*/
@@ -293,7 +293,7 @@ SSH_UTILS_freeGenerateServerAuthKeyFile(ubyte **ppFreeEncodedAuthKey)
 
     if ((NULL != ppFreeEncodedAuthKey) && (NULL != *ppFreeEncodedAuthKey))
     {
-        MOC_FREE((void **) ppFreeEncodedAuthKey);
+        DIGI_FREE((void **) ppFreeEncodedAuthKey);
         status = OK;
     }
 
@@ -303,7 +303,7 @@ SSH_UTILS_freeGenerateServerAuthKeyFile(ubyte **ppFreeEncodedAuthKey)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DER_CONVERSION__) && defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DER_CONVERSION__) && defined(__ENABLE_DIGICERT_DSA__))
 
 extern MSTATUS
 SSH_UTILS_dsaDerToKeyBlob(MOC_ASYM(hwAccelDescr hwAccelCtx) ubyte *pDerDsaKey, ubyte4 derDsaKeyLength,
@@ -333,6 +333,6 @@ exit:
 
     return status;
 }
-#endif /* defined(__ENABLE_MOCANA_DER_CONVERSION__) && defined(__ENABLE_MOCANA_DSA__) */
+#endif /* defined(__ENABLE_DIGICERT_DER_CONVERSION__) && defined(__ENABLE_DIGICERT_DSA__) */
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_SERVER__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SERVER__)) */

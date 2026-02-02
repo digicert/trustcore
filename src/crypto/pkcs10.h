@@ -25,7 +25,7 @@
 
 @flags
 Whether the following flags are defined determines which function declarations and callbacks are enabled:
-+ \c \__ENABLE_MOCANA_PKCS10__
++ \c \__ENABLE_DIGICERT_PKCS10__
 
 @filedoc    pkcs10.h
 */
@@ -40,7 +40,7 @@ extern "C" {
 #endif
 
 
-#ifdef __ENABLE_MOCANA_PKCS10__
+#ifdef __ENABLE_DIGICERT_PKCS10__
 
 /* PKCS#10 certificate request attributes as defined in PKCS#9 */
 typedef struct requestAttributes
@@ -125,7 +125,7 @@ typedef struct requestAttributesEx
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS10__
++ \c \__ENABLE_DIGICERT_PKCS10__
 
 @inc_file   pkcs10.h
 
@@ -188,7 +188,7 @@ MOC_EXTERN MSTATUS PKCS10_GenerateCertReqFromDN(AsymmetricKey* pKey,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS10__
++ \c \__ENABLE_DIGICERT_PKCS10__
 
 @inc_file   pkcs10.h
 
@@ -252,7 +252,7 @@ MOC_EXTERN MSTATUS PKCS10_GenerateCertReqFromASN1Name(AsymmetricKey* pKey,
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_PKCS10__
++ \c \__ENABLE_DIGICERT_PKCS10__
 
 @inc_file   pkcs10.h
 
@@ -292,7 +292,7 @@ MOC_EXTERN MSTATUS PKCS10_CertReqToCSR( const ubyte* pCertReq, ubyte4 pCertReqLe
  *
  * @flags
  * To enable this function, the following flag must be defined in moptions.h:
- * + \c \__ENABLE_MOCANA_PKCS10__
+ * + \c \__ENABLE_DIGICERT_PKCS10__
  *
  * @inc_file   pkcs10.h
  *
@@ -351,7 +351,7 @@ MOC_EXTERN MSTATUS PKCS10_GenerateCertReqFromDNEx (
  *
  * @flags
  * To enable this function, the following flag must be defined in moptions.h:
- * + \c \__ENABLE_MOCANA_PKCS10__
+ * + \c \__ENABLE_DIGICERT_PKCS10__
  *
  * @inc_file   pkcs10.h
  *
@@ -393,7 +393,7 @@ MOC_EXTERN MSTATUS PKCS10_GenerateCertReqFromDNEx2 (
   ubyte4* pCertReqLength
   );
 
-#endif /* __ENABLE_MOCANA_PKCS10__ */
+#endif /* __ENABLE_DIGICERT_PKCS10__ */
 
 #ifdef __cplusplus
 }

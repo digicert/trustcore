@@ -1,0 +1,50 @@
+name: "NanoMQTT Integration Tests"
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 3 * * 5'   # Friday 9am IST (3:30 UTC)
+
+jobs:
+  mqtt-integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake
+        cmake --version
+        sudo apt-get install -y python3-pip
+        pip3 install paho-mqtt
+        pip3 install psutil
+ 
+    - name: Create /etc/digicert/keystore/ca folder 
+      run: |
+        sudo mkdir -p /etc/digicert/keystore/ca
+        sudo chown -R $(whoami):$(whoami) /etc/digicert
+
+    - name: Clone mocn-qa-m-products
+      env:
+        MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+      run: |
+        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+
+    - name: Copy MQTT Test Files
+      run: |
+        cp -r mocn-qa-m-products/mqttc_test/test_open_source/* .
+
+    - name: Make run_nanomqtt_client.sh executable
+      run: chmod +x run_nanomqtt_client.sh
+
+    - name: Run MQTT Integration Test
+      run: |
+        ./run_nanomqtt_client.sh
+
+    - name: Cleanup mocn-qa-m-products
+      if: always()
+      run: |
+        rm -rf mocn-qa-m-products

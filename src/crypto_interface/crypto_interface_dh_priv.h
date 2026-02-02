@@ -29,8 +29,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_DH_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_DH_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_DH_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_DH_INTERNAL__))
     
 #define DH_allocate                 CRYPTO_INTERFACE_DH_allocate
 #define DH_allocateServer           CRYPTO_INTERFACE_DH_allocateServer

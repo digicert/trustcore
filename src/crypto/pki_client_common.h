@@ -28,10 +28,10 @@ typedef struct pki_client_ee_credentials_t
     certDistinguishedName * pClientName;
     credentialType          type;
 
-#if defined(__ENABLE_MOCANA_CMP_CLIENT__) || defined(__ENABLE_MOCANA_SCEP_CLIENT__)
+#if defined(__ENABLE_DIGICERT_CMP_CLIENT__) || defined(__ENABLE_DIGICERT_SCEP_CLIENT__)
     union
     {
-#ifdef __ENABLE_MOCANA_CMP_CLIENT__
+#ifdef __ENABLE_DIGICERT_CMP_CLIENT__
 
         struct
         {
@@ -47,7 +47,7 @@ typedef struct pki_client_ee_credentials_t
             ubyte4          signerCertLen;
         } signerCertInfo;
 
-#elif defined (__ENABLE_MOCANA_SCEP_CLIENT__)
+#elif defined (__ENABLE_DIGICERT_SCEP_CLIENT__)
 
         struct requestAttributes*  pScepRequestAttr;
 

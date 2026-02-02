@@ -1,0 +1,19 @@
+# generate the keys
+openssl genrsa -out chain2_key1_of_4.pem 2048
+openssl genrsa -out chain2_key2_of_4.pem 2048
+openssl genrsa -out chain2_key3_of_4.pem 2048
+openssl genrsa -out chain2_key4_of_4.pem 2048
+# git checkout master -- config.ssl
+openssl req -x509 -new -sha256 -days 10000 -key chain2_key1_of_4.pem -out chain2_1_of_4.pem -config config.ssl -extensions v3_ca_root
+openssl req -new -key chain2_key2_of_4.pem -out chain2_key2_of_4.csr -subj "/C=US/ST=California/L=San Francisco/O=Mocana/CN=Intermediate2_1"
+openssl req -new -key chain2_key3_of_4.pem -out chain2_key3_of_4.csr -subj "/C=US/ST=California/L=San Francisco/O=Mocana/CN=Intermediate2_2"
+openssl req -new -key chain2_key4_of_4.pem -out chain2_key4_of_4.csr -subj "/C=US/ST=California/L=San Francisco/O=Mocana/CN=sslchaintest2.mocana.com"
+mkdir -p CA/newcerts
+echo '100001' > CA/serial
+touch CA/index.txt
+openssl ca -config config.ssl -days 10000 -in chain2_key2_of_4.csr -extensions v3_ca_int -cert chain2_1_of_4.pem -keyfile chain2_key1_of_4.pem
+cp CA/newcerts/100001.pem ./chain2_2_of_4.pem
+openssl ca -config config.ssl -days 10000 -in chain2_key3_of_4.csr -extensions v3_ca_int -cert chain2_2_of_4.pem -keyfile chain2_key2_of_4.pem
+cp CA/newcerts/100002.pem ./chain2_3_of_4.pem
+openssl ca -config config.ssl -days 10000 -in chain2_key4_of_4.csr -extensions v3_leaf -cert chain2_3_of_4.pem -keyfile chain2_key3_of_4.pem
+cp CA/newcerts/100003.pem ./chain2_4_of_4.pem

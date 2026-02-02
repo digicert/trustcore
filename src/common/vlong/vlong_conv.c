@@ -170,12 +170,14 @@ MOC_EXTERN MSTATUS VLONG_vlongFromUByte4String (
     goto exit;
 
   if (NULL != ppNewVlong)
+  {
     DEBUG_RELABEL_MEMORY(*ppNewVlong);
-
+  }
+  
   if (0 == len)
     goto exit;
 
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
 
   if (OK > (status = VLONG_reallocVlong(*ppNewVlong, ((len + 1) >> 1))))
     goto cleanup;
@@ -266,7 +268,7 @@ MOC_EXTERN MSTATUS VLONG_byteStringFromVlong (
         switch (mode)
         {
 /* next #ifdef is to prevent warnings (and reduce code size) -- numerically impossible */
-#ifdef __ENABLE_MOCANA_64_BIT__
+#ifdef __ENABLE_DIGICERT_64_BIT__
         case 8:
           *pDest++ = (ubyte)((elem >> 56) & 0xff);
         case 7:
@@ -343,9 +345,9 @@ exit:
 } /* VLONG_fixedByteStringFromVlong */
 
 /*----------------------------------------------------------------------------*/
-#ifndef __DISABLE_MOCANA_VLONG_MATH__
+#ifndef __DISABLE_DIGICERT_VLONG_MATH__
 
-#if defined(__ENABLE_MOCANA_PEM_CONVERSION__) || !defined(__DISABLE_MOCANA_KEY_GENERATION__)
+#if defined(__ENABLE_DIGICERT_PEM_CONVERSION__) || !defined(__DISABLE_DIGICERT_KEY_GENERATION__)
 
 MOC_EXTERN MSTATUS VLONG_mpintByteStringFromVlong (
   const vlong* pValue, 
@@ -442,7 +444,7 @@ exit:
 
 } /* VLONG_mpintByteStringFromVlong */
 
-#endif /* __DISABLE_MOCANA_KEY_GENERATION__ */
+#endif /* __DISABLE_DIGICERT_KEY_GENERATION__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -535,7 +537,7 @@ exit:
   return status;
 
 } /* VLONG_newFromMpintBytes */
-#endif /* __DISABLE_MOCANA_VLONG_MATH__ */
+#endif /* __DISABLE_DIGICERT_VLONG_MATH__ */
 
 /*----------------------------------------------------------------------------*/
 

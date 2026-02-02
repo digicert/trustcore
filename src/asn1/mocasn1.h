@@ -1840,7 +1840,7 @@ MOC_EXTERN MSTATUS MAsn1Encode (
  * the size needed, allocate memory, and call Encode again.
  * <p>This is here just to save space. Rather than have 100 Encode with NULL,
  * MALLOC, Encode combinations throughout the code, just use this routine.
- * <p>The caller must free the memory using MOC_FREE.
+ * <p>The caller must free the memory using DIGI_FREE.
  *
  * @param pElement The Element to encode.
  * @param ppEncoding The address where the function will deposit the buffer

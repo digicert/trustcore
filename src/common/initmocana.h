@@ -23,7 +23,7 @@ extern "C" {
 
 /** This function knows how to free the contents of a MocSubCtx and the MocSubCtx
  * itself.
- * <p>If you build a SubCtx, you must build a Free function. When MOCANA_free is
+ * <p>If you build a SubCtx, you must build a Free function. When DIGICERT_free is
  * freeing the MocCtx, it will cycle through each of the SubCtx therein, asking
  * each to free itself.
  * <p>The FreeFnct must free the contents and the MocSubCtx shell itself.
@@ -41,7 +41,7 @@ typedef MSTATUS (*MSubCtxFree) (struct MocSubCtx **ppMocSubCtx);
  * your type is unique. All such flags will be defined in
  * mss/src/common/initmocana.h.
  * <p>The pLocalCtx is whatever you need it to be.
- * <p>You supply a FreeFnct that will be called by MOCANA_free to free your
+ * <p>You supply a FreeFnct that will be called by DIGICERT_free to free your
  * SubCtx. The FreeFnct must free the contents (the local ctx) and the MocSubCtx
  * shell.
  * <p>Inside the MocCtx is a link list of SubCtx. Build one and call
@@ -135,7 +135,7 @@ MOC_EXTERN MSTATUS MBuildOpListCtx (
   );
 
 /** The MocContext is simply a link list of SubCtx.
- * <p>The MOCANA_initialize function will create a new MocContext (returning
+ * <p>The DIGICERT_initialize function will create a new MocContext (returning
  * the pointer to it as a MocCtx) and it will be empty.
  * <p>The initialize function will then build the first SubCtx, the first in the
  * link list. This one will contain the arrays of Operators.
@@ -143,22 +143,22 @@ MOC_EXTERN MSTATUS MBuildOpListCtx (
  * info, for example), build a new SubCtx and add it to the end of the list by
  * calling MocLoadNewSubCtx. A SubCtx contains the FreeFnct that knows how to
  * free the contents of the SubCtx and the shell of the SubCtx.
- * <p>The MOCANA_free function is going to go through the link list, freeing each
+ * <p>The DIGICERT_free function is going to go through the link list, freeing each
  * SubCtx by calling the FreeFnct in each. Note that the FreeFnct frees the
- * contents of the SubCtx AND the MocSubCtx shell itself. The MOCANA_free
+ * contents of the SubCtx AND the MocSubCtx shell itself. The DIGICERT_free
  * function will get a SubCtx in the list (saving a reference to the next) and
- * call that context's FreeFnct, passing in the ctx itself. Then MOCANA_free will
- * move on. The main reason MOCANA_free does not free the shell is that it
+ * call that context's FreeFnct, passing in the ctx itself. Then DIGICERT_free will
+ * move on. The main reason DIGICERT_free does not free the shell is that it
  * doesn't know if that shell is really a MocSubCtx or some other struct (a
  * bigger struct containing more info, but something that can look like a SubCtx,
  * in other words, a subclass), and doesn't know if it needs to overwrite memory.
- * <p>Finally, MOCANA_free will destroy theMutex and free the memory of the shell.
+ * <p>Finally, DIGICERT_free will destroy theMutex and free the memory of the shell.
  * <p>The refCount is there to keep track of how many objects have a reference to
  * the MocCtx. Each time an object wants a reference to the MocCtx, it will
  * acquire it using AqcuireMocCtx. That function will use theMutex to increment
  * the refCount in a thread-safe way. When an object no longer needs the MocCtx,
  * call ReleaseMocCtx. That function will decrement the refCount.
- * <p>If the refCount goes to zero, the MocCtx is destroyed. In fact, MOCANA_free
+ * <p>If the refCount goes to zero, the MocCtx is destroyed. In fact, DIGICERT_free
  * will not actually free the MocCtx, it will only decrement the refCount. It is
  * a signed int so we can recognize errors if the count goes to negative values.
  */
@@ -403,7 +403,7 @@ typedef struct
 
 /** OR this value into the flags field of InitMocanaSetupInfo if you want to 
  * seed the Random Number Generator with bytes from /dev/urandom.  Must have the
- * __ENABLE_MOCANA_DEV_URANDOM__ build flag set 
+ * __ENABLE_DIGICERT_DEV_URANDOM__ build flag set 
  */
 #define MOC_INIT_FLAG_SEED_FROM_DEV_URANDOM  0x0004
 
@@ -420,11 +420,11 @@ typedef struct
  * @details  This function will initialize the Mocana code base, it is typically
  *           the first initialization step for any Mocana Security of Things
  *           Platform product.
- *           <p>NOTE! You must call MOCANA_free if you call this function, when
+ *           <p>NOTE! You must call DIGICERT_free if you call this function, when
  *           you are no longer making any NanoCrypto function calls. Generally,
- *           you will call MOCANA_initialize at the beginning of your app, and
- *           MOCANA_free right before you exit. You must call MOCANA_free even if
- *           the call to MOCANA_initialize returned an error.
+ *           you will call DIGICERT_initialize at the beginning of your app, and
+ *           DIGICERT_free right before you exit. You must call DIGICERT_free even if
+ *           the call to DIGICERT_initialize returned an error.
  *           <p>This function will build a MocAlgCtx containing the Operators
  *           from the setupInfo, among other information. Some functions will
  *           take this ctx as an argument. You pass in arrays of Operators (an
@@ -443,7 +443,7 @@ typedef struct
  *           from build flags and flags in the initialization struct passed in as
  *           a parameter. Upon successful return, the PRNG will be instantiated
  *           at the location pointed to by \c g_pRandomContext.
- *           <p>If the build flag \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
+ *           <p>If the build flag \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
  *           is set, a "simple" seed is used which takes only milliseconds to
  *           generate. Otherwise the FIPS approved seed material is computed based
  *           on stack usage and thread wait times, this takes 20 seconds or more
@@ -455,7 +455,7 @@ typedef struct
  *           available unless the \c MOC_INIT_FLAG_NO_AUTOSEED bit is set in the
  *           flags field of the initialization structure. It should be noted it
  *           is an error to attempt to use the FIPS autoseed method for a MocSym
- *           random operator when the \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
+ *           random operator when the \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
  *           build flag is set.
  *           <p>This function will setup and initialize a static memory partition
  *           if requested, as specified in the setup information structure. In
@@ -464,7 +464,7 @@ typedef struct
  *           functions will not use "malloc" or any other system memory allocator.
  *           All Mocana memory allocations will simply grab some of the area
  *           inside the buffer provided by the caller. The
- *           \c \__ENABLE_MOCANA_MEM_PART__ flag must be defined to access this
+ *           \c \__ENABLE_DIGICERT_MEM_PART__ flag must be defined to access this
  *           feature.
  *
  * @param pSetupInfo  Pointer to InitMocanaSetupInfo structure containing
@@ -482,25 +482,25 @@ typedef struct
  *
  * @par Flags
  * To enable this function, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_INIT__
+ *   + \c \__DISABLE_DIGICERT_INIT__
  *   .
  * Additionally, whether or not the following flags are defined determines which
  * initialization functions are called
- *  + \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
- *  + \c \__DISABLE_MOCANA_STARTUP_GUARD__
- *  + \c \__DISABLE_MOCANA_TCP_INTERFACE__
- *  + \c \__DISABLE_MOCANA_RNG__
- *  + \c \__DISABLE_MOCANA_ADD_ENTROPY__
- *  + \c \__ENABLE_MOCANA_SYM__
- *  + \c \__ENABLE_MOCANA_MEM_PART__
- *  + \c \__ENABLE_MOCANA_RADIUS_CLIENT__
- *  + \c \__ENABLE_MOCANA_IKE_SERVER__
- *  + \c \__ENABLE_MOCANA_DTLS_CLIENT__
- *  + \c \__ENABLE_MOCANA_DTLS_SERVER__
- *  + \c \__ENABLE_MOCANA_DEBUG_CONSOLE__
+ *  + \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
+ *  + \c \__DISABLE_DIGICERT_STARTUP_GUARD__
+ *  + \c \__DISABLE_DIGICERT_TCP_INTERFACE__
+ *  + \c \__DISABLE_DIGICERT_RNG__
+ *  + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
+ *  + \c \__ENABLE_DIGICERT_SYM__
+ *  + \c \__ENABLE_DIGICERT_MEM_PART__
+ *  + \c \__ENABLE_DIGICERT_RADIUS_CLIENT__
+ *  + \c \__ENABLE_DIGICERT_IKE_SERVER__
+ *  + \c \__ENABLE_DIGICERT_DTLS_CLIENT__
+ *  + \c \__ENABLE_DIGICERT_DTLS_SERVER__
+ *  + \c \__ENABLE_DIGICERT_DEBUG_CONSOLE__
  *  + \c \__HARDWARE_ACCEL_PROTOTYPES__
  *  + \c \__KERNEL__
- *  + \c \__MOCANA_FORCE_ENTROPY__
+ *  + \c \__DIGICERT_FORCE_ENTROPY__
  *  + \c IPCOM_KERNEL
  *  + \c UDP_init
  *
@@ -515,14 +515,14 @@ typedef struct
  * <p>An example of a simple initialization:
  * @code
  *   sbyte4 status = 0;
- *   status = MOCANA_initialize(NULL, NULL);
+ *   status = DIGICERT_initialize(NULL, NULL);
  *   if (OK != status)
  *     goto exit;
  *
  *   . . .
  *
  * exit:
- *   MOCANA_free(NULL);
+ *   DIGICERT_free(NULL);
  * @endcode
  *
  * <p>An example of an initialization using a MocSym random operator:
@@ -556,14 +556,14 @@ typedef struct
  *   setupInfo.pKeyOperators = pAsymKeys;
  *   setupInfo.keyOperatorCount = 2;
  *
- *   status = MOCANA_initialize(&setupInfo, &pAlgCtx);
+ *   status = DIGICERT_initialize(&setupInfo, &pAlgCtx);
  *   if (OK != status)
  *     goto exit;
  *
  *   . . .
  *
  * exit:
- *   MOCANA_free(&pAlgCtx);
+ *   DIGICERT_free(&pAlgCtx);
  * @endcode
  *
  * <p>An example of an initialization using a static memory partition:
@@ -584,37 +584,37 @@ typedef struct
  *   setupInfo.symOperatorCount = 4;
  *   setupInfo.pKeyOperators = pAsymKeys;
  *   setupInfo.keyOperatorCount = 2;
- *   status = MOCANA_initialize(&setupInfo, &pAlgCtx);
+ *   status = DIGICERT_initialize(&setupInfo, &pAlgCtx);
  *   if (OK != status)
  *     goto exit;
  *
  *   . . .
  *
  * exit:
- *   MOCANA_free(&pAlgCtx);
+ *   DIGICERT_free(&pAlgCtx);
  * @endcode
- * @sa MOCANA_free()
+ * @sa DIGICERT_free()
  */
-MOC_EXTERN MSTATUS MOCANA_initialize (
+MOC_EXTERN MSTATUS DIGICERT_initialize(
   InitMocanaSetupInfo *pSetupInfo,
   MocCtx *ppAlgCtx
   );
 
 /**
- * @brief    Release memory allocated by MOCANA_initialize().
+ * @brief    Release memory allocated by DIGICERT_initialize().
  * @details  This function releases memory previously allocated by a call to
- *           MOCANA_initialize().  If the init function was called more than
+ *           DIGICERT_initialize().  If the init function was called more than
  *           once before a free, this function will decrement the internal
  *           reference count and return \c OK.  When the reference count reaches
- *           zero, all memory allocated by MOCANA_initialize() will be freed
+ *           zero, all memory allocated by DIGICERT_initialize() will be freed
  *           and any associated tasks will be shut down.
  *           <p>If the original initialization call requested a static memory
  *           partition, this function will uninitialize all internal management
  *           operations for that static memory partition.
  *
  * @param    ppAlgCtx The address where the function will find an AlgCtx to free.
- *           The algCtx was created during the call to MOCANA_initialize. This
- *           can be NULL if the call to MOCANA_initialize did not request an
+ *           The algCtx was created during the call to DIGICERT_initialize. This
+ *           can be NULL if the call to DIGICERT_initialize did not request an
  *           AlgCtx.
  *
  * @return   \c OK (0) if successful; otherwise a negative number error code
@@ -624,30 +624,30 @@ MOC_EXTERN MSTATUS MOCANA_initialize (
  *
  * @par Flags
  * To enable this function, the following flag must \b not be defined
- *   + \c \__DISABLE_MOCANA_INIT__
+ *   + \c \__DISABLE_DIGICERT_INIT__
  *   .
  * Additionally, whether or not the following flags are defined determines which
  * uninitialization functions are called
- *  + \c \__DISABLE_MOCANA_RAND_ENTROPY_THREADS__
- *  + \c \__DISABLE_MOCANA_STARTUP_GUARD__
- *  + \c \__DISABLE_MOCANA_TCP_INTERFACE__
- *  + \c \__DISABLE_MOCANA_RNG__
- *  + \c \__DISABLE_MOCANA_ADD_ENTROPY__
- *  + \c \__ENABLE_MOCANA_SYM__
- *  + \c \__ENABLE_MOCANA_MEM_PART__
- *  + \c \__ENABLE_MOCANA_RADIUS_CLIENT__
- *  + \c \__ENABLE_MOCANA_IKE_SERVER__
- *  + \c \__ENABLE_MOCANA_DTLS_CLIENT__
- *  + \c \__ENABLE_MOCANA_DTLS_SERVER__
- *  + \c \__ENABLE_MOCANA_DEBUG_CONSOLE__
+ *  + \c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__
+ *  + \c \__DISABLE_DIGICERT_STARTUP_GUARD__
+ *  + \c \__DISABLE_DIGICERT_TCP_INTERFACE__
+ *  + \c \__DISABLE_DIGICERT_RNG__
+ *  + \c \__DISABLE_DIGICERT_ADD_ENTROPY__
+ *  + \c \__ENABLE_DIGICERT_SYM__
+ *  + \c \__ENABLE_DIGICERT_MEM_PART__
+ *  + \c \__ENABLE_DIGICERT_RADIUS_CLIENT__
+ *  + \c \__ENABLE_DIGICERT_IKE_SERVER__
+ *  + \c \__ENABLE_DIGICERT_DTLS_CLIENT__
+ *  + \c \__ENABLE_DIGICERT_DTLS_SERVER__
+ *  + \c \__ENABLE_DIGICERT_DEBUG_CONSOLE__
  *  + \c \__HARDWARE_ACCEL_PROTOTYPES__
  *  + \c \__KERNEL__
- *  + \c \__MOCANA_FORCE_ENTROPY__
+ *  + \c \__DIGICERT_FORCE_ENTROPY__
  *  + \c IPCOM_KERNEL
  *  + \c UDP_init
- * @sa MOCANA_initialize().
+ * @sa DIGICERT_initialize().
  */
-MOC_EXTERN MSTATUS MOCANA_free (
+MOC_EXTERN MSTATUS DIGICERT_free (
   MocCtx *ppAlgCtx
   );
 

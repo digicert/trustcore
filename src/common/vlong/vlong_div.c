@@ -18,7 +18,7 @@
 #include "../../common/vlong.h"
 #endif
 
-#ifndef __DISABLE_MOCANA_VLONG_MATH__
+#ifndef __DISABLE_DIGICERT_VLONG_MATH__
 
 /*----------------------------------------------------------------------------*/
 
@@ -80,7 +80,7 @@ MOC_EXTERN MSTATUS VLONG_unsignedDivide (
     goto exit;
   pQuotient->numUnitsUsed = n - t + 1;
   q = pQuotient->pUnits;
-  MOC_MEMSET((ubyte *)q, 0, (n - t + 1) * sizeof(vlong_unit));
+  DIGI_MEMSET((ubyte *)q, 0, (n - t + 1) * sizeof(vlong_unit));
 
   /* generate Y << n - t i.e. y(B^ (n-t)) Step 2*/
   if (OK > (status = VLONG_allocVlong(&pYBnt, ppVlongQueue)))

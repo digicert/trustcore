@@ -44,7 +44,7 @@ CIRC_BUF_create(circBufDescr **ppRetCircBufDescr, ubyte4 buflen)
         goto exit;
     }
 
-    status = MOC_MEMSET((ubyte *)pCircBufDescr, 0x00, sizeof(circBufDescr));
+    status = DIGI_MEMSET((ubyte *)pCircBufDescr, 0x00, sizeof(circBufDescr));
 
     pCircBufDescr->buflen          = buflen;
     pCircBufDescr->head            = 0;
@@ -121,7 +121,7 @@ CIRC_BUF_read(circBufDescr *pCircBufDescr,
         {
             numBytesCopied = (numBytesToRead > numBytesToCopy) ? numBytesToCopy : numBytesToRead;
 
-            status = MOC_MEMCPY(pReadBuffer, pBuffer + tail, numBytesCopied);
+            status = DIGI_MEMCPY(pReadBuffer, pBuffer + tail, numBytesCopied);
 
             if (OK > status)
                 goto exit;
@@ -143,7 +143,7 @@ CIRC_BUF_read(circBufDescr *pCircBufDescr,
 
         numBytesCopied = (numBytesToRead > numBytesToCopy) ? numBytesToCopy : numBytesToRead;
 
-        status = MOC_MEMCPY(pReadBuffer, pBuffer + tail, numBytesCopied);
+        status = DIGI_MEMCPY(pReadBuffer, pBuffer + tail, numBytesCopied);
 
         if (OK > status)
             goto exit;
@@ -247,7 +247,7 @@ CIRC_BUF_write(circBufDescr *pCircBufDescr,
 
         if (0 < count)
         {
-            if (OK > (status = MOC_MEMCPY(pCircBufDescr->pBuffer + head, pBuffer, count)))
+            if (OK > (status = DIGI_MEMCPY(pCircBufDescr->pBuffer + head, pBuffer, count)))
                 goto exit;
 
             numBytesWritten += count;
@@ -269,7 +269,7 @@ CIRC_BUF_write(circBufDescr *pCircBufDescr,
 
         count = numBytesToWrite;
 
-        if (OK > (status = MOC_MEMCPY(pCircBufDescr->pBuffer + head, pBuffer, count)))
+        if (OK > (status = DIGI_MEMCPY(pCircBufDescr->pBuffer + head, pBuffer, count)))
             goto exit;
 
         numBytesWritten += count;

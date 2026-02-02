@@ -1,0 +1,3 @@
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tcti/tcti_win.c
+MSS_SRC_DIR/tap/tap_base_serialize.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tpm2/tbs_util.c

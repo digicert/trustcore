@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_ECC_MAPPING__)) && \
-    (!defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_ECC_INTERNAL__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC_MAPPING__)) && \
+    (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC_INTERNAL__))
 
 #define EC_newKeyEx                                                            \
     CRYPTO_INTERFACE_EC_newKeyAux
@@ -100,9 +100,9 @@ extern "C" {
 #define EC_deleteAllCombsAndMutexes                                            \
   CRYPTO_INTERFACE_EC_deleteAllCombsAndMutexes
 
-#endif /* ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_ECC_MAPPING__ */
+#endif /* ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC_MAPPING__ */
 
-#if ( defined(__ENABLE_MOCANA_CRYPTO_INTERFACE_ECC__))
+#if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC__))
 
 struct ECCKey;
 
@@ -117,7 +117,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_EC_loadKey (
   MocAsymKey *ppKey
   );
 
-#endif /* ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_ECC__ */
+#endif /* ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_ECC__ */
 
 #ifdef __cplusplus
 }

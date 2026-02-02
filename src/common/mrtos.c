@@ -68,7 +68,7 @@ exit:
     return status;
 }
 
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 
 /*------------------------------------------------------------------*/
 

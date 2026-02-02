@@ -4,19 +4,19 @@
  * Mocana URI implementation
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_URI__
+#ifdef __ENABLE_DIGICERT_URI__
 
 #include "../common/mdefs.h"
 #include "../common/mtypes.h"
@@ -89,8 +89,8 @@ static void URI_initMask()
     control[2]= URI_GetBitmaskRange(2, 00,  0x20) | URI_GetBitmaskRange(2,  0x7F,  0x80);
     control[3]= URI_GetBitmaskRange(3, 00,  0x20) | URI_GetBitmaskRange(3,  0x7F,  0x80);
 
-    space[0] = URI_GetBitmaskRange(0, 20, 21);
-    space[1] = 0;
+    space[0] = 0;
+    space[1] = URI_GetBitmaskRange(1, 0x20, 0x21);
     space[2] = 0;
     space[3] = 0;
 
@@ -268,8 +268,8 @@ URI_GetUnescapedLength(ubyte* component, ubyte4 componentLen,
         {
             matchedLen ++;
             if (i+2 >= componentLen ||
-                !MOC_ISXDIGIT(*(component+i+1)) ||
-                !MOC_ISXDIGIT(*(component+i+2)))
+                !DIGI_ISXDIGIT(*(component+i+1)) ||
+                !DIGI_ISXDIGIT(*(component+i+2)))
             {
                 status = ERR_URI_INVALID_FORMAT;
                 goto exit;
@@ -437,7 +437,7 @@ URI_CreateURI2(sbyte* scheme,
 
     if (port > 0)
     {
-        ubyte *ptr = (ubyte*)MOC_LTOA(port, (sbyte *)portStr, 5);
+        ubyte *ptr = (ubyte*)DIGI_LTOA(port, (sbyte *)portStr, 5);
         portLen = (ubyte4)(ptr-portStr);
     }
     else
@@ -446,11 +446,11 @@ URI_CreateURI2(sbyte* scheme,
     }
 
     /* create authority first */
-   if (OK > (status = URI_GetEscapedLength(AUTHORITY, userInfo, MOC_STRLEN(userInfo), &escapedLen)))
+   if (OK > (status = URI_GetEscapedLength(AUTHORITY, userInfo, DIGI_STRLEN(userInfo), &escapedLen)))
         goto exit;
-   authorityLen += escapedLen + (MOC_STRLEN(userInfo) > 0? 1 : 0); /* @ */
+   authorityLen += escapedLen + (DIGI_STRLEN(userInfo) > 0? 1 : 0); /* @ */
 
-   if (OK > (status = URI_GetEscapedLength(AUTHORITY, host, MOC_STRLEN(host), &escapedLen)))
+   if (OK > (status = URI_GetEscapedLength(AUTHORITY, host, DIGI_STRLEN(host), &escapedLen)))
         goto exit;
    authorityLen += escapedLen + (portLen> 0? 1 : 0); /* : */
    authorityLen += portLen;
@@ -460,24 +460,24 @@ URI_CreateURI2(sbyte* scheme,
         goto exit;
    }
 
-   if (OK > (status = URI_Escape(AUTHORITY, userInfo, MOC_STRLEN(userInfo), (ubyte*)(authority+offset), &escapedLen)))
+   if (OK > (status = URI_Escape(AUTHORITY, userInfo, DIGI_STRLEN(userInfo), (ubyte*)(authority+offset), &escapedLen)))
        goto exit;
     offset += escapedLen;
-    if (MOC_STRLEN(userInfo) > 0)
+    if (DIGI_STRLEN(userInfo) > 0)
     {
-        if (OK > (status = MOC_MEMCPY(authority+offset, "@", 1)))
+        if (OK > (status = DIGI_MEMCPY(authority+offset, "@", 1)))
             goto exit;
         offset += 1; /* @ */
     }
-   if (OK > (status = URI_Escape(AUTHORITY, host, MOC_STRLEN(host), (ubyte*)(authority+offset), &escapedLen)))
+   if (OK > (status = URI_Escape(AUTHORITY, host, DIGI_STRLEN(host), (ubyte*)(authority+offset), &escapedLen)))
        goto exit;
     offset += escapedLen;
     if (portLen > 0)
     {
-        if (OK > (status = MOC_MEMCPY(authority+offset, ":", 1)))
+        if (OK > (status = DIGI_MEMCPY(authority+offset, ":", 1)))
             goto exit;
         offset += 1; /* @ */
-        if (OK > (status = MOC_MEMCPY(authority+offset, portStr, portLen)))
+        if (OK > (status = DIGI_MEMCPY(authority+offset, portStr, portLen)))
             goto exit;
     }
     *(authority+offset+portLen) = '\0';
@@ -523,19 +523,19 @@ URI_CreateURI4(sbyte* scheme,
     }
 
     /* calculate the total buffer size */
-    totalEscapedLen += MOC_STRLEN(scheme) + 3; /* :// */
+    totalEscapedLen += DIGI_STRLEN(scheme) + 3; /* :// */
     /* use EXCLUDED because authority is non-atomic component */
-    if (OK > (status = URI_GetEscapedLength(EXCLUDED, authority, MOC_STRLEN(authority), &escapedLen)))
+    if (OK > (status = URI_GetEscapedLength(EXCLUDED, authority, DIGI_STRLEN(authority), &escapedLen)))
         goto exit;
     totalEscapedLen += escapedLen; /* / */
     /* use EXCLUDED because path is non-atomic component */
-    if (OK > (status = URI_GetEscapedLength(EXCLUDED, path, MOC_STRLEN(path), &escapedLen)))
+    if (OK > (status = URI_GetEscapedLength(EXCLUDED, path, DIGI_STRLEN(path), &escapedLen)))
         goto exit;
-    totalEscapedLen += escapedLen + (MOC_STRLEN(query) > 0? 1 : 0); /* ? */
-    if (OK > (status = URI_GetEscapedLength(QUERY, query, MOC_STRLEN(query), &escapedLen)))
+    totalEscapedLen += escapedLen + (DIGI_STRLEN(query) > 0? 1 : 0); /* ? */
+    if (OK > (status = URI_GetEscapedLength(QUERY, query, DIGI_STRLEN(query), &escapedLen)))
         goto exit;
-    totalEscapedLen += escapedLen + (MOC_STRLEN(fragment) > 0? 1 : 0); /* # */
-    if (OK > (status = URI_GetEscapedLength(FRAGMENT, fragment, MOC_STRLEN(fragment), &escapedLen)))
+    totalEscapedLen += escapedLen + (DIGI_STRLEN(fragment) > 0? 1 : 0); /* # */
+    if (OK > (status = URI_GetEscapedLength(FRAGMENT, fragment, DIGI_STRLEN(fragment), &escapedLen)))
         goto exit;
     totalEscapedLen += escapedLen;
 
@@ -559,36 +559,36 @@ URI_CreateURI4(sbyte* scheme,
 
     /* escape each components until done */
     (*uri)->componentPtr[SCHEME] = (*uri)->uriBuf;
-    if (OK > (status = URI_Escape(SCHEME, scheme, MOC_STRLEN(scheme), (*uri)->componentPtr[SCHEME], &((*uri)->componentLen[SCHEME]))))
+    if (OK > (status = URI_Escape(SCHEME, scheme, DIGI_STRLEN(scheme), (*uri)->componentPtr[SCHEME], &((*uri)->componentLen[SCHEME]))))
         goto exit;
     *((*uri)->componentPtr[SCHEME]+(*uri)->componentLen[SCHEME]) = ':';
     (*uri)->componentPtr[AUTHORITY] = (*uri)->componentPtr[SCHEME]+(*uri)->componentLen[SCHEME]+1;
 
-    if (MOC_STRLEN(authority) > 0)
+    if (DIGI_STRLEN(authority) > 0)
     {
         *((*uri)->componentPtr[AUTHORITY]) = '/';
         *((*uri)->componentPtr[AUTHORITY]+1) = '/';
         (*uri)->componentPtr[AUTHORITY] = (*uri)->componentPtr[AUTHORITY]+2;
 
     }
-    if (OK > (status = URI_Escape(EXCLUDED, authority, MOC_STRLEN(authority), (*uri)->componentPtr[AUTHORITY], &((*uri)->componentLen[AUTHORITY]))))
+    if (OK > (status = URI_Escape(EXCLUDED, authority, DIGI_STRLEN(authority), (*uri)->componentPtr[AUTHORITY], &((*uri)->componentLen[AUTHORITY]))))
         goto exit;
     (*uri)->componentPtr[PATH] = (*uri)->componentPtr[AUTHORITY] + (*uri)->componentLen[AUTHORITY];
-    if (OK > (status = URI_Escape(EXCLUDED, path, MOC_STRLEN(path), (*uri)->componentPtr[PATH], &((*uri)->componentLen[PATH]))))
+    if (OK > (status = URI_Escape(EXCLUDED, path, DIGI_STRLEN(path), (*uri)->componentPtr[PATH], &((*uri)->componentLen[PATH]))))
         goto exit;
-    if (MOC_STRLEN(query) > 0)
+    if (DIGI_STRLEN(query) > 0)
     {
         *((*uri)->componentPtr[PATH]+(*uri)->componentLen[PATH]) =  '?';
     }
-    (*uri)->componentPtr[QUERY] = (*uri)->componentPtr[PATH] + (*uri)->componentLen[PATH] + (MOC_STRLEN(query) > 0? 1: 0);
-    if (OK > (status = URI_Escape(QUERY, query, MOC_STRLEN(query), (*uri)->componentPtr[QUERY], &((*uri)->componentLen[QUERY]))))
+    (*uri)->componentPtr[QUERY] = (*uri)->componentPtr[PATH] + (*uri)->componentLen[PATH] + (DIGI_STRLEN(query) > 0? 1: 0);
+    if (OK > (status = URI_Escape(QUERY, query, DIGI_STRLEN(query), (*uri)->componentPtr[QUERY], &((*uri)->componentLen[QUERY]))))
         goto exit;
-    if (MOC_STRLEN(fragment) > 0)
+    if (DIGI_STRLEN(fragment) > 0)
     {
         *((*uri)->componentPtr[QUERY]+(*uri)->componentLen[QUERY]) = '#';
     }
-    (*uri)->componentPtr[FRAGMENT] = (*uri)->componentPtr[QUERY] + (*uri)->componentLen[QUERY] + (MOC_STRLEN(fragment) > 0? 1 : 0);
-    if (OK > (status = URI_Escape(FRAGMENT, fragment, MOC_STRLEN(fragment), (*uri)->componentPtr[FRAGMENT], &((*uri)->componentLen[FRAGMENT]))))
+    (*uri)->componentPtr[FRAGMENT] = (*uri)->componentPtr[QUERY] + (*uri)->componentLen[QUERY] + (DIGI_STRLEN(fragment) > 0? 1 : 0);
+    if (OK > (status = URI_Escape(FRAGMENT, fragment, DIGI_STRLEN(fragment), (*uri)->componentPtr[FRAGMENT], &((*uri)->componentLen[FRAGMENT]))))
         goto exit;
 
 exit:
@@ -624,7 +624,7 @@ URI_ParseURI(sbyte* uriStr, URI** uri)
     if ((NULL == uriStr) || (NULL == uri))
         return ERR_NULL_POINTER;
 
-    uriLen = MOC_STRLEN(uriStr) + 1;
+    uriLen = DIGI_STRLEN(uriStr) + 1;
 
     /* initialize result */
     *uri = (URI*)MALLOC(sizeof(URI));
@@ -639,7 +639,7 @@ URI_ParseURI(sbyte* uriStr, URI** uri)
         status = ERR_MEM_ALLOC_FAIL;
         goto exit;
     }
-    if (OK > (status = MOC_MEMCPY((*uri)->uriBuf, uriStr, uriLen)))
+    if (OK > (status = DIGI_MEMCPY((*uri)->uriBuf, uriStr, uriLen)))
         goto exit;
     (*uri)->uriLen = uriLen;
     (*uri)->componentLen[SCHEME] = 0;
@@ -771,7 +771,7 @@ URI_GetComponent(componentType type, URI* uri, sbyte** component)
     }
     *component = NULL;
 
-    if (type == AUTHORITY || type == FULLPATH || type == PATH || type == QUERY)
+    if (type == AUTHORITY || type == FULLPATH || type == QUERY)
     {
         /* most malloc implementations will return 0 or an
            invalid pointer when the argument is 0 */
@@ -791,7 +791,7 @@ URI_GetComponent(componentType type, URI* uri, sbyte** component)
         }
         if (0 < uri->componentLen[type])
         {
-            if (OK > (status = MOC_MEMCPY(*component, uri->componentPtr[type], uri->componentLen[type])))
+            if (OK > (status = DIGI_MEMCPY(*component, uri->componentPtr[type], uri->componentLen[type])))
                 goto exit;
         }
         *(*component + mallocLen) = '\0';
@@ -922,7 +922,7 @@ URI_ParseAuthority(URI* uri)
     }
     if (portLen > 0)
     {
-        uri->port = MOC_ATOL((sbyte *)portPtr, (const sbyte**)&stop);
+        uri->port = DIGI_ATOL((sbyte *)portPtr, (const sbyte**)&stop);
     }
 
 exit:
@@ -1006,4 +1006,4 @@ URI_DELETE(URI* uri)
     return status;
 }
 
-#endif /* #ifdef __ENABLE_MOCANA_URI__ */
+#endif /* #ifdef __ENABLE_DIGICERT_URI__ */

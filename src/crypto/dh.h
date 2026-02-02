@@ -36,7 +36,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_dh_priv.h"
 #endif
 
@@ -80,7 +80,7 @@ extern "C" {
 #define COMPUTED_VLONG_P(X)             (X)->dh_p
 #define COMPUTED_VLONG_Q(X)             (X)->dh_q
 
-#ifndef __DISABLE_MOCANA_DH_BLINDING__
+#ifndef __DISABLE_DIGICERT_DH_BLINDING__
 #define COMPUTED_VLONG_VF(X)             (X)->dh_vf
 #define COMPUTED_VLONG_VI(X)             (X)->dh_vi
 #define COMPUTED_VLONG_PY(X)             (X)->dh_py
@@ -143,7 +143,7 @@ typedef struct diffieHellmanContext
     MocAsymKey pPublicKey;
     ubyte4     enabled;
 
-#ifndef __DISABLE_MOCANA_DH_BLINDING__
+#ifndef __DISABLE_DIGICERT_DH_BLINDING__
     
     vlong* dh_vi;     /* the blinding value */
     vlong* dh_vf;     /* the unblinding value */
@@ -927,7 +927,7 @@ MOC_EXTERN MSTATUS DH_computeKeyExchangeEx(MOC_DH(hwAccelDescr hwAccelCtx) diffi
  *          This method allocates a buffer to hold the secret. Be sure to FREE
  *          this buffer when done with it.
  *
- * @flags   To use this method one must define __ENABLE_MOCANA_DH_MODES__
+ * @flags   To use this method one must define __ENABLE_DIGICERT_DH_MODES__
  *
  * @param mode                  One of the following macro values
  *                              + \c DH_HYBRID1

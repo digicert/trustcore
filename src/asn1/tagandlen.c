@@ -245,7 +245,7 @@ MOC_EXTERN MSTATUS ASN1_compareOID (
     *pLastByte = (ubyte4)(pCheckOID[offset2 + len1]);
   }
 
-  status = MOC_MEMCMP (
+  status = DIGI_MEMCMP (
     (void *)(pTargetOID + offset1), (void *)(pCheckOID + offset2), len1,
     pCmpResult);
 

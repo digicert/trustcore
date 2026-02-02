@@ -1,0 +1,7 @@
+MSS_SRC_DIR/tap/smp_serialize_interface.c
+MSS_SRC_DIR/tap/tap_base_serialize.c
+MSS_SRC_DIR/tap/tap_common.c
+MSS_SRC_DIR/tap/tap_serialize.c
+MSS_SRC_DIR/tap/tap_serialize_smp.c
+MSS_SRC_DIR/tap/tap_utils.c
+MSS_SRC_DIR/tap/tools/moctap_credparser.c

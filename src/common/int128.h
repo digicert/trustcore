@@ -22,7 +22,7 @@
 MOC_EXTERN ubyte16 u16_Shl( ubyte16 a, ubyte4 n);
 MOC_EXTERN void u16_Incr32( ubyte16* pa, ubyte4 b);
 
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
 #define ZERO_U16(a) (a).upper64 = (a).lower64 = 0
 #define U16INIT( U16, U81, U82) (U16).upper64 = U81; (U16).lower64 = U82
 #define W1_U16(a) ((ubyte4) ((((a).upper64) >> 32 ) & 0xFFFFFFFF))

@@ -22,7 +22,7 @@ declarations used for EC MQV operations.
 
 To enable any of this file's functions, the following flags must be defined in
 moptions.h:
-- $__ENABLE_MOCANA_ECC__$
+- $__ENABLE_DIGICERT_ECC__$
 
 ! External Functions
 This file contains the following public ($extern$) function declarations:
@@ -36,7 +36,7 @@ This file contains the following public ($extern$) function declarations:
 #ifndef __PRIMEEC_MQV_HEADER__
 #define __PRIMEEC_MQV_HEADER__
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /* Support for Finite Field Elliptic Curve MQV Operations */
 
 struct ECCKey;
@@ -48,7 +48,7 @@ MOC_EXTERN MSTATUS ECMQV_generateSharedSecret(const ECCKey* pPrivate1,
                                               PFEPtr* pSharedSecret);
 
 
-#endif /* __ENABLE_MOCANA_ECC__  */
+#endif /* __ENABLE_DIGICERT_ECC__  */
 
 #endif /* __PRIMEFLD_HEADER__ */
 

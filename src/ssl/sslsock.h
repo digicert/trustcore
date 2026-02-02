@@ -3,11 +3,16 @@
  *
  * SSL implementation
  *
- * Copyright Mocana Corp 2003-2007. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
-
 
 /*------------------------------------------------------------------*/
 
@@ -18,11 +23,11 @@
 extern "C" {
 #endif
 
-#if defined(__ENABLE_MOCANA_SSL_DUAL_MODE_API__)
+#if defined(__ENABLE_DIGICERT_SSL_DUAL_MODE_API__)
 #define IS_SSL_ASYNC(X)         ((X)->internalFlags & SSL_INT_FLAG_ASYNC_MODE)
 #define IS_SSL_SYNC(X)          ((X)->internalFlags & SSL_INT_FLAG_SYNC_MODE)
 
-#elif defined(__ENABLE_MOCANA_SSL_ASYNC_SERVER_API__) || defined(__ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__)
+#elif defined(__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__) || defined(__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__)
 #define IS_SSL_ASYNC(X)         (1)
 #define IS_SSL_SYNC(X)          (0)
 
@@ -48,11 +53,11 @@ extern "C" {
 #define TICKET_RESEND_TIME_30_SECONDS 30 /* If the ticket is expiring in 30s, send a new session ticket */
 #define KEY_UPDATE_REQUEST_TIMEOUT 15000 /* 15 seconds */
 
-#ifdef __ENABLE_MOCANA_OPENSSL_SHIM__
+#ifdef __ENABLE_DIGICERT_OPENSSL_SHIM__
 #include "../openssl_wrapper/openssl_shim.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_MBEDTLS_SHIM__
+#ifdef __ENABLE_DIGICERT_MBEDTLS_SHIM__
 #include "../mbedtls_wrapper/mbedtls_shim.h"
 #endif
 
@@ -111,7 +116,7 @@ enum sslASN1EncodeTypes
 
 #define SSL_HELLO_COOKIE_MAX_SIZE       (255)
 
-#ifdef __ENABLE_MOCANA_EAP_FAST__
+#ifdef __ENABLE_DIGICERT_EAP_FAST__
 #define PACKEY_SIZE                     (32)
 #define SKS_SIZE                        (40)
 #define FAST_MSCHAP_CHAL_SIZE           (32)
@@ -120,7 +125,7 @@ enum sslASN1EncodeTypes
 #define SSL_MAXMATERIALS                (2 * (SSL_MAXMACSECRETSIZE + SSL_MAXKEYSIZE + SSL_MAXIVSIZE))
 #endif
 
-#ifdef __ENABLE_MOCANA_INNER_APP__
+#ifdef __ENABLE_DIGICERT_INNER_APP__
 #define SSL_INNER_SECRET_SIZE           (48)
 #endif
 
@@ -165,14 +170,14 @@ enum sslASN1EncodeTypes
 #define SSL_TIMER_START_TIME(X)         (X)->timerStartTime
 #define SSL_TIMER_MS_EXPIRE(X)          (X)->timerMsExpire
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
 #define DTLS_TIMER_STATE(X)             (X)->dtlsTimerState
 #define DTLS_PEEREPOCH(X)               ((X)->peerSeqnumHigh >> 16)
 #define DTLS_OWNEPOCH(X)                ((X)->ownSeqnumHigh >> 16)
 #endif
 
-#if defined(__ENABLE_MOCANA_TLS13__)
-#if defined(__ENABLE_MOCANA_SSL_SERVER__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
+#if defined(__ENABLE_DIGICERT_SSL_SERVER__)
 /* Supported Groups Extension */
 #define TLS13_SET_SUPPORTED_GROUPS_EXT_RX(X)    MOC_BIT_SET((X)->roleSpecificInfo.server.receivedExtensions, 1, 0)
 #define TLS13_GET_SUPPORTED_GROUPS_EXT_RX(X)    MOC_BIT_GET((X)->roleSpecificInfo.server.receivedExtensions, 0)
@@ -194,7 +199,7 @@ enum sslASN1EncodeTypes
 #define TLS13_SET_SIGNATURE_ALGO_CERT_EXT_RX(X) MOC_BIT_SET((X)->roleSpecificInfo.server.receivedExtensions, 1, 4)
 #define TLS13_GET_SIGNATURE_ALGO_CERT_EXT_RX(X) MOC_BIT_GET((X)->roleSpecificInfo.server.receivedExtensions, 4)
 
-#if defined(__ENABLE_MOCANA_TLS13_0RTT__)
+#if defined(__ENABLE_DIGICERT_TLS13_0RTT__)
 #define TLS13_0RTT_SET_EARLY_DATA_RX(X)         MOC_BIT_SET((X)->roleSpecificInfo.server.zeroRTT, 1, 0)
 #define TLS13_0RTT_GET_EARLY_DATA_RX(X)         MOC_BIT_GET((X)->roleSpecificInfo.server.zeroRTT, 0)
 
@@ -205,10 +210,10 @@ enum sslASN1EncodeTypes
 #define TLS13_0RTT_SET_FALLBACK(X)              MOC_BIT_SET((X)->roleSpecificInfo.server.zeroRTT, 1, 2)
 #define TLS13_0RTT_RESET_FALLBACK(X)            MOC_BIT_SET((X)->roleSpecificInfo.server.zeroRTT, 0, 2)
 #define TLS13_0RTT_GET_FALLBACK(X)              MOC_BIT_GET((X)->roleSpecificInfo.server.zeroRTT, 2)
-#endif /* __ENABLE_MOCANA_TLS13_0RTT__ */
-#endif /* __ENABLE_MOCANA_SSL_SERVER__ */
+#endif /* __ENABLE_DIGICERT_TLS13_0RTT__ */
+#endif /* __ENABLE_DIGICERT_SSL_SERVER__ */
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 /* Received a HRR */
 #define TLS13_HRR_SET_RX(X)                     MOC_BIT_SET((X)->roleSpecificInfo.client.hrr, 1, 0)
 #define TLS13_HRR_RESET_RX(X)                   MOC_BIT_SET((X)->roleSpecificInfo.client.hrr, 0, 0)
@@ -233,8 +238,8 @@ enum sslASN1EncodeTypes
 #define TLS13_CLIENT_SET_PSK_RX(X)              MOC_BIT_SET((X)->roleSpecificInfo.client.extensions, 1, 2)
 #define TLS13_CLIENT_GET_PSK_RX(X)              MOC_BIT_GET((X)->roleSpecificInfo.client.extensions, 2)
 
-#endif /* __ENABLE_MOCANA_SSL_CLIENT__ */
-#endif /*  __ENABLE_MOCANA_TLS13__*/
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
+#endif /*  __ENABLE_DIGICERT_TLS13__*/
 
 #define SSL_KEYEX_RSA_BIT               (0x001)
 #define SSL_KEYEX_DHE_BIT               (0x002)
@@ -306,7 +311,7 @@ enum sslASN1EncodeTypes
 #define SSL_MLDSA_65_RSA4096_PSS_SHA384    0x0911
 #define SSL_MLDSA_87_ED448                 0x0912
 
-/* Mocana SSL Internal Flags */
+/* Digicert SSL Internal Flags */
 #define SSL_INT_FLAG_SYNC_MODE          (0x00000001)
 #define SSL_INT_FLAG_ASYNC_MODE         (0x00000002)
 
@@ -346,7 +351,7 @@ struct diffieHellmanContext;
 struct certChain;
 struct certStore;
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
 enum dtlsTimerStates
 {
     kDtlsPreparing,
@@ -356,7 +361,7 @@ enum dtlsTimerStates
     kDtlsUnknown
 };
 
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
 enum postHandshakeType
 {
     kNewSessionTicket = 0,
@@ -378,14 +383,14 @@ typedef struct PostHandshakeState
     ubyte *msgTimer;
     ubyte4 msgTimeout;
 } PostHandshakeState;
-#endif /* __ENABLE_MOCANA_TLS13__ */
+#endif /* __ENABLE_DIGICERT_TLS13__ */
 
 typedef struct msgBufferDescr
 {
     ubyte *ptr;
     ubyte4 recordSize;
     ubyte2 firstHoleOffset;
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
     RecordListNodePtr pRecordNodeList;
 #endif
 } msgBufferDescr;
@@ -395,7 +400,7 @@ typedef struct retransBufferDescr
     ubyte   recordType;
     ubyte*  pData;
     ubyte4  length;
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
     enum postHandshakeType handshakeType;
     RecordListNodePtr pRecordNodeList;
     ubyte2 epoch;
@@ -418,13 +423,13 @@ typedef struct sharedKey
  * which is based on RFC 8446 4.2.7 NamedGroup list. */
 #define MAX_SUPPORTED_NAMED_GROUPS 11
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
-#if defined(__ENABLE_MOCANA_DTLS_SRTP__) && defined(__ENABLE_MOCANA_SRTP_PROFILES_SELECT__)
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
+#if defined(__ENABLE_DIGICERT_DTLS_SRTP__) && defined(__ENABLE_DIGICERT_SRTP_PROFILES_SELECT__)
 #define SRTP_MAX_NUM_PROFILES (16)
 #endif
 #endif
 
-#if defined(__ENABLE_MOCANA_SSL_HEARTBEAT_RFC_6520__)
+#if defined(__ENABLE_DIGICERT_SSL_HEARTBEAT_RFC_6520__)
 #define HEARTBEAT_PAYLOAD_LENGTH 32 /* RFC requirement is max of 2^16 - 1*/
 #define HEARTBEAT_PADDING_LENGTH 32 /* RFC requirement is minimum of 16 bytes */
 
@@ -445,7 +450,7 @@ typedef struct SSL_Transport_Handler
 typedef struct SSLSocket
 {
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
     peerDescr                       peerDescr;
     ubyte*                          dtlsHandshakeTimer;
     ubyte4                          dtlsHandshakeTimeout; /* in millisecond */
@@ -466,7 +471,7 @@ typedef struct SSLSocket
     ubyte4                          asyncBytesRequired;
     intBoolean                      asyncStateInit;
     ubyte*                          pSharedInBuffer;
-#if defined(__ENABLE_MOCANA_TLS13__) && ((defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__)))
+#if defined(__ENABLE_DIGICERT_TLS13__) && ((defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__)))
     ubyte2                          sharedInBufferLen;                          
 #endif
 
@@ -476,7 +481,7 @@ typedef struct SSLSocket
     ubyte4                          outputBufferSize;       /* size of output buffer */
     ubyte4                          numBytesToSend;         /* number of bytes pending inside of buffer */
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
     intBoolean                      isRetransmit;
     retransBufferDescr              retransBuffers[MAX_HANDSHAKE_MESG_IN_FLIGHT];   /* remember for retransmission */
 #endif
@@ -488,7 +493,7 @@ typedef struct SSLSocket
     enum sslHandshakeStates         sslHandshakeState;      /* my handshake state */
     sbyte4                          theirHandshakeState;    /* peer's handshake state */
     intBoolean                      receivedServerKeyEx;
-#ifdef __ENABLE_MOCANA_SSL_REHANDSHAKE__
+#ifdef __ENABLE_DIGICERT_SSL_REHANDSHAKE__
     /* Timer count for rehandshake */
     moctime_t    sslRehandshakeTimerCount;
 #endif
@@ -496,13 +501,13 @@ typedef struct SSLSocket
     /* Count of bytes sent */
     sbyte4       sslByteSendCount;
     struct certStore               *pCertStore;
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__)
     struct certStore               *pMutualAuthCertStore;
 #endif
     struct certChain               *pCertChain;
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
     certDistinguishedName          *pSupportedCADn;
-#if (defined(__ENABLE_MOCANA_TLS13_PSK__) && defined(__ENABLE_MOCANA_TLS13_0RTT__))
+#if (defined(__ENABLE_DIGICERT_TLS13_PSK__) && defined(__ENABLE_DIGICERT_TLS13_0RTT__))
     ubyte4                          maxEarlyDataSize;/* The max Early data Size, a server can receive per session;
                                                       * This value should always be lower than or equal to recvEarlyDataSize
                                                       * in sslsettings
@@ -521,13 +526,13 @@ typedef struct SSLSocket
     ubyte                           isPSKSelected;
 #endif
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__) || defined(__ENABLE_MOCANA_TLS13__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__) || defined(__ENABLE_DIGICERT_TLS13__))
     /* This cookie variable is used in both TLS 1.3 and DTLS */
     ubyte2                          helloCookieLen;
     ubyte                           helloCookie[SSL_HELLO_COOKIE_MAX_SIZE];
 #endif
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
     enum dtlsTimerStates            dtlsTimerState;
     ubyte2                          nextSendSeq; /* next sending handshake message sequence counter */
     ubyte2                          nextRecvSeq; /* next receive handshake message sequence counter */
@@ -537,7 +542,7 @@ typedef struct SSLSocket
     byteBoolean                     shouldChangeCipherSpec; /* true if epoch increases by 1 */
     ubyte2                          currentPeerEpoch;       /* the current peer epoch in effect */
     intBoolean                      receivedFinished;
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
     PostHandshakeState              postHandshakeState[3]; /* 3 post handshake message types */
 
     intBoolean                      sendKeyUpdateResponse; /* respond to peer request for rekey */
@@ -554,7 +559,7 @@ typedef struct SSLSocket
     SHA1_CTX*                       pShaCtx;
     MD5_CTX*                        pMd5Ctx;
     BulkCtx                         pHashCtx;
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
     BulkCtx                         pHandshakeHashCtx;
 #endif
     BulkCtx*                        pHashCtxList;
@@ -570,7 +575,7 @@ typedef struct SSLSocket
     ubyte                           sslMaxVersion;
     ubyte                           sslMinorVersion;         /* negotiated, current */
 
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
     ubyte                           legacySSLMinorVersion; /* For TLS 1.3, this is the minorVersion
                                                               sent in header; */
 #endif
@@ -591,21 +596,21 @@ typedef struct SSLSocket
 
     ubyte4                          signatureAlgoListLength;
     ubyte*                          signatureAlgoList;
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
     ubyte4                          signatureAlgoCertListLength;
     ubyte*                          signatureAlgoCertList;
 #endif
 
     ubyte2                          signatureAlgo;
 
-#if defined(__ENABLE_MOCANA_SSL_HEARTBEAT_RFC_6520__)
+#if defined(__ENABLE_DIGICERT_SSL_HEARTBEAT_RFC_6520__)
     E_HeartbeatExtension            sendHeartbeatMessage;
     E_HeartbeatExtension            rxHeartbeatExtension;
     ubyte                           heartbeatPayload[HEARTBEAT_PAYLOAD_LENGTH];
     intBoolean                      heartbeatMessageInFlight;
 #endif
 
-#if defined( __ENABLE_MOCANA_OCSP_CLIENT__)
+#if defined( __ENABLE_DIGICERT_OCSP_CLIENT__)
     /* certificate status request */
     /* Track whether or not a status request must be sent */
     intBoolean                     certStatusReqExt;
@@ -628,11 +633,11 @@ typedef struct SSLSocket
 #endif
 
 
-#ifdef __ENABLE_MOCANA_EAP_FAST__
+#ifdef __ENABLE_DIGICERT_EAP_FAST__
     ubyte                           pacKey[PACKEY_SIZE];
 #endif
 
-#ifdef __ENABLE_MOCANA_INNER_APP__
+#ifdef __ENABLE_DIGICERT_INNER_APP__
     intBoolean                      receivedInnerApp;
     ubyte2                          receivedInnerAppValue;
     ubyte                           innerSecret[SSL_INNER_SECRET_SIZE];
@@ -663,13 +668,13 @@ typedef struct SSLSocket
     ubyte*                          clientIV;
     ubyte*                          serverIV;
 
-#ifdef __ENABLE_MOCANA_EAP_FAST__
+#ifdef __ENABLE_DIGICERT_EAP_FAST__
     /* session key seed -> points to materials below */
     ubyte*                          sessionKeySeed;
     ubyte*                          fastChapChallenge;
 #endif
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
     /* handshake message retransmission */
     struct retransCipherInfo {
         intBoolean                      deleteOldBulkCtx;    /* TRUE if we should call deleteCtxFunc */
@@ -678,8 +683,8 @@ typedef struct SSLSocket
         const struct CipherSuiteInfo*   pOldCipherSuite;     /* cipher suite used for encrypting retransmitted data */
     } retransCipherInfo;
 #endif
-#if defined(__ENABLE_MOCANA_TLS13__) && defined(__ENABLE_MOCANA_DTLS_SERVER__) && \
-    defined(__ENABLE_MOCANA_TLS13_PSK__) && defined(__ENABLE_MOCANA_TLS13_0RTT__)
+#if defined(__ENABLE_DIGICERT_TLS13__) && defined(__ENABLE_DIGICERT_DTLS_SERVER__) && \
+    defined(__ENABLE_DIGICERT_TLS13_PSK__) && defined(__ENABLE_DIGICERT_TLS13_0RTT__)
     struct earlyDataEpochKeys {
         ubyte4                          currentPeerEpoch;
         ubyte4                          peerSeqnumHigh;
@@ -699,7 +704,7 @@ typedef struct SSLSocket
     ubyte4                          peerSeqnum;
     ubyte4                          peerSeqnumHigh;
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
     ubyte4                          oldSeqnum;      /* remember for retransmission */
     ubyte4                          oldSeqnumHigh;  /* remember for retransmission */
 
@@ -722,7 +727,7 @@ typedef struct SSLSocket
     ubyte*                          pMaterials;
     ubyte*                          pActiveMaterials;   /* active materials is a clone of pMaterials --- allows for key reuse */
 
-#ifdef __ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
+#ifdef __ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
     /* ability to chose at run-time cipher suites to support */
     byteBoolean                     isCipherTableInit;
     byteBoolean                     isCipherEnabled[SSL_MAX_NUM_CIPHERS];
@@ -733,18 +738,18 @@ typedef struct SSLSocket
     ubyte4                          supportedGroupListLength;
     ubyte2*                         pSupportedSignatureAlgoList;
     ubyte4                          supportedSignatureAlgoListLength;
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
     ubyte2*                         pConfiguredSignatureCertAlgoList;
     ubyte4                          configuredSignatureCertAlgoListLength;
 #endif
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__)) && defined(__ENABLE_MOCANA_DTLS_SRTP__)
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__)) && defined(__ENABLE_DIGICERT_DTLS_SRTP__)
     byteBoolean                     useSrtp; /* is use_srtp enabled? */
     ubyte*                          srtpMki; /* opaque srtp_mki<0..255> */
     const struct SrtpProfileInfo*   pHandshakeSrtpProfile;  /* protection profile used connection handshake */
     ubyte*                          pSrtpMaterials; /* contains the key materials */
 
-#ifdef __ENABLE_MOCANA_SRTP_PROFILES_SELECT__
+#ifdef __ENABLE_DIGICERT_SRTP_PROFILES_SELECT__
     /* ability to chose at run-time srtp protection profiles to support */
     byteBoolean                     isSrtpProfileTableInit;
     byteBoolean                     isSrtpProfileEnabled[SRTP_MAX_NUM_PROFILES]; /* TODO: should change to a smaller value */
@@ -761,8 +766,8 @@ typedef struct SSLSocket
     ubyte4                          protocol;               /* current SSL message type (i.e. application, alert, inner, etc) */
     ubyte4                          timeOutReceive;         /* Receive timeout */
 
-#if (defined(__ENABLE_MOCANA_SSL_DHE_SUPPORT__) || \
-    defined(__ENABLE_MOCANA_SSL_DH_ANON_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSL_DHE_SUPPORT__) || \
+    defined(__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__))
     struct diffieHellmanContext*    pDHcontext;
     ubyte                           *pDHP;
     ubyte4                           pLen;
@@ -772,7 +777,7 @@ typedef struct SSLSocket
 
     /* when crypto interface is enabled we want to hold on to the public key remote context,
      * we also need to keep a hold of the shared secret until it is used. */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     ubyte*                          pRemotePublicKey;
     ubyte4                          remotePublicKeyLength; 
 
@@ -781,12 +786,12 @@ typedef struct SSLSocket
 #endif
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSL_ECDHE_SUPPORT__) || \
-    defined( __ENABLE_MOCANA_SSL_ECDH_ANON_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__) || \
+    defined( __ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__))
     AsymmetricKey                   ecdheKey;
 #endif
 
-#if defined(__ENABLE_MOCANA_PQC__)
+#if defined(__ENABLE_DIGICERT_PQC__)
     ubyte                           *pQsSharedSecret;
     ubyte4                          qsSharedSecretLen;
 #endif
@@ -795,11 +800,11 @@ typedef struct SSLSocket
     intBoolean                      isMutualAuthNegotiated;
     intBoolean                      generateEmptyCert;
 
-#ifdef __ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
     AsymmetricKey                   mutualAuthKey;
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_SRP__
+#ifdef __ENABLE_DIGICERT_SSL_SRP__
     ubyte*                          srpIdentity; /* first byte is length */
     sbyte4                          srpNumBits; /* identify the "group" */
 
@@ -813,7 +818,7 @@ typedef struct SSLSocket
                                                            *  because of a fatal alert */
     intBoolean                      sendCloseNotifyAlert; /* Flag to check if close notify should be sent */
 
-#if (defined(__ENABLE_MOCANA_SSL_REHANDSHAKE__))
+#if (defined(__ENABLE_DIGICERT_SSL_REHANDSHAKE__))
     intBoolean                      isRehandshakeExtPresent;
     intBoolean                      isRehandshakeAllowed;
 #endif
@@ -825,12 +830,12 @@ typedef struct SSLSocket
     /* engineer defined cookie */
     void*                           cookie;
 
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
     ubyte*                          certificateRequestContext;
     ubyte                           certificateRequestContextLength; /* 0..2^8-1 */
     ubyte                           postHandshakeAuth;
     ubyte                           postHandshakeMessages;
-#if defined(__ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__)
+#if defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__)
     ubyte                           filterCertExtensions;
     ubyte2                          certReqTotalExtensionsLength;
 #endif
@@ -856,13 +861,13 @@ typedef struct SSLSocket
     ubyte4                          numExtensions;
     ubyte4                          keyUpdateRequested;
     moctime_t                       keyUpdateTimerCount;
-#if defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__)
+#if defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__)
     RecordListNodePtr               pRecvRecords;
     ubyte4                          recvRecordsLen;
 #endif
-#endif /* __ENABLE_MOCANA_TLS13__ */
+#endif /* __ENABLE_DIGICERT_TLS13__ */
 
-#if defined(__ENABLE_MOCANA_EXTENDED_MASTERSECRET_RFC7627__)
+#if defined(__ENABLE_DIGICERT_EXTENDED_MASTERSECRET_RFC7627__)
     intBoolean                      supportExtendedMasterSecret;
     intBoolean                      useExtendedMasterSecret;/* If the connection is using extended Master Secret computation */
     intBoolean                      receivedExtendedMasterSecret; /* Flag to mark if extended_master_secret extension is received */
@@ -871,41 +876,41 @@ typedef struct SSLSocket
     sbyte4                          server;                 /* are we a server or a client */
     union
     {
-#ifdef __ENABLE_MOCANA_SSL_SERVER__
+#ifdef __ENABLE_DIGICERT_SSL_SERVER__
         struct ServerInfo
         {
             ubyte4                  numCertificates;
             const SizedBuffer*      certificates;           /* points to cert store managed buffers */
             SESSIONID               sessionId;              /* our own session ID is 4 bytes long */
-#if defined(__ENABLE_MOCANA_SSL_SESSION_TICKET_RFC_5077__)
+#if defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
             ubyte2                  ticketCipherSuiteId;
             ubyte                   ticketUseExtendedMasterSecret;
 #endif
             ubyte4                  certECCurves;           /* bit is set if curve is used in certchain */
             ubyte4                  clientECCurves;         /* bit is set if curve can be used by client */
             byteBoolean             sendSessionTicket;
-            ubyte4                  numOfSessionTickets;    /* This indicates the number of session tickets to send;
-                                                               Configured by application; Default value is 1; */
+            ubyte4                  numOfSessionTickets;    /* This indicates the number of session tickets to send.
+                                                               Configured by application. Default value is 1. */
             /* Keys used in generating a session ticket */
             ubyte*                  aesKey;
             ubyte*                  hmacKey;
 
-#ifdef __ENABLE_MOCANA_SSL_SRP__
+#ifdef __ENABLE_DIGICERT_SSL_SRP__
             vlong*                  srpb;                   /* random value b */
             vlong*                  srpVerifier;            /* SRP verifier */
             ubyte*                  srpB;                   /* B value kv + g^b %N */
             ubyte2                  srpBLen;                /* length of sprB */
 #endif
-#if defined(__ENABLE_MOCANA_INNER_APP__)
+#if defined(__ENABLE_DIGICERT_INNER_APP__)
             intBoolean              innerApp;
             ubyte2                  innerAppValue;
 #endif
             sbyte4                  keyExchangeMode;        /* Content of PSK Key Exchange Mode extension */
-#if defined(__ENABLE_MOCANA_TLS13__) || defined(__ENABLE_MOCANA_SSL_SESSION_TICKET_RFC_5077__)
+#if defined(__ENABLE_DIGICERT_TLS13__) || defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
             ubyte                   sessionIdEchoLen;
             ubyte                   sessionIdEcho[SSL_MAXSESSIONIDSIZE];
 #endif
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
             /* RFC 8446, section 4.1.3. legacy_session_id_echo
              * TLS 1.3, the session ID received in Client Hello should be echoed back in Server Hello
              */
@@ -936,7 +941,7 @@ typedef struct SSLSocket
             tls13PSK                *pSelectedPSK;
             ubyte2                  selectedPskIdentityIndex;
             ubyte4                  selectedPskAge;
-#ifdef __ENABLE_MOCANA_TLS13_0RTT__
+#ifdef __ENABLE_DIGICERT_TLS13_0RTT__
             ubyte                   zeroRTT; /* 0x01 - earlyApplicationDataReceived
                                               * 0x02 - endOfEarlyData Message received
                                               * 0x04 - 0RTT Fallback;
@@ -946,11 +951,11 @@ typedef struct SSLSocket
             ubyte4                  selectedCurveLength;
             ubyte2                  bindersLength;
             ubyte                   PSKExt;
-#endif /* __ENABLE_MOCANA_TLS13__ */
+#endif /* __ENABLE_DIGICERT_TLS13__ */
         } server;
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSL_CLIENT__
         struct ClientInfo
         {
             /* this part is set by the client specific extra initialization routine */
@@ -962,11 +967,11 @@ typedef struct SSLSocket
                                                                sent by the server */
             ubyte*                  pMasterSecret;          /* points to some external buffer */
             const sbyte*            pDNSName;               /* points to some external buffer */
-#if defined(__ENABLE_MOCANA_MULTIPLE_COMMON_NAMES__)
+#if defined(__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__)
             const CNMatchInfo*      pCNMatchInfos;          /* points to some external buffer */
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
             ubyte2                  mutualAuthSignAlgo;     /* TLS 1.2 signature Algo */
             /* This alias is for the key/cert loaded by SSL client in mutual auth case;
              * This enables the application to direct the client
@@ -976,7 +981,7 @@ typedef struct SSLSocket
 
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_SRP__
+#ifdef __ENABLE_DIGICERT_SSL_SRP__
             /* the SRP parameters */
             ubyte                   ipHash[SHA1_RESULT_SIZE]; /* SHA (I|':'|P) */
             ubyte*                  srpSB; /* salt and B value -- copy of part of
@@ -984,7 +989,7 @@ typedef struct SSLSocket
             sbyte4                  srpSBLen;
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_PSK_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSL_PSK_SUPPORT__
             ubyte                   psk[SSL_PSK_MAX_LENGTH];
             ubyte4                  pskLength;
             ubyte                   pskIdentity[SSL_PSK_SERVER_IDENTITY_LENGTH];
@@ -994,21 +999,21 @@ typedef struct SSLSocket
             ubyte4                  numMutualAuthCert;
             const SizedBuffer*      sslMutualAuthCerts;    /* points to cert store managed buffers */
             ubyte2                  certExtensionSize;
-#ifdef __ENABLE_MOCANA_SSL_SESSION_TICKET_RFC_5077__
+#ifdef __ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__
             sessionTicket*          pTicketTls;
 #endif
-#ifdef __ENABLE_MOCANA_EAP_FAST__
+#ifdef __ENABLE_DIGICERT_EAP_FAST__
             ubyte4                  ticketLength;
             ubyte*                  ticket;
 #endif
-#ifdef __ENABLE_MOCANA_INNER_APP__
+#ifdef __ENABLE_DIGICERT_INNER_APP__
             intBoolean              innerApp;
             ubyte2                  innerAppValue;
 #endif
             ubyte*                  helloBuffer; /* for saving the client hello for hash calculation */
             ubyte4                  helloBufferLen; /* for saving the client hello for hash calculation */
 
-#if (defined(__ENABLE_MOCANA_OCSP_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_OCSP_CLIENT__))
             /* We will extract responder Ids from this; and use it for parsing
                           the received response */
             ubyte4                  trustedResponderCount;
@@ -1016,7 +1021,7 @@ typedef struct SSLSocket
 #endif
 
             ubyte                   requestSessionTicket;
-#ifdef __ENABLE_MOCANA_TLS13__
+#ifdef __ENABLE_DIGICERT_TLS13__
             ubyte*                  pSessionTicket;
             ubyte                   sessionTicketLen;
             ubyte                   numOfSharedVersions;
@@ -1060,7 +1065,7 @@ typedef struct SSLSocket
             ubyte*                  receivedPubKey;
             ubyte2                  receivedPubKeyLen;
 #endif
-#if defined(__ENABLE_MOCANA_EXTENDED_MASTERSECRET_RFC7627__)
+#if defined(__ENABLE_DIGICERT_EXTENDED_MASTERSECRET_RFC7627__)
             ubyte                   sentExtendedMasterSecret;
 #endif
             MSTATUS (*funcPtrClientCertCallback)(sbyte4 connInstance,
@@ -1070,7 +1075,7 @@ typedef struct SSLSocket
         } client;
 #endif
     } roleSpecificInfo;
-#ifdef __ENABLE_MOCANA_OPENSSL_SHIM__
+#ifdef __ENABLE_DIGICERT_OPENSSL_SHIM__
     /* Variables have been replaced by funcPtrGetCertAndStatusCallback
      */
 #if 0
@@ -1081,7 +1086,7 @@ typedef struct SSLSocket
     void *clientHelloCallbackArg;
 #endif
  
-#ifndef __DISABLE_MOCANA_ALPN_CALLBACK__
+#ifndef __DISABLE_DIGICERT_ALPN_CALLBACK__
     sbyte4 (*funcPtrAlpnCallback)(sbyte4 connectionInstance,
                                   ubyte** out[],
                                   sbyte4* outlen,
@@ -1089,7 +1094,7 @@ typedef struct SSLSocket
                                   sbyte4 inlen);
 #endif
 
-#ifndef __DISABLE_MOCANA_SSL_CERTIFICATE_CALLBACK__
+#ifndef __DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
     MSTATUS (*funcPtrGetCertAndStatusCallback)(sbyte4 connectionInstance,
                                                struct certChain* pCertChain,
                                                MSTATUS status );
@@ -1100,13 +1105,13 @@ typedef struct SSLSocket
                                              ubyte4 certAuthorityCount);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_INVALID_CERTIFICATE_CALLBACK__
+#ifdef __ENABLE_DIGICERT_SSL_INVALID_CERTIFICATE_CALLBACK__
     MSTATUS (*funcPtrInvalidCertCallback)(sbyte4 connectionInstance, MSTATUS status);
 #endif
 
    MSTATUS (*funcPtrVersionCallback)(ubyte4 serverVersion, ubyte4 clientVersion, MSTATUS sslStatus);
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_SSL_SESSION_TICKET_RFC_5077__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
     sbyte4 (*funcPtrSSLClientSaveTicketCallback)(sbyte4 connectionInstance, sbyte *serverInfo, ubyte4 serverInfoLen,
                                                  void *userData, ubyte *pTicket, ubyte4 ticketLen);
 
@@ -1115,7 +1120,7 @@ typedef struct SSLSocket
                                                       intBoolean *pFreeMemory);
 #endif
 
-#if (defined(__ENABLE_MOCANA_TLS13__) && defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_TLS13_PSK__))
+#if (defined(__ENABLE_DIGICERT_TLS13__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_TLS13_PSK__))
     /* Call back to handover the RX'ed PSK to Application*/
     sbyte4 (*funcPtrSSLClientSavePSKCallback)(sbyte4 connectionInstance, sbyte* ServerInfo,
                                               ubyte4 serverInfoLen, void *userData, ubyte *pPsk, ubyte4 pskLen);
@@ -1126,18 +1131,18 @@ typedef struct SSLSocket
                                              intBoolean *pFreeMemory);
 #endif
 
-#if (defined(__ENABLE_MOCANA_TLS13__) && defined(__ENABLE_MOCANA_TLS13_APPLICATION_DATA_CALLBACK__))
+#if (defined(__ENABLE_DIGICERT_TLS13__) && defined(__ENABLE_DIGICERT_TLS13_APPLICATION_DATA_CALLBACK__))
     /* Stack invokes this callback to get the data from application to send out
      * The parameters are connectionInstance, Data to send and length of data and an additional state */
     sbyte4 (*funcPtrSSLSendApplicationDataCallback(sbyte4 connectoinInstance,
                                                      ubyte **pData, ubyte4 *pDataLen,
                                                      dataState state));
-#endif /*__ENABLE_MOCANA_TLS13__ && __ENABLE_MOCANA_TLS13_APPLICATION_DATA_CALLBACK__ */
+#endif /*__ENABLE_DIGICERT_TLS13__ && __ENABLE_DIGICERT_TLS13_APPLICATION_DATA_CALLBACK__ */
 
-#if defined(__ENABLE_MOCANA_SSL_HEARTBEAT_RFC_6520__)
+#if defined(__ENABLE_DIGICERT_SSL_HEARTBEAT_RFC_6520__)
     sbyte4 (*funcPtrHeatbeatMessageCallback)(sbyte4 connectionInstance, sbyte4 status, ubyte heartbeatType);
 #endif
-#ifdef __ENABLE_MOCANA_SSL_PROXY_CONNECT__
+#ifdef __ENABLE_DIGICERT_SSL_PROXY_CONNECT__
     SSL_Transport_Handler *pTransportHandler;
 #endif
 
@@ -1150,7 +1155,7 @@ MOC_EXTERN MSTATUS    SSL_SOCK_initServerEngine(RNGFun rngFun, void* rngFunArg);
 MOC_EXTERN MSTATUS SSL_SOCK_init(SSLSocket* pSSLSock, intBoolean isDTLS, TCP_SOCKET tcpSock, peerDescr *pPeerDescr, RNGFun rngFun, void* rngFunArg);
 MOC_EXTERN MSTATUS SSL_SOCK_initHashPool(SSLSocket *pSSLSock );
 
-#ifdef __ENABLE_MOCANA_SSL_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSL_CLIENT__
 MOC_EXTERN MSTATUS SSL_SOCK_initSocketExtraClient(SSLSocket* pSSLSock,
                                                   ubyte sessionIdLen,
                                                   ubyte* sessionId,
@@ -1159,23 +1164,23 @@ MOC_EXTERN MSTATUS SSL_SOCK_initSocketExtraClient(SSLSocket* pSSLSock,
                                                   certStorePtr certStore);
 #endif
 
-#if (defined(__ENABLE_MOCANA_EAP_FAST__) && defined(__ENABLE_MOCANA_SSL_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_EAP_FAST__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__))
 MOC_EXTERN MSTATUS    SSL_SOCK_setEAPFASTParams(SSLSocket* pSSLSock, ubyte* pPacOpaque, ubyte4 pacOpaqueLen, ubyte pacKey[PACKEY_SIZE]);
 #endif
 
-#ifdef __ENABLE_MOCANA_EAP_FAST__
+#ifdef __ENABLE_DIGICERT_EAP_FAST__
 MOC_EXTERN MSTATUS    SSL_SOCK_generateEAPFASTIntermediateCompoundKey(SSLSocket *pSSLSock, ubyte *s_imk, ubyte *msk, ubyte mskLen, ubyte *imk);
 MOC_EXTERN MSTATUS    SSL_SOCK_generateEAPFASTSessionKeys(SSLSocket *pSSLSock, ubyte* S_IMCK, sbyte4 s_imckLen, ubyte* MSK, sbyte4 mskLen, ubyte* EMSK, sbyte4 emskLen/*64 Len */);
 #endif
 
-#if (defined(__ENABLE_MOCANA_EAP_PEER__) || defined(__ENABLE_MOCANA_EAP_AUTH__))
+#if (defined(__ENABLE_DIGICERT_EAP_PEER__) || defined(__ENABLE_DIGICERT_EAP_AUTH__))
 MOC_EXTERN MSTATUS    SSL_SOCK_generatePEAPIntermediateKeys(SSLSocket *pSSLSock, ubyte* IPMK, sbyte4 ipmkLen, ubyte* ISK, sbyte4 iskLen, ubyte* result, sbyte4 resultLen/*32 Len */);
 MOC_EXTERN MSTATUS    SSL_SOCK_generatePEAPServerCompoundMacKeys(SSLSocket *pSSLSock, ubyte* IPMK , sbyte4 ipmkLen, ubyte* S_NONCE, sbyte4 s_nonceLen, ubyte* result, sbyte4 resultLen/*20 bytes*/);
 MOC_EXTERN MSTATUS    SSL_SOCK_generatePEAPClientCompoundMacKeys(SSLSocket *pSSLSock, ubyte* IPMK , sbyte4 ipmkLen, ubyte* S_NONCE, sbyte4 s_nonceLen, ubyte* C_NONCE, sbyte4 c_nonceLen, ubyte* result, sbyte4 resultLen/*20 bytes*/);
 MOC_EXTERN MSTATUS    SSL_SOCK_generatePEAPCompoundSessionKey(SSLSocket *pSSLSock, ubyte* IPMK , sbyte4 ipmkLen, ubyte* S_NONCE, sbyte4 s_nonceLen, ubyte* C_NONCE, sbyte4 c_nonceLen, ubyte* result, sbyte4 resultLen);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_SERVER__
+#ifdef __ENABLE_DIGICERT_SSL_SERVER__
 MOC_EXTERN MSTATUS    SSL_SOCK_initSocketExtraServer(SSLSocket* pSSLSock);
 MOC_EXTERN MSTATUS    SSL_SOCK_setServerCert(SSLSocket* pSSLSock);
 #endif
@@ -1183,14 +1188,14 @@ MOC_EXTERN MSTATUS    SSL_SOCK_setServerCert(SSLSocket* pSSLSock);
 MOC_EXTERN void       SSL_SOCK_uninit(SSLSocket* pSSLSock);
 
 /* Handshake */
-#ifdef __ENABLE_MOCANA_SSL_SERVER__
+#ifdef __ENABLE_DIGICERT_SSL_SERVER__
 MOC_EXTERN MSTATUS    SSL_SOCK_serverHandshake(SSLSocket* pSSLSock, intBoolean isWriter);
 MOC_EXTERN MSTATUS    constructTLSExtCertificateAuthorities(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte4 distNameLen);
 #endif
 
-#ifdef __ENABLE_MOCANA_SSL_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSL_CLIENT__
 MOC_EXTERN MSTATUS    SSL_SOCK_clientHandshake(SSLSocket* pSSLSock, intBoolean isWriter);
-#ifdef __ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
 MOC_EXTERN MSTATUS    SSLSOCK_populateMutualAuthCertStore(SSLSocket* pSSLSock, const SizedBuffer *pCerts, ubyte4 numCerts, ubyte *pKey, ubyte4 keyLen, const ubyte *pCACert, ubyte4 caCertLength);
 #endif
 #endif
@@ -1208,32 +1213,32 @@ MOC_EXTERN MSTATUS    SSLSOCK_clearServerSessionCache(SSLSocket* pSSLSock);
 MOC_EXTERN MSTATUS    SSLSOCK_clearAllServerSessionCache();
 
 /* cipher manipulation/information */
-#ifdef __ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__
+#ifdef __ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__
 MOC_EXTERN sbyte4     SSL_SOCK_numCiphersAvailable(void);
 MOC_EXTERN sbyte4     SSL_SOCK_disableCipherHashAlgorithm(SSLSocket *pSSLSock, TLS_HashAlgorithm hashId);
 MOC_EXTERN sbyte4     SSLSOCK_setDSACiphers(SSLSocket *pSSLSock, intBoolean value);
 MOC_EXTERN sbyte4     SSL_SOCK_getCipherList(SSLSocket *pSSLSock, ubyte2 **ppCipherIdList, ubyte4 *pCount);
 #endif
 
-#if defined ( __ENABLE_MOCANA_SSL_CIPHER_SUITES_SELECT__) || (defined(__ENABLE_MOCANA_EAP_FAST__) && defined(__ENABLE_MOCANA_SSL_SERVER__))
+#if defined ( __ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__) || (defined(__ENABLE_DIGICERT_EAP_FAST__) && defined(__ENABLE_DIGICERT_SSL_SERVER__))
 MOC_EXTERN sbyte4     SSL_SOCK_getCipherTableIndex(SSLSocket* pSSLSock, ubyte2 cipherId);
 #endif
 
-#if (defined(__ENABLE_MOCANA_DTLS_CLIENT__) || defined(__ENABLE_MOCANA_DTLS_SERVER__))
-#if (defined(__ENABLE_MOCANA_DTLS_SRTP__) && defined(__ENABLE_MOCANA_SRTP_PROFILES_SELECT__))
+#if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
+#if (defined(__ENABLE_DIGICERT_DTLS_SRTP__) && defined(__ENABLE_DIGICERT_SRTP_PROFILES_SELECT__))
 MOC_EXTERN sbyte4     SSL_SOCK_numSrtpProfilesAvailable(void);
 MOC_EXTERN sbyte4     SSL_SOCK_getSrtpProfileIndex(SSLSocket* pSSLSock, ubyte2 profileId);
 #endif
 #endif
 
-#if defined(__ENABLE_MOCANA_INNER_APP__)
+#if defined(__ENABLE_DIGICERT_INNER_APP__)
 MOC_EXTERN MSTATUS    SSLSOCK_sendInnerApp(SSLSocket* pSSLSock, InnerAppType innerApp, ubyte* pMsg, ubyte4 msgLen, ubyte4 *retMsgLen, sbyte4 isClient);
 MOC_EXTERN MSTATUS    SSLSOCK_updateInnerAppSecret(SSLSocket* pSSLSock, ubyte* session_key, ubyte4 sessionKeyLen);
 MOC_EXTERN MSTATUS    SSLSOCK_verifyInnerAppVerifyData(SSLSocket *pSSLSock, ubyte *data, InnerAppType innerAppType, sbyte4 isClient);
 #endif
 
 /* EAP-TTLS */
-#ifdef __ENABLE_MOCANA_SSL_KEY_EXPANSION__
+#ifdef __ENABLE_DIGICERT_SSL_KEY_EXPANSION__
 MOC_EXTERN MSTATUS    SSL_SOCK_generateKeyExpansionMaterial(SSLSocket *pSSLSock,ubyte *pKey, ubyte2 keySize, ubyte *keyPhrase, ubyte2 keyPhraseLen);
 MOC_EXTERN MSTATUS    SSL_SOCK_generateTLSKeyExpansionMaterial(SSLSocket *pSSLSock,ubyte *pKey, ubyte2 keySize, ubyte *keyPhrase, ubyte2 keyPhraseLen);
 MOC_EXTERN MSTATUS    SSL_SOCK_generateTLSKeyExpansionMaterialWithContext(SSLSocket *pSSLSock,
@@ -1248,7 +1253,7 @@ SSLSOCK_generateHmacKdfExporterKey(
 
 MOC_EXTERN MSTATUS    SSL_SOCK_getCipherId(SSLSocket* pSSLSock, ubyte2* pCipherId);
 MOC_EXTERN MSTATUS    SSL_SOCK_sendServerHelloRequest(SSLSocket* pSSLSock);
-#if !defined(__ENABLE_MOCANA_TLS13__)
+#if !defined(__ENABLE_DIGICERT_TLS13__)
 MOC_EXTERN MSTATUS SSL_SOCK_setSupportedAlgorithm(SSLSocket *pSSLSock, ubyte2 *pList, ubyte4 listLength);
 #endif
 
@@ -1262,50 +1267,50 @@ MOC_EXTERN MSTATUS constructTLSExtSupportedAlgorithms(SSLSocket *pSSLSock, ubyte
 MOC_EXTERN MSTATUS SSL_SOCK_getSharedSignatureAlgorithm(SSLSocket *pSSLSock, ubyte4 index, ubyte2 *pSigAlgo, ubyte isPeer);
 MOC_EXTERN sbyte4 SSL_SOCK_enableECCCurves(SSLSocket *pSSLSock, enum tlsExtNamedCurves *pECCCurvesList, ubyte4 listLength);
 
-#if defined(__ENABLE_MOCANA_TLS13__)
+#if defined(__ENABLE_DIGICERT_TLS13__)
 
 MOC_EXTERN MSTATUS SSLSOCK_sendKeyUpdateRequest(SSLSocket *pSSLSock,ubyte updateRequest);
 MOC_EXTERN MSTATUS SSLSOCK_processCertificateExtensions(SSLSocket *pSSLSock, ubyte4 index, ValidationConfig *pConfig);
 MOC_EXTERN MSTATUS SSL_SOCK_setCipherAlgorithm(SSLSocket *pSSLSock, ubyte2 *pList, ubyte4 listLength, ubyte4 listType);
 MOC_EXTERN MSTATUS SSL_SOCK_enforcePQCAlgorithm(SSLSocket *pSSLSock);
-#if defined(__ENABLE_MOCANA_TLS13_PSK__)
+#if defined(__ENABLE_DIGICERT_TLS13_PSK__)
 
 MOC_EXTERN MSTATUS SSLSOCK_tls13SerializePsk(tls13PSK *pPsk, ubyte **ppRetPsk, ubyte4 *pRetPskLen);
 MOC_EXTERN MSTATUS SSLSOCK_tls13DeserializePsk(ubyte *pPsk, ubyte4 pskLen, tls13PSK **ppRetPsk);
 MOC_EXTERN MSTATUS SSLSOCK_clearPSKList(tls13PSKList **ppPskList, ubyte2 *pPskListLen);
 MOC_EXTERN MSTATUS SSLSOCK_freePSK(tls13PSK **ppPsk);
 
-#if defined(__ENABLE_MOCANA_TLS13_0RTT__)
+#if defined(__ENABLE_DIGICERT_TLS13_0RTT__)
 
 MOC_EXTERN MSTATUS SSL_SOCK_sendEarlyData(SSLSocket *pSSLSock);
 
-#endif /* __ENABLE_MOCANA_TLS13_0RTT__ */
+#endif /* __ENABLE_DIGICERT_TLS13_0RTT__ */
 
-#endif /* __ENABLE_MOCANA_TLS13_PSK__ */
+#endif /* __ENABLE_DIGICERT_TLS13_PSK__ */
 
-#ifdef __ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
 
 MOC_EXTERN MSTATUS SSL_SERVER_sendPostHandshakeAuthCertificateRequest(SSLSocket* pSSLSock);
 
-#endif /* __ENABLE_MOCANA_SSL_MUTUAL_AUTH_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__ */
 
-#endif /* __ENABLE_MOCANA_TLS13__ */
+#endif /* __ENABLE_DIGICERT_TLS13__ */
 MOC_EXTERN MSTATUS SSLSOCK_initiateRehandshake(SSLSocket *pSSLSock);
 MOC_EXTERN MSTATUS getSSLSocketFromConnectionInstance(sbyte4 connectionInstance, SSLSocket **ppSSLSock);
 
 /* Internal APIs */
 MOC_EXTERN sbyte4 processServerHelloVerifyRequest(SSLSocket *pSSLSock, ubyte* pHelloVerifyRequest, ubyte4 length);
 
-#if defined(__ENABLE_MOCANA_TAP__) && defined(__ENABLE_MOCANA_TAP_DEFER_UNLOADKEY__)
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_TAP_DEFER_UNLOADKEY__)
 MOC_EXTERN MSTATUS SSLSOCK_clearTAPKeyAndToken();
 MOC_EXTERN MSTATUS SSLSOCK_setKeyAndTokenHandle(SSLSocket *pSSLSock, intBoolean isServer);
 #endif
 
-#if defined(__ENABLE_MOCANA_TAP__) && defined(__ENABLE_MOCANA_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
 MOC_EXTERN MSTATUS SSLSOCK_tapUnloadKey(AsymmetricKey *pAsymKey);
-#endif /* __ENABLE_MOCANA_TAP__ */
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
-#if defined(__ENABLE_MOCANA_SSL_CLIENT__) && defined(__ENABLE_MOCANA_SSL_SESSION_TICKET_RFC_5077__)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
 MOC_EXTERN MSTATUS SSLSOCK_serializeSessionTicket(sessionTicket *pTicket,
                                               ubyte **ppRetTicket,
                                               ubyte4 *pRetTicketLen);
@@ -1313,7 +1318,7 @@ MOC_EXTERN MSTATUS SSLSOCK_deserializeSessionTicket(
     ubyte *pTicket, ubyte4 ticketLen, sessionTicket **ppRetTicket);
 #endif
 
-#if defined(__ENABLE_MOCANA_SSL_HEARTBEAT_RFC_6520__)
+#if defined(__ENABLE_DIGICERT_SSL_HEARTBEAT_RFC_6520__)
 MOC_EXTERN MSTATUS SSL_SOCK_sendHeartbeatMessage(SSLSocket *pSSLSock,
                                                  ubyte *pPayload, ubyte2 payloadLen,
                                                  intBoolean isRequest);

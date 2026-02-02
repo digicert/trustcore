@@ -23,13 +23,13 @@
               Cryptographic Message Syntax (CMS) support.
 
 @par Flags  To enable these functions, the following conditions must be met:
-            + \c \__ENABLE_MOCANA_CMS__ \b must be defined
+            + \c \__ENABLE_DIGICERT_CMS__ \b must be defined
 
 @filedoc    moccms.h
 */
 
-#ifndef __MOCANA_CMS_HEADER__
-#define __MOCANA_CMS_HEADER__
+#ifndef __DIGICERT_CMS_HEADER__
+#define __DIGICERT_CMS_HEADER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -174,11 +174,11 @@ typedef struct MOC_CMS_RecipientId
     {
         MOC_CMS_KeyTransRecipientId    ktrid;   /* type = NO_TAG */
         MOC_CMS_KeyAgreeRecipientId    karid;   /* type = 1 */
-#if 0
-        MOC_CMS_KEKRecipientId         kekrid;  /* type = 2 */
-        MOC_CMS_PasswordRecipientId    pwrdi;   /* type = 3 */
-        MOC_CMS_OtherRecipientId       orid;    /* type = 4 */
-#endif
+       /*
+        MOC_CMS_KEKRecipientId         kekrid;     type = 2
+        MOC_CMS_PasswordRecipientId    pwrdi;      type = 3
+        MOC_CMS_OtherRecipientId       orid;       type = 4
+       */
     } ri;
 } MOC_CMS_RecipientId;
 
@@ -290,7 +290,7 @@ typedef MSTATUS (*MOC_CMS_GetCertificateVersion3)(const void* arg,
  * <li>E_MOC_CMS_ut_result: The final call, which allows inspection of the context state,
  *     but does not deliver any data.</li>
  * </ul>
- * <p>The CMS context pointer, so that public API calls like <code>MOC_CMS_getContentType</code>
+ * <p>The CMS context pointer, so that public API calls like <code>DIGI_CMS_getContentType</code>
  * are available to the user.
  */
 typedef MSTATUS (*MOC_CMS_UpdateData)(const void* arg,
@@ -351,7 +351,7 @@ typedef struct MOC_CMS_Callbacks
  *                     corresponding to the function's returned error status,
  *                     use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_newContext (MOC_HW(hwAccelDescr hwAccelCtx)
+MOC_EXTERN MSTATUS DIGI_CMS_newContext (MOC_HW(hwAccelDescr hwAccelCtx)
                                        MOC_CMS_context* pNewContext,
                                        const void* callbackArg,
                                        const MOC_CMS_Callbacks* pCallbacks);
@@ -374,7 +374,7 @@ MOC_EXTERN MSTATUS MOC_CMS_newContext (MOC_HW(hwAccelDescr hwAccelCtx)
  * @param  rngFun      Pointer to a function that generates random numbers
  *                     suitable for cryptographic use. To be FIPS-compliant,
  *                     reference RANDOM_rngFun() (defined in random.c), and make
- *                     sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+ *                     sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
  *                     moptions.h
  * @param  rngFunArg   Pointer to arguments that are required by the function
  *                     referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -391,7 +391,7 @@ MOC_EXTERN MSTATUS MOC_CMS_newContext (MOC_HW(hwAccelDescr hwAccelCtx)
  *                     corresponding to the function's returned error status,
  *                     use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_newContextOut (MOC_HW(hwAccelDescr hwAccelCtx)
+MOC_EXTERN MSTATUS DIGI_CMS_newContextOut (MOC_HW(hwAccelDescr hwAccelCtx)
                                           MOC_CMS_context *pNewContext,
                                           MOC_CMS_ContentType type,
                                           RNGFun rngFun,
@@ -417,7 +417,7 @@ MOC_EXTERN MSTATUS MOC_CMS_newContextOut (MOC_HW(hwAccelDescr hwAccelCtx)
  *                   corresponding to the function's returned error status,
  *                   use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_updateContext (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_updateContext (MOC_CMS_context context,
                                           const ubyte* input,
                                           ubyte4 inputLen,
                                           intBoolean* pFinished);
@@ -438,7 +438,7 @@ MOC_EXTERN MSTATUS MOC_CMS_updateContext (MOC_CMS_context context,
  *                   corresponding to the function's returned error status,
  *                   use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_updateContextOut (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_updateContextOut (MOC_CMS_context context,
                                              const ubyte* output,
                                              ubyte4 outputLen,
                                              intBoolean last);
@@ -455,7 +455,7 @@ MOC_EXTERN MSTATUS MOC_CMS_updateContextOut (MOC_CMS_context context,
  *                   corresponding to the function's returned error status,
  *                   use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_finalizeContextOut (MOC_CMS_context context);
+MOC_EXTERN MSTATUS DIGI_CMS_finalizeContextOut (MOC_CMS_context context);
 
 /**
  * @brief   Delete the context.
@@ -470,7 +470,7 @@ MOC_EXTERN MSTATUS MOC_CMS_finalizeContextOut (MOC_CMS_context context);
  *                   corresponding to the function's returned error status,
  *                   use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_deleteContext (MOC_CMS_context* pContext);
+MOC_EXTERN MSTATUS DIGI_CMS_deleteContext (MOC_CMS_context* pContext);
 
 /**
  * @brief   Return the value of type 'CMS_ContentType'.
@@ -486,7 +486,7 @@ MOC_EXTERN MSTATUS MOC_CMS_deleteContext (MOC_CMS_context* pContext);
  *                       corresponding to the function's returned error status,
  *                       use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getContentType (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getContentType (MOC_CMS_context context,
                                            MOC_CMS_ContentType* cmsContentType);
 
 /**
@@ -505,7 +505,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getContentType (MOC_CMS_context context,
  *                corresponding to the function's returned error status,
  *                use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getCallbacks (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getCallbacks (MOC_CMS_context context,
                                          MOC_CMS_Callbacks* pCB);
 
 /**
@@ -522,7 +522,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getCallbacks (MOC_CMS_context context,
  *                       corresponding to the function's returned error status,
  *                       use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getNumRecipients (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getNumRecipients (MOC_CMS_context context,
                                              sbyte4* pNumRecipients);
 
 /**
@@ -535,7 +535,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getNumRecipients (MOC_CMS_context context,
  * @param context      The CMS context
  * @param idxRecipient The index number of the requested recipient. A valid value must be
  *                     larger than or equal 0, and be smaller than the number obtained with
- *                     'MOC_CMS_getNumRecipients'.
+ *                     'DIGI_CMS_getNumRecipients'.
  * @param pRecipient   The pointer to a recipient struct (MOC_CMS_RecipientId). The selected
  *                     data will be copied to that memory, and it is not allowed to be NULL.
  * @return             \c OK (0) if successful; otherwise a negative number
@@ -544,7 +544,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getNumRecipients (MOC_CMS_context context,
  *                     corresponding to the function's returned error status,
  *                     use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getRecipientId (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getRecipientId (MOC_CMS_context context,
                                            sbyte4 idxRecipient,
                                            MOC_CMS_RecipientId* pRecipient);
 
@@ -560,7 +560,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getRecipientId (MOC_CMS_context context,
  *                     corresponding to the function's returned error status,
  *                     use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_deleteRecipientId (MOC_CMS_RecipientId* pRecipient);
+MOC_EXTERN MSTATUS DIGI_CMS_deleteRecipientId (MOC_CMS_RecipientId* pRecipient);
 
 /**
  * @brief   Return the number of signers, if applicable.
@@ -576,7 +576,7 @@ MOC_EXTERN MSTATUS MOC_CMS_deleteRecipientId (MOC_CMS_RecipientId* pRecipient);
  *                    corresponding to the function's returned error status,
  *                    use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getNumSigners (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getNumSigners (MOC_CMS_context context,
                                           sbyte4* pNumSigners);
 
 /**
@@ -589,7 +589,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getNumSigners (MOC_CMS_context context,
  * @param context     The CMS context
  * @param idxSigner   The index number of the requested signer. A valid value must be
  *                    larger than or equal 0, and be smaller than the number obtained with
- *                    'MOC_CMS_getNumSigners'.
+ *                    'DIGI_CMS_getNumSigners'.
  * @param pSigner     The pointer to a signer struct (MOC_CMS_MsgSignInfo). The selected
  *                    data will be copied to that memory, and it is not allowed to be NULL.
  *
@@ -599,7 +599,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getNumSigners (MOC_CMS_context context,
  *                    corresponding to the function's returned error status,
  *                    use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getSignerInfo (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getSignerInfo (MOC_CMS_context context,
                                           sbyte4 idxSigner,
                                           MOC_CMS_MsgSignInfo* pSigner);
 
@@ -617,7 +617,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getSignerInfo (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getNumSignatures (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getNumSignatures (MOC_CMS_context context,
                                              sbyte4* pNumSigs);
 
 /**
@@ -632,7 +632,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getNumSignatures (MOC_CMS_context context,
  *                    corresponding to the function's returned error status,
  *                    use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_deleteSignerInfo (MOC_CMS_MsgSignInfo* pSigner);
+MOC_EXTERN MSTATUS DIGI_CMS_deleteSignerInfo (MOC_CMS_MsgSignInfo* pSigner);
 
 /**
  * @brief   Return the certificates inside the CMS data context.
@@ -651,7 +651,7 @@ MOC_EXTERN MSTATUS MOC_CMS_deleteSignerInfo (MOC_CMS_MsgSignInfo* pSigner);
  *                    corresponding to the function's returned error status,
  *                    use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getCertificates (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getCertificates (MOC_CMS_context context,
                                             const ubyte **ppCerts,
                                             ubyte4 *pCertLen);
 
@@ -672,7 +672,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getCertificates (MOC_CMS_context context,
  *                    corresponding to the function's returned error status,
  *                    use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getCRLs (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getCRLs (MOC_CMS_context context,
                                     const ubyte **ppCRLs,
                                     ubyte4 *pCRLsLen);
 
@@ -690,7 +690,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getCRLs (MOC_CMS_context context,
  *                    corresponding to the function's returned error status,
  *                    use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getNumDigests (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getNumDigests (MOC_CMS_context context,
                                           ubyte4* pNumDigests);
 
 /**
@@ -702,7 +702,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getNumDigests (MOC_CMS_context context,
  * @param context     The CMS context
  * @param idx         The index number of the requested digest. A valid value must be
  *                    larger than or equal 0, and be smaller than the number obtained with
- *                    'MOC_CMS_getNumDigests'.
+ *                    'DIGI_CMS_getNumDigests'.
  * @param pDigestAlgoOID The pointer to a memory pointer, that is 'const'. It will be set to point
  *                    to data within the context. It is not allowed to be NULL.
  *
@@ -712,7 +712,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getNumDigests (MOC_CMS_context context,
  *                    corresponding to the function's returned error status,
  *                    use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_getDigestID (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_getDigestID (MOC_CMS_context context,
                                         ubyte4 idx,
                                         const ubyte** pDigestAlgoOID);
 
@@ -722,7 +722,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getDigestID (MOC_CMS_context context,
  *          the 'streaming' type, i.e. the value \c FALSE was used for \c isStreaming when
  *          creating the CMS output context. It informs the CMS context about the size
  *          of the payload and it then can enforce that value while the function
- *          \c MOC_CMS_updateContextOut() processes input data.
+ *          \c DIGI_CMS_updateContextOut() processes input data.
  *          <p>You can safely 'ignore' this function.
  *          <p>A call to this function is valid for all output CMS types.
  *          <p>This function must be called *before* the first pay load data
@@ -737,7 +737,7 @@ MOC_EXTERN MSTATUS MOC_CMS_getDigestID (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_setPayloadLength (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_setPayloadLength (MOC_CMS_context context,
                                              ubyte4 len);
 
 /**
@@ -746,7 +746,7 @@ MOC_EXTERN MSTATUS MOC_CMS_setPayloadLength (MOC_CMS_context context,
  *          specific 'Signer' identity. The identity is found in X509 data and a private key
  *          is used to sign. Also, the digest algorithm is specified.
  *         <p>This function can return a unique ID value for the signer, that can be used
- *          in the 'MOC_CMS_addSignerAttribute' function to set an attribute for a 'signer'.
+ *          in the 'DIGI_CMS_addSignerAttribute' function to set an attribute for a 'signer'.
  *         <p>This call is only valid for CMS types that sign or digest data.
  *
  * @param context          The context to which to add the 'Signer' data.
@@ -766,7 +766,7 @@ MOC_EXTERN MSTATUS MOC_CMS_setPayloadLength (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addSigner (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addSigner (MOC_CMS_context context,
                                       ubyte* pCert,
                                       ubyte4 certLen,
                                       const AsymmetricKey* pKey,
@@ -799,7 +799,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addSigner (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addSignerAttribute (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addSignerAttribute (MOC_CMS_context context,
                                                MOC_CMS_signerID signId,
                                                const ubyte* idOID,
                                                ubyte4 oidLen,
@@ -825,7 +825,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addSignerAttribute (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addCertificate (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addCertificate (MOC_CMS_context context,
                                            ubyte* pCert,
                                            ubyte4 certLen);
 
@@ -846,7 +846,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addCertificate (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addCRL (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addCRL (MOC_CMS_context context,
                                    ubyte* pCRL,
                                    ubyte4 CRLLen);
 
@@ -870,7 +870,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addCRL (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addSignatureRaw (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addSignatureRaw (MOC_CMS_context context,
                                             const ubyte* pSig,
                                             ubyte4 sigLen);
 
@@ -881,7 +881,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addSignatureRaw (MOC_CMS_context context,
  *         <p>This call is used for 'resigning' a payload read from an input CMS, when
  *          the original signatures in the CMS need to be preserved and the reader needs to
  *          use the given digest for validation.
- *         <p>See 'MOC_CMS_getDigestID()' on how to access the digest OID of a parsed CMS input.
+ *         <p>See 'DIGI_CMS_getDigestID()' on how to access the digest OID of a parsed CMS input.
  *         <p>This call is only valid for CMS types that sign or digest data.
  *
  * @param context          The context to which to add the digest algorithm
@@ -894,7 +894,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addSignatureRaw (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addDigest (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addDigest (MOC_CMS_context context,
                                       const ubyte* digestAlgoOID,
                                       ubyte4 digestAlgoOIDLen);
 
@@ -919,7 +919,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addDigest (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_setEncryption (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_setEncryption (MOC_CMS_context context,
                                           const ubyte* encryptAlgoOID,
                                           ubyte4       encryptAlgoOIDLen,
                                           RNGFun rngFun,
@@ -942,7 +942,7 @@ MOC_EXTERN MSTATUS MOC_CMS_setEncryption (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addRecipient (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addRecipient (MOC_CMS_context context,
                                          const ubyte* pCert,
                                          ubyte4 certLen);
 
@@ -967,7 +967,7 @@ MOC_EXTERN MSTATUS MOC_CMS_addRecipient (MOC_CMS_context context,
  *                  corresponding to the function's returned error status,
  *                  use the \c DISPLAY_ERROR macro.
  */
-MOC_EXTERN MSTATUS MOC_CMS_addUnprotectedAttribute (MOC_CMS_context context,
+MOC_EXTERN MSTATUS DIGI_CMS_addUnprotectedAttribute (MOC_CMS_context context,
                                                     const ubyte* idOID,
                                                     ubyte4 oidLen,
                                                     ubyte4 typeID,
@@ -978,4 +978,4 @@ MOC_EXTERN MSTATUS MOC_CMS_addUnprotectedAttribute (MOC_CMS_context context,
 }
 #endif
 
-#endif  /* __MOCANA_CMS_HEADER__ */
+#endif  /* __DIGICERT_CMS_HEADER__ */

@@ -50,7 +50,7 @@ typedef struct hashTableOfPtrs
 
     hashTablePtrElement*            pHashTableArray[1];
 
-#ifdef __ENABLE_MOCANA_DPDK_CONNECTOR__
+#ifdef __ENABLE_DIGICERT_DPDK_CONNECTOR__
     void*                           pExternalHash;
 #endif
 

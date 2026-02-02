@@ -172,7 +172,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_RSA_verifyDigest(MOC_RSA(hwAccelDescr hwAcce
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_RSA_SIGN_DATA__
+ *     __ENABLE_DIGICERT_RSA_SIGN_DATA__
  *
  * @param [in]  pKey          Pointer to RSA private key.
  * @param [in]  pData         Buffer holding the data to be signed.
@@ -213,7 +213,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_RSA_signData(
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_RSA_SIGN_DATA__
+ *     __ENABLE_DIGICERT_RSA_SIGN_DATA__
  *
  * @param [in]  pKey          Pointer to RSA public key.
  * @param [in]  pData         Buffer holding the data to be verified.
@@ -430,7 +430,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_RSA_freeKeyTemplateAux(
  *                     RSA modulus.
  * @param inputLen     The input data length.
  * @param ppOutput     The output buffer. This buffer will be allocated by this
- *                     function and must be freed by the caller using MOC_FREE.
+ *                     function and must be freed by the caller using DIGI_FREE.
  * @param ppVlongQueue Optional vlong queue.
  *
  * @return         \c OK (0) if successful, otherwise a negative number error
@@ -459,7 +459,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_RSA_applyPublicKeyAux(
  *                     RSA modulus.
  * @param inputLen     The input data length.
  * @param ppOutput     The output buffer. This buffer will be allocated by this
- *                     function and must be freed by the caller using MOC_FREE.
+ *                     function and must be freed by the caller using DIGI_FREE.
  * @param ppVlongQueue Optional vlong queue.
  * @param keyType      The key type, must be akt_rsa or akt_tap_rsa.
  *

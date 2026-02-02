@@ -4,18 +4,24 @@
  * @ingroup nanotap_tree
  *
  * @brief Trust Anchor Platform (TAP) Definitions and Types for Client-Server communication.
- * @details This file contains definitions and functions needed by both Mocana Trust Anchor Platform (TAP) client and server modules.
+ * @details This file contains definitions and functions needed by both Trust Anchor Platform (TAP) client and server modules.
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_TAP__
+ *    + \c \__ENABLE_DIGICERT_TAP__
  *
  * @flags
  * Whether the following flags are defined determines whether or not support is enabled for a particular security module:
- *    + \c \__ENABLE_MOCANA_TPM2__
+ *    + \c \__ENABLE_DIGICERT_TPM2__
  *
- * Copyright (c) Mocana Corp 2018. All Rights Reserved.
- * Proprietary and Confidential Material.
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  * 
  */
 
@@ -41,7 +47,7 @@ extern "C" {
 #endif
 
 /*! @cond */
-#if (defined (__ENABLE_MOCANA_TAP__) && defined (__ENABLE_TAP_REMOTE__))
+#if (defined (__ENABLE_DIGICERT_TAP__) && defined (__ENABLE_TAP_REMOTE__))
 /*! @endcond */
 
 /***************************************************************
@@ -139,42 +145,10 @@ typedef ubyte TAP_CMD_TYPE;
 /*! TAP_CMD_TYPE_TAP - The underlying command structure is TAP_CmdReq. */
 #define  TAP_CMD_TYPE_TAP        ((ubyte)2)
 
-/***************************************************************
-   General Structure Definitions
-****************************************************************/
-
-
-
-
-/***************************************************************
-   Context Structure Definitions
-****************************************************************/
-
-#if 0
-
-/** @private
- *  @internal
- */
-typedef struct  _TAPS_Context
-{
-    TAP_PROVIDER           providerType;
-    TAP_ModuleId           moduleId;
-#if 0
-    TAP_Buffer             pathName;  /*  TAP_Buffer with length to support Unicode in future releases */
-    ubyte2 port;
-#endif
-    void                  *pModuleConfInfo;
-    struct _TAPS_Context  *pNext;
-} TAPS_Context;
-
-#endif
-
-
 
 /***************************************************************
    Command Request-Response Structure Definitions
 ****************************************************************/
-
 
 /**
  * @private
@@ -391,7 +365,7 @@ MSTATUS TAP_updateAttributeList(TAP_AttributeList *pSrc, TAP_AttributeList *pDes
 
 
 /*! @cond */
-#endif /* __ENABLE_MOCANA_TAP__ && __ENABLE_TAP_REMOTE__ */
+#endif /* __ENABLE_DIGICERT_TAP__ && __ENABLE_TAP_REMOTE__ */
 /*! @endcond */
 
 #ifdef __cplusplus

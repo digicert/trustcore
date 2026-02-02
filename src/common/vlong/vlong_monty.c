@@ -15,7 +15,7 @@
 #include "../../common/vlong.h"
 #include "../../common/vlong_priv.h"
 
-#ifndef __DISABLE_MOCANA_VLONG_MATH__
+#ifndef __DISABLE_DIGICERT_VLONG_MATH__
 
 /*----------------------------------------------------------------------------*/
 
@@ -132,7 +132,7 @@ MOC_EXTERN MSTATUS VLONG_makeModExpHelperFromModExpHelper (
     goto exit;
   }
 
-  MOC_MEMSET((ubyte *)pNewMonty, 0x00, sizeof(MontgomeryCtx));
+  DIGI_MEMSET((ubyte *)pNewMonty, 0x00, sizeof(MontgomeryCtx));
 
 #ifndef __ALTIVEC__
   pNewMonty->rho = meh->rho;
@@ -171,17 +171,17 @@ static MSTATUS VLONG_initMontgomeryCtx (
   vlong *tmp = 0;
 #endif
 
-#ifdef __ENABLE_MOCANA_VLONG_CONST_TIME__
+#ifdef __ENABLE_DIGICERT_VLONG_CONST_TIME__
   vlong *pRraw = 0;
 #endif
 
-  MOC_MEMSET((ubyte *)pMonty, 0x00, sizeof(MontgomeryCtx));
+  DIGI_MEMSET((ubyte *)pMonty, 0x00, sizeof(MontgomeryCtx));
 
 #ifndef __ALTIVEC__
   pMonty->rho = VLONG_rho(pM);
 #endif
 
-#ifdef __ENABLE_MOCANA_VLONG_CONST_TIME__
+#ifdef __ENABLE_DIGICERT_VLONG_CONST_TIME__
 
   if (OK > (status = VLONG_allocVlong(&pRraw, ppVlongQueue)))
     goto cleanup;
@@ -258,7 +258,7 @@ cleanup:
 
 exit:
 
-#ifdef __ENABLE_MOCANA_VLONG_CONST_TIME__
+#ifdef __ENABLE_DIGICERT_VLONG_CONST_TIME__
   VLONG_freeVlong(&pRraw, ppVlongQueue);
 #endif
 
@@ -295,7 +295,7 @@ static MSTATUS VLONG_initMontgomeryWork (
   MSTATUS status;
   ubyte4 numUnits = 2 * MONTY_N(pMonty)->numUnitsUsed + 1;
 
-  MOC_MEMSET((ubyte *)pMW, 0x00, sizeof(MontgomeryWork));
+  DIGI_MEMSET((ubyte *)pMW, 0x00, sizeof(MontgomeryWork));
 
   if (OK > (status = VLONG_allocVlong(&MW_T(pMW), ppVlongQueue)))
     goto cleanup;
@@ -354,7 +354,7 @@ static vlong_unit VLONG_rho(
   x *= 2 - b * x; /* 8 BIT */
   x *= 2 - b * x; /* 16 BIT */
   x *= 2 - b * x; /* 32 BIT */
-#if defined(__ENABLE_MOCANA_64_BIT__)
+#if defined(__ENABLE_DIGICERT_64_BIT__)
   x *= 2 - b * x; /* 64 BIT */
 #endif
   return (ZERO_UNIT - x);
@@ -790,11 +790,11 @@ MOC_EXTERN MSTATUS VLONG_modexp_montgomery (
     goto exit;
   }
 
-  MOCANA_YIELD_PROCESSOR();
+  DIGICERT_YIELD_PROCESSOR();
 
   if (OK <= (status = VLONG_initMontgomeryCtx(MOC_MOD(hwAccelCtx) & me, n, ppVlongQueue)))
   {
-#ifdef __DISABLE_MOCANA_MODEXP_SLIDING_WINDOW__
+#ifdef __DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__
     status = VLONG_montgomeryExpBin(MOC_MOD(hwAccelCtx) & me, x, e,
                                     ppRetModExp, ppVlongQueue);
 #else
@@ -815,7 +815,7 @@ exit:
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef __DISABLE_MOCANA_MODEXP_SLIDING_WINDOW__
+#ifndef __DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__
 
 MOC_EXTERN MSTATUS VLONG_montgomeryExp (
   MOC_MOD(hwAccelDescr hwAccelCtx) const MontgomeryCtx *pMonty,
@@ -951,7 +951,7 @@ cleanup:
 
 } /* VLONG_montgomeryExp */
 
-#endif /* ifndef __DISABLE_MOCANA_MODEXP_SLIDING_WINDOW__ */
+#endif /* ifndef __DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -984,7 +984,7 @@ MOC_EXTERN MSTATUS VLONG_montgomeryExpBin (
     goto cleanup;
   }
 
-  MOCANA_YIELD_PROCESSOR();
+  DIGICERT_YIELD_PROCESSOR();
 
   /* t = (x * pMonty->R) % MONTY_M(pMonty) */
   if (OK > (status = operatorMultiplySignedVlongs(x, MONTY_R(pMonty),
@@ -1038,7 +1038,7 @@ cleanup:
   VLONG_freeVlong(&t, ppVlongQueue);
   VLONG_freeVlong(&tmp, ppVlongQueue);
 
-  MOCANA_YIELD_PROCESSOR();
+  DIGICERT_YIELD_PROCESSOR();
 
   return status;
 

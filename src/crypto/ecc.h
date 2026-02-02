@@ -19,7 +19,7 @@
 #ifndef __ECC_HEADER__
 #define __ECC_HEADER__
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_ecc_priv.h"
 #endif
 
@@ -51,7 +51,7 @@ typedef struct ecDSA_CTX
 typedef struct ECDSA_CTX
 {
     ECCKey *pKey;
-#if defined(__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__)
+#if defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__) || defined(__ENABLE_DIGICERT_ECC_EDDSA_448__)
     union
     {
         ecDSA_CTX ecDSA_CTX;
@@ -569,7 +569,7 @@ MOC_EXTERN MSTATUS ECDSA_verifySignatureDigest (
  * are Edward's form keys then this is the edDH algorithm (which only differs from
  * ECDH in the curve form and key forms). Note that this function will allocate the
  * shared secret and it is the callers responsibility to free that memory using
- * MOC_FREE.
+ * DIGI_FREE.
  *
  * @param pPrivateKey      Pointer to the private key for this operation.
  * @param pPublicKey       Pointer to the public key for this operation.
@@ -647,7 +647,7 @@ MOC_EXTERN MSTATUS ECDH_generateSharedSecretFromPublicByteString (
  *          This method allocates a buffer to hold the secret. Be sure to FREE
  *          this buffer when done with it.
  *
- * @flags   To use this method one must define __ENABLE_MOCANA_ECDH_MODES__
+ * @flags   To use this method one must define __ENABLE_DIGICERT_ECDH_MODES__
  *
  * @param mode                  One of the following macro values
  *                              + \c FULL_UNIFIED

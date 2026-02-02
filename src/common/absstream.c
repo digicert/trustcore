@@ -27,7 +27,7 @@
 
 /*------------------------------------------------------------------*/
 
-#if defined( __ENABLE_MOCANA_ANSI_FILESYS_STREAM__) || defined( __ENABLE_ALL_TESTS__)
+#if defined( __ENABLE_DIGICERT_ANSI_FILESYS_STREAM__) || defined( __ENABLE_ALL_TESTS__)
 
 #include <stdio.h>
 
@@ -173,7 +173,7 @@ const AbsStreamFuncs gStdCFileAbsStreamFuncs =
     stdc_stopaccess
 };
 
-#endif /* __ENABLE_MOCANA_ANSI_FILESYS_STREAM__ */
+#endif /* __ENABLE_DIGICERT_ANSI_FILESYS_STREAM__ */
 
 
 /*-----------------------------------------------------------------*/

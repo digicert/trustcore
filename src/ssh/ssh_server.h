@@ -38,7 +38,7 @@ typedef struct
     sbyte4          isSocketClosed;
     TCP_SOCKET      socket;
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
     /* non-blocking read data buffers */
     ubyte*          pReadBuffer;
     ubyte*          pReadBufferPosition;
@@ -47,7 +47,7 @@ typedef struct
     /* synchronous simulation upcall handler data */
     circBufDescr*   pCircBufDescr;
 
-#ifdef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifdef __ENABLE_DIGICERT_SSH_STREAM_API__
     ubyte4          lenStream;
     sbyte4          mesgType;
 #endif
@@ -59,15 +59,15 @@ typedef struct
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __USE_DIGICERT_SSH_SERVER__
 MOC_EXTERN MSTATUS  SSH_SERVER_start(void);
 MOC_EXTERN void     SSH_SERVER_stop(void);
 MOC_EXTERN void     SSH_SERVER_disconnectClients(void);
 MOC_EXTERN void     SSH_SERVER_releaseMutex(void);
 
-#endif /* __USE_MOCANA_SSH_SERVER__ */
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __USE_DIGICERT_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 #endif /* __SSH_SERVER_HEADER__ */
 

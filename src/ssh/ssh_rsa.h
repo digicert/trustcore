@@ -30,7 +30,7 @@
  */
 MOC_EXTERN MSTATUS SSH_RSA_buildRsaCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, intBoolean isServer, ubyte **ppCertificate, ubyte4 *pRetLen);
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 /**
  * @dont_show
  * @internal

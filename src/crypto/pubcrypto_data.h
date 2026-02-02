@@ -28,8 +28,10 @@ MOC_EXTERN MSTATUS CRYPTO_getDSAHashAlgoOID( ubyte rsaAlgoId, ubyte dsaAlgoOID[/
 MOC_EXTERN MSTATUS CRYPTO_getECDSAHashAlgoOID( ubyte rsaAlgoId, ubyte ecdsaAlgoOID[/* 1 + MAX_SIG_OID_LEN */]);
 MOC_EXTERN MSTATUS CRYPTO_getHashAlgoOID( ubyte rsaAlgoId, const ubyte** pHashAlgoOID);
 
+#ifdef __ENABLE_DIGICERT_ECC__
 MOC_EXTERN MSTATUS CRYPTO_getEDDSAAlgoOID( struct ECCKey *pECCKey, ubyte eddsaAlgoOID[/* 1 + MAX_SIG_OID_LEN */]);
 MOC_EXTERN MSTATUS CRYPTO_getECCurveOID( const struct ECCKey* pKey, const ubyte* *pCurveOID);
+#endif
 
 MOC_EXTERN MSTATUS CRYPTO_getCompositeAlgs(ubyte oidByte, ubyte4 *pClAlg, ubyte4 *pQsAlg);
 MOC_EXTERN MSTATUS CRYPTO_getHybridAlgoOID(ubyte4 clAlgId, ubyte4 qsAlgId, ubyte oid[/* MAX_PQC_OID_LEN */]);

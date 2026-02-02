@@ -19,7 +19,7 @@
 
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)) && (defined(__ENABLE_MOCANA_PQC_COMPOSITE__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)) && (defined(__ENABLE_DIGICERT_PQC_COMPOSITE__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -42,12 +42,12 @@
 #include "../crypto/pubcrypto.h"
 #include "../crypto/sha1.h"
 #include "../ssh/ssh_str.h"
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 #include "../ssh/ssh_utils.h"
 #include "../ssh/ssh.h"
 #include "../ssh/ssh_str_house.h"
 #endif
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 #include "../ssh/client/sshc_str_house.h"
 #endif
 #include "../ssh/ssh_ecdsa.h"
@@ -71,14 +71,14 @@ typedef struct HybridEntry
 
 static HybridEntry g_hybridNames[] =
 {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         {   &ssh_mldsa44_p256_signature,          akt_ecc,    cid_PQC_MLDSA_44,  cid_EC_P256,    FALSE },
         {   &ssh_mldsa65_p256_signature,          akt_ecc,    cid_PQC_MLDSA_65,  cid_EC_P256,    FALSE },
         {   &ssh_mldsa87_p384_signature,          akt_ecc,    cid_PQC_MLDSA_87,  cid_EC_P384,    FALSE },
         {   &ssh_mldsa44_ed25519_signature,       akt_ecc,    cid_PQC_MLDSA_44,  cid_EC_Ed25519, FALSE },
         {   &ssh_mldsa65_ed25519_signature,       akt_ecc,    cid_PQC_MLDSA_65,  cid_EC_Ed25519, FALSE },
         {   &ssh_mldsa87_ed448_signature,         akt_ecc,    cid_PQC_MLDSA_87,  cid_EC_Ed448,   FALSE },
-#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+#ifdef __ENABLE_DIGICERT_PRE_DRAFT_PQC__
         {   &ssh_cert_mldsa44_p256_signature,     akt_ecc,    cid_PQC_MLDSA_44,  cid_EC_P256,    TRUE },
         {   &ssh_cert_mldsa65_p256_signature,     akt_ecc,    cid_PQC_MLDSA_65,  cid_EC_P256,    TRUE },
         {   &ssh_cert_mldsa87_p384_signature,     akt_ecc,    cid_PQC_MLDSA_87,  cid_EC_P384,    TRUE },
@@ -87,14 +87,14 @@ static HybridEntry g_hybridNames[] =
         {   &ssh_cert_mldsa87_ed448_signature,    akt_ecc,    cid_PQC_MLDSA_87,  cid_EC_Ed448,   TRUE },
 #endif
 #endif
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         {   &sshc_mldsa44_p256_signature,         akt_ecc,    cid_PQC_MLDSA_44,  cid_EC_P256,    FALSE },
         {   &sshc_mldsa65_p256_signature,         akt_ecc,    cid_PQC_MLDSA_65,  cid_EC_P256,    FALSE },
         {   &sshc_mldsa87_p384_signature,         akt_ecc,    cid_PQC_MLDSA_87,  cid_EC_P384,    FALSE },
         {   &sshc_mldsa44_ed25519_signature,      akt_ecc,    cid_PQC_MLDSA_44,  cid_EC_Ed25519, FALSE },
         {   &sshc_mldsa65_ed25519_signature,      akt_ecc,    cid_PQC_MLDSA_65,  cid_EC_Ed25519, FALSE },
         {   &sshc_mldsa87_ed448_signature,        akt_ecc,    cid_PQC_MLDSA_87,  cid_EC_Ed448,   FALSE },
-#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+#ifdef __ENABLE_DIGICERT_PRE_DRAFT_PQC__
         {   &sshc_cert_mldsa44_p256_signature,    akt_ecc,    cid_PQC_MLDSA_44,  cid_EC_P256,    TRUE },
         {   &sshc_cert_mldsa65_p256_signature,    akt_ecc,    cid_PQC_MLDSA_65,  cid_EC_P256,    TRUE },
         {   &sshc_cert_mldsa87_p384_signature,    akt_ecc,    cid_PQC_MLDSA_87,  cid_EC_P384,    TRUE },
@@ -130,7 +130,7 @@ SSH_HYBRID_getHybridEntryByName(const sshStringBuffer* pHybridEntryName)
         if (pHybridEntryName->stringLen == pEntry->pHybridName->stringLen)
         {
             cmpRes = -1;
-            if (OK > MOC_MEMCMP(pHybridEntryName->pString, pEntry->pHybridName->pString, pEntry->pHybridName->stringLen, &cmpRes))
+            if (OK > DIGI_MEMCMP(pHybridEntryName->pString, pEntry->pHybridName->pString, pEntry->pHybridName->stringLen, &cmpRes))
                 return NULL;
 
             if (0 == cmpRes)
@@ -219,7 +219,7 @@ SSH_HYBRID_getNameLengthFromIds(ubyte4 curveId, ubyte4 qsAlgId, intBoolean isCer
         goto exit;
     }
 
-    *pNameLen = MOC_NTOHL(pEntry->pHybridName->pString);
+    *pNameLen = DIGI_NTOHL(pEntry->pHybridName->pString);
 
 exit:
     return status;
@@ -245,7 +245,7 @@ SSH_HYBRID_getNameFromIds(ubyte4 curveId, ubyte4 qsAlgId, intBoolean isCertifica
     }
 
     pAlgoName = pEntry->pHybridName;
-    expectedNameLen = MOC_NTOHL(pAlgoName->pString);
+    expectedNameLen = DIGI_NTOHL(pAlgoName->pString);
 
     if (expectedNameLen > nameLen)
     {
@@ -253,7 +253,7 @@ SSH_HYBRID_getNameFromIds(ubyte4 curveId, ubyte4 qsAlgId, intBoolean isCertifica
         goto exit;
     }
 
-    status = MOC_MEMCPY(pName, pAlgoName->pString + 4, expectedNameLen);
+    status = DIGI_MEMCPY(pName, pAlgoName->pString + 4, expectedNameLen);
     if (OK != status)
         goto exit;
 
@@ -284,7 +284,7 @@ MOC_EXTERN MSTATUS SSH_HYBRID_verifyAlgorithmNameEx(const ubyte *pHybridName, ub
 
     BIGEND32(pAlgoName->pString, hybridName);
 
-    status = MOC_MEMCPY(pAlgoName->pString + 4, pHybridName, hybridName);
+    status = DIGI_MEMCPY(pAlgoName->pString + 4, pHybridName, hybridName);
     if (OK != status)
         goto exit;
 
@@ -497,7 +497,7 @@ SSH_HYBRID_buildHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey,
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC((void **) &pAlgoName, algoNameLen);
+    status = DIGI_MALLOC((void **) &pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -515,7 +515,7 @@ SSH_HYBRID_buildHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey,
 
     keyBlobLen = 4 + algoNameLen + 4 + (qsLen + eccLen);
 
-    status = MOC_MALLOC((void **) &pKeyBlob, keyBlobLen + 4);
+    status = DIGI_MALLOC((void **) &pKeyBlob, keyBlobLen + 4);
     if (OK != status)
         goto exit;
 
@@ -527,7 +527,7 @@ SSH_HYBRID_buildHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey,
     BIGEND32(pTmpBuf, algoNameLen);
     pTmpBuf += 4;
 
-    status = MOC_MEMCPY(pTmpBuf, pAlgoName, algoNameLen);
+    status = DIGI_MEMCPY(pTmpBuf, pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -553,10 +553,10 @@ SSH_HYBRID_buildHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey,
 exit:
 
     if (NULL != pAlgoName)
-        MOC_FREE((void **) &pAlgoName);
+        DIGI_FREE((void **) &pAlgoName);
 
     if (NULL != pKeyBlob)
-        MOC_MEMSET_FREE(&pKeyBlob, keyBlobLen + 4);
+        DIGI_MEMSET_FREE(&pKeyBlob, keyBlobLen + 4);
 
     return status;
 }
@@ -649,7 +649,7 @@ SSH_HYBRID_buildHybridSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey 
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC((void **) &pAlgoName, algoNameLen);
+    status = DIGI_MALLOC((void **) &pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -664,7 +664,7 @@ SSH_HYBRID_buildHybridSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey 
     /* have sufficient data to generate signature */
     sigBufLen = 4 + algoNameLen + 4 + sigLen;
 
-    status = MOC_MALLOC((void **) &pSigBuf, sigBufLen + 4);
+    status = DIGI_MALLOC((void **) &pSigBuf, sigBufLen + 4);
     if (OK != status)
         goto exit;
 
@@ -675,7 +675,7 @@ SSH_HYBRID_buildHybridSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey 
     BIGEND32(pPtr, algoNameLen);
     pPtr += 4;
 
-    status = MOC_MEMCPY(pPtr, pAlgoName, algoNameLen);
+    status = DIGI_MEMCPY(pPtr, pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -695,10 +695,10 @@ SSH_HYBRID_buildHybridSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey 
 exit:
 
     if (NULL != pAlgoName)
-        (void) MOC_FREE((void **) &pAlgoName);
+        (void) DIGI_FREE((void **) &pAlgoName);
 
     if (NULL != pSigBuf)
-        (void) MOC_MEMSET_FREE(&pSigBuf, sigBufLen + 4);
+        (void) DIGI_MEMSET_FREE(&pSigBuf, sigBufLen + 4);
 
     return status;
 }
@@ -758,7 +758,7 @@ SSH_HYBRID_verifyHybridSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey
         goto exit;
 
     /* get length of signature from payload */
-    sigLen = MOC_NTOHL(pSig->pString);
+    sigLen = DIGI_NTOHL(pSig->pString);
 
     status = CRYPTO_INTERFACE_QS_compositeGetSigLen(MOC_ASYM(hwAccelCtx) pPublicKey, FALSE, &expSigLen);
     if (OK != status)
@@ -791,4 +791,4 @@ exit:
     return status;
 } /* SSH_HYBRID_verifyHybridSignature */
 
-#endif /* ((defined(__ENABLE_MOCANA_PQC_COMPOSITE__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))) */
+#endif /* ((defined(__ENABLE_DIGICERT_PQC_COMPOSITE__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))) */

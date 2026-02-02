@@ -10,27 +10,27 @@
  * @flags
  * Whether the following flags are defined determines which additional header files
  * are included:
- *   + \c \__ENABLE_MOCANA_FIPS_MODULE__
- *   + \c \__ENABLE_MOCANA_PKCS11_CRYPTO__
- *   + \c \__ENABLE_MOCANA_HW_SECURITY_MODULE__
+ *   + \c \__ENABLE_DIGICERT_FIPS_MODULE__
+ *   + \c \__ENABLE_DIGICERT_PKCS11_CRYPTO__
+ *   + \c \__ENABLE_DIGICERT_HW_SECURITY_MODULE__
  *   + \c \__RSA_HARDWARE_ACCELERATOR__
  *
  * @flags
  * Whether the following flags are defined determines which function declarations
  * are enabled:
  *   + \c \__CUSTOM_RSA_BLINDING__
- *   + \c \__DISABLE_MOCANA_KEY_GENERATION__
- *   + \c \__DISABLE_MOCANA_RSA_CLIENT_CODE__
- *   + \c \__DISABLE_MOCANA_RSA_DECRYPTION__
- *   + \c \__DISABLE_MOCANA_RSA_SIGN__
- *   + \c \__DISABLE_MOCANA_RSA_VERIFY__
- *   + \c \__DISABLE_MOCANA_RSA_VERIFY_CERTIFICATE__
+ *   + \c \__DISABLE_DIGICERT_KEY_GENERATION__
+ *   + \c \__DISABLE_DIGICERT_RSA_CLIENT_CODE__
+ *   + \c \__DISABLE_DIGICERT_RSA_DECRYPTION__
+ *   + \c \__DISABLE_DIGICERT_RSA_SIGN__
+ *   + \c \__DISABLE_DIGICERT_RSA_VERIFY__
+ *   + \c \__DISABLE_DIGICERT_RSA_VERIFY_CERTIFICATE__
  *   + \c \__DISABLE_PKCS1_KEY_READ__
  *   + \c \__ENABLE_ALL_TESTS__
- *   + \c \__ENABLE_MOCANA_FIPS_MODULE__
- *   + \c \__ENABLE_MOCANA_PKCS11_CRYPTO__
- *   + \c \__ENABLE_MOCANA_VERIFY_RSA_SIGNATURE__
- *   + \c \__MOCANA_BLIND_FACTOR_SIZE__
+ *   + \c \__ENABLE_DIGICERT_FIPS_MODULE__
+ *   + \c \__ENABLE_DIGICERT_PKCS11_CRYPTO__
+ *   + \c \__ENABLE_DIGICERT_VERIFY_RSA_SIGNATURE__
+ *   + \c \__DIGICERT_BLIND_FACTOR_SIZE__
  *   + \c \__RSAINT_HARDWARE__
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
@@ -50,7 +50,7 @@
 
 #include "../cap/capdecl.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_rsa_priv.h"
 #endif
 
@@ -66,7 +66,7 @@ typedef struct MRsaKeyTemplate *MRsaKeyTemplatePtr;
 #define NUM_RSA_VLONG   (7)
 #define NUM_RSA_MODEXP  (2)
 
-#if !defined( __DISABLE_MOCANA_RSA_DECRYPTION__) && !defined(__PSOS_RTOS__)
+#if !defined( __DISABLE_DIGICERT_RSA_DECRYPTION__) && !defined(__PSOS_RTOS__)
 typedef struct BlindingHelper
 {
     RTOS_MUTEX      blindingMutex;
@@ -80,7 +80,7 @@ typedef struct BlindingHelper
 
 struct RSAKey;
 
-#ifdef __ENABLE_MOCANA_HW_SECURITY_MODULE__
+#ifdef __ENABLE_DIGICERT_HW_SECURITY_MODULE__
 struct HSMRSAInfo;
 #endif
 
@@ -89,10 +89,10 @@ typedef struct RSAKey
     intBoolean      privateKey;
     vlong*          v[NUM_RSA_VLONG];
     ModExpHelper    modExp[NUM_RSA_MODEXP];
-#if !defined(__DISABLE_MOCANA_RSA_DECRYPTION__) && !defined( __PSOS_RTOS__)
+#if !defined(__DISABLE_DIGICERT_RSA_DECRYPTION__) && !defined( __PSOS_RTOS__)
     BlindingHelper  blinding;
 #endif
-#ifdef __ENABLE_MOCANA_HW_SECURITY_MODULE__
+#ifdef __ENABLE_DIGICERT_HW_SECURITY_MODULE__
     struct HSMRSAInfo*     hsmInfo;
 #endif
     MocAsymKey pPrivateKey;
@@ -127,14 +127,14 @@ typedef struct RSAKey
 /** @cond   Omit the following from Doxygen output. **/
 
 /* RSA primitives defined in PKCS#1 version 2.1 */
-#if !defined(__DISABLE_MOCANA_RSA_DECRYPTION__)
+#if !defined(__DISABLE_DIGICERT_RSA_DECRYPTION__)
 MOC_EXTERN MSTATUS RSA_RSADP(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pRSAKey, const vlong *pCipherText, vlong **ppMessage, vlong **ppVlongQueue);
 #endif
 MOC_EXTERN MSTATUS RSA_RSAEP(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pPublicRSAKey, const vlong *pMessage, vlong **ppRetCipherText, vlong **ppVlongQueue);
 
-#if (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__) && defined(__RSAINT_HARDWARE__) && defined(__ENABLE_MOCANA_PKCS11_CRYPTO__))
+#if (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__) && defined(__RSAINT_HARDWARE__) && defined(__ENABLE_DIGICERT_PKCS11_CRYPTO__))
 #define RSA_RSASP1 RSAINT_decrypt
-#elif (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__))
+#elif (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__))
 MOC_EXTERN MSTATUS RSA_RSASP1(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pRSAKey, const vlong *pMessage, RNGFun rngFun, void* rngFunArg, vlong **ppRetSignature, vlong **ppVlongQueue);
 #endif
 MOC_EXTERN MSTATUS RSA_RSAVP1(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pPublicRSAKey, const vlong *pSignature, vlong **ppRetMessage, vlong **ppVlongQueue);
@@ -670,7 +670,7 @@ MOC_EXTERN MSTATUS   RSA_getCipherTextLength(MOC_RSA(hwAccelDescr hwAccelCtx) co
  * @param [in] rngFun         Pointer to a function that generates random numbers
  *                            suitable for cryptographic use. To be FIPS-compliant,
  *                            reference RANDOM_rngFun() (defined in random.c), and make
- *                            sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+ *                            sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
  *                            moptions.h
  * @param [in] rngFunArg      Pointer to arguments that are required by the function
  *                            referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -696,7 +696,7 @@ MOC_EXTERN MSTATUS   RSA_encrypt(MOC_RSA(hwAccelDescr hwAccelCtx)
                              void* rngFunArg,
                              vlong **ppVlongQueue);
 
-#ifndef __DISABLE_MOCANA_RSA_DECRYPTION__
+#ifndef __DISABLE_DIGICERT_RSA_DECRYPTION__
 /**
  * @brief      Decrypt ciphertext using PKCS&nbsp;\#1.
  *
@@ -725,7 +725,7 @@ MOC_EXTERN MSTATUS   RSA_encrypt(MOC_RSA(hwAccelDescr hwAccelCtx)
  *
  * @flags
  *   To enable this function, the following flag must #not# be defined:
- *     - $__DISABLE_MOCANA_RSA_DECRYPTION__$
+ *     - $__DISABLE_DIGICERT_RSA_DECRYPTION__$
  *
  * @param [in] hwAccelCtx     (Reserved for future use.)
  * @param [in] pKey           Pointer to RSA private key.
@@ -739,7 +739,7 @@ MOC_EXTERN MSTATUS   RSA_encrypt(MOC_RSA(hwAccelDescr hwAccelCtx)
  * @param [in] rngFun         Pointer to a function that generates random numbers
  *                            suitable for cryptographic use. To be FIPS-compliant,
  *                            reference RANDOM_rngFun() (defined in random.c), and make
- *                            sure that \c \__ENABLE_MOCANA_FIPS_MODULE__ is defined in
+ *                            sure that \c \__ENABLE_DIGICERT_FIPS_MODULE__ is defined in
  *                            moptions.h
  * @param [in] rngFunArg      Pointer to arguments that are required by the function
  *                            referenced in \p rngFun. If you use RANDOM_rngFun(), you
@@ -937,7 +937,7 @@ MOC_EXTERN MSTATUS  RSA_signMessage(MOC_RSA(hwAccelDescr hwAccelCtx)
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_RSA_SIGN_DATA__
+ *     __ENABLE_DIGICERT_RSA_SIGN_DATA__
  *
  * @param [in]  pKey          Pointer to RSA private key.
  * @param [in]  pData         Buffer holding the data to be signed.
@@ -979,7 +979,7 @@ MOC_EXTERN MSTATUS RSA_signData(MOC_RSA(hwAccelDescr hwAccelCtx)
  *
  * @flags
  *   To enable this function, the following flag must be defined:
- *     __ENABLE_MOCANA_RSA_SIGN_DATA__
+ *     __ENABLE_DIGICERT_RSA_SIGN_DATA__
  *
  * @param [in]  pKey          Pointer to RSA public key.
  * @param [in]  pData         Buffer holding the data to be verified.

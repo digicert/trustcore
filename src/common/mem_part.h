@@ -16,7 +16,7 @@
 #ifndef __MEMORY_PARTITION_HEADER__
 #define __MEMORY_PARTITION_HEADER__
 
-#ifdef __ENABLE_MOCANA_MEM_PART_MULTI_POOLS__
+#ifdef __ENABLE_DIGICERT_MEM_PART_MULTI_POOLS__
 
 #ifndef MOC_PARTITION_SMALL_PARTS_PER_128
 #define MOC_PARTITION_SMALL_PARTS_PER_128 24
@@ -54,7 +54,7 @@
 #define MOC_MIN_PARTITION_SIZE      (1024)
 #endif
 
-#endif /* __ENABLE_MOCANA_MEM_PART_MULTI_POOLS__ */
+#endif /* __ENABLE_DIGICERT_MEM_PART_MULTI_POOLS__ */
 
 typedef struct memBlock_s
 {
@@ -108,21 +108,21 @@ MOC_EXTERN MSTATUS MEM_PART_free(memPartDescr *pMemPartition, void **ppFreeMemBl
 
 MOC_EXTERN MSTATUS MEM_PART_getBlockLen(void *pPtr, ubyte4 *pRetBlockLen);
 
-/* This function stores the given partition in a location where the MOC_MALLOC
- * routine will find it. That is, it gives MOC_MALLOC control of pPartition.
+/* This function stores the given partition in a location where the DIGI_MALLOC
+ * routine will find it. That is, it gives DIGI_MALLOC control of pPartition.
  * If one is already loaded, the function will return an error.
  * Note that this does not build a partition, it only places an existing one at
- * some location where MOC_MALLOC will control it. You will build the partition,
+ * some location where DIGI_MALLOC will control it. You will build the partition,
  * call this Load function to place it into the location.
  * Best practices ar that you build the partition, call Load, then NULL out your
  * variable.
  */
-MOC_EXTERN MSTATUS MOC_LoadPartition (memPartDescr *pPartition);
+MOC_EXTERN MSTATUS DIGI_LoadPartition (memPartDescr *pPartition);
 /* This function retrieves the partition from the location. It will no longer be
- * at that location, MOC_MALLOC will no longer control it.
+ * at that location, DIGI_MALLOC will no longer control it.
  * Note that this function will not free the partition, only return it.
  * This is the opposite of Load, it simply returns control of the partition back
- * to you. The MOC_MALLOC will no longer have access to the partition.
+ * to you. The DIGI_MALLOC will no longer have access to the partition.
  * Pass in the address of a memPartDescr pointer, the function will deposit at
  * that address the partition that had been loaded. You will now have control
  * over it.
@@ -130,22 +130,22 @@ MOC_EXTERN MSTATUS MOC_LoadPartition (memPartDescr *pPartition);
  * you Unload to recover control of the partition, and then clean it up (which
  * will likely involve some sort of destructor).
  */
-MOC_EXTERN MSTATUS MOC_UnloadPartition (memPartDescr **pPartition);
+MOC_EXTERN MSTATUS DIGI_UnloadPartition (memPartDescr **pPartition);
 
 /* This function unloads and frees the global memory partition. Note this 
- * function IS NOT a direct equivalent of calling MOC_UnloadPartition then 
+ * function IS NOT a direct equivalent of calling DIGI_UnloadPartition then 
  * MEM_PART_freePartition. This function will destroy the partition mutex that
  * has been allocated within the parition itself, then unload it from the global
  * memory descriptor */
-MOC_EXTERN MSTATUS MOC_UnloadAndFreeGlobalPartition(void);
+MOC_EXTERN MSTATUS DIGI_UnloadAndFreeGlobalPartition(void);
 
-#ifdef __ENABLE_MOCANA_MEM_PART_DEBUG__
+#ifdef __ENABLE_DIGICERT_MEM_PART_DEBUG__
 MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, char *pOutFileName);
 #endif
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__DISABLE_MOCANA_MEM_PART_MUTEX__)
+#if defined(__DISABLE_DIGICERT_MEM_PART_MUTEX__)
 
 /**
  * @def      MOC_MEM_PART_INIT_CHECK_THREAD_SUPPORT(_status, _pSetupInfo)  
@@ -159,8 +159,8 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *
  * @par Flags
  * To enable this macro, the following flags \b must be defined
- *   + \c \__ENABLE_MOCANA_MEM_PART__
- *   + \c \__DISABLE_MOCANA_MEM_PART_MUTEX__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
+ *   + \c \__DISABLE_DIGICERT_MEM_PART_MUTEX__
  */
 #define MOC_MEM_PART_INIT_CHECK_THREAD_SUPPORT(_status, _pSetupInfo)           \
     _status = OK;                                                              \
@@ -187,22 +187,22 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *
  * @par Flags
  * To enable this macro, the following flags \b must be defined
- *   + \c \__ENABLE_MOCANA_MEM_PART__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
  * To enable this macro, the following flags must \b not be defined
- *   + \c \__DISABLE_MOCANA_MEM_PART_MUTEX__
+ *   + \c \__DISABLE_DIGICERT_MEM_PART_MUTEX__
  */
 #define MOC_MEM_PART_INIT_THREAD_SUPPORT(_status, _pPartition)                 \
     _status = MEM_PART_enableMutexGuard(_pPartition);
 
 
-#endif /* if defined(__DISABLE_MOCANA_MEM_PART_MUTEX__) */
+#endif /* if defined(__DISABLE_DIGICERT_MEM_PART_MUTEX__) */
 
 /*----------------------------------------------------------------------------*/
 
 /* These macros expand to call init and uninit if enabled, otherwise they expand
  * to do nothing.
  */
-#if defined(__ENABLE_MOCANA_MEM_PART__)
+#if defined(__ENABLE_DIGICERT_MEM_PART__)
 
 /**
  * @def      MOC_MEM_PART_DECL(_pPartition, _staticMemLoadFlag)
@@ -216,7 +216,7 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__ENABLE_MOCANA_MEM_PART__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
  */
 #define MOC_MEM_PART_DECL(_pPartition, _staticMemLoadFlag)                     \
     memPartDescr *_pPartition = NULL;                                          \
@@ -232,7 +232,7 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__ENABLE_MOCANA_MEM_PART__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
  */
 #define MOC_MEM_PART_SET_DONE_FLAG(_staticMemLoadFlag) \
     _staticMemLoadFlag = 0;
@@ -251,7 +251,7 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__ENABLE_MOCANA_MEM_PART__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
  */
 #define MOC_MEM_PART_INIT(_status, _pSetupInfo, _pPartition, _flag)            \
     if (NULL != _pSetupInfo && NULL != _pSetupInfo->pStaticMem)                \
@@ -266,7 +266,7 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
       _pSetupInfo->staticMemSize);          \
       if (OK != _status)                                                       \
         goto exit;                                                             \
-      _status = MOC_LoadPartition(_pPartition);                                \
+      _status = DIGI_LoadPartition(_pPartition);                                \
       if (OK != _status)                                                       \
         goto exit;                                                             \
       MOC_MEM_PART_INIT_THREAD_SUPPORT(_status, _pPartition)                   \
@@ -297,7 +297,7 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__ENABLE_MOCANA_MEM_PART__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
  *
  * @note     The return status is ignored for both of these function calls
  *           because if we are executing this code we are already doing cleanup
@@ -309,7 +309,7 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
     if (NULL != _pSetupInfo && NULL != _pSetupInfo->pStaticMem)                \
     {                                                                          \
       if (0 != _flag)                                                          \
-        MOC_UnloadAndFreeGlobalPartition();                                    \
+        DIGI_UnloadAndFreeGlobalPartition();                                    \
     }
 
 /**
@@ -323,7 +323,7 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *           failure, however this is expected behavior and should not be
  *           propogated back to the caller.  There is still an existing problem
  *           here though, if static memory initialization \b was used then the
- *           calls to MOC_UnloadPartition and MEM_PART_freePartition are not
+ *           calls to DIGI_UnloadPartition and MEM_PART_freePartition are not
  *           checked for return values, masking any possible errors on that
  *           segment of the uninitialization code.
  *
@@ -332,18 +332,18 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
  *
  * @par Flags
  * To enable this macro, the following flag \b must be defined
- *   + \c \__ENABLE_MOCANA_MEM_PART__
+ *   + \c \__ENABLE_DIGICERT_MEM_PART__
  */
 #define MOC_MEM_PART_UNINIT(_status, _dStatus)                                 \
     _dStatus = MEM_PART_uninit ();                                             \
     if (OK == _status)                                                         \
       _status = _dStatus;                                                       \
-    _dStatus = MOC_UnloadAndFreeGlobalPartition();                             \
+    _dStatus = DIGI_UnloadAndFreeGlobalPartition();                             \
     if (OK == _status)                                                         \
       _status = _dStatus;                                                      \
 
 
-#else /* defined (__ENABLE_MOCANA_MEM_PART__) */
+#else /* defined (__ENABLE_DIGICERT_MEM_PART__) */
 
 #define MOC_MEM_PART_DECL(_pPartition, _staticMemLoadFlag)
 #define MOC_MEM_PART_SET_DONE_FLAG(_staticMemLoadFlag)
@@ -354,5 +354,5 @@ MOC_EXTERN MSTATUS MEM_PART_printMemoryPartitions(memPartDescr *pMemPartition, c
 #define MOC_MEM_PART_INIT_CLEANUP(_pSetupInfo, _pPartition, _flag)
 #define MOC_MEM_PART_UNINIT(_status, _dStatus)
 
-#endif /* defined (__ENABLE_MOCANA_MEM_PART__) */
+#endif /* defined (__ENABLE_DIGICERT_MEM_PART__) */
 #endif /* __MEMORY_PARTITION_HEADER__ */

@@ -123,7 +123,7 @@ extern "C" {
  * entire context at its disposal.
  *
  * @param pMocSymCtx The object that contains the data needed to perform.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param opCode What operation the caller is requesting the ctx perform.
@@ -1080,7 +1080,7 @@ typedef struct
  * @param pOperatorInfo If the operator function needs some info in order to
  * work, pass it in here. See the documentation for each Operator to determine
  * what info it needs.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param ppNewCtx The address where the function will deposit the newly
@@ -1141,7 +1141,7 @@ MOC_EXTERN MSTATUS CRYPTO_createMocSymCtx (
  * the HMAC Operator will recognize which supporting algorithm it needs and
  * search the list of symmetric Operators for one that can perform the algorithm.
  * <p>The pMocCtx arg contains the list of Operators the application is willing
- * to support (see the documentation for MOCANA_initialize). The function will
+ * to support (see the documentation for DIGICERT_initialize). The function will
  * cycle through that list to find an Operator that can perform the algorithm
  * described by the algId.
  *
@@ -1151,7 +1151,7 @@ MOC_EXTERN MSTATUS CRYPTO_createMocSymCtx (
  * @param keyDataLen The length, in bytes, of the key data.
  * @param isEncoded TRUE if the key data is encoded (see CRYPTO_enocdeSymKey) or
  * FALSE if not.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param ppNewCtx The address where the function will deposit the newly
@@ -1194,7 +1194,7 @@ MOC_EXTERN MSTATUS CRYPTO_freeMocSymCtx (
  * example, look at CRYPTO_generateKeyPair. Generally, the caller will supply a
  * RNGFun and its argument. To use a randomContext in these situations you can
  * simply pass RANDOM_rngFun as the RNGFun and a randomContext as the argument.
- * There is a global random built during the call to MOCANA_initialize,
+ * There is a global random built during the call to DIGICERT_initialize,
  * g_pRandomContext, but if you would like to use a different algorithm, or
  * if you have a hardware random number generator you would like to use, it is
  * possible to build a new provider.
@@ -1209,7 +1209,7 @@ MOC_EXTERN MSTATUS CRYPTO_freeMocSymCtx (
  * @param pOperatorInfo If the operator function needs some info in order to
  * work, pass it in here. See the documentation for each Operator to determine
  * what info it needs.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param ppMocRandom The address where the function will deposit the newly
@@ -1378,7 +1378,7 @@ MOC_EXTERN MSTATUS CRYPTO_getAlgorithmId (
  * buffer for you.
  * <p>If you would rather not pass in your own buffer and make sure the size is
  * big enough, call this function and it will allocate a buffer and return it.
- * <p>NOTE! You must call MOC_FREE on the returned buffer when you are done with
+ * <p>NOTE! You must call DIGI_FREE on the returned buffer when you are done with
  * it.
  * <p>For example,
  * <pre>
@@ -1393,7 +1393,7 @@ MOC_EXTERN MSTATUS CRYPTO_getAlgorithmId (
  *     goto exit;
  *      . . .
  * exit:
- *   MOC_FREE ((void **)&pAlgId);
+ *   DIGI_FREE ((void **)&pAlgId);
  * </code>
  * </pre>
  *
@@ -1744,7 +1744,7 @@ MOC_EXTERN MSTATUS CRYPTO_getSymOperatorAndInfoFromIndex (
 /** Retrieve data from operator. The data is associated with an algorithm specific
  * structure, and is implemented by underlying algorithm.
  *
- * @param pCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param pSymCtx Pointer to operator context.
@@ -1778,7 +1778,7 @@ MOC_EXTERN MSTATUS CRYPTO_getSymOperatorData (
  * ERR_NOT_FOUND. In this case, the value at pIndex will have no meaning.
  *
  * @param digestAlg One of the ht_ flags, indicating which algorithm is requested.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize,
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize,
  * containing the lists of Operators the function will use to find one that can
  * do the work.
  * @param ppDigestObj The address where the function will deposit the created
@@ -2300,7 +2300,7 @@ MOC_EXTERN MSTATUS CRYPTO_deriveKeyAlloc (
  *     goto exit;
  *
  *   // Destroy the wrapped key when finished
- *   MOC_MEMSET_FREE(&pWrappedKey, wrappedKeyLen);
+ *   DIGI_MEMSET_FREE(&pWrappedKey, wrappedKeyLen);
  * </code>
  * </pre>
  *
@@ -2375,7 +2375,7 @@ MOC_EXTERN MSTATUS CRYPTO_wrapKeyAlloc (
  * @param wrappedKeyLen          Length of wrapped key data in bytes.
  * @param isSymKey               Boolean to indicate if the key being wrapped is symmetric.
  * @param pMocCtx                The MocCtx built during the call to
- *                               MOCANA_initialize containing the lists of
+ *                               DIGICERT_initialize containing the lists of
  *                               Operators the function will use to find one that
  *                               can do the work.
  * @param pSymOperatorAndInfo    Pointer to a single MSymOperatorAndInfo item
@@ -2384,7 +2384,7 @@ MOC_EXTERN MSTATUS CRYPTO_wrapKeyAlloc (
  *                               used when unwrapping a symmetric key (isSymKey
  *                               is TRUE). This is the same Operator and Info
  *                               used if building the Operator array passed to
- *                               the MOCANA_initialize function.
+ *                               the DIGICERT_initialize function.
  * @param ppUnwrappedKey         Double pointer to the location that will recieve
  *                               the unwrapped key object, either a MocSymCtx for
  *                               symmetric keys or an Asymmetric key for
@@ -2412,7 +2412,7 @@ MOC_EXTERN MSTATUS CRYPTO_unwrapKey (
  * this function, see the AES-GCM example code for creation by algorithm ID.
  *
  * @param pSymCtx    The context that will recieve the updated operator data.
- * @param pMocCtx The MocCtx built during the call to MOCANA_initialize.
+ * @param pMocCtx The MocCtx built during the call to DIGICERT_initialize.
  * @param pOperatorData Pointer to implementation dependent structure containing
  *                   the new associated info to update.
  *

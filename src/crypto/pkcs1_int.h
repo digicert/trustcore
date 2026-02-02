@@ -30,7 +30,7 @@ pkcs1.c.
 #ifndef __PKCS1_INT_HEADER__
 #define __PKCS1_INT_HEADER__
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE_PKCS1__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_PKCS1__
 #include "../crypto_interface/crypto_interface_pkcs1_priv.h"
 #endif
 
@@ -79,15 +79,15 @@ extern "C" {
 typedef MSTATUS (*mgfFunc)(MOC_RSA(hwAccelDescr hwAccelCtx) const ubyte *mgfSeed, ubyte4 mgfSeedLen, ubyte4 maskLen, BulkHashAlgo *H, ubyte **ppRetMask);
 #endif
 /*------------------------------------------------------------------*/
-#ifdef __ENABLE_MOCANA_FIPS_700_BINARY_SUPPORT__
+#ifdef __ENABLE_DIGICERT_FIPS_700_BINARY_SUPPORT__
 /* FIPS_700 Binary did not include additional pMgfHashAlgo parameter */
 
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsaesOaepEncrypt(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext *pRandomContext, const RSAKey *pRSAKey, BulkHashAlgo *pHashAlgo, mgfFunc MGF, const ubyte *M, ubyte4 mLen, const ubyte *L, ubyte4 lLen, ubyte **ppRetEncrypt, ubyte4 *pRetEncryptLen);
-#if (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__))
+#if (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__))
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsaesOaepDecrypt(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pRSAKey, BulkHashAlgo *pHashAlgo, mgfFunc MGF, const ubyte *C, ubyte4 cLen, const ubyte *L, ubyte4 lLen, ubyte **ppRetDecrypt, ubyte4 *pRetDecryptLength);
 #endif
 
-#if (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__))
+#if (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__))
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsassaPssSign(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext *pRandomContext, const RSAKey *pRSAKey, BulkHashAlgo *pHashAlgo, mgfFunc MGF, const ubyte *pMessage, ubyte4 mesgLen, ubyte4 saltLen, ubyte **ppRetSignature, ubyte4 *pRetSignatureLen);
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsassaFreePssSign(MOC_RSA(hwAccelDescr hwAccelCtx) ubyte **ppSignature);
 #endif
@@ -97,17 +97,17 @@ MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsassaPssVerify(MOC_RSA(hwAccelDescr hw
 /* FIPS_710 Binary does include additional pMgfHashAlgo */
 
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsaesOaepEncrypt(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext *pRandomContext, const RSAKey *pRSAKey, BulkHashAlgo *pHashAlgo, BulkHashAlgo *pMgfHashAlgo, mgfFunc MGF, const ubyte *M, ubyte4 mLen, const ubyte *L, ubyte4 lLen, ubyte **ppRetEncrypt, ubyte4 *pRetEncryptLen);
-#if (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__))
+#if (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__))
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsaesOaepDecrypt(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pRSAKey, BulkHashAlgo *pHashAlgo, BulkHashAlgo *pMgfHashAlgo, mgfFunc MGF, const ubyte *C, ubyte4 cLen, const ubyte *L, ubyte4 lLen, ubyte **ppRetDecrypt, ubyte4 *pRetDecryptLength);
 #endif
 
-#if (!defined(__DISABLE_MOCANA_RSA_DECRYPTION__))
+#if (!defined(__DISABLE_DIGICERT_RSA_DECRYPTION__))
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsassaPssSign(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext *pRandomContext, const RSAKey *pRSAKey, BulkHashAlgo *pHashAlgo, BulkHashAlgo *pMgfHashAlgo, mgfFunc MGF, const ubyte *pMessage, ubyte4 mesgLen, ubyte4 saltLen, ubyte **ppRetSignature, ubyte4 *pRetSignatureLen);
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsassaFreePssSign(MOC_RSA(hwAccelDescr hwAccelCtx) ubyte **ppSignature);
 #endif
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_INT_rsassaPssVerify(MOC_RSA(hwAccelDescr hwAccelCtx) const RSAKey *pRSAKey, BulkHashAlgo *pHashAlgo, BulkHashAlgo *pMgfHashAlgo, mgfFunc MGF, const ubyte * const pMessage, ubyte4 mesgLen, const ubyte *pSignature, ubyte4 signatureLen, sbyte4 saltLen, intBoolean *pRetIsSignatureValid);
 
-#endif /* __ENABLE_MOCANA_FIPS_700_BINARY_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_FIPS_700_BINARY_SUPPORT__ */
 
 /* helper function */
 MOC_EXTERN_PKCS1_INT_H MSTATUS PKCS1_MGF1_FUNC(MOC_RSA(hwAccelDescr hwAccelCtx) const ubyte *mgfSeed, ubyte4 mgfSeedLen, ubyte4 maskLen, BulkHashAlgo *H, ubyte **ppRetMask);

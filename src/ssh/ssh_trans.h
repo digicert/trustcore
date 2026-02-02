@@ -91,7 +91,7 @@ MOC_EXTERN MSTATUS SSH_TRANS_receiveMessage(sshContext *pContextSSH, ubyte **ppR
  */
 MOC_EXTERN void    SSH_TRANS_sendDisconnectMesg(sshContext *pContextSSH, ubyte4 sshError);
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
 /**
  * @dont_show
  * @internal
@@ -99,7 +99,7 @@ MOC_EXTERN void    SSH_TRANS_sendDisconnectMesg(sshContext *pContextSSH, ubyte4 
 MOC_EXTERN MSTATUS SSH_TRANS_initSafePrimesDHG(hwAccelDescr hwAccelCtx);
 #endif
 
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 /**
  * @dont_show
  * @internal
