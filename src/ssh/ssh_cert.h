@@ -65,7 +65,7 @@ extern "C" {
 MOC_EXTERN MSTATUS SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySize, ubyte4 *pRetPubKeyType, 
                                                      ubyte4 **ppAlgoIdList, ubyte4 *pAlgoIdListLen);
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__))
 /**
  *  @brief Builds a raw DSA certificate.
  * 
@@ -94,7 +94,7 @@ MOC_EXTERN MSTATUS SSH_CERT_buildRawDsaCert(sshContext *pContextSSH, ubyte *pCer
  */
 MOC_EXTERN MSTATUS SSH_CERT_buildRawRsaCert(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength);
 
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_DIGICERT_PQC__))
 /**
  *  @brief Builds a raw PQC X.509v3 certificate.
  * 
@@ -110,7 +110,7 @@ MOC_EXTERN MSTATUS SSH_CERT_buildRawRsaCert(sshContext *pContextSSH, ubyte *pCer
 MOC_EXTERN MSTATUS SSH_CERT_buildCertQs(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates);
 #endif
 
-#if defined(__ENABLE_MOCANA_PQC_COMPOSITE__)
+#if defined(__ENABLE_DIGICERT_PQC_COMPOSITE__)
 /**
  *  @brief Builds a hybrid X.509v3 certificate.
  * 
@@ -126,7 +126,7 @@ MOC_EXTERN MSTATUS SSH_CERT_buildCertQs(sshContext *pContextSSH, SizedBuffer *pC
 MOC_EXTERN MSTATUS SSH_CERT_buildCertHybrid(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates);
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /**
  *  @brief Builds a raw ECDSA certificate.
  * 

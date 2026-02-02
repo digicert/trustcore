@@ -23,7 +23,7 @@
 #ifndef __SMP_NanoROOT_HEADER__
 #define __SMP_NanoROOT_HEADER__
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -127,6 +127,6 @@ MSTATUS NanoROOT_deInit();
 /* Fill the last error */
 void NanoROOT_FillError(TAP_Error* error, MSTATUS* pStatus, MSTATUS statusVal, const char* pErrString);
 
-#endif /* __ENABLE_MOCANA_SMP__ && __ENABLE_MOCANA_SMP_NANOROOT__ */
+#endif /* __ENABLE_DIGICERT_SMP__ && __ENABLE_DIGICERT_SMP_NANOROOT__ */
 
 #endif /* __SMP_NanoROOT_HEADER__ */

@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))
 #ifdef __ENABLE_ALL_DEBUGGING__
 
 #include "../common/mdefs.h"
@@ -209,7 +209,7 @@ DUMP_MESG_sshMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound, ubyte4
         DEBUG_PRINTNL(DEBUG_SSH_MESSAGES, (sbyte *)("):"));
     }
 
-#ifdef __ENABLE_MOCANA_SSH_CHANNEL_ID_DEBUG__
+#ifdef __ENABLE_DIGICERT_SSH_CHANNEL_ID_DEBUG__
     if ( (4 < mesgLen) &&
         ((81 == *pMesg) || (82 == *pMesg) || (91 == *pMesg) || (92 == *pMesg) ||
          (94 == *pMesg) || (95 == *pMesg) || (96 == *pMesg) || (97 == *pMesg)) )
@@ -228,7 +228,7 @@ DUMP_MESG_sshMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound, ubyte4
         DEBUG_HEXINT(DEBUG_SSH_MESSAGES, channelId);
         DEBUG_PRINTNL(DEBUG_SSH_MESSAGES, " <<<<");
     }
-#endif /* __ENABLE_MOCANA_SSH_CHANNEL_ID_DEBUG__ */
+#endif /* __ENABLE_DIGICERT_SSH_CHANNEL_ID_DEBUG__ */
 
     printHexAsciiDump(pMesg, mesgLen);
 }
@@ -266,5 +266,5 @@ DUMP_MESG_sftpMessage(ubyte *pMesg, ubyte4 mesgLen, intBoolean isOutBound)
 }
 
 #endif /* __ENABLE_ALL_DEBUGGING__ */
-#endif /* (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)) */
 

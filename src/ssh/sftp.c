@@ -25,15 +25,15 @@
 @flags
 To enable any of this file's functions, the following flags must be defined in
 moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @filedoc    sftp.c
 */
 
 #include "../common/moptions.h"
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__) && defined(__ENABLE_MOCANA_SSH_FTP_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__) && defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -55,7 +55,7 @@ moptions.h:
 #include "../crypto/crypto.h"
 #include "../crypto/dsa.h"
 #include "../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -97,7 +97,7 @@ SSH_sftpSettings(void)
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
 extern sbyte4
 SSH_sftpSetMemberOfGroups(sbyte4 connectionInstance, ubyte4 memberGroups)
 {
@@ -114,12 +114,12 @@ SSH_sftpSetMemberOfGroups(sbyte4 connectionInstance, ubyte4 memberGroups)
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_FTP_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_SERVER__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
 extern sbyte4
 SSH_sftpSetHomeDirectory(sbyte4 connectionInstance, sbyte *pHomeDirectory)
 {
@@ -141,7 +141,7 @@ SSH_sftpSetHomeDirectory(sbyte4 connectionInstance, sbyte *pHomeDirectory)
                 stringLength++;
 
             if (OK <= (status = SSH_STR_makeStringBuffer(&(SFTP_CURRENT_PATH(g_connectTable[index].pContextSSH)), stringLength)))
-                MOC_MEMCPY(SFTP_CURRENT_PATH(g_connectTable[index].pContextSSH)->pString, (ubyte *)pHomeDirectory, stringLength);
+                DIGI_MEMCPY(SFTP_CURRENT_PATH(g_connectTable[index].pContextSSH)->pString, (ubyte *)pHomeDirectory, stringLength);
 
             break;
         }
@@ -149,6 +149,6 @@ SSH_sftpSetHomeDirectory(sbyte4 connectionInstance, sbyte *pHomeDirectory)
 exit:
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_FTP_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_SERVER__ */
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_SERVER__) && defined(__ENABLE_MOCANA_SSH_FTP_SERVER__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SERVER__) && defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__)) */

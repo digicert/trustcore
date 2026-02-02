@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -34,11 +34,11 @@
 #include "../../common/random.h"
 #include "../../common/vlong.h"
 #include "../../common/utils.h"
-#define __IN_MOCANA_C__    /* FOR TESTING PURPOSES --- ENABLES BASE64 init/free */
+#define __IN_DIGICERT_C__    /* FOR TESTING PURPOSES --- ENABLES BASE64 init/free */
 #include "../../common/base64.h"
 #include "../../crypto/dsa.h"
 #include "../../crypto/rsa.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../../crypto/primefld.h"
 #include "../../crypto/primeec.h"
 #endif
@@ -95,7 +95,7 @@ static void test_SSHC_UTILS_sshParseAuthPublicKeyFile_null_params(void **ppState
     assert_int_not_equal(OK, status);
 
     /* Test null key descriptor */
-    status = SSHC_UTILS_sshParseAuthPublicKeyFile(testKeyFile, MOC_STRLEN(testKeyFile), NULL);
+    status = SSHC_UTILS_sshParseAuthPublicKeyFile(testKeyFile, DIGI_STRLEN(testKeyFile), NULL);
     assert_int_not_equal(OK, status);
 
     /* Test zero file size */
@@ -208,7 +208,7 @@ static void test_SSHC_UTILS_getInteger64_success(void **ppState)
 
     status = SSHC_UTILS_getInteger64(buffer, sizeof(buffer), &bufIndex, &retInteger64);
     assert_int_equal(OK, status);
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
     assert_int_equal(0x0123456789ABCDEF, retInteger64);
 #else
     assert_int_equal(0x89ABCDEF, retInteger64.lower32);
@@ -302,7 +302,7 @@ static void test_SSHC_UTILS_setInteger64_success(void **ppState)
     ubyte8 testValue;
     MSTATUS status;
 
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
     testValue = 0x0123456789ABCDEF;
 #else
     testValue.lower32 = 0x89ABCDEF;
@@ -332,7 +332,7 @@ static void test_SSHC_UTILS_setInteger64_buffer_overflow(void **ppState)
     ubyte8 testValue;
     MSTATUS status;
 
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
     testValue = 0x0123456789ABCDEF;
 #else
     testValue.lower32 = 0x89ABCDEF;
@@ -362,7 +362,7 @@ static void sshcClientFileECDSA256(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ecdsa256.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ecdsa256.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSHC_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -377,9 +377,9 @@ static void sshcClientFileECDSA256(void **ppState)
     status = parseAndComparePubKey(pEncodedPubKey, encodedPubKeySize, &pKeyDescr);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 }
 
@@ -399,7 +399,7 @@ static void sshcClientFileECDSA384(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ecdsa384.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ecdsa384.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSHC_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -413,9 +413,9 @@ static void sshcClientFileECDSA384(void **ppState)
     status = parseAndComparePubKey(pEncodedPubKey, encodedPubKeySize, &pKeyDescr);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 }
 
@@ -435,7 +435,7 @@ static void sshcClientFileECDSA521(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ecdsa521.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ecdsa521.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSHC_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -449,9 +449,9 @@ static void sshcClientFileECDSA521(void **ppState)
     status = parseAndComparePubKey(pEncodedPubKey, encodedPubKeySize, &pKeyDescr);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 }
 
@@ -471,7 +471,7 @@ static void sshcClientFileED25519(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ed25519.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ed25519.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSHC_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -485,9 +485,9 @@ static void sshcClientFileED25519(void **ppState)
     status = parseAndComparePubKey(pEncodedPubKey, encodedPubKeySize, &pKeyDescr);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 }
 
@@ -507,7 +507,7 @@ static void sshcClientFileRSA4096(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_rsa4096.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_rsa4096.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSHC_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -522,9 +522,9 @@ static void sshcClientFileRSA4096(void **ppState)
     status = parseAndComparePubKey(pEncodedPubKey, encodedPubKeySize, &pKeyDescr);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 }
 
@@ -537,7 +537,7 @@ static int testSetup(void **ppState)
     MOC_UNUSED(ppState);
     MSTATUS status;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -564,7 +564,7 @@ static int testTeardown(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
 exit:
     return (OK == status) ? 0 : -1;
@@ -578,7 +578,7 @@ int main(int argc, char* argv[])
 {
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* Parameter validation tests */
         cmocka_unit_test(test_SSHC_UTILS_sshParseAuthPublicKeyFile_null_params),
@@ -612,4 +612,4 @@ int main(int argc, char* argv[])
 #endif
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

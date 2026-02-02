@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include "../../common/mtypes.h"
 #include "../../common/mocana.h"
@@ -36,13 +36,13 @@
 #include "../../common/memfile.h"
 #include "../../asn1/parseasn1.h"
 #include "../../asn1/ASN1TreeWalker.h"
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
 #include "../../crypto/dsa.h"
 #endif
 #include "../../crypto/rsa.h"
 #include "../../crypto/dh.h"
 #include "../../crypto/crypto.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../../crypto/primefld.h"
 #include "../../crypto/primeec.h"
 #endif
@@ -56,7 +56,7 @@
 #include "../../ssh/client/sshc_str_house.h"
 #include "../../ssh/client/sshc_utils.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_rsa.h"
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
@@ -128,7 +128,7 @@ SSHC_UTILS_getInteger(ubyte *pBuffer, ubyte4 bufSize, ubyte4 *pBufIndex, ubyte4 
 extern MSTATUS
 SSHC_UTILS_getInteger64(ubyte *pBuffer, ubyte4 bufSize, ubyte4 *pBufIndex, ubyte8 *pRetInteger64)
 {
-#if  __MOCANA_MAX_INT__ < 64
+#if  __DIGICERT_MAX_INT__ < 64
     ubyte4  retInteger;
 #endif
     MSTATUS status = OK;
@@ -142,7 +142,7 @@ SSHC_UTILS_getInteger64(ubyte *pBuffer, ubyte4 bufSize, ubyte4 *pBufIndex, ubyte
 
     pBuffer += (*pBufIndex);
 
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
     *pRetInteger64 = (((ubyte8)(pBuffer[0])) << 56) |
         (((ubyte8)(pBuffer[1])) << 48) |
         (((ubyte8)(pBuffer[2])) << 40) |
@@ -239,7 +239,7 @@ SSHC_UTILS_setInteger64(ubyte *pPayload, ubyte4 payloadLength, ubyte4 *pBufIndex
 
     pPayload += (*pBufIndex);
 
-#if __MOCANA_MAX_INT__ == 64
+#if __DIGICERT_MAX_INT__ == 64
     pPayload[0] = (ubyte)((*pIntegerValue64) >> 56);
     pPayload[1] = (ubyte)((*pIntegerValue64) >> 48);
     pPayload[2] = (ubyte)((*pIntegerValue64) >> 40);
@@ -275,7 +275,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if !defined(__DISABLE_MOCANA_KEY_GENERATION__)
+#if !defined(__DISABLE_DIGICERT_KEY_GENERATION__)
 
 extern MSTATUS
 SSHC_UTILS_generateHostKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte **ppRetHostFile, ubyte4 *pRetHostFileLen)
@@ -293,7 +293,7 @@ SSHC_UTILS_generateServerAuthKeyFile(ubyte *pKeyBlob, ubyte4 keyBlobLength,
     return SSH_KEY_generateServerAuthKeyFile(pKeyBlob, keyBlobLength, ppRetEncodedAuthKey,
         pRetEncodedAuthKeyLen);
 }
-#endif /* !defined(__DISABLE_MOCANA_KEY_GENERATION__) */
+#endif /* !defined(__DISABLE_DIGICERT_KEY_GENERATION__) */
 
 
 /*------------------------------------------------------------------*/
@@ -305,7 +305,7 @@ SSHC_UTILS_freeGenerateServerAuthKeyFile(ubyte **ppFreeEncodedAuthKey)
 
     if ((NULL != ppFreeEncodedAuthKey) && (NULL != *ppFreeEncodedAuthKey))
     {
-        MOC_FREE((void **) ppFreeEncodedAuthKey);
+        DIGI_FREE((void **) ppFreeEncodedAuthKey);
         status = OK;
     }
 
@@ -315,9 +315,9 @@ SSHC_UTILS_freeGenerateServerAuthKeyFile(ubyte **ppFreeEncodedAuthKey)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_DSA__))
 
-#ifdef __ENABLE_MOCANA_DER_CONVERSION__
+#ifdef __ENABLE_DIGICERT_DER_CONVERSION__
 static MSTATUS
 SSHC_UTILS_getDSAKey(MOC_DSA(hwAccelDescr hwAccelCtx) const ubyte *pData, ubyte4 pDataLength, AsymmetricKey *pKey)
 {
@@ -428,12 +428,12 @@ exit:
     return (sbyte4)status;
 
 }
-#endif /* __ENABLE_MOCANA_DER_CONVERSION__ */
+#endif /* __ENABLE_DIGICERT_DER_CONVERSION__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PEM_CONVERSION__
+#ifdef __ENABLE_DIGICERT_PEM_CONVERSION__
 extern MSTATUS
 SSHC_UTILS_convertDsaKeyPEM(MOC_ASYM(hwAccelDescr hwAccelCtx) ubyte *pPemRsaKey, ubyte4 pemRsaKeyLength,
                          ubyte **ppRetKeyBlob, ubyte4 *pRetKeyBlobLength )
@@ -461,8 +461,8 @@ exit:
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_PEM_CONVERSION__ */
+#endif /* __ENABLE_DIGICERT_PEM_CONVERSION__ */
 
-#endif /* (defined(__ENABLE_MOCANA_DSA__)) */
+#endif /* (defined(__ENABLE_DIGICERT_DSA__)) */
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

@@ -26,7 +26,7 @@
 @flags
 To build products using this header file, the following flag must be defined in
 moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @filedoc    sftp.h
 */
@@ -41,7 +41,7 @@ moptions.h:
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 #define SFTP_OPEN_FILE_READ_BINARY      1
 #define SFTP_OPEN_FILE_WRITE_BINARY     2
@@ -78,7 +78,7 @@ extern "C" {
 
 @flags
 To use this structure, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 */
 typedef struct
@@ -96,7 +96,7 @@ typedef struct
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -133,7 +133,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -163,7 +163,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -193,7 +193,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -223,7 +223,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -255,7 +255,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -291,7 +291,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -320,7 +320,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -353,7 +353,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -385,7 +385,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -415,7 +415,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -445,7 +445,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance       Connection instance returned from
                                   SSH_acceptConnection() or
@@ -475,7 +475,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @param connectionInstance       Connection instance returned from
                                   SSH_acceptConnection() or
@@ -510,8 +510,8 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @inc_file sftp.h
 
@@ -536,8 +536,8 @@ MOC_EXTERN sftpSettings* SSH_sftpSettings(void);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -569,8 +569,8 @@ MOC_EXTERN sbyte4   SSH_sftpSetMemberOfGroups(sbyte4 connectionInstance, ubyte4 
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @param connectionInstance   Connection instance returned from
                               SSH_acceptConnection() or
@@ -603,8 +603,8 @@ MOC_EXTERN sbyte4   SSH_sftpSetHomeDirectory(sbyte4 connectionInstance, sbyte *p
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -679,8 +679,8 @@ MOC_EXTERN void     SSH_sftpSetCookie(void* sftpInternelDescr, void* sftpCookie)
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -722,8 +722,8 @@ MOC_EXTERN void*   SSH_sftpGetCookie(void* sftpInternelDescr);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -794,8 +794,8 @@ MOC_EXTERN sbyte4   SSH_sftpReadLocation(void* sftpInternelDescr);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -866,8 +866,8 @@ MOC_EXTERN sbyte*   SSH_sftpReadBuffer(void* sftpInternelDescr);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -940,8 +940,8 @@ MOC_EXTERN sbyte4   SSH_sftpReadBufferSize(void* sftpInternelDescr);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -1012,8 +1012,8 @@ MOC_EXTERN void     SSH_sftpNumBytesRead(void* sftpInternelDescr, sbyte4 numByte
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -1073,8 +1073,8 @@ MOC_EXTERN sbyte4   SSH_sftpWriteLocation(void* sftpInternelDescr);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -1134,8 +1134,8 @@ MOC_EXTERN sbyte*   SSH_sftpWriteBuffer(void* sftpInternelDescr);
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
 
 @inc_file sftp.h
 
@@ -1181,7 +1181,7 @@ exit:
 */
 MOC_EXTERN sbyte4   SSH_sftpWriteBufferSize(void* sftpInternelDescr);
 
-#endif /* __ENABLE_MOCANA_SSH_FTP_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_SERVER__ */
 
 #ifdef __cplusplus
 }

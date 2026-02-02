@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include "../../common/mtypes.h"
 #include "../../common/mocana.h"
@@ -38,11 +38,11 @@
 #include "../../crypto/dsa.h"
 #include "../../crypto/sha1.h"
 
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
 #include "../../crypto/sha256.h"
 #endif
 
-#if ((!defined(__DISABLE_MOCANA_SHA384__)) || (!defined(__DISABLE_MOCANA_SHA512__)))
+#if ((!defined(__DISABLE_DIGICERT_SHA384__)) || (!defined(__DISABLE_DIGICERT_SHA512__)))
 #include "../../crypto/sha512.h"
 #endif
 
@@ -52,7 +52,7 @@
 #include "../../crypto/pubcrypto.h"
 #include "../../crypto/ca_mgmt.h"
 
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../../crypto/primefld.h"
 #include "../../crypto/primeec.h"
 #endif
@@ -77,24 +77,24 @@
 #include "../../ssh/client/sshc_utils.h"
 #include "../../ssh/ssh_dss.h"
 #include "../../ssh/ssh_rsa.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../../ssh/ssh_ecdsa.h"
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
 #endif
 #include "../../ssh/ssh_cert.h"
 #include "../../harness/harness.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_rsa.h"
 #include "../crypto_interface/crypto_interface_dsa.h"
 #endif
 
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
 #include "../../ssh/ssh_qs.h"
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
 #include "../../ssh/ssh_hybrid.h"
 #endif
 
@@ -154,19 +154,19 @@ static const BulkHashAlgo SHA1Suite =
         (BulkCtxInitFunc)SHA1_initDigest, (BulkCtxUpdateFunc)SHA1_updateDigest, (BulkCtxFinalFunc)SHA1_finalDigest, NULL, NULL, NULL, ht_sha1 };
 
 
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
 static const BulkHashAlgo SHA256Suite =
     { SHA256_RESULT_SIZE, SHA256_BLOCK_SIZE, SHA256_allocDigest, SHA256_freeDigest,
         (BulkCtxInitFunc)SHA256_initDigest, (BulkCtxUpdateFunc)SHA256_updateDigest, (BulkCtxFinalFunc)SHA256_finalDigest, NULL, NULL, NULL, ht_sha256 };
 #endif
 
-#ifndef __DISABLE_MOCANA_SHA384__
+#ifndef __DISABLE_DIGICERT_SHA384__
 static const BulkHashAlgo SHA384Suite =
     { SHA384_RESULT_SIZE, SHA384_BLOCK_SIZE, SHA384_allocDigest, SHA384_freeDigest,
         (BulkCtxInitFunc)SHA384_initDigest, (BulkCtxUpdateFunc)SHA384_updateDigest, (BulkCtxFinalFunc)SHA384_finalDigest, NULL, NULL, NULL, ht_sha384 };
 #endif
 
-#ifndef __DISABLE_MOCANA_SHA512__
+#ifndef __DISABLE_DIGICERT_SHA512__
 static const BulkHashAlgo SHA512Suite =
     { SHA512_RESULT_SIZE, SHA512_BLOCK_SIZE, SHA512_allocDigest, SHA512_freeDigest,
         (BulkCtxInitFunc)SHA512_initDigest, (BulkCtxUpdateFunc)SHA512_updateDigest, (BulkCtxFinalFunc)SHA512_finalDigest, NULL, NULL, NULL, ht_sha512 };
@@ -195,7 +195,7 @@ SSHC_AUTH_SendUserAuthServiceRequest(sshClientContext *pContextSSH)
     }
 
     *pPayload = SSH_MSG_SERVICE_REQUEST;
-    MOC_MEMCPY(pPayload + 1, sshc_userAuthService.pString, sshc_userAuthService.stringLen);
+    DIGI_MEMCPY(pPayload + 1, sshc_userAuthService.pString, sshc_userAuthService.stringLen);
 
     status = SSHC_OUT_MESG_sendMessage(pContextSSH, pPayload, len, &len);
 
@@ -271,7 +271,7 @@ noneAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 nameLen)
 
     /* string    service (we're only supporting "ssh-connection") */
     /* sshc_connectService.pString already contains the length bytes */
-    MOC_MEMCPY(pBuffer + bufIndex, sshc_connectService.pString, sshc_connectService.stringLen);
+    DIGI_MEMCPY(pBuffer + bufIndex, sshc_connectService.pString, sshc_connectService.stringLen);
     bufIndex += sshc_connectService.stringLen;
 
     /* string "password" */
@@ -340,7 +340,7 @@ passwordAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 nameLen)
 
     /* string    service (we're only supporting "ssh-connection") */
     /* sshc_connectService.pString already contains the length bytes */
-    MOC_MEMCPY(pBuffer + bufIndex, sshc_connectService.pString, sshc_connectService.stringLen);
+    DIGI_MEMCPY(pBuffer + bufIndex, sshc_connectService.pString, sshc_connectService.stringLen);
     bufIndex += sshc_connectService.stringLen;
 
     /* string "password" */
@@ -376,7 +376,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__
 static MSTATUS
 SSHC_AUTH_keyboardInteractiveAuth(sshClientContext *pContextSSH, ubyte *pName, ubyte4 nameLen)
 {
@@ -419,7 +419,7 @@ SSHC_AUTH_keyboardInteractiveAuth(sshClientContext *pContextSSH, ubyte *pName, u
 
     /* string    service (we're only supporting "ssh-connection") */
     /* sshc_connectService.pString already contains the length bytes */
-    MOC_MEMCPY(pBuffer + bufIndex, sshc_connectService.pString, sshc_connectService.stringLen);
+    DIGI_MEMCPY(pBuffer + bufIndex, sshc_connectService.pString, sshc_connectService.stringLen);
     bufIndex += sshc_connectService.stringLen;
 
     /* string "keyboard-interactive" */
@@ -500,14 +500,14 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
         goto exit;
 
     pRequest->pName = pName;
-    pRequest->nameLen = MOC_STRLEN(pName);
+    pRequest->nameLen = DIGI_STRLEN(pName);
 
     status = SSH_STR_copyStringFromPayload3(pInfoReqMsg, infoReqMsgLen, &index, (ubyte **)&pInstruction);
     if(OK != status)
         goto exit;
 
     pRequest->pInstruction = pInstruction;
-    pRequest->instructionLen = MOC_STRLEN(pInstruction);
+    pRequest->instructionLen = DIGI_STRLEN(pInstruction);
 
     if ((4 + index) > infoReqMsgLen)
     {
@@ -516,7 +516,7 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
     }
 
     /* get length of language tag */
-    languageTagLen = MOC_NTOHL(pInfoReqMsg + index);
+    languageTagLen = DIGI_NTOHL(pInfoReqMsg + index);
     index += 4;
 
     /* unsupported. skip language tag. */
@@ -528,7 +528,7 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
         goto exit;
     }
 
-    pRequest->numPrompts = MOC_NTOHL(pInfoReqMsg + index);
+    pRequest->numPrompts = DIGI_NTOHL(pInfoReqMsg + index);
     index += 4;
 
     for (i = 0; i < pRequest->numPrompts; i++)
@@ -539,11 +539,11 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
             goto exit;
         }
 
-        status = MOC_MALLOC((void **)&pNewPrompt, sizeof(*pNewPrompt));
+        status = DIGI_MALLOC((void **)&pNewPrompt, sizeof(*pNewPrompt));
         if(OK != status)
             goto exit;
 
-        pNewPrompt->promptLen = MOC_NTOHL(pInfoReqMsg + index);
+        pNewPrompt->promptLen = DIGI_NTOHL(pInfoReqMsg + index);
         index += 4;
 
         if((pNewPrompt->promptLen + index) > infoReqMsgLen)
@@ -564,7 +564,7 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
 
 exit:
     if (OK != status)
-        MOC_MEMSET((ubyte *)pRequest, 0x00, sizeof(keyIntInfoReq));
+        DIGI_MEMSET((ubyte *)pRequest, 0x00, sizeof(keyIntInfoReq));
     return status;
 }
 
@@ -578,17 +578,17 @@ static MSTATUS releaseKeyInfoReq(keyIntInfoReq* pRequest)
 
     if(NULL != pRequest->pName)
     {
-        MOC_FREE((void **)&pRequest->pName);
+        DIGI_FREE((void **)&pRequest->pName);
     }
 
     if(NULL != pRequest->pInstruction)
     {
-        MOC_FREE((void **)&pRequest->pInstruction);
+        DIGI_FREE((void **)&pRequest->pInstruction);
     }
 
     for (i = 0; i < pRequest->numPrompts; i++)
     {
-        MOC_FREE((void **)&(pRequest->prompts[i]));
+        DIGI_FREE((void **)&(pRequest->prompts[i]));
     }
 
     return OK;
@@ -623,7 +623,7 @@ static MSTATUS sendKeyInfoResp(sshClientContext *pContextSSH, keyIntInfoResp* pR
     for(i = 0; i < pResponse->numResponses; i++)
         numBytesToWrite += 4 + pResponse->responses[i]->responseLen;
 
-    status = MOC_MALLOC((void **)&pPayload, numBytesToWrite);
+    status = DIGI_MALLOC((void **)&pPayload, numBytesToWrite);
     if(OK != status)
         goto exit;
 
@@ -641,7 +641,7 @@ static MSTATUS sendKeyInfoResp(sshClientContext *pContextSSH, keyIntInfoResp* pR
         if(OK != status)
             goto exit;
 
-        status = MOC_MEMCPY(pPayload + index, pResponse->responses[i]->pResponse, pResponse->responses[i]->responseLen);
+        status = DIGI_MEMCPY(pPayload + index, pResponse->responses[i]->pResponse, pResponse->responses[i]->responseLen);
         if(OK != status)
             goto exit;
         index += pResponse->responses[i]->responseLen;
@@ -655,7 +655,7 @@ static MSTATUS sendKeyInfoResp(sshClientContext *pContextSSH, keyIntInfoResp* pR
 
 exit:
     if (NULL != pPayload)
-        MOC_FREE((void **)&pPayload);
+        DIGI_FREE((void **)&pPayload);
     return status;
 }
 
@@ -672,7 +672,7 @@ static MSTATUS SSHC_AUTH_processKeyboardInteractiveReq(sshClientContext *pContex
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)&infoReq, 0x00, sizeof(keyIntInfoReq));
+    DIGI_MEMSET((ubyte *)&infoReq, 0x00, sizeof(keyIntInfoReq));
     status = decodeKeyInfoReq(pInfoReqMsg, infoReqMsgLen, &infoReq);
     if (OK != status)
         goto exit;
@@ -684,7 +684,7 @@ static MSTATUS SSHC_AUTH_processKeyboardInteractiveReq(sshClientContext *pContex
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *)&infoResp, 0x00, sizeof(keyIntInfoResp));
+    DIGI_MEMSET((ubyte *)&infoResp, 0x00, sizeof(keyIntInfoResp));
 
     (SSHC_sshClientSettings()->funcPtrKeyIntAuthResp)(pContextSSH->connectionInstance,
         &infoReq, &infoResp);
@@ -700,7 +700,7 @@ exit:
     releaseKeyInfoReq(&infoReq);
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__ */
+#endif /* __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__ */
 
 
 /*------------------------------------------------------------------*/
@@ -730,7 +730,7 @@ SSHC_AUTH_generateHashOrMessage(sshClientContext *pContextSSH, BulkHashAlgo hash
     {
         length[3] = (ubyte)pContextSSH->sessionIdLength;
 
-        status = MOC_MALLOC((void**)&pOutput, hashAlgo.digestSize);
+        status = DIGI_MALLOC((void**)&pOutput, hashAlgo.digestSize);
         if (OK != status)
             goto exit;
 
@@ -768,23 +768,23 @@ SSHC_AUTH_generateHashOrMessage(sshClientContext *pContextSSH, BulkHashAlgo hash
     {
         outputLen = 4 + (ubyte)pContextSSH->sessionIdLength + messageLen;
 
-        status = MOC_MALLOC((void**)&pOutput, outputLen);
+        status = DIGI_MALLOC((void**)&pOutput, outputLen);
         if (OK != status)
             goto exit;
 
         length[3] = (ubyte)pContextSSH->sessionIdLength;
 
-        status = MOC_MEMCPY(pOutput, length, 4);
+        status = DIGI_MEMCPY(pOutput, length, 4);
         if (OK != status)
             goto exit;
 
         outputLen = 4;
-        status = MOC_MEMCPY(pOutput + outputLen, SSH_SESSION_ID(pContextSSH), pContextSSH->sessionIdLength);
+        status = DIGI_MEMCPY(pOutput + outputLen, SSH_SESSION_ID(pContextSSH), pContextSSH->sessionIdLength);
         if (OK != status)
             goto exit;
 
         outputLen += pContextSSH->sessionIdLength;
-        status = MOC_MEMCPY(pOutput + outputLen, pMessage, messageLen);
+        status = DIGI_MEMCPY(pOutput + outputLen, pMessage, messageLen);
         if (OK != status)
             goto exit;
 
@@ -798,7 +798,7 @@ SSHC_AUTH_generateHashOrMessage(sshClientContext *pContextSSH, BulkHashAlgo hash
 exit:
     if (NULL != pOutput)
     {
-        MOC_FREE((void**)&pOutput);
+        DIGI_FREE((void**)&pOutput);
     }
 
     return status;
@@ -831,11 +831,11 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
     ubyte4              bufLen = 0;
     ubyte4              remainingMesgLen = 0;
 	ubyte*              mBuf = NULL;
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_DIGICERT_PQC__))
     intBoolean          isCertificate = FALSE;
 #endif
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     AsymmetricKey*      pKey = NULL;
     ubyte*              pDerCert      = NULL;
     ubyte4              derCertLength = 0;
@@ -856,7 +856,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             goto exit;
         }
     }
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     else if (pContextSSH->pCertStore != NULL)
     {
         /* Retrieve the certificate if we have one in our cert store */
@@ -882,14 +882,14 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             }
             authType++;
         }
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_DIGICERT_PQC__))
         /* set this value for hybrid algorithms */
         isCertificate = TRUE;
 #endif
     }
 #endif
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     if ((NULL == pKeyBlob) && (NULL == pKey))
 #else
     if (NULL == pKeyBlob)
@@ -911,7 +911,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             goto exit;
         }
 
-        MOC_MEMSET(pMessage, 0x00, messageLen);
+        DIGI_MEMSET(pMessage, 0x00, messageLen);
 
         /* fill in SSH_MSG_USERAUTH_REQUEST message */
         *pMessage = SSH_MSG_USERAUTH_REQUEST;
@@ -944,7 +944,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
         goto exit;
     }
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     /* convert key blob to useful data structure */
     if (pKey == NULL)
     {
@@ -982,18 +982,18 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
 
     switch (authKey.type & 0xff)
     {
-#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__))
         case akt_dsa:
         {
 
-#ifndef __DISABLE_MOCANA_SHA256__
+#ifndef __DISABLE_DIGICERT_SHA256__
 			/**
 			 * Current support for 2048 bit DSA assumes the N parameter
 			 * is 256 bytes. We infer the key size by looking at the
 			 * length of the P paremeter.
 			 */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
             status = CRYPTO_INTERFACE_DSA_getCipherTextLength(MOC_DSA(pContextSSH->hwAccelCookie) authKey.key.pDSA, (sbyte4 *) &modLength);
 #else
             status = DSA_getCipherTextLength(MOC_DSA(pContextSSH->hwAccelCookie) authKey.key.pDSA, (sbyte4 *) &modLength);
@@ -1020,7 +1020,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             break;
         }
 #endif
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
         case akt_rsa:
         {
             if (OK > (status = SSH_RSA_buildRsaCertificate(MOC_RSA(pContextSSH->hwAccelCookie) &authKey, FALSE, &pCertificate, &certificateLen)))
@@ -1030,7 +1030,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 if (OK > (status = SSH_RSA_calcRsaSignatureLength(MOC_RSA(pContextSSH->hwAccelCookie) &authKey, FALSE, &signatureLength)))
                     goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
             status = CRYPTO_INTERFACE_RSA_getCipherTextLengthAux(MOC_RSA(pContextSSH->hwAccelCookie) (const RSAKey*)authKey.key.pRSA, (sbyte4 *) &modLength);
             if (OK != status)
                 goto exit;
@@ -1040,11 +1040,11 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 goto exit;
 #endif
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
             if (pDerCert != NULL)
             {
                 /* Client authentication using a certificate */
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
                 if (modLength * 8 >= 2048)
                 {
                     hashAlgo       = SHA256Suite;
@@ -1062,11 +1062,11 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             {
                 if (modLength * 8 >= 2048)
                 {
-#if (!defined(__DISABLE_MOCANA_SHA512__))
+#if (!defined(__DISABLE_DIGICERT_SHA512__))
                     hashAlgo       = SHA512Suite;
                     contextSize    = sizeof(sha512Descr);
                     pSignatureType = &sshc_rsa2048sha512_signature;
-#elif (!defined(__DISABLE_MOCANA_SHA256__))
+#elif (!defined(__DISABLE_DIGICERT_SHA256__))
                     hashAlgo       = SHA256Suite;
                     contextSize    = sizeof(sha256Descr);
                     pSignatureType = &sshc_rsa2048sha256_signature;
@@ -1083,7 +1083,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             break;
         }
 #endif
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_DIGICERT_PQC__))
         case akt_qs:
         {
             status = SSH_QS_buildQsKey(&authKey, isCertificate, FALSE, &pCertificate, &certificateLen);
@@ -1103,8 +1103,8 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
 
             break;
         }
-#endif /* __ENABLE_MOCANA_PQC__ */
-#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
+#endif /* __ENABLE_DIGICERT_PQC__ */
+#if (defined(__ENABLE_DIGICERT_PQC_COMPOSITE__))
         case akt_hybrid:
         {
             ECCKey *pECCKey = authKey.key.pECC;
@@ -1115,22 +1115,22 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 goto exit;
             switch (curveId)
             {
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
                 case cid_EC_P256:
                     hashAlgo       = SHA256Suite;
                     break;
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA384__))
+#if (!defined(__DISABLE_DIGICERT_SHA384__))
                 case cid_EC_P384:
                     hashAlgo       = SHA384Suite;
                     break;
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA512__))
+#if (!defined(__DISABLE_DIGICERT_SHA512__))
                 case cid_EC_P521:
                     hashAlgo       = SHA512Suite;
                     break;
 #endif
-#if defined (__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__)
+#if defined (__ENABLE_DIGICERT_ECC_EDDSA_25519__) || defined(__ENABLE_DIGICERT_ECC_EDDSA_448__)
                 case cid_EC_Ed25519:
                 case cid_EC_Ed448:
                     hashAlgo       = NoSuite;
@@ -1160,14 +1160,14 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
 
             break;
         }
-#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
-#if (defined(__ENABLE_MOCANA_ECC__))
+#endif /* __ENABLE_DIGICERT_PQC_COMPOSITE__ */
+#if (defined(__ENABLE_DIGICERT_ECC__))
          case akt_ecc_ed:
          case akt_ecc:
          {
              ECCKey *pECCKey = authKey.key.pECC;
              ubyte4 curveId = 0;
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
              status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveId);
              if(OK != status)
                  goto exit;
@@ -1183,24 +1183,24 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 if (OK > (status = SSH_ECDSA_calcEcdsaSignatureLength(&authKey, FALSE, &signatureLength)))
                     goto exit;
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
             if (pDerCert != NULL)
             {
                 switch (curveId)
                 {
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
                     case cid_EC_P256:
                         hashAlgo       = SHA256Suite;
                         pSignatureType = &sshc_ecdsa_cert_signature_p256;
                         break;
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA384__))
+#if (!defined(__DISABLE_DIGICERT_SHA384__))
                     case cid_EC_P384:
                         hashAlgo       = SHA384Suite;
                         pSignatureType = &sshc_ecdsa_cert_signature_p384;
                         break;
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA512__))
+#if (!defined(__DISABLE_DIGICERT_SHA512__))
                     case cid_EC_P521:
                         hashAlgo       = SHA512Suite;
                         pSignatureType = &sshc_ecdsa_cert_signature_p521;
@@ -1216,23 +1216,23 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 }
             }
             else
-#endif /* __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__ */
             {
                 switch (curveId)
                 {
-#if (!defined(__DISABLE_MOCANA_SHA256__))
+#if (!defined(__DISABLE_DIGICERT_SHA256__))
                     case cid_EC_P256:
                         hashAlgo       = SHA256Suite;
                         pSignatureType = &sshc_ecdsa_signature_p256;
                         break;
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA384__))
+#if (!defined(__DISABLE_DIGICERT_SHA384__))
                     case cid_EC_P384:
                         hashAlgo       = SHA384Suite;
                         pSignatureType = &sshc_ecdsa_signature_p384;
                         break;
 #endif
-#if (!defined(__DISABLE_MOCANA_SHA512__))
+#if (!defined(__DISABLE_DIGICERT_SHA512__))
                     case cid_EC_P521:
                         hashAlgo       = SHA512Suite;
                         pSignatureType = &sshc_ecdsa_signature_p521;
@@ -1250,7 +1250,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             break;
 
         }
-#endif/* __ENABLE_MOCANA_ECC__ */
+#endif/* __ENABLE_DIGICERT_ECC__ */
         default:
         {
             status = ERR_BAD_KEY_TYPE;
@@ -1273,7 +1273,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                  sshc_authPublicKey.stringLen +
                  pSignatureType->stringLen;
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     if (pDerCert == NULL)
     {
         /* PublicKey based authentication */
@@ -1320,7 +1320,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
     if (OK > (status = SSH_STR_copyStringToPayload3(pMessage, messageLen, &index, pSignatureType)))
         goto exit;
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     if (pDerCert == NULL)
     {
         remainingMesgLen = certificateLen + index;
@@ -1341,11 +1341,11 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
         goto exit;
     }
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     if (pDerCert == NULL)
     {
         /* public key */
-        if (0 > (status = MOC_MEMCPY(index + pMessage, pCertificate, certificateLen)))
+        if (0 > (status = DIGI_MEMCPY(index + pMessage, pCertificate, certificateLen)))
             goto exit;
     }
     else
@@ -1364,7 +1364,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
         index = index + 4;
 
         /* write pSignatureType */
-        status = MOC_MEMCPY(pMessage + index, pSignatureType->pString, pSignatureType->stringLen);
+        status = DIGI_MEMCPY(pMessage + index, pSignatureType->pString, pSignatureType->stringLen);
         if (OK != status)
             goto exit;
 
@@ -1389,7 +1389,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             index = index + 4;
 
             /* Copy the certificate */
-            if (0 > (status = MOC_MEMCPY(index + pMessage, pDerCert, derCertLength)))
+            if (0 > (status = DIGI_MEMCPY(index + pMessage, pDerCert, derCertLength)))
                 goto exit;
 
             index = index + derCertLength;
@@ -1405,7 +1405,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
     }
 #else
     /* public key */
-    if (0 > (status = MOC_MEMCPY(index + pMessage, pCertificate, certificateLen)))
+    if (0 > (status = DIGI_MEMCPY(index + pMessage, pCertificate, certificateLen)))
         goto exit;
 #endif
 
@@ -1418,7 +1418,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
         /* sign m */
         switch (authKey.type & 0xff)
         {
-#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__))
             case akt_dsa:
             {
                 if (OK > (status = VLONG_vlongFromByteString(mBuf, hashAlgo.digestSize, &pM, &pVlongQueue)))
@@ -1429,7 +1429,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 break;
             }
 #endif
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
             case akt_rsa:
             {
                 status = SSH_RSA_buildRsaSignature(MOC_RSA(pContextSSH->hwAccelCookie) &authKey, FALSE,
@@ -1439,7 +1439,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 break;
             }
 #endif
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_DIGICERT_PQC__))
             case akt_qs:
             {
                 status = SSH_QS_buildQsSignature(MOC_HASH(pContextSSH->hwAccelCookie) &authKey, isCertificate,
@@ -1448,7 +1448,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 break;
             }
 #endif
-#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
+#if (defined(__ENABLE_DIGICERT_PQC_COMPOSITE__))
             case akt_hybrid:
             {
                 status = SSH_HYBRID_buildHybridSignature(MOC_ASYM(pContextSSH->hwAccelCookie) &authKey, isCertificate,
@@ -1457,7 +1457,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
                 break;
             }
 #endif
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
             case akt_ecc_ed:
             case akt_ecc:
             {
@@ -1477,7 +1477,7 @@ SSHC_AUTH_publicKeyAuth(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pCon
             goto exit;
 
         /* copy signature */
-        MOC_MEMCPY(pMessage + messageLen, pSignature, signatureLength);
+        DIGI_MEMCPY(pMessage + messageLen, pSignature, signatureLength);
     }
 
     if (OK > (status = SSHC_OUT_MESG_sendMessage(pContextSSH, pMessage, messageLen + signatureLength, &numBytesWritten)))
@@ -1503,12 +1503,12 @@ exit:
         FREE(pCertificate);
 
     if (NULL != pSignature)
-        MOC_FREE((void**)&pSignature);
+        DIGI_FREE((void**)&pSignature);
 
     if (NULL != mBuf)
-        MOC_FREE((void **) &mBuf);
+        DIGI_FREE((void **) &mBuf);
 
-#if ((defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_CLIENT_CERT_AUTH__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_CLIENT_CERT_AUTH__)))
     if (pDerCert == NULL)
     {
         /* Need to free authKey here to avoid mem leaks */
@@ -1585,7 +1585,7 @@ sshc_DoClientAuthenticate(MOC_ASYM(hwAccelDescr hwAccelCtx) sshClientContext *pC
                 goto exit;
             break;
 
-#ifdef __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__
         case MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE:
             if (OK > (status = SSHC_AUTH_keyboardInteractiveAuth(pContextSSH, pName, nameLen)))
                     goto exit;
@@ -1636,7 +1636,7 @@ sshc_receiveAuthMessage(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 n
             pContextSSH->authType = 0;
 
             if ((newMesgLen != 1 + sshc_userAuthService.stringLen) ||
-                (OK > (status = MOC_MEMCMP(pNewMesg + 1, sshc_userAuthService.pString, sshc_userAuthService.stringLen, &compareValue))) )
+                (OK > (status = DIGI_MEMCMP(pNewMesg + 1, sshc_userAuthService.pString, sshc_userAuthService.stringLen, &compareValue))) )
             {
                 goto exit;
             }
@@ -1664,7 +1664,7 @@ sshc_receiveAuthMessage(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 n
 
         case SSH_MSG_USERAUTH_BANNER:
         {
-#ifdef __ENABLE_MOCANA_SSH_AUTH_BANNER__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_BANNER__
             ubyte4           length;
             if (NULL != SSHC_sshClientSettings()->funcPtrDisplayBanner)
             {
@@ -1711,7 +1711,7 @@ sshc_receiveAuthMessage(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 n
                 if (0 > (status = sshc_DoClientAuthenticate(pContextSSH, NULL, SSH_MSG_USERAUTH_PK_OK)))
                     goto exit;
             }
-#ifdef __ENABLE_MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE__
+#ifdef __ENABLE_DIGICERT_SSH_AUTH_KEYBOARD_INTERACTIVE__
             else if(MOCANA_SSH_AUTH_KEYBOARD_INTERACTIVE == pContextSSH->authType)
             {
                 /* SSH_MSG_USERAUTH_PASSWD_CHANGEREQ == SSH_MSG_USERAUTH_INFO_REQUEST */
@@ -1789,7 +1789,7 @@ SSHC_AUTH_allocStructures(sshClientContext *pContextSSH)
         {
             /* fill the byte array for usage later */
             AUTH_FAILURE_BUFFER(pContextSSH)[0] = SSH_MSG_USERAUTH_FAILURE;
-            MOC_MEMCPY(&(AUTH_FAILURE_BUFFER(pContextSSH)[1]), sshc_authMethods.pString, sshc_authMethods.stringLen);
+            DIGI_MEMCPY(&(AUTH_FAILURE_BUFFER(pContextSSH)[1]), sshc_authMethods.pString, sshc_authMethods.stringLen);
             AUTH_KEYINT_CONTEXT(pContextSSH).user         = NULL;
             AUTH_KEYINT_CONTEXT(pContextSSH).pInfoRequest = NULL;
         }
@@ -1826,4 +1826,4 @@ SSHC_AUTH_deallocStructures(sshClientContext *pContextSSH)
 
 
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

@@ -127,7 +127,7 @@ LINUX_TCP_listenSocket(TCP_SOCKET *listenSocket, ubyte2 portNumber)
         goto error_cleanup;
     }
 
-    MOC_MEMSET((ubyte *)&saServer, 0x00, sizeof(struct SOCKADDR_IN));
+    DIGI_MEMSET((ubyte *)&saServer, 0x00, sizeof(struct SOCKADDR_IN));
 
     SETFAMILY(saServer)
     SETPORT(saServer,portNumber)
@@ -225,11 +225,11 @@ LINUX_TCP_listenSocketLocal(TCP_SOCKET *pListenSocket, ubyte2 portNumber)
 {
     struct SOCKADDR_IN  saServer;
 
-    MOC_MEMSET((ubyte *) &saServer, 0x00, sizeof(struct SOCKADDR_IN));
+    DIGI_MEMSET((ubyte *) &saServer, 0x00, sizeof(struct SOCKADDR_IN));
 
     SETFAMILY(saServer)
     SETPORT(saServer,portNumber)
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     /* AHW: ZERO_OUT is only implemented for IPv4! Stick to this and fix for IPv6, when we know how */
     ZERO_OUT(saServer) /* NO OP */
 #elif defined(__RTOS_ZEPHYR__)
@@ -260,11 +260,11 @@ extern MSTATUS LINUX_TCP_listenSocketAddr(
         goto exit;
     }
 
-    MOC_MEMSET((ubyte *) &saServer, 0x00, sizeof(struct SOCKADDR_IN));
+    DIGI_MEMSET((ubyte *) &saServer, 0x00, sizeof(struct SOCKADDR_IN));
 
     SETFAMILY(saServer)
     SETPORT(saServer,portNumber)
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     /* AHW: ZERO_OUT is only implemented for IPv4! Stick to this and fix for IPv6, when we know how */
     ZERO_OUT(saServer) /* NO OP */
 #else
@@ -319,7 +319,7 @@ LINUX_TCP_listenSocketNonBlocking(TCP_SOCKET *listenSocket, ubyte2 portNumber)
         goto error_cleanup;
     }
 
-    MOC_MEMSET((ubyte *)&saServer, 0x00, sizeof(struct SOCKADDR_IN));
+    DIGI_MEMSET((ubyte *)&saServer, 0x00, sizeof(struct SOCKADDR_IN));
 
     SETFAMILY(saServer)
     SETPORT(saServer,portNumber)
@@ -478,7 +478,7 @@ LINUX_TCP_connectSocket(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 po
     MSTATUS             status = OK;
     int         ai_family   = AF_UNSPEC;
     struct sockaddr_in  server;
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     struct sockaddr_in6  server_6;
 #endif
     int net_status;
@@ -490,14 +490,14 @@ LINUX_TCP_connectSocket(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 po
     }
     
 
-#ifdef __ENABLE_MOCANA_IPV6__
-    MOC_MEMSET((ubyte *)&server_6, 0x00, sizeof(struct SOCKADDR_IN));
+#ifdef __ENABLE_DIGICERT_IPV6__
+    DIGI_MEMSET((ubyte *)&server_6, 0x00, sizeof(struct SOCKADDR_IN));
     SETPORT(server_6,portNo)
 #endif
-    MOC_MEMSET((ubyte *)&server, 0x00, sizeof(struct sockaddr_in));
+    DIGI_MEMSET((ubyte *)&server, 0x00, sizeof(struct sockaddr_in));
     server.sin_port = htons(portNo);
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     net_status = inet_pton(AF_INET6, (const char *) pIpAddress, &server_6.SIN_ADDR);
     if (net_status == 1)    /* valid IPv6 address */
     {
@@ -526,7 +526,7 @@ LINUX_TCP_connectSocket(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 po
         status = ERR_TCP_CONNECT_CREATE;
         goto exit;
     }
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if(ai_family == AF_INET6)
     {
         if (0 != connect(*pConnectSocket, (struct sockaddr *)&server_6, sizeof(server_6)))
@@ -554,7 +554,7 @@ extern MSTATUS
 LINUX_TCP_connectSocketTimeout(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 portNo, ubyte4 msTimeout)
 {
     struct sockaddr_in  server;
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     struct sockaddr_in6  server_6;
 #endif
     int                   flags = 0;
@@ -569,14 +569,14 @@ LINUX_TCP_connectSocketTimeout(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ub
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_IPV6__
-    MOC_MEMSET((ubyte *)&server_6, 0x00, sizeof(struct SOCKADDR_IN));
+#ifdef __ENABLE_DIGICERT_IPV6__
+    DIGI_MEMSET((ubyte *)&server_6, 0x00, sizeof(struct SOCKADDR_IN));
     SETPORT(server_6,portNo)
 #endif
-    MOC_MEMSET((ubyte *)&server, 0x00, sizeof(struct sockaddr_in));
+    DIGI_MEMSET((ubyte *)&server, 0x00, sizeof(struct sockaddr_in));
     server.sin_port = htons(portNo);
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     net_status = inet_pton(AF_INET6, (const char *) pIpAddress, &server_6.SIN_ADDR);
     if (net_status == 1)    /* valid IPv6 address */
     {
@@ -613,7 +613,7 @@ LINUX_TCP_connectSocketTimeout(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ub
         goto closeSocket;
     }
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if(ai_family == AF_INET6)
     {
         net_status = connect(connectSocket, (struct sockaddr *)&server_6, sizeof(server_6));
@@ -682,7 +682,7 @@ extern MSTATUS
 LINUX_TCP_connectSocketNonBlocking(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 portNo)
 {
     struct sockaddr_in  server;
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     struct sockaddr_in6  server_6;
 #endif
     int                   flags = 0;
@@ -699,14 +699,14 @@ LINUX_TCP_connectSocketNonBlocking(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress
         goto exit;
     }
     
-#ifdef __ENABLE_MOCANA_IPV6__
-    MOC_MEMSET((ubyte *)&server_6, 0x00, sizeof(struct SOCKADDR_IN));
+#ifdef __ENABLE_DIGICERT_IPV6__
+    DIGI_MEMSET((ubyte *)&server_6, 0x00, sizeof(struct SOCKADDR_IN));
     SETPORT(server_6,portNo)
 #endif
-    MOC_MEMSET((ubyte *)&server, 0x00, sizeof(struct sockaddr_in));
+    DIGI_MEMSET((ubyte *)&server, 0x00, sizeof(struct sockaddr_in));
     server.sin_port = htons(portNo);
 
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     net_status = inet_pton(AF_INET6, (const char *) pIpAddress, &server_6.SIN_ADDR);
     if (net_status == 1)    /* valid IPv6 address */
     {
@@ -751,7 +751,7 @@ LINUX_TCP_connectSocketNonBlocking(TCP_SOCKET *pConnectSocket, sbyte *pIpAddress
     {
         connectSocket = *pConnectSocket;
     }
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if(ai_family == AF_INET6)
     {
         net_status = connect(connectSocket, (struct sockaddr *)&server_6, sizeof(server_6));
@@ -1038,7 +1038,7 @@ exit:
 extern MSTATUS
 LINUX_TCP_getPeerName(TCP_SOCKET socket, ubyte2 *pRetPortNo, MOC_IP_ADDRESS_S *pRetAddr)
 {
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     struct sockaddr_in6 myAddress6 = { 0 };
 #endif
     struct sockaddr_in  myAddress = { 0 };
@@ -1052,7 +1052,7 @@ LINUX_TCP_getPeerName(TCP_SOCKET socket, ubyte2 *pRetPortNo, MOC_IP_ADDRESS_S *p
         status = ERR_TCP_GETSOCKNAME;
 	    goto exit;
     }
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
     if (sa.sa_family == AF_INET6)
     {
         addrLen = sizeof(struct sockaddr_in6);
@@ -1063,7 +1063,7 @@ LINUX_TCP_getPeerName(TCP_SOCKET socket, ubyte2 *pRetPortNo, MOC_IP_ADDRESS_S *p
         }
         *pRetPortNo = htons(myAddress6.SIN_PORT);
         pRetAddr->family = myAddress6.sin6_family;
-        MOC_MEMCPY((ubyte *)pRetAddr->uin.addr6, myAddress6.SIN_ADDR.S_ADDR, 16); 
+        DIGI_MEMCPY((ubyte *)pRetAddr->uin.addr6, myAddress6.SIN_ADDR.S_ADDR, 16); 
         pRetAddr->uin.addr6[4] = myAddress6.sin6_scope_id;
 
     }
@@ -1079,7 +1079,7 @@ LINUX_TCP_getPeerName(TCP_SOCKET socket, ubyte2 *pRetPortNo, MOC_IP_ADDRESS_S *p
         }
 
         *pRetPortNo = htons(myAddress.sin_port);
-#ifdef __ENABLE_MOCANA_IPV6__
+#ifdef __ENABLE_DIGICERT_IPV6__
         pRetAddr->family = myAddress.sin_family;
         pRetAddr->uin.addr = htonl(myAddress.sin_addr.s_addr);
 #else
@@ -1146,7 +1146,7 @@ LINUX_unixDomain_listenSocket(TCP_SOCKET *listenSocket, sbyte *soc_path)
     }
 
     sunPathSize = (sizeof(saServer.sun_path) / sizeof(char)) - 1;
-    MOC_MEMSET((ubyte *)&saServer, 0x00, sizeof(struct sockaddr_un));
+    DIGI_MEMSET((ubyte *)&saServer, 0x00, sizeof(struct sockaddr_un));
     saServer.sun_family = AF_UNIX;
     strncpy(saServer.sun_path, (const char *) soc_path, sunPathSize);
 

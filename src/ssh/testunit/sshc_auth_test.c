@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -65,7 +65,7 @@ static void test_SSHC_AUTH_allocStructures_success(void **ppState)
     MSTATUS status;
 
     /* Initialize context */
-    MOC_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
+    DIGI_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
 
     /* Test successful allocation */
     status = SSHC_AUTH_allocStructures(&context);
@@ -106,7 +106,7 @@ static void test_SSHC_AUTH_deallocStructures_null_buffer(void **ppState)
     MSTATUS status;
 
     /* Initialize context with NULL buffer */
-    MOC_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
+    DIGI_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
     AUTH_FAILURE_BUFFER(&context) = NULL;
 
     /* Test with NULL failure buffer */
@@ -122,7 +122,7 @@ static void test_SSHC_AUTH_deallocStructures_success(void **ppState)
     MSTATUS status;
 
     /* Initialize and allocate structures */
-    MOC_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
+    DIGI_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
     status = SSHC_AUTH_allocStructures(&context);
     assert_int_equal(OK, status);
 
@@ -145,17 +145,17 @@ static void test_SSHC_AUTH_doProtocol_null_message(void **ppState)
     sshClientContext *context = NULL;
     MSTATUS status;
 
-    status = MOC_MALLOC((void **)&context, sizeof(sshClientContext));
+    status = DIGI_MALLOC((void **)&context, sizeof(sshClientContext));
     assert_int_equal(OK, status);
     assert_non_null(context);
 
     /* Initialize context */
-    MOC_MEMSET((ubyte *)context, 0, sizeof(sshClientContext));
+    DIGI_MEMSET((ubyte *)context, 0, sizeof(sshClientContext));
 
     /* Test with NULL message */
     status = SSHC_AUTH_doProtocol(context, NULL, 0);
     assert_int_equal(ERR_SSH_BAD_AUTH_RECEIVE_STATE, status);
-    MOC_FREE((void **)&context);
+    DIGI_FREE((void **)&context);
 }
 
 /*------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ static void test_auth_message_success(void **ppState)
     ubyte message[] = {SSH_MSG_USERAUTH_SUCCESS};
 
     /* Initialize context */
-    MOC_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
+    DIGI_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
     SSH_UPPER_STATE(&context) = kAuthReceiveMessage;
 
     /* Test processing success message */
@@ -194,7 +194,7 @@ static void test_auth_message_failure(void **ppState)
     };
 
     /* Initialize context */
-    MOC_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
+    DIGI_MEMSET((ubyte *)&context, 0, sizeof(sshClientContext));
     SSH_UPPER_STATE(&context) = kAuthReceiveMessage;
 
     SSHC_sshClientSettings()->sshMaxAuthAttempts = 3;
@@ -219,7 +219,7 @@ static int testSetup(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -236,7 +236,7 @@ static int testTeardown(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
 exit:
     return (OK == status) ? 0 : -1;
@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
 {
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_SSHC_AUTH_allocStructures_null_context),
         cmocka_unit_test(test_SSHC_AUTH_allocStructures_success),
@@ -267,4 +267,4 @@ int main(int argc, char* argv[])
 #endif
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

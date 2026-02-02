@@ -26,7 +26,7 @@
 @flags
 Whether the following flag is defined determines which function declarations are
 enabled:
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 */
 
@@ -62,7 +62,7 @@ keyInitAuthContext with NULL values, and allocates pAuthFailueBuffer with defaul
 
 @flags
 To enable this function, at least one of the following flags must be defined:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @param pContextSSH          SSH context whose authDescr field authContext will be populated.
 
@@ -92,7 +92,7 @@ MOC_EXTERN MSTATUS SSH_AUTH_allocStructures(sshContext *pContextSSH);
 
 @flags
 To enable this function, at least one of the following flags must be defined:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @param pContextSSH          SSH context containing authDescr to release.
 
@@ -123,7 +123,7 @@ Receives service request and processes authentication message from %client.
 
 @flags
 To enable this function, at least one of the following flags must be defined:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 @param pContextSSH          SSH context for authentication request
 @param pNewMesg             SSH binary packet containing message
@@ -140,7 +140,7 @@ To enable this function, at least one of the following flags must be defined:
 */
 MOC_EXTERN MSTATUS SSH_AUTH_doProtocol(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen);
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 /**
 @brief      Continue authentication from wait state.
 

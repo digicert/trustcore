@@ -34,11 +34,11 @@
 #include "../../common/random.h"
 #include "../../common/vlong.h"
 #include "../../common/utils.h"
-#define __IN_MOCANA_C__     /* FOR TESTING PURPOSES --- ENABLES BASE64 init/free */
+#define __IN_DIGICERT_C__     /* FOR TESTING PURPOSES --- ENABLES BASE64 init/free */
 #include "../../common/base64.h"
 #include "../../crypto/dsa.h"
 #include "../../crypto/rsa.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -50,7 +50,7 @@
 #include "../../ssh/ssh_utils.h"
 #include "../../ssh/ssh.h"
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__))
 
 #if defined( __RTOS_WIN32__) || defined( __RTOS_LINUX__) || \
     defined(__RTOS_CYGWIN__)
@@ -70,7 +70,7 @@
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 static MSTATUS
 parseAndComparePubKey(sbyte *pKeyFile, ubyte4 fileSize, AsymmetricKey *pOrigKey)
 {
@@ -92,7 +92,7 @@ exit:
     return status;
 
 } /* parseAndComparePubKey */
-#endif /* (defined(__ENABLE_MOCANA_SSH_SERVER__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SERVER__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -115,7 +115,7 @@ void openSSHFileECDSA256(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ecdsa256.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ecdsa256.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSH_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -133,9 +133,9 @@ void openSSHFileECDSA256(void **ppState)
     status = SSH_publicKeyFingerPrints(pSerKeyFile, serKeyFileSize, MD5FP, SHA1FP);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 } /* openSSHFileECDSA256 */
 
@@ -160,7 +160,7 @@ void openSSHFileECDSA384(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ecdsa384.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ecdsa384.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSH_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -178,9 +178,9 @@ void openSSHFileECDSA384(void **ppState)
     status = SSH_publicKeyFingerPrints(pSerKeyFile, serKeyFileSize, MD5FP, SHA1FP);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 } /* openSSHFileECDSA384 */
 
@@ -205,7 +205,7 @@ void openSSHFileECDSA521(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ecdsa521.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ecdsa521.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSH_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -223,9 +223,9 @@ void openSSHFileECDSA521(void **ppState)
     status = SSH_publicKeyFingerPrints(pSerKeyFile, serKeyFileSize, MD5FP, SHA1FP);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 } /* openSSHFileECDSA521 */
 
@@ -250,7 +250,7 @@ void openSSHFileED25519(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_ed25519.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_ed25519.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSH_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -268,9 +268,9 @@ void openSSHFileED25519(void **ppState)
     status = SSH_publicKeyFingerPrints(pSerKeyFile, serKeyFileSize, MD5FP, SHA1FP);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 } /* openSSHFileED25519 */
 
@@ -295,7 +295,7 @@ void openSSHFileRSA4096(void **ppState)
     status = CRYPTO_initAsymmetricKey(&pKeyDescr);
     assert_int_equal(OK, status);
 
-    status = MOCANA_readFile("../test/key_rsa4096.pub", &pKeyFile, &fileSize);
+    status = DIGICERT_readFile("../test/key_rsa4096.pub", &pKeyFile, &fileSize);
     assert_int_equal(OK, status);
 
     status = SSH_UTILS_sshParseAuthPublicKeyFile(pKeyFile, fileSize, &pKeyDescr);
@@ -313,9 +313,9 @@ void openSSHFileRSA4096(void **ppState)
     status = SSH_publicKeyFingerPrints(pSerKeyFile, serKeyFileSize, MD5FP, SHA1FP);
     assert_int_equal(OK, status);
 
-    MOC_FREE((void **) &pKeyFile);
-    MOC_FREE((void **) &pSerKeyFile);
-    MOC_FREE((void **) &pEncodedPubKey);
+    DIGI_FREE((void **) &pKeyFile);
+    DIGI_FREE((void **) &pSerKeyFile);
+    DIGI_FREE((void **) &pEncodedPubKey);
     CRYPTO_uninitAsymmetricKey(&pKeyDescr, NULL);
 } /* openSSHFileRSA4096 */
 
@@ -325,7 +325,7 @@ static int testSetup(void **ppState)
     MOC_UNUSED(ppState);
     MSTATUS status;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -352,18 +352,18 @@ static int testTeardown(void **ppState)
     if (OK != status)
         goto exit;
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
 exit:
     return (OK == status) ? 0 : -1;
 }
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */
 
 int main(int argc, char* argv[])
 {
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(openSSHFileECDSA256),
         cmocka_unit_test(openSSHFileECDSA384),

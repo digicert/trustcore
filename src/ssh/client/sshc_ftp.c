@@ -27,18 +27,18 @@
 @flags
 To enable any of this file's functions, the following flags must be defined in
 moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 Whether the following flags are defined determines which functions are enabled:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @filedoc    sshc_ftp.c
 */
 
 #include "../../common/moptions.h"
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT__) && defined(__ENABLE_MOCANA_SSH_FTP_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT__) && defined(__ENABLE_DIGICERT_SSH_FTP_CLIENT__))
 
 #include "../../common/mtypes.h"
 #include "../../common/mocana.h"
@@ -61,7 +61,7 @@ Whether the following flags are defined determines which functions are enabled:
 #include "../../crypto/sha1.h"
 #include "../../crypto/dh.h"
 #include "../../crypto/crypto.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../../crypto/primefld.h"
 #include "../../crypto/primeec.h"
 #endif
@@ -380,7 +380,7 @@ freeAttr(ATTRClient *pFreeATTR)
     SSH_STR_freeStringBuffer(&(pFreeATTR->group));
     SSH_STR_freeStringBuffer(&(pFreeATTR->acl));
 
-    MOC_MEMSET((ubyte *)pFreeATTR, 0x00, sizeof(ATTRClient));
+    DIGI_MEMSET((ubyte *)pFreeATTR, 0x00, sizeof(ATTRClient));
 
     return OK;
 }
@@ -605,7 +605,7 @@ SSHC_FTP_handleFtpVersion(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4
     if (MOCANA_SSC_FTP_LOW_VER > serverVersion)
     {
         /* don't support older versions, we need to exit */
-        MOCANA_log(MOCANA_SSH, LS_WARNING, (sbyte *)"Server SFTP/SCP version unsupported, please upgrade server software.");
+        DIGICERT_log(MOCANA_SSH, LS_WARNING, (sbyte *)"Server SFTP/SCP version unsupported, please upgrade server software.");
 
         status = ERR_SFTP_UNSUPPORTED_VERSION;
         goto exit;
@@ -643,7 +643,7 @@ getUnusedHandleDescr(sshClientContext *pContextSSH)
         if (!p_sftpFileHandleDescr->isFileHandleInUse)
         {
             /* clear out previous settings */
-            MOC_MEMSET((ubyte *)p_sftpFileHandleDescr, 0x00, sizeof(sftpcFileHandleDescr));
+            DIGI_MEMSET((ubyte *)p_sftpFileHandleDescr, 0x00, sizeof(sftpcFileHandleDescr));
 
             p_sftpFileHandleDescr->isFileHandleInUse = TRUE;
             pRet = p_sftpFileHandleDescr;
@@ -675,7 +675,7 @@ findHandleDescrFromHandle(sshClientContext *pContextSSH, sshStringBuffer* pFindH
         if (p_sftpFileHandleDescr->isFileHandleInUse &&
                 (NULL != ((sshStringBuffer *)p_sftpFileHandleDescr->pHandleName)) &&
                 (pFindHandle->stringLen == ((sshStringBuffer *)p_sftpFileHandleDescr->pHandleName)->stringLen) &&
-                (OK == MOC_MEMCMP(pFindHandle->pString, ((sshStringBuffer *)p_sftpFileHandleDescr->pHandleName)->pString,
+                (OK == DIGI_MEMCMP(pFindHandle->pString, ((sshStringBuffer *)p_sftpFileHandleDescr->pHandleName)->pString,
                               pFindHandle->stringLen, &memCmp)) &&
                 (0 == memCmp))
         {
@@ -852,7 +852,7 @@ SSHC_FTP_sendWrite(sshClientContext *pContextSSH, sshStringBuffer* pHandle)
     if (0 > (status = SSHC_UTILS_setInteger(pBuffer, buflen, &bufIndex, rqstID)))
         goto exit;
 
-    if (0 > (status = MOC_MEMCPY(pBuffer + bufIndex, pHandle->pString, pHandle->stringLen)))
+    if (0 > (status = DIGI_MEMCPY(pBuffer + bufIndex, pHandle->pString, pHandle->stringLen)))
         goto exit;
 
     bufIndex += pHandle->stringLen;
@@ -870,7 +870,7 @@ SSHC_FTP_sendWrite(sshClientContext *pContextSSH, sshStringBuffer* pHandle)
     DEBUG_ERROR(DEBUG_SSHC, "SSHC_FTP_sendWrite: writing = ", datalen);
 #endif
 
-    if (0 > (status = MOC_MEMCPY(pBuffer + bufIndex, (ubyte *)(p_sftpFileHandleDescr->pWriteBuffer + p_sftpFileHandleDescr->clientWrtLoc), datalen)))
+    if (0 > (status = DIGI_MEMCPY(pBuffer + bufIndex, (ubyte *)(p_sftpFileHandleDescr->pWriteBuffer + p_sftpFileHandleDescr->clientWrtLoc), datalen)))
         goto exit;
 
     bufIndex += datalen;
@@ -1323,7 +1323,7 @@ SSHC_FTP_sendRead(sshClientContext *pContextSSH, sshStringBuffer* pHandle, ubyte
     if (0 > (status = SSHC_UTILS_setInteger(pBuffer, buflen, &bufIndex, rqstID)))
         goto exit;
 
-    if (0 > (status = MOC_MEMCPY(pBuffer + bufIndex, pHandle->pString, pHandle->stringLen)))
+    if (0 > (status = DIGI_MEMCPY(pBuffer + bufIndex, pHandle->pString, pHandle->stringLen)))
         goto exit;
 
     bufIndex += pHandle->stringLen;
@@ -1604,7 +1604,7 @@ SSHC_FTP_handleName(sshClientContext *pContextSSH, ubyte *pPayload, ubyte4 paylo
                 goto exit;
             }
 
-            MOC_MEMCPY(p_sftpFileHandleDescr->pFileListingPayload, bufIndex + pPayload, payloadLength - bufIndex);
+            DIGI_MEMCPY(p_sftpFileHandleDescr->pFileListingPayload, bufIndex + pPayload, payloadLength - bufIndex);
             p_sftpFileHandleDescr->fileListingCount = count;
             p_sftpFileHandleDescr->fileListingPosition = 0;
             p_sftpFileHandleDescr->fileListingBufIndex = 0;
@@ -1661,7 +1661,7 @@ SSHC_FTP_handleName(sshClientContext *pContextSSH, ubyte *pPayload, ubyte4 paylo
                 goto exit;
             }
 
-            MOC_MEMCPY(p_sftpFileHandleDescr->pFileListingPayload, bufIndex + pPayload, payloadLength - bufIndex);
+            DIGI_MEMCPY(p_sftpFileHandleDescr->pFileListingPayload, bufIndex + pPayload, payloadLength - bufIndex);
             p_sftpFileHandleDescr->fileListingCount = 1;
             p_sftpFileHandleDescr->fileListingPosition = 0;
             p_sftpFileHandleDescr->fileListingBufIndex = 0;
@@ -1733,7 +1733,7 @@ SSHC_FTP_handleAttrs(sshClientContext *pContextSSH, ubyte *pPayload, ubyte4 payl
         goto exit;
     }
 
-    MOC_MEMCPY(p_sftpFileHandleDescr->pFileListingPayload, bufIndex + pPayload, payloadLength - bufIndex);
+    DIGI_MEMCPY(p_sftpFileHandleDescr->pFileListingPayload, bufIndex + pPayload, payloadLength - bufIndex);
     p_sftpFileHandleDescr->fileListingCount = 1;
     p_sftpFileHandleDescr->fileListingPosition = 0;
     p_sftpFileHandleDescr->fileListingBufIndex = 0;
@@ -1836,7 +1836,7 @@ sendFileClose(sshClientContext *pContextSSH, sshStringBuffer* pHandle)
     if (0 > (status = SSHC_UTILS_setInteger(pBuffer, buflen, &bufIndex, rqstID)))
         goto fail;
 
-    if (0 > (status = MOC_MEMCPY(pBuffer + bufIndex, pHandle->pString, pHandle->stringLen)))
+    if (0 > (status = DIGI_MEMCPY(pBuffer + bufIndex, pHandle->pString, pHandle->stringLen)))
         goto fail;
     bufIndex += pHandle->stringLen;
 
@@ -2394,7 +2394,7 @@ SSHC_realpath(sbyte4 connectionInstance, ubyte *pRealpath, ubyte4 realpathLen,
     }
 
     /* initialize to zero to prevent bad pointer references, etc */
-    MOC_MEMSET((ubyte *)(*pp_sftpFileHandleDescr)->pATTR, 0x00, sizeof(ATTRClient));
+    DIGI_MEMSET((ubyte *)(*pp_sftpFileHandleDescr)->pATTR, 0x00, sizeof(ATTRClient));
 
     if (OK > (status = SSHC_FTP_sendRealpath(pDescr->pContextSSH, *pp_sftpFileHandleDescr, pRealpath, realpathLen)))
         goto exit;
@@ -2415,7 +2415,7 @@ SSHC_realpath(sbyte4 connectionInstance, ubyte *pRealpath, ubyte4 realpathLen,
             goto exit;
         }
 
-        MOC_MEMCPY(*ppRetRealpath, pTempString->pString, pTempString->stringLen);
+        DIGI_MEMCPY(*ppRetRealpath, pTempString->pString, pTempString->stringLen);
         (*ppRetRealpath)[pTempString->stringLen] = '\0';
         *pRetRealpathLen = pTempString->stringLen;
 
@@ -2554,7 +2554,7 @@ SSHC_FTP_sendReadDir(sshClientContext *pContextSSH,
     if (0 > (status = SSHC_UTILS_setInteger(pBuffer, buflen, &bufIndex, rqstID)))
         goto exit;
 
-    MOC_MEMCPY(bufIndex + pBuffer, pHandle->pString, pHandle->stringLen);
+    DIGI_MEMCPY(bufIndex + pBuffer, pHandle->pString, pHandle->stringLen);
 
     p_sftpFileHandleDescr->requestID = rqstID;
     p_sftpFileHandleDescr->request   = SSH_FXP_READDIR;
@@ -2621,7 +2621,7 @@ SSHC_openDirectory(sbyte4 connectionInstance, ubyte *pPath, ubyte4 pathLen,
     }
 
     /* initialize to zero to prevent bad pointer references, etc */
-    MOC_MEMSET((ubyte *)(*pp_sftpFileHandleDescr)->pATTR, 0x00, sizeof(ATTRClient));
+    DIGI_MEMSET((ubyte *)(*pp_sftpFileHandleDescr)->pATTR, 0x00, sizeof(ATTRClient));
 
     /* open directory */
     if (OK > (status = SSHC_FTP_sendOpenDir(pDescr->pContextSSH, *pp_sftpFileHandleDescr, pPath, pathLen)))
@@ -2748,7 +2748,7 @@ SSHC_readDirectory(sbyte4 connectionInstance,
         goto exit;
     }
 
-    MOC_MEMCPY(*ppRetFilename, pFilename->pString, pFilename->stringLen);
+    DIGI_MEMCPY(*ppRetFilename, pFilename->pString, pFilename->stringLen);
     (*ppRetFilename)[pFilename->stringLen] = '\0';
     *pRetFilenameLen = pFilename->stringLen;
 
@@ -2805,7 +2805,7 @@ SSHC_FTP_sendCloseDir(sshClientContext *pContextSSH,
     if (0 > (status = SSHC_UTILS_setInteger(pBuffer, buflen, &bufIndex, rqstID)))
         goto exit;
 
-    MOC_MEMCPY(bufIndex + pBuffer, pHandle->pString, pHandle->stringLen);
+    DIGI_MEMCPY(bufIndex + pBuffer, pHandle->pString, pHandle->stringLen);
 
     p_sftpFileHandleDescr->requestID = rqstID;
     p_sftpFileHandleDescr->request   = SSH_FXP_CLOSE;
@@ -2990,7 +2990,7 @@ SSHC_getFileStat(sbyte4 connectionInstance, ubyte *pGetStatFile, ubyte4 getStatF
     }
 
     /* initialize to zero to prevent bad pointer references, etc */
-    MOC_MEMSET((ubyte *)(*pp_sftpFileHandleDescr)->pATTR, 0x00, sizeof(ATTRClient));
+    DIGI_MEMSET((ubyte *)(*pp_sftpFileHandleDescr)->pATTR, 0x00, sizeof(ATTRClient));
 
     if (OK > (status = SSHC_FTP_sendGetStat(pDescr->pContextSSH, *pp_sftpFileHandleDescr, pGetStatFile, getStatFileLen)))
         goto exit;
@@ -3137,7 +3137,7 @@ sftpReceiveMessage(sshClientContext *pContextSSH,
     if (0 == readNumBytes)
         goto exit;
 
-    MOC_MEMCPY(pContextSSH->sftpNumBytesInBuffer + pContextSSH->sftpLengthBuffer, *ppPacketPayload, readNumBytes);
+    DIGI_MEMCPY(pContextSSH->sftpNumBytesInBuffer + pContextSSH->sftpLengthBuffer, *ppPacketPayload, readNumBytes);
 
     *pPacketLength -= readNumBytes;
     *ppPacketPayload += readNumBytes;
@@ -3174,7 +3174,7 @@ nextState:
     if (0 == readNumBytes)
         goto exit;
 
-    MOC_MEMCPY(pContextSSH->sftpNumBytesInBuffer + pContextSSH->p_sftpIncomingBuffer, *ppPacketPayload, readNumBytes);
+    DIGI_MEMCPY(pContextSSH->sftpNumBytesInBuffer + pContextSSH->p_sftpIncomingBuffer, *ppPacketPayload, readNumBytes);
 
     *pPacketLength -= readNumBytes;
     *ppPacketPayload += readNumBytes;
@@ -3514,4 +3514,4 @@ SSHC_sftpGetDirEntryFilePermission(sbyte4 connectionInstance, sftpcFileHandleDes
 }
 
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_CLIENT__) && defined(__ENABLE_MOCANA_SSH_FTP_CLIENT__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_CLIENT__) && defined(__ENABLE_DIGICERT_SSH_FTP_CLIENT__)) */

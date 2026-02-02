@@ -7,7 +7,7 @@
  *
  * @flags
  * This file requires that the following flags be defined:
- *    + \c \__ENABLE_MOCANA_SMP__
+ *    + \c \__ENABLE_DIGICERT_SMP__
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
  * 
@@ -30,7 +30,7 @@
 #include "../common/mdefs.h"
 #include "../common/mstdlib.h"
 
-#if defined(__ENABLE_MOCANA_SMP__)
+#if defined(__ENABLE_DIGICERT_SMP__)
 
 typedef ubyte2 SMP_CC;
 
@@ -116,5 +116,5 @@ typedef ubyte2 SMP_CC;
 #define SMP_CC_GET_PRIVATE_KEY_BLOB                     (SMP_CC)79
 #define SMP_CC_LAST                                     (SMP_CC_GET_PRIVATE_KEY_BLOB+1)
 
-#endif /* __ENABLE_MOCANA_SMP__ */
+#endif /* __ENABLE_DIGICERT_SMP__ */
 #endif /* __SMP_CC_HEADER__ */

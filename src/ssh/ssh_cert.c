@@ -17,7 +17,7 @@
 
 #include "../common/moptions.h"
 
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -41,7 +41,7 @@
 #include "../crypto/crypto.h"
 #include "../crypto/dsa.h"
 #include "../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -55,19 +55,19 @@
 #include "../asn1/derencoder.h"
 #include "../crypto/cert_chain.h"
 #include "../ssh/ssh_str.h"
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__))
 #include "../ssh/ssh_context.h"
 #include "../ssh/ssh_str_house.h"
 #include "../ssh/ssh.h"
 #endif
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT__))
 #include "../ssh/client/sshc_str_house.h"
 #endif
 
-#if (defined(__ENABLE_MOCANA_PQC__))
+#if (defined(__ENABLE_DIGICERT_PQC__))
 #include "../ssh/ssh_qs.h"
 #endif
-#if (defined(__ENABLE_MOCANA_PQC_COMPOSITE__))
+#if (defined(__ENABLE_DIGICERT_PQC_COMPOSITE__))
 #include "../ssh/ssh_hybrid.h"
 #endif
 
@@ -75,7 +75,7 @@
 #include "../ssh/ssh_rsa.h"
 #include "../ssh/ssh_ecdsa.h"
 #include "../ssh/ssh_cert.h"
-#if (defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__) && defined(__ENABLE_MOCANA_OCSP_CLIENT__))
+#if (defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__) && defined(__ENABLE_DIGICERT_OCSP_CLIENT__))
 #include "../ssh/ssh_ocsp.h"
 #endif
 
@@ -89,7 +89,7 @@ SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySi
     ubyte4 algoIdListLen = 1;  /* We only look for one single algo Id */
 
     /* essentially an internal method, null checks no necc */
-    status = MOC_CALLOC((void **) &pAlgoIdList, 1, sizeof(ubyte4));
+    status = DIGI_CALLOC((void **) &pAlgoIdList, 1, sizeof(ubyte4));
     if (OK != status)
         goto exit;
        
@@ -101,7 +101,7 @@ SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySi
         /* Looking for a key in the cert so hashAlgo is not known yet and not needed here */
         *pRetPubKeyType = akt_rsa;
     }
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     else if (CERT_STORE_AUTH_TYPE_QS == authType)
     {
         status = OK;
@@ -111,7 +111,7 @@ SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySi
     }
 #endif
     else if ((CERT_STORE_AUTH_TYPE_ECDSA == authType)
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
         || (CERT_STORE_AUTH_TYPE_HYBRID == authType)
 #endif 
             )
@@ -120,7 +120,7 @@ SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySi
         status = OK;
         switch (keySize)
         {
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
             case 256:
                 CERT_STORE_ALGO_ID_SET_CURVE( pAlgoIdList[0], cid_EC_P256 );
                 break;
@@ -145,7 +145,7 @@ SSH_CERT_convertAuthTypeToKeyAlgo(ubyte4 authType, ubyte4 qsAlgoId, ubyte4 keySi
             CERT_STORE_ALGO_ID_SET_KEYTYPE(pAlgoIdList[0], akt_ecc);
             *pRetPubKeyType = akt_ecc;
         }
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
         else
         {
             CERT_STORE_ALGO_ID_SET_KEYTYPE(pAlgoIdList[0], akt_hybrid);
@@ -162,7 +162,7 @@ exit:
 
     if (NULL != pAlgoIdList)
     {
-        (void) MOC_FREE((void **) &pAlgoIdList);
+        (void) DIGI_FREE((void **) &pAlgoIdList);
     }
 
     return status;
@@ -171,7 +171,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if ((defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__)))
 MOC_EXTERN MSTATUS
 SSH_CERT_buildRawDsaCert(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength)
 {
@@ -193,7 +193,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if ((defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__)))
 MOC_EXTERN MSTATUS
 SSH_CERT_buildRawRsaCert(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength)
 {
@@ -219,7 +219,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if ((defined(__ENABLE_MOCANA_ECC__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__)))
+#if ((defined(__ENABLE_DIGICERT_ECC__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__)))
 MOC_EXTERN MSTATUS
 SSH_TRANS_buildRawEcdsaCert(sshContext *pContextSSH, ubyte *pCertificate, ubyte4 certificateLength)
 {
@@ -243,8 +243,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__))
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__))
 static MSTATUS
 SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertType,
                             SizedBuffer *pCertificates, ubyte4 numCertificates,
@@ -256,7 +256,7 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
     ubyte*          pMessage = NULL;
     ubyte4          messageSize;
     ubyte4          index = 0;
-#ifdef __ENABLE_MOCANA_SSH_OCSP_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_OCSP_SUPPORT__
     ubyte*          pIssuerCert;
     ubyte4          issuerCertLen;
     ASN1_ITEMPTR    pRoot = 0;
@@ -285,7 +285,7 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
      string  ocsp-response[0..ocsp-response-count]
      */
 
-#ifdef __ENABLE_MOCANA_SSH_OCSP_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_OCSP_SUPPORT__
     /* get the OCSP response */
 
     /* If certChain has more than one certificate, then the 0 is leaf certificate and 1 is the issuer */
@@ -325,7 +325,7 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
         }
     }
 
-#if (defined(__ENABLE_MOCANA_OCSP_TIMEOUT_CONFIG__))
+#if (defined(__ENABLE_DIGICERT_OCSP_TIMEOUT_CONFIG__))
     if (OK > (status = SSH_OCSP_getOcspResponse(SSH_sshSettings()->pOcspResponderUrl,
                                                 SSH_sshSettings()->ocspTimeout,
                                                 pCertificates[0].data,
@@ -348,7 +348,7 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
 #else
     retOcspResponseLen = 0;
     numOcspResponses = 0;
-#endif /* __ENABLE_MOCANA_SSH_OCSP_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_SSH_OCSP_SUPPORT__ */
 
     /* Compute length of signature, cert count, length of chain,
      *    number of OCSP responses, and OCSP responses
@@ -374,10 +374,10 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
         messageSize += retOcspResponseLen;
     }
 
-    if (OK != (status = MOC_MALLOC((void**)&pMessage, 4 + messageSize)))
+    if (OK != (status = DIGI_MALLOC((void**)&pMessage, 4 + messageSize)))
         goto exit;
 
-    MOC_MEMSET(pMessage, 0x00, (messageSize + 4));
+    DIGI_MEMSET(pMessage, 0x00, (messageSize + 4));
 
     /* string  "x509v3-ssh-dss" / "x509v3-ssh-rsa" / "x509v3-rsa2048-sha256" / "x509v3-ecdsa-sha2-[identifier]" */
     pMessage[0] = (ubyte)(messageSize >> 24);
@@ -388,7 +388,7 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
     index = 4;
 
     /* ssh sign algo into the buffer */
-    MOC_MEMCPY(pMessage + index, pSshCertType->pString, (sbyte4)pSshCertType->stringLen);
+    DIGI_MEMCPY(pMessage + index, pSshCertType->pString, (sbyte4)pSshCertType->stringLen);
     index += pSshCertType->stringLen;
 
     /* uint32  certificate-count */
@@ -411,7 +411,7 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
         index += 4;
 
         /* Copy the cert chain into the buffer */
-        MOC_MEMCPY(pMessage + index, pCertificates[i].data, (sbyte4)pCertificates[i].length);
+        DIGI_MEMCPY(pMessage + index, pCertificates[i].data, (sbyte4)pCertificates[i].length);
         index += pCertificates[i].length;
     }
 
@@ -433,7 +433,7 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
         pMessage[index + 3] = (ubyte)(retOcspResponseLen);
         index += 4;
 
-        MOC_MEMCPY(pMessage + index, pOcspResponse, retOcspResponseLen);
+        DIGI_MEMCPY(pMessage + index, pOcspResponse, retOcspResponseLen);
         index += retOcspResponseLen;
     }
 
@@ -441,10 +441,10 @@ SSH_CERT_buildRawX509v3Cert(sshContext *pContextSSH, sshStringBuffer *pSshCertTy
     *pRetCertLen = messageSize;
 
 exit:
-    MOC_FREE((void**)&pMessage);
-    MOC_FREE((void**)&pOcspResponse);
+    DIGI_FREE((void**)&pMessage);
+    DIGI_FREE((void**)&pOcspResponse);
 
-#ifdef __ENABLE_MOCANA_SSH_OCSP_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_OCSP_SUPPORT__
     if (pRoot)
     {
         TREE_DeleteTreeItem((TreeItem*) pRoot);
@@ -483,8 +483,8 @@ SSH_CERT_buildCertRSA2048(sshContext *pContextSSH, SizedBuffer *pCertificates, u
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
-#if defined(__ENABLE_MOCANA_PQC__)
+#ifdef __ENABLE_DIGICERT_PRE_DRAFT_PQC__
+#if defined(__ENABLE_DIGICERT_PQC__)
 MOC_EXTERN MSTATUS
 SSH_CERT_buildCertQs(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates)
 {
@@ -501,7 +501,7 @@ SSH_CERT_buildCertQs(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4
 
     BIGEND32(pAlgoName->pString, algoNameLen - 4);
 
-    status = MOC_MEMCPY(pAlgoName->pString + 4, pContextSSH->pHostKeySuites->pSignatureName, pContextSSH->pHostKeySuites->signatureNameLength);
+    status = DIGI_MEMCPY(pAlgoName->pString + 4, pContextSSH->pHostKeySuites->pSignatureName, pContextSSH->pHostKeySuites->signatureNameLength);
     if (OK != status)
         goto exit;
 
@@ -530,7 +530,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if defined(__ENABLE_MOCANA_PQC_COMPOSITE__)
+#if defined(__ENABLE_DIGICERT_PQC_COMPOSITE__)
 MOC_EXTERN MSTATUS
 SSH_CERT_buildCertHybrid(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates)
 {
@@ -547,7 +547,7 @@ SSH_CERT_buildCertHybrid(sshContext *pContextSSH, SizedBuffer *pCertificates, ub
 
     BIGEND32(pAlgoName->pString, algoNameLen - 4);
 
-    status = MOC_MEMCPY(pAlgoName->pString + 4, pContextSSH->pHostKeySuites->pSignatureName, pContextSSH->pHostKeySuites->signatureNameLength);
+    status = DIGI_MEMCPY(pAlgoName->pString + 4, pContextSSH->pHostKeySuites->pSignatureName, pContextSSH->pHostKeySuites->signatureNameLength);
     if (OK != status)
         goto exit;
 
@@ -572,11 +572,11 @@ exit:
         SSH_STR_freeStringBuffer(&pAlgoName);
     return status;
 }
-#endif /* __ENABLE_MOCANA_PQC_COMPOSITE__ */
-#endif /* __ENABLE_MOCANA_PRE_DRAFT_PQC__ */
+#endif /* __ENABLE_DIGICERT_PQC_COMPOSITE__ */
+#endif /* __ENABLE_DIGICERT_PRE_DRAFT_PQC__ */
 
-#if (defined(__ENABLE_MOCANA_ECC__))
-#if (!defined(__DISABLE_MOCANA_ECC_P256__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P256__))
 
 MOC_EXTERN MSTATUS
 SSH_CERT_buildCertECDSAP256(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates)
@@ -591,7 +591,7 @@ SSH_CERT_buildCertECDSAP256(sshContext *pContextSSH, SizedBuffer *pCertificates,
 }
 #endif
 
-#if (!defined(__DISABLE_MOCANA_ECC_P384__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P384__))
 MOC_EXTERN MSTATUS
 SSH_CERT_buildCertECDSAP384(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates)
 {
@@ -605,7 +605,7 @@ SSH_CERT_buildCertECDSAP384(sshContext *pContextSSH, SizedBuffer *pCertificates,
 }
 #endif
 
-#if (!defined(__DISABLE_MOCANA_ECC_P521__))
+#if (!defined(__DISABLE_DIGICERT_ECC_P521__))
 MOC_EXTERN MSTATUS
 SSH_CERT_buildCertECDSAP521(sshContext *pContextSSH, SizedBuffer *pCertificates, ubyte4 numCertificates)
 {
@@ -618,9 +618,9 @@ SSH_CERT_buildCertECDSAP521(sshContext *pContextSSH, SizedBuffer *pCertificates,
     return status;
 }
 #endif
-#endif /* __ENABLE_MOCANA_ECC__ */
-#endif /* __ENABLE_MOCANA_SSH_SERVER__  */
-#endif /* __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__  */
+#endif /* __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__ */
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)) */
 

@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -32,7 +32,7 @@
 #include "../common/memory_debug.h"
 #include "../crypto/rsa.h"
 #include "../crypto/sha1.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -41,17 +41,17 @@
 #include "../common/sizedbuffer.h"
 #include "../crypto/cert_store.h"
 #include "../ssh/ssh_str.h"
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 #include "../ssh/ssh.h"
 #include "../ssh/ssh_str_house.h"
 #endif
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 #include "../ssh/client/sshc_str_house.h"
 #endif
 #include "../ssh/ssh_rsa.h"
 #include "../ssh/ssh_mpint.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/cryptointerface.h"
 #include "../crypto_interface/crypto_interface_rsa.h"
 #endif
@@ -89,7 +89,7 @@ SSH_RSA_buildRsaCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
     status = CRYPTO_INTERFACE_getRSAPublicKey ((AsymmetricKey*)pKey, &pPub);
     if (OK != status)
         goto exit;
@@ -98,7 +98,7 @@ SSH_RSA_buildRsaCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
 #endif
 
     /* if pPub is NULL, RSA_getKeyParametersAlloc will return ERR_NULL_POINTER */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_getKeyParametersAllocAux(MOC_RSA(hwAccelCtx) pPub, &template, MOC_GET_PUBLIC_KEY_DATA)))
         goto exit;
 #else
@@ -119,14 +119,14 @@ SSH_RSA_buildRsaCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
     /* save variables */
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         *pRetLen = ssh_rsa_signature.stringLen + (ubyte4)lenE + (ubyte4)lenN;
 #else
         status = ERR_SSH_CONFIG;
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         *pRetLen = sshc_rsa_signature.stringLen + (ubyte4)lenE + (ubyte4)lenN;
 #else
         status = ERR_SSH_CONFIG;
@@ -149,21 +149,21 @@ SSH_RSA_buildRsaCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        MOC_MEMCPY((*ppCertificate) + index, ssh_rsa_signature.pString, (sbyte4)ssh_rsa_signature.stringLen);
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        DIGI_MEMCPY((*ppCertificate) + index, ssh_rsa_signature.pString, (sbyte4)ssh_rsa_signature.stringLen);
         index += ssh_rsa_signature.stringLen;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        MOC_MEMCPY((*ppCertificate) + index, sshc_rsa_signature.pString, (sbyte4)sshc_rsa_signature.stringLen);
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        DIGI_MEMCPY((*ppCertificate) + index, sshc_rsa_signature.pString, (sbyte4)sshc_rsa_signature.stringLen);
         index += sshc_rsa_signature.stringLen;
 #endif
     }
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringE, lenE);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringE, lenE);
     index += (ubyte4)lenE;
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringN, lenN);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringN, lenN);
 
 exit:
     if (NULL != pStringE)
@@ -172,7 +172,7 @@ exit:
     if (NULL != pStringN)
         FREE(pStringN);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_RSA_freeKeyTemplateAux(pPub, &template);
 #else
     RSA_freeKeyTemplate(pPub, &template);
@@ -180,7 +180,7 @@ exit:
 
     if ((NULL != pKey) && (akt_tap_rsa == pKey->type) && (NULL != pPub))
     {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         CRYPTO_INTERFACE_RSA_freeKeyAux(&pPub, NULL);
 #else
         RSA_freeKey(&pPub, NULL);
@@ -191,7 +191,7 @@ exit:
 
 } /* SSH_RSA_buildRsaCertificate */
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 extern MSTATUS
 SSH_RSA_buildRsaHostBlobCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey,
                             intBoolean isServer, ubyte **ppCertificate, ubyte4 *pRetLen, ubyte4 hashLen)
@@ -216,7 +216,7 @@ SSH_RSA_buildRsaHostBlobCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricK
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
     status = CRYPTO_INTERFACE_getRSAPublicKey ((AsymmetricKey*)pKey, &pPub);
     if (OK != status)
         goto exit;
@@ -225,7 +225,7 @@ SSH_RSA_buildRsaHostBlobCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricK
 #endif
 
     /* if pPub is NULL, RSA_getKeyParametersAlloc will return ERR_NULL_POINTER */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_getKeyParametersAllocAux(MOC_RSA(hwAccelCtx) pPub, &template, MOC_GET_PUBLIC_KEY_DATA)))
         goto exit;
 #else
@@ -270,14 +270,14 @@ SSH_RSA_buildRsaHostBlobCertificate(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricK
 
     if (isServer)
     {
-        MOC_MEMCPY((*ppCertificate) + index, ssh_rsa_signature.pString, (sbyte4)ssh_rsa_signature.stringLen);
+        DIGI_MEMCPY((*ppCertificate) + index, ssh_rsa_signature.pString, (sbyte4)ssh_rsa_signature.stringLen);
         index += ssh_rsa_signature.stringLen;
     }
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringE, lenE);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringE, lenE);
     index += (ubyte4)lenE;
 
-    MOC_MEMCPY((*ppCertificate) + index, pStringN, lenN);
+    DIGI_MEMCPY((*ppCertificate) + index, pStringN, lenN);
 
 exit:
     if (NULL != pStringE)
@@ -286,7 +286,7 @@ exit:
     if (NULL != pStringN)
         FREE(pStringN);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_RSA_freeKeyTemplateAux(pPub, &template);
 #else
     RSA_freeKeyTemplate(pPub, &template);
@@ -294,7 +294,7 @@ exit:
 
     if ((NULL != pKey) && (akt_tap_rsa == pKey->type) && (NULL != pPub))
     {
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         CRYPTO_INTERFACE_RSA_freeKeyAux(&pPub, NULL);
 #else
         RSA_freeKey(&pPub, NULL);
@@ -319,8 +319,8 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
 {
     RSAKey* pRSAKey = NULL;
     sshStringBuffer *pSignatureIdentifier = NULL;
-#ifdef __ENABLE_MOCANA_CHECK_RSA_BAD_SIGNATURE__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CHECK_RSA_BAD_SIGNATURE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     AsymmetricKey pubKey = {0};
 #endif
     AsymmetricKey *pPubKey = NULL;
@@ -378,10 +378,10 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
         goto exit;
     }
 
-    MOC_MEMCPY(pDataToSign, pSignDataPrefix, signDataPrefixLen);
-    MOC_MEMCPY(signDataPrefixLen + pDataToSign, pInDataToSign, inDataToSignLen);
+    DIGI_MEMCPY(pDataToSign, pSignDataPrefix, signDataPrefixLen);
+    DIGI_MEMCPY(signDataPrefixLen + pDataToSign, pInDataToSign, inDataToSignLen);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_RSA_getCipherTextLengthAux(MOC_RSA(hwAccelCtx) pRSAKey, (sbyte4 *) &rsaSignatureLen);
     if(OK != status)
         goto exit;
@@ -393,7 +393,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         if (64 == inDataToSignLen)
         {
             pSignatureIdentifier = &ssh_rsasha512_signature;
@@ -404,7 +404,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
             /* if length doesn't match, we might be using different algorithm */
             if (algorithmNameLen == (ssh_rsasha256_signature.stringLen - 4))
             {
-                status = MOC_MEMCMP(ssh_rsasha256_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
+                status = DIGI_MEMCMP(ssh_rsasha256_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
                 if (OK != status)
                     goto exit;
             }
@@ -424,7 +424,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
                 }
 
                 /* check if we are using x509v3-rsa2048-sha256 signature algorithm */
-                status = MOC_MEMCMP(ssh_rsa2048_cert_sign_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
+                status = DIGI_MEMCMP(ssh_rsa2048_cert_sign_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
                 if (OK != status)
                     goto exit;
 
@@ -444,7 +444,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         if (64 == inDataToSignLen)
         {
             pSignatureIdentifier = &sshc_rsa2048sha512_signature;
@@ -455,7 +455,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
             /* if length doesn't match, we might be using different algorithm */
             if (algorithmNameLen == (sshc_rsa2048sha256_signature.stringLen - 4))
             {
-                status = MOC_MEMCMP(sshc_rsa2048sha256_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
+                status = DIGI_MEMCMP(sshc_rsa2048sha256_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
                 if (OK != status)
                     goto exit;
             }
@@ -475,7 +475,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
                 }
 
                 /* check if we are using x509v3-rsa2048-sha256 signature algorithm */
-                status = MOC_MEMCMP(sshc_rsa2048_cert_sign_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
+                status = DIGI_MEMCMP(sshc_rsa2048_cert_sign_signature.pString + 4, pAlgorithmName, algorithmNameLen, &cmpRes);
                 if (OK != status)
                     goto exit;
 
@@ -519,14 +519,14 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        if (OK > (status = MOC_MEMCPY(pSignature + index, pSignatureIdentifier->pString, (sbyte4)pSignatureIdentifier->stringLen)))
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, pSignatureIdentifier->pString, (sbyte4)pSignatureIdentifier->stringLen)))
             goto exit;
         index += pSignatureIdentifier->stringLen;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        if (OK > (status = MOC_MEMCPY(pSignature + index, pSignatureIdentifier->pString, (sbyte4)pSignatureIdentifier->stringLen)))
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, pSignatureIdentifier->pString, (sbyte4)pSignatureIdentifier->stringLen)))
             goto exit;
         index += pSignatureIdentifier->stringLen;
 #endif
@@ -539,7 +539,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
     pSignature[index++] = (ubyte)(rsaSignatureLen)       & 0xff;
 
     /* compute signature */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_signMessageAux(MOC_RSA(hwAccelCtx)
                                        pRSAKey, pDataToSign, signDataPrefixLen + inDataToSignLen,
                                        pSignature + index, &pVlongQueue)))
@@ -555,11 +555,11 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
     }
 #endif
 
-#ifdef __ENABLE_MOCANA_CHECK_RSA_BAD_SIGNATURE__
+#ifdef __ENABLE_DIGICERT_CHECK_RSA_BAD_SIGNATURE__
     signatureToVerify.pString = pSignature;
     signatureToVerify.stringLen = signatureLen + 4;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_getPublicKey((AsymmetricKey *) pKey, &pubKey);
     if (OK != status)
         goto exit;
@@ -580,7 +580,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
         goto exit;
     }
 
-#endif /* __ENABLE_MOCANA_CHECK_RSA_BAD_SIGNATURE__ */
+#endif /* __ENABLE_DIGICERT_CHECK_RSA_BAD_SIGNATURE__ */
 
     /* save variables */
     *ppSignature      = pSignature;
@@ -588,7 +588,7 @@ SSH_RSA_buildRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
     *pSignatureLength = index + rsaSignatureLen;
 
 exit:
-#if defined(__ENABLE_MOCANA_CHECK_RSA_BAD_SIGNATURE__) && defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined(__ENABLE_DIGICERT_CHECK_RSA_BAD_SIGNATURE__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
     if (akt_tap_rsa == pKey->type)
     {
         CRYPTO_uninitAsymmetricKey(&pubKey, NULL);
@@ -610,7 +610,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_SERVER__))
+#if (defined(__ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_SERVER__))
 extern MSTATUS
 SSH_RSA_buildRsaSha1Signature(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey,
                           ubyte **ppSignature, ubyte4 *pSignatureLength,
@@ -646,10 +646,10 @@ SSH_RSA_buildRsaSha1Signature(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
         goto exit;
     }
 
-    MOC_MEMCPY(pDataToSign, mRSASSA_PKCS_v1_5, sizeof(mRSASSA_PKCS_v1_5));
-    MOC_MEMCPY(sizeof(mRSASSA_PKCS_v1_5) + pDataToSign, pInDataToSign, inDataToSignLen);
+    DIGI_MEMCPY(pDataToSign, mRSASSA_PKCS_v1_5, sizeof(mRSASSA_PKCS_v1_5));
+    DIGI_MEMCPY(sizeof(mRSASSA_PKCS_v1_5) + pDataToSign, pInDataToSign, inDataToSignLen);
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_RSA_getCipherTextLengthAux(MOC_RSA(hwAccelCtx) pRSAKey, (sbyte4 *) &rsaSignatureLen);
     if(OK != status)
         goto exit;
@@ -673,7 +673,7 @@ SSH_RSA_buildRsaSha1Signature(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
     pSignature[3] = (ubyte)(signatureLen) & 0xff;
     index = 4;
 
-    if (OK > (status = MOC_MEMCPY(pSignature + index, ssh_rsa_sha1_signature.pString, (sbyte4)ssh_rsa_sha1_signature.stringLen)))
+    if (OK > (status = DIGI_MEMCPY(pSignature + index, ssh_rsa_sha1_signature.pString, (sbyte4)ssh_rsa_sha1_signature.stringLen)))
         goto exit;
     index += ssh_rsa_sha1_signature.stringLen;
 
@@ -685,7 +685,7 @@ SSH_RSA_buildRsaSha1Signature(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
 
     /* compute signature */
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_signMessageAux(MOC_RSA(hwAccelCtx)
                                        pRSAKey, pDataToSign, sizeof(mRSASSA_PKCS_v1_5) + SHA1_RESULT_SIZE,
                                        pSignature + index, &pVlongQueue)))
@@ -750,7 +750,7 @@ SSH_RSA_calcRsaSignatureLength(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *p
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_RSA_getCipherTextLengthAux(MOC_RSA(hwAccelCtx) pRSAKey, (sbyte4 *) &rsaSignatureLen);
     if(OK != status)
         goto exit;
@@ -762,8 +762,8 @@ SSH_RSA_calcRsaSignatureLength(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *p
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-#ifdef __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__
             *pSignatureLength = 4 + ssh_rsasha256_cert_signature.stringLen + 4 + rsaSignatureLen;
 #else
             *pSignatureLength = 4 + ssh_rsasha256_signature.stringLen + 4 + rsaSignatureLen;
@@ -772,8 +772,8 @@ SSH_RSA_calcRsaSignatureLength(MOC_RSA(hwAccelDescr hwAccelCtx) AsymmetricKey *p
         status = ERR_SSH_CONFIG;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-#ifdef __ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__
             *pSignatureLength = 4 + sshc_rsa2048sha256_cert_signature.stringLen + 4 + rsaSignatureLen;
 #else
             *pSignatureLength = 4 + sshc_rsa2048sha256_signature.stringLen + 4 + rsaSignatureLen;
@@ -860,7 +860,7 @@ SSH_RSA_extractRsaCertificate(MOC_ASYM(hwAccelDescr hwAccelCtx) sshStringBuffer*
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_RSA_setPublicKeyData(MOC_RSA(hwAccelCtx) pKey, e, eLen, n, nLen, NULL);
     if(OK != status)
         goto exit;
@@ -873,8 +873,8 @@ SSH_RSA_extractRsaCertificate(MOC_ASYM(hwAccelDescr hwAccelCtx) sshStringBuffer*
     pKey = NULL;
 
 exit:
-    MOC_FREE((void**)&e);
-    MOC_FREE((void**)&n);
+    DIGI_FREE((void**)&e);
+    DIGI_FREE((void**)&n);
     SSH_STR_freeStringBuffer(&pKeyFormat);
 
     return status;
@@ -943,27 +943,27 @@ SSH_RSA_verifyRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
     /* check signature type */
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         if (64 == expectedPlainTextLen)
         {
-            if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_rsasha512_signature.pString, ssh_rsasha512_signature.stringLen, &result)))
+            if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_rsasha512_signature.pString, ssh_rsasha512_signature.stringLen, &result)))
                 goto exit;
         }
         else if (expectedPlainTextLen > 20)
         {
-            if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_rsasha256_signature.pString, ssh_rsasha256_signature.stringLen, &result)))
+            if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_rsasha256_signature.pString, ssh_rsasha256_signature.stringLen, &result)))
                 goto exit;
 
             /* check if this signature corresponds to x509v3-rsa2048-sha256 */
             if (0 != result)
             {
-                if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_rsasha256_cert_signature.pString, ssh_rsasha256_cert_signature.stringLen, &result)))
+                if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_rsasha256_cert_signature.pString, ssh_rsasha256_cert_signature.stringLen, &result)))
                     goto exit;
             }
         }
         else
         {
-            if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_rsa_signature.pString, ssh_rsa_signature.stringLen, &result)))
+            if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_rsa_signature.pString, ssh_rsa_signature.stringLen, &result)))
                 goto exit;
         }
 #else
@@ -971,27 +971,27 @@ SSH_RSA_verifyRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         if (64 == expectedPlainTextLen)
         {
-            if (OK > (status = MOC_MEMCMP(tempString->pString, sshc_rsa2048sha512_signature.pString, sshc_rsa2048sha512_signature.stringLen, &result)))
+            if (OK > (status = DIGI_MEMCMP(tempString->pString, sshc_rsa2048sha512_signature.pString, sshc_rsa2048sha512_signature.stringLen, &result)))
                 goto exit;
         }
         else if (expectedPlainTextLen > 20)
         {
-            if (OK > (status = MOC_MEMCMP(tempString->pString, sshc_rsa2048sha256_signature.pString, sshc_rsa2048sha256_signature.stringLen, &result)))
+            if (OK > (status = DIGI_MEMCMP(tempString->pString, sshc_rsa2048sha256_signature.pString, sshc_rsa2048sha256_signature.stringLen, &result)))
                 goto exit;
 
             /* check if this signature corresponds to x509v3-rsa2048-sha256 */
             if (0 != result)
             {
-                if (OK > (status = MOC_MEMCMP(tempString->pString, sshc_rsa2048sha256_cert_signature.pString, sshc_rsa2048sha256_cert_signature.stringLen, &result)))
+                if (OK > (status = DIGI_MEMCMP(tempString->pString, sshc_rsa2048sha256_cert_signature.pString, sshc_rsa2048sha256_cert_signature.stringLen, &result)))
                     goto exit;
             }
         }
         else
         {
-            if (OK > (status = MOC_MEMCMP(tempString->pString, sshc_rsa_signature.pString, sshc_rsa_signature.stringLen, &result)))
+            if (OK > (status = DIGI_MEMCMP(tempString->pString, sshc_rsa_signature.pString, sshc_rsa_signature.stringLen, &result)))
                 goto exit;
         }
 #else
@@ -1020,7 +1020,7 @@ SSH_RSA_verifyRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_getCipherTextLengthAux(MOC_RSA(hwAccelCtx) pPublicKey->key.pRSA, (sbyte4 *)&cipherLen)))
         goto exit;
 #else
@@ -1048,7 +1048,7 @@ SSH_RSA_verifyRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
     }
 
     /* decrypt signature */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = CRYPTO_INTERFACE_RSA_verifySignatureAux(MOC_RSA(hwAccelCtx) pPublicKey->key.pRSA, 4 + rsaSignature->pString,
                                            pPlainText, &plainTextLen, ppVlongQueue)))
     {
@@ -1066,10 +1066,10 @@ SSH_RSA_verifyRsaSignature(MOC_RSA(hwAccelDescr hwAccelCtx)
     if (signDataPrefixLen + expectedPlainTextLen != plainTextLen)
         goto exit;
 
-    if ((OK > (status = MOC_MEMCMP(pPlainText, pSignDataPrefix, signDataPrefixLen, &result))) && (0 != result))
+    if ((OK > (status = DIGI_MEMCMP(pPlainText, pSignDataPrefix, signDataPrefixLen, &result))) && (0 != result))
         goto exit;
 
-    status = MOC_MEMCMP(signDataPrefixLen + pPlainText, pExpectedPlainText, expectedPlainTextLen, &result);
+    status = DIGI_MEMCMP(signDataPrefixLen + pPlainText, pExpectedPlainText, expectedPlainTextLen, &result);
 
     if (0 == result)
         *pIsGoodSignature = TRUE;
@@ -1086,4 +1086,4 @@ exit:
 } /* SSH_RSA_verifyRsaSignature */
 
 
-#endif /* ((defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))) */
+#endif /* ((defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))) */

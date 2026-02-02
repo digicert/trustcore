@@ -19,13 +19,13 @@
 @details    This header file contains enumerations, and function
             declarations for feature APIs implemented by the NanoROOT NanoSMP.
 @flags      This file requires that the following flags be defined:
-    + \c \__ENABLE_MOCANA_SMP__
+    + \c \__ENABLE_DIGICERT_SMP__
 */
 
 #ifndef __SMP_NanoROOT_API_HEADER__
 #define __SMP_NanoROOT_API_HEADER__
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #include "common/moptions.h"
 #include "common/mtypes.h"
@@ -370,7 +370,7 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, createAsymmetricKey,
  * @details This API creates an object and corresponding context, as described by @p pObjectAttributes and returns the context handle in @p pHandle.
  * @param [in]  moduleHandle Handle to the Module Context
  * @param [in]  tokenHandle Handle to the Token Context
- ^ @param [in]  pKeyAttributeList Key attributes.
+ * @param [in]  pKeyAttributeList Key attributes.
  * @param [in]  pKeyObjectAttributes Attributes used to create the object context.
  *              <br>Can be set to following
  *              <br>#TAP_ATTR_CAPABILITY_FUNCTIONALITY
@@ -475,6 +475,6 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, getObjectList,
 }
 #endif
 
-#endif /* __ENABLE_MOCANA_SMP__ && __ENABLE_MOCANA_SMP_NANOROOT__ */
+#endif /* __ENABLE_DIGICERT_SMP__ && __ENABLE_DIGICERT_SMP_NANOROOT__ */
 #endif /* __SMP_NanoROOT_API_HEADER__ */
 

@@ -24,8 +24,8 @@
  * 
  * @flags 
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_SSH_DSA_SUPPORT__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  * 
  * @param pKey           Pointer to DSA key
  * @param isServer       TRUE for server, FALSE for client
@@ -46,8 +46,8 @@ MOC_EXTERN MSTATUS SSH_DSS_buildDssCertificate(MOC_DSA(hwAccelDescr hwAccelCtx) 
  * 
  * @flags 
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_SSH_DSA_SUPPORT__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  * 
  * @param pKey             Pointer to DSA key
  * @param isServer         TRUE for server, FALSE for client
@@ -70,8 +70,8 @@ MOC_EXTERN MSTATUS SSH_DSS_buildDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) As
  *
  * @flags 
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_SSH_DSA_SUPPORT__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  * 
  * @param pKey              Pointer to DSA key (unused)
  * @param isServer          TRUE for server, FALSE for client
@@ -91,8 +91,8 @@ MOC_EXTERN MSTATUS SSH_DSS_calcDssSignatureLength(AsymmetricKey *pKey, intBoolea
  *
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_SSH_DSA_SUPPORT__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pPublicKey       Pointer to DSA public key
  * @param isServer         TRUE for server, FALSE for client
@@ -114,8 +114,8 @@ MOC_EXTERN MSTATUS SSH_DSS_verifyDssSignature(MOC_DSA(hwAccelDescr hwAccelCtx) A
  *
  * @flags
  * To enable this function, the following flags must be defined in moptions.h:
- * + \c __ENABLE_MOCANA_SSH_DSA_SUPPORT__
- * + \c __ENABLE_MOCANA_SSH_SERVER__ or \c __ENABLE_MOCANA_SSH_CLIENT__
+ * + \c __ENABLE_DIGICERT_SSH_DSA_SUPPORT__
+ * + \c __ENABLE_DIGICERT_SSH_SERVER__ or \c __ENABLE_DIGICERT_SSH_CLIENT__
  *
  * @param pPublicKeyBlob   Pointer to SSH key blob
  * @param pPublicKey       Output: pointer to DSA public key structure

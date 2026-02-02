@@ -18,7 +18,7 @@
 #ifndef __SSH_OCSP_HEADER__
 #define __SSH_OCSP_HEADER__
 
-#if ((defined(__ENABLE_MOCANA_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_MOCANA_OCSP_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_SSH_OCSP_SUPPORT__)) && (defined(__ENABLE_DIGICERT_OCSP_CLIENT__)))
 
 /**
  * Gets an OCSP response for a certificate and issuer.
@@ -37,11 +37,11 @@
  *           English text error identifier corresponding to the function's
  *           returned error status, use the \c DISPLAY_ERROR macro.
  */
-#if (defined(__ENABLE_MOCANA_OCSP_TIMEOUT_CONFIG__))
+#if (defined(__ENABLE_DIGICERT_OCSP_TIMEOUT_CONFIG__))
 MOC_EXTERN MSTATUS SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte4 ocspTimeout, ubyte *pCertificate, ubyte4 certLen, ubyte *pIssuerCert, ubyte4 issuerCertLen, ubyte **ppResponse, ubyte4 *pRetResponseLen);
 #else
 MOC_EXTERN MSTATUS SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertificate, ubyte4 certLen, ubyte *pIssuerCert, ubyte4 issuerCertLen, ubyte **ppResponse, ubyte4 *pRetResponseLen);
-#endif /* __ENABLE_MOCANA_OCSP_TIMEOUT_CONFIG__ */
+#endif /* __ENABLE_DIGICERT_OCSP_TIMEOUT_CONFIG__ */
 
 /**
  * Validates an OCSP response for a certificate and issuer.
@@ -62,5 +62,5 @@ MOC_EXTERN MSTATUS SSH_OCSP_getOcspResponse(sbyte *pResponderUrl, ubyte *pCertif
  */
 MOC_EXTERN MSTATUS SSH_OCSP_validateOcspResponse(ubyte *pCertificate, ubyte4 certLen, ubyte *pIssuerCert, ubyte4 issuerCertLen, ubyte* pResponse, ubyte4 responseLen, ubyte* pCertOcspStatus, ubyte* pIsValid);
 
-#endif /* __ENABLE_MOCANA_SSH_OCSP_SUPPORT__ && __ENABLE_MOCANA_OCSP_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_OCSP_SUPPORT__ && __ENABLE_DIGICERT_OCSP_CLIENT__ */
 #endif /* __SSH_OCSP_HEADER__ */

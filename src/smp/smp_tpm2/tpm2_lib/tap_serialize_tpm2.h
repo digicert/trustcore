@@ -1,0 +1,222 @@
+/**
+ * @file tap_serialize_tpm2.h
+ * @brief This file contains the shadow structures for all structures related
+ * to TPM2.
+ *
+ * @flags
+ *  To enable this file's functions, the following flags must be defined in
+ * moptions.h:
+ *  + \c \__ENABLE_DIGICERT_TPM2__
+ *
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * *For commercial licensing, contact DigiCert at sales@digicert.com.*
+ *
+ */
+#ifndef __TAP_SERIALIZE_TPM2_H__
+#define __TAP_SERIALIZE_TPM2_H__
+
+#include "../../../common/moptions.h"
+
+#if (defined(__ENABLE_DIGICERT_TPM2__))
+#include "../../../tap/tap_base_serialize.h"
+
+typedef tap_shadow_struct tpm2_shadow_struct;
+
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_HANDLE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMA_NV;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_ALG_ID;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_RH_NV_INDEX;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_ALG_HASH;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_DIGEST;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_NV_PUBLIC;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMT_PUBLIC;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_START_AUTH_SESSION_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_START_AUTH_SESSION_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_START_AUTH_SESSION_RSP_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_START_AUTH_SESSION_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_COMMAND_HEADER;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_RESPONSE_HEADER;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_AUTH_COMMAND;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_AUTH_RESPONSE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_AUTH;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_RH_HIERARCHY_AUTH;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_GET_CAPABILITY_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_GET_CAPABILITY_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_CAPABILITY_DATA;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_YES_NO;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_ALG_PROPERTY;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_HANDLE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_CCA;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_CC;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_PCR_SELECTION;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_PCR_SELECTION;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_TAGGED_TPM_PROPERTY;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_TAGGED_PCR_PROPERTY;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_ECC_CURVE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_TAGGED_PROPERTY;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_PT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_PCR_SELECT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMA_CC;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_ALG_PROPERTY;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMA_ALGORITHM;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_CAP;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_RH_HIERARCHY;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_CREATE_PRIMARY_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_CREATE_PRIMARY_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_DH_OBJECT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_CREATE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_CREATE_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_DUPLICATE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_DUPLICATE_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_DUPLICATE_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_DuplicateOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_IMPORT_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_IMPORT_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_LOAD_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_LOAD_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_FLUSH_CONTEXT_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_DEFINE_SPACE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_RH_PROVISION;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_UNDEFINE_SPACE_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_WRITE_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_WRITE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_READ_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_READ_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_READ_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_READ_PUBLIC_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_SENSITIVE_DATA;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_DH_PCR;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_DIGEST_VALUES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPML_DIGEST;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_PCR_READ_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_EVENT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_GET_TEST_RESULT_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_READ_PUBLIC_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_ECC_CURVE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_ALGORITHM_DETAIL_ECC;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_RSA_ENCRYPT_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_DATA;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_PUBLIC_KEY_RSA;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_RSA_DECRYPT_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_SIGN_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMT_SIGNATURE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_VERIFY_SIGNATURE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMT_TK_VERIFIED;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_ENCRYPT_DECRYPT_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_ENCRYPT_DECRYPT2_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_ENCRYPT_DECRYPT_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_HIERARCHY_CONTROL_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_EVICT_CONTROL_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_DH_PERSISTENT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_RH_CLEAR;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_RH_DA_LOCK_RESET;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_INCREMENT_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_EXTEND_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_MAX_NV_BUFFER;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_SET_BITS_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_WRITE_LOCK_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_NV_READ_LOCK_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_PRIVATE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_PUBLIC;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_NV_PUBLIC;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_CREATION_DATA;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMT_TK_CREATION;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_SENSITIVE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_LOAD_EXTERNAL_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_LOAD_EXTERNAL_CMD_PARAMS2;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_NAME;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_OBJECT_CHANGE_AUTH_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_HASH_SEQUENCE_START_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_SEQUENCE_COMPLETE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_SEQUENCE_COMPLETE_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_MAX_BUFFER;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_MAKE_CREDENTIAL_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_MAKE_CREDENTIAL_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_ACTIVATE_CREDENTIAL_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_QUOTE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_QUOTE_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_ATTEST;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2B_OBJECT;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_ASYM_TYPE;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_RSA_INFO;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_ECC_INFO;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_KEY_INFO_UNION;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymCreateKeyIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymCreateKeyOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymSignIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_ECC_SIGNATURE;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_SIGNATURE_UNION;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymSignOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymVerifySigIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymVerifySigOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymRsaEncryptIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymRsaEncryptOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymRsaDecryptIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_AsymRsaDecryptOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_AdminTakeOwnershipIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_AdminCreateEKIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_AdminCreateSRKIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_AdminCreateAKIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_ContextSetHierarchyAuthIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_ContextSetPrimaryKeyAuthIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_ContextGetAuthValueLengthOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_ContextFlushObjectIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_ContextLoadObjectIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_ContextLoadObjectOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_DataSealIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_DataSealOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_DataUnsealIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_DataUnsealOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_MgmtGetPcrSelectionIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_MgmtGetPcrSelectionOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_MgmtCapabilityIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_MgmtCapabilityOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_NVDefineIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_NVUndefineIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_NV_WRITE_OP;
+extern const tpm2_shadow_struct TPM2_SHADOW_FAPI2_NV_WRITE_UNION;
+extern const tpm2_shadow_struct TPM2_SHADOW_NVWriteOpIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_NVReadOpIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_NVReadOpOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_RngGetRandomDataIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_RngGetRandomDataOut;
+extern const tpm2_shadow_struct TPM2_SHADOW_RngStirRNGIn;
+extern const tpm2_shadow_struct TPM2_SHADOW_TAP_TPM2_CMD_HDR;
+extern const tpm2_shadow_struct TPM2_SHADOW_TAP_TPM2_RSP_HDR;
+extern const tpm2_shadow_struct TPM2_SHADOW_TAP_TPM2_CMD_STRUCT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TAP_TPM2_RSP_STRUCT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_ECC_POINT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMS_ID_OBJECT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_AK_CSR_INFO;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_AUTHORIZE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_PCR_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_AUTHORIZE_NV_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_SECRET_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_SECRET_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_SECRET_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_SIGNED_CMD_HANDLES;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_SIGNED_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_SIGNED_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_POLICY_AUTH_NODE;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_DUPLICATIONSELECT_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_POLICY_COMMANDCODE_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPMI_RH_DA_LOCK_PARAMETERS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_HMAC_CMD_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2_HMAC_RSP_PARAMS;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_ID_OBJECT;
+extern const tpm2_shadow_struct TPM2_SHADOW_TPM2B_ENCRYPTED_SECRET;
+
+MOC_EXTERN const tpm2_shadow_struct *TAP_SERIALIZE_TPM2_getTpm2BIdObject(void);
+MOC_EXTERN const tpm2_shadow_struct *TAP_SERIALIZE_TPM2_getTpm2BEncryptedSecret(void);
+MOC_EXTERN const tpm2_shadow_struct *TAP_SERIALIZE_TPM2_getTpm2BPrivate(void);
+MOC_EXTERN const tpm2_shadow_struct *TAP_SERIALIZE_TPM2_getTpm2BPublic(void);
+
+
+#endif  /* (defined(__ENABLE_DIGICERT_TPM2__)) */
+#endif /* __TAP_SERIALIZE_TPM2_H__ */

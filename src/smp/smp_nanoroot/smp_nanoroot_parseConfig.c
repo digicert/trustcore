@@ -12,7 +12,7 @@
  *
  */
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #include <stdio.h>
 #include <string.h>
@@ -115,46 +115,46 @@ static MSTATUS NanoROOT_agentDeleteAttributeList(AttributeList **ppAttrList)
             for (j = 0; j < (*ppAttrList)->pItems[i].attrCount; j++)
             {
                 DB_PRINT("\t\tAttribute name : %s\n", (*ppAttrList)->pItems[i].pAttr[j].pName);
-                fstatus = MOC_FREE((void **) &((*ppAttrList)->pItems[i].pAttr[j].pName));
+                fstatus = DIGI_FREE((void **) &((*ppAttrList)->pItems[i].pAttr[j].pName));
                 if (OK == status)
                     status = fstatus;
 
-                fstatus = MOC_FREE((void **) &((*ppAttrList)->pItems[i].pAttr[j].pOutput));
+                fstatus = DIGI_FREE((void **) &((*ppAttrList)->pItems[i].pAttr[j].pOutput));
                 if (OK == status)
                     status = fstatus;
             }
 
-            fstatus = MOC_FREE((void **) &((*ppAttrList)->pItems[i].pAttr));
+            fstatus = DIGI_FREE((void **) &((*ppAttrList)->pItems[i].pAttr));
             if (OK == status)
                 status = fstatus;
 
             if (NULL != (*ppAttrList)->pItems[i].pEnv)
             {
-                fstatus = MOC_FREE((void **) &((*ppAttrList)->pItems[i].pEnv));
+                fstatus = DIGI_FREE((void **) &((*ppAttrList)->pItems[i].pEnv));
                 if (OK == status)
                     status = fstatus;
             }
 
             if (NULL != (*ppAttrList)->pItems[i].pPath)
             {
-                fstatus = MOC_FREE((void **) &((*ppAttrList)->pItems[i].pPath));
+                fstatus = DIGI_FREE((void **) &((*ppAttrList)->pItems[i].pPath));
                 if (OK == status)
                     status = fstatus;
             }
 
             if (NULL != (*ppAttrList)->pItems[i].pArg)
             {
-                fstatus = MOC_FREE((void **) &((*ppAttrList)->pItems[i].pArg));
+                fstatus = DIGI_FREE((void **) &((*ppAttrList)->pItems[i].pArg));
                 if (OK == status)
                     status = fstatus;
             }
         }
 
-        fstatus = MOC_FREE((void **) &((*ppAttrList)->pItems));
+        fstatus = DIGI_FREE((void **) &((*ppAttrList)->pItems));
         if (OK == status)
             status = fstatus;
 
-        fstatus = MOC_FREE((void **) ppAttrList);
+        fstatus = DIGI_FREE((void **) ppAttrList);
         if (OK == status)
             status = fstatus;
     }
@@ -182,7 +182,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
         return ERR_NULL_POINTER;
     }
 
-    status = MOCANA_readFile((const char *)pAttributeFile, &pData, &dataLen);
+    status = DIGICERT_readFile((const char *)pAttributeFile, &pData, &dataLen);
     if (OK != status)
     {
         goto exit;
@@ -209,7 +209,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
         goto exit;
     }
 
-    status = MOC_CALLOC((void **) &pAttrList, 1, sizeof(AttributeList));
+    status = DIGI_CALLOC((void **) &pAttrList, 1, sizeof(AttributeList));
     if (OK != status)
     {
         goto exit;
@@ -217,7 +217,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
 
     pAttrList->itemCount = token.elemCnt;
 
-    status = MOC_CALLOC((void **) &pAttrList->pItems, token.elemCnt, sizeof(AttributeItem));
+    status = DIGI_CALLOC((void **) &pAttrList->pItems, token.elemCnt, sizeof(AttributeItem));
     if (OK != status)
     {
         goto exit;
@@ -259,7 +259,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
         if (JSON_Array == objToken.type)
         {
             /* Attribute name is array, loop through each element and store it */
-            status = MOC_CALLOC(
+            status = DIGI_CALLOC(
                 (void **) &(pAttrList->pItems[i].pAttr),
                 objToken.elemCnt, sizeof(Attr));
             if (OK != status)
@@ -291,7 +291,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
                     goto exit;
                 }
 
-                status = MOC_MALLOC_MEMCPY(
+                status = DIGI_MALLOC_MEMCPY(
                     (void **) &(pAttrList->pItems[i].pAttr[j].pName),
                     nameToken.len + 1, (void *) nameToken.pStart, nameToken.len);
                 if (OK != status)
@@ -305,7 +305,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
                     pAttrList->pItems[i].pAttr[j].pName, nameToken.len);
             }
 
-            MOC_FREE((void **) &pTemp);
+            DIGI_FREE((void **) &pTemp);
             status = JSON_getJsonStringValue(
                 pJCtx, index, (sbyte*)NanoROOT_ATTRIBUTE_OUTPUT_FORMAT, &pTemp, TRUE);
             if (OK != status)
@@ -313,7 +313,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
                 goto exit;
             }
 
-            if (0 == MOC_STRCMP(pTemp, (sbyte*)NanoROOT_ATTRIBUTE_OUTPUT_FORMAT_JSON))
+            if (0 == DIGI_STRCMP(pTemp, (sbyte*)NanoROOT_ATTRIBUTE_OUTPUT_FORMAT_JSON))
             {
                 pAttrList->pItems[i].output = ATTRIBUTE_OUTPUT_JSON;
                 DB_PRINT("%s.%d Attribute name : %s output_format : json\n",
@@ -336,14 +336,14 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
             }
 
             /* Attribute name is string, store single value */
-            status = MOC_CALLOC(
+            status = DIGI_CALLOC(
                 (void **) &(pAttrList->pItems[i].pAttr), 1, sizeof(Attr));
             if (OK != status)
             {
                 goto exit;
             }
 
-            status = MOC_MALLOC_MEMCPY(
+            status = DIGI_MALLOC_MEMCPY(
                 (void **) &(pAttrList->pItems[i].pAttr[0].pName),
                 objToken.len + 1, (void *) objToken.pStart, objToken.len);
             if (OK != status)
@@ -361,7 +361,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
         }
 
         /* Get attribute type */
-        MOC_FREE((void **) &pTemp);
+        DIGI_FREE((void **) &pTemp);
         status = JSON_getJsonStringValue(
             pJCtx, index, (sbyte*)NanoROOT_ATTRIBUTE_TYPE, &pTemp, TRUE);
         if (OK != status)
@@ -369,20 +369,20 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
             goto exit;
         }
 
-        if (0 == MOC_STRCMP(pTemp, (sbyte*)NanoROOT_ATTRIBUTE_TYPE_ENV))
+        if (0 == DIGI_STRCMP(pTemp, (sbyte*)NanoROOT_ATTRIBUTE_TYPE_ENV))
         {
             /* Assign type */
             pAttrList->pItems[i].type = ATTRIBUTE_TYPE_ENV;
 
             /* Assign environment variable name */
-            MOC_FREE((void **) &pTemp);
+            DIGI_FREE((void **) &pTemp);
             status = JSON_getJsonStringValue(
                 pJCtx, index, (sbyte*)NanoROOT_ATTRIBUTE_VAR_NAME, &pTemp, TRUE);
             if (OK != status)
             {
                 goto exit;
             }
-            len = MOC_STRLEN(pTemp);
+            len = DIGI_STRLEN(pTemp);
             if (len >= NanoROOT_MAX_VALUE_LEN)
             {
                 status = ERR_BAD_LENGTH;
@@ -395,13 +395,13 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
             DB_PRINT("%s.%d Attribute name : %s type :env env_var:%s\n", 
             __func__, __LINE__, pAttrList->pItems[i].pAttr[0].pName, pAttrList->pItems[i].pEnv);
         }
-        else if (0 == MOC_STRCMP(pTemp, (sbyte*)NanoROOT_ATTRIBUTE_TYPE_PROGRAM))
+        else if (0 == DIGI_STRCMP(pTemp, (sbyte*)NanoROOT_ATTRIBUTE_TYPE_PROGRAM))
         {
             /* Assign type */
             pAttrList->pItems[i].type = ATTRIBUTE_TYPE_PROGRAM;
 
             /* Assign path */
-            MOC_FREE((void **) &pTemp);
+            DIGI_FREE((void **) &pTemp);
             status = JSON_getJsonStringValue(
                 pJCtx, index, (sbyte*)NanoROOT_ATTRIBUTE_PATH, &pTemp, TRUE);
             if (OK != status)
@@ -409,7 +409,7 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
                 goto exit;
             }
 
-            len = MOC_STRLEN(pTemp);
+            len = DIGI_STRLEN(pTemp);
             if (len >= NanoROOT_MAX_VALUE_LEN)
             {
                 status = ERR_BAD_LENGTH;
@@ -421,12 +421,12 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
             pAttrList->pItems[i].pPath = pTemp; pTemp = NULL;
 
             /* Assign optional argument */
-            MOC_FREE((void **) &pTemp);
+            DIGI_FREE((void **) &pTemp);
             status = JSON_getJsonStringValue(
                 pJCtx, index, (sbyte*)NanoROOT_ATTRIBUTE_ARGUMENT, &pTemp, TRUE);
             if (OK == status)
             {
-                len = MOC_STRLEN(pTemp);
+                len = DIGI_STRLEN(pTemp);
                 if (len >= NanoROOT_MAX_VALUE_LEN)
                 {
                     status = ERR_BAD_LENGTH;
@@ -458,12 +458,12 @@ exit:
         NanoROOT_agentDeleteAttributeList(&pAttrList);
     }
 
-    MOC_FREE((void **) &pTemp);
+    DIGI_FREE((void **) &pTemp);
     if (NULL != pJCtx)
     {
         JSON_releaseContext(&pJCtx);
     }
-    MOC_FREE((void **) &pData);
+    DIGI_FREE((void **) &pData);
 
     return status;
 }
@@ -477,17 +477,17 @@ MSTATUS NanoROOT_validateInput(const sbyte *pInput, const sbyte *pAllowed)
         return ERR_NULL_POINTER;
     }
     
-    len = MOC_STRLEN(pInput);
+    len = DIGI_STRLEN(pInput);
     if (0 == len)
     {
         return ERR_INVALID_ARG;
     }
-    blocked_chars_len = MOC_STRLEN((sbyte *)NANOROOT_BLOCKED_CHARS);
+    blocked_chars_len = DIGI_STRLEN((sbyte *)NANOROOT_BLOCKED_CHARS);
     
     /* Check for dangerous characters (blocklist) */
     for (i = 0; i < len; i++)
     {
-        if (NULL != MOC_STRCHR((sbyte *)NANOROOT_BLOCKED_CHARS, pInput[i], blocked_chars_len))
+        if (NULL != DIGI_STRCHR((sbyte *)NANOROOT_BLOCKED_CHARS, pInput[i], blocked_chars_len))
         {
             DB_PRINT("%s:%d Error: Dangerous character '%c' found in input\n",
                      __func__, __LINE__, pInput[i]);
@@ -498,10 +498,10 @@ MSTATUS NanoROOT_validateInput(const sbyte *pInput, const sbyte *pAllowed)
     /* Check against allowlist if provided */
     if (NULL != pAllowed)
     {
-        allowed_chars_len = MOC_STRLEN(pAllowed);
+        allowed_chars_len = DIGI_STRLEN(pAllowed);
         for (i = 0; i < len; i++)
         {
-            if (NULL == MOC_STRCHR((sbyte *)pAllowed, pInput[i], allowed_chars_len))
+            if (NULL == DIGI_STRCHR((sbyte *)pAllowed, pInput[i], allowed_chars_len))
             {
                 DB_PRINT("%s:%d Error: Invalid character '%c' in input\n",
                          __func__, __LINE__, pInput[i]);
@@ -553,7 +553,7 @@ MSTATUS NanoROOT_validatePath(const sbyte *pPath)
         return ERR_FILE_BAD_DATA;
     }
     /* Defensive: Ensure realPath is null-terminated and not too long */
-    if (MOC_STRLEN(realPath) == PATH_MAX) {
+    if (DIGI_STRLEN(realPath) == PATH_MAX) {
         DB_PRINT("%s:%d Error: realPath not null-terminated or too long\n", __func__, __LINE__);
         return ERR_FILE_BAD_DATA;
     }
@@ -562,8 +562,8 @@ MSTATUS NanoROOT_validatePath(const sbyte *pPath)
     /* Check path is within allowed directories */
     for (ppDir = (const sbyte **)gAllowedScriptDirs; *ppDir != NULL; ppDir++)
     {
-        dirLen = MOC_STRLEN((sbyte *)*ppDir);
-        if (0 == MOC_STRNCMP(realPath, (sbyte *)*ppDir, dirLen))
+        dirLen = DIGI_STRLEN((sbyte *)*ppDir);
+        if (0 == DIGI_STRNCMP(realPath, (sbyte *)*ppDir, dirLen))
         {
             status = OK;
             break;
@@ -658,7 +658,7 @@ static MSTATUS NanoROOT_agentProcessAttribute(Attr *pAttr, AttributeItem *pAttrI
         {
             goto exit;
         }
-        outputLen = MOC_STRLEN(pOutput);
+        outputLen = DIGI_STRLEN(pOutput);
     }
     else if (ATTRIBUTE_TYPE_PROGRAM == pAttrItem->type)
     {
@@ -671,7 +671,7 @@ static MSTATUS NanoROOT_agentProcessAttribute(Attr *pAttr, AttributeItem *pAttrI
             DB_PRINT("%s:%d Error: NanoROOT_agentExecuteScript() failed\n", __func__, __LINE__);
             goto exit;
         }
-        outputLen = MOC_STRLEN(pOutput);
+        outputLen = DIGI_STRLEN(pOutput);
     }
 
     if (NULL != pOutput)
@@ -697,8 +697,8 @@ static MSTATUS NanoROOT_agentProcessAttribute(Attr *pAttr, AttributeItem *pAttrI
                 goto exit;
             }
             pAttr->pOutput = pResult;
-            pAttr->outputLen = MOC_STRLEN(pResult);
-            MOC_FREE((void **) &pOutput);
+            pAttr->outputLen = DIGI_STRLEN(pResult);
+            DIGI_FREE((void **) &pOutput);
         }
         else if (ATTRIBUTE_OUTPUT_STRING == pAttrItem->output)
         {
@@ -721,12 +721,12 @@ exit:
 
     if (NULL != pResult)
     {
-        MOC_FREE((void **) &pResult);
+        DIGI_FREE((void **) &pResult);
     }
 
     if (NULL != pOutput)
     {
-        MOC_FREE((void **) &pOutput);
+        DIGI_FREE((void **) &pOutput);
     }
 
     if (NULL != pJCtx)
@@ -744,7 +744,7 @@ static MSTATUS NanoROOT_createFingerPrintData(AttributeList *pAttrList, ubyte4 a
     ubyte4 i, j, k = 0;
     ubyte4 labelLen, valueLen;
 
-    status = MOC_CALLOC((void **) &gpElementList, attrCount, sizeof(NROOTKdfElement));
+    status = DIGI_CALLOC((void **) &gpElementList, attrCount, sizeof(NROOTKdfElement));
     if (OK != status)
     {
         goto exit;
@@ -763,7 +763,7 @@ static MSTATUS NanoROOT_createFingerPrintData(AttributeList *pAttrList, ubyte4 a
                 goto exit;
             }
 
-            labelLen = MOC_STRLEN(pAttrItem->pAttr[j].pName);
+            labelLen = DIGI_STRLEN(pAttrItem->pAttr[j].pName);
             if (labelLen >= NanoROOT_MAX_LABEL_LEN)
             {
                 status = ERR_BAD_LENGTH;
@@ -779,7 +779,7 @@ static MSTATUS NanoROOT_createFingerPrintData(AttributeList *pAttrList, ubyte4 a
                 goto exit;
             }
 
-            valueLen = MOC_STRLEN(pAttrItem->pAttr[j].pOutput);
+            valueLen = DIGI_STRLEN(pAttrItem->pAttr[j].pOutput);
             if (valueLen >= NanoROOT_MAX_VALUE_LEN)
             {
                 status = ERR_BAD_LENGTH;
@@ -792,11 +792,11 @@ static MSTATUS NanoROOT_createFingerPrintData(AttributeList *pAttrList, ubyte4 a
                 pAttrItem->pAttr[j].pName, pAttrItem->pAttr[j].pOutput, labelLen, valueLen);
 
             gpElementList[k].labelLen = labelLen;
-            MOC_MEMCPY(gpElementList[k].pLabel, pAttrItem->pAttr[j].pName, labelLen);
+            DIGI_MEMCPY(gpElementList[k].pLabel, pAttrItem->pAttr[j].pName, labelLen);
             gpElementList[k].pLabel[labelLen] = '\0';
 
             gpElementList[k].valueLen = valueLen;
-            MOC_MEMCPY(gpElementList[k].pValue, pAttrItem->pAttr[j].pOutput, valueLen);
+            DIGI_MEMCPY(gpElementList[k].pValue, pAttrItem->pAttr[j].pOutput, valueLen);
             gpElementList[k].pValue[valueLen] = '\0';
 
             k++;
@@ -806,7 +806,7 @@ static MSTATUS NanoROOT_createFingerPrintData(AttributeList *pAttrList, ubyte4 a
 exit:
     if (OK != status && NULL != gpElementList)
     {
-        MOC_FREE((void **)&gpElementList);
+        DIGI_FREE((void **)&gpElementList);
     }
 
     return status;
@@ -866,4 +866,4 @@ exit:
     return status;
 }
 
-#endif /* #if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__)) */
+#endif /* #if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__)) */

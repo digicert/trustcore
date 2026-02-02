@@ -31,6 +31,7 @@
 
 #if defined(__LINUX_RTOS__)
 #include <sys/types.h>
+#include <signal.h>
 #if defined(__RTOS_ZEPHYR__)
 #include <zephyr/net/socket.h>
 #include <zephyr/sys/fdtable.h>
@@ -103,7 +104,7 @@ LINUX_mutexCreate(RTOS_MUTEX* pMutex, enum mutexTypes mutexType, int mutexCount)
     if (NULL == (pPthreadMutex = (pthread_mutex_t*) MALLOC(sizeof(pthread_mutex_t))))
         goto exit;
 
-    MOC_MEMSET((ubyte *)pPthreadMutex, 0x00, sizeof(pthread_mutex_t));
+    DIGI_MEMSET((ubyte *)pPthreadMutex, 0x00, sizeof(pthread_mutex_t));
 
     if (!(0 > pthread_mutex_init(pPthreadMutex, NULL)))
     {
@@ -204,7 +205,7 @@ exit:
     return status;
 }
 
-#ifdef __ENABLE_MOCANA_GLOBAL_MUTEX__
+#ifdef __ENABLE_DIGICERT_GLOBAL_MUTEX__
 /*------------------------------------------------------------------*/
 extern MSTATUS
 LINUX_globalMutexCreate(char *mutexName, RTOS_GLOBAL_MUTEX* ppMutex)
@@ -513,6 +514,7 @@ LINUX_createThread(void (*threadEntry)(void*), void* context, ubyte4 threadType,
     MSTATUS     status  = OK;
 
     /* threadType is ignored for this platform, use default values */
+    MOC_UNUSED(threadType);
 
     if (0 > (ret = pthread_create(&tid, NULL, (void *(*)(void *))threadEntry, context)))
     {
@@ -553,6 +555,17 @@ LINUX_joinThread(RTOS_THREAD tid, void **ppRetVal)
         return OK;
     else
         return ERR_RTOS_THREAD_JOIN;
+}
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+LINUX_killThread(RTOS_THREAD tid, sbyte4 signum)
+{
+    if (0 == pthread_kill((pthread_t)((uintptr) tid), signum))
+        return OK;
+    else
+        return ERR_RTOS_THREAD_KILL;
 }
 
 /*------------------------------------------------------------------*/
@@ -611,7 +624,7 @@ LINUX_condCreate(RTOS_COND* pCond, enum mutexTypes mutexType, int mutexCount)
     if (NULL == (pPthreadCond = (pthread_cond_t*) MALLOC(sizeof(pthread_cond_t))))
         goto exit;
 
-    MOC_MEMSET((ubyte *)pPthreadCond, 0x00, sizeof(pthread_cond_t));
+    DIGI_MEMSET((ubyte *)pPthreadCond, 0x00, sizeof(pthread_cond_t));
 
     if (!(0 > pthread_cond_init(pPthreadCond, NULL)))
     {
@@ -643,31 +656,55 @@ LINUX_condWait(RTOS_COND cond, RTOS_MUTEX mutex)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-LINUX_condTimedWait(RTOS_COND cond, RTOS_MUTEX mutex, ubyte4 timeoutMS, byteBoolean *pTimeout)
+LINUX_condTimedWait(RTOS_COND cond, RTOS_MUTEX mutex, ubyte8 timeoutMS, byteBoolean *pTimeout, ubyte8 *pRemainingMS)
 {
     pthread_mutex_t* pPthreadMutex = (pthread_mutex_t *)mutex;
     pthread_cond_t*  pPthreadCond  = (pthread_cond_t *)cond;
     MSTATUS          status = ERR_RTOS_MUTEX_WAIT;
     struct timespec timeToWait = { 0 };
-    int ret;
     struct timespec now = { 0 };
+    int ret;
 
     if (NULL == pTimeout || NULL == pPthreadMutex || NULL == pPthreadCond)
         return ERR_NULL_POINTER;
 
     *pTimeout = FALSE;
+    if (pRemainingMS)
+        *pRemainingMS = 0;
 
     clock_gettime(CLOCK_REALTIME, &now);
     timeToWait.tv_sec = now.tv_sec + (timeoutMS / 1000);
-    if (timeoutMS % 1000)
+    timeToWait.tv_nsec = now.tv_nsec + ((timeoutMS % 1000) * 1000000);
+    if (timeToWait.tv_nsec >= NANOS)
     {
-        timeToWait.tv_sec++;
+        timeToWait.tv_sec += 1;
+        timeToWait.tv_nsec -= NANOS;
     }
 
-    ret = pthread_cond_timedwait(pPthreadCond,pPthreadMutex,&timeToWait);
+    ret = pthread_cond_timedwait(pPthreadCond, pPthreadMutex, &timeToWait);
     if (0 == ret)
     {
         status = OK;
+        /* Calculate remaining time on successful wakeup (potential spurious wakeup) */
+        if (pRemainingMS)
+        {
+            struct timespec current = { 0 };
+            clock_gettime(CLOCK_REALTIME, &current);
+            
+            sbyte8 remainingSec = timeToWait.tv_sec - current.tv_sec;
+            sbyte8 remainingNsec = timeToWait.tv_nsec - current.tv_nsec;
+            
+            if (remainingNsec < 0)
+            {
+                remainingSec--;
+                remainingNsec += NANOS;
+            }
+            
+            if (remainingSec > 0 || (remainingSec == 0 && remainingNsec > 0))
+            {
+                *pRemainingMS = remainingSec * 1000 + remainingNsec / 1000000;
+            }
+        }
     }
     else if (ETIMEDOUT == ret)
     {
@@ -741,7 +778,7 @@ LINUX_rwLockCreate(RTOS_RWLOCK* ppLock)
     if (NULL == (pLock = (LINUX_rw_lock*) MALLOC(sizeof(LINUX_rw_lock))))
         goto exit;
 
-    MOC_MEMSET((ubyte *)pLock, 0x00, sizeof(LINUX_rw_lock));
+    DIGI_MEMSET((ubyte *)pLock, 0x00, sizeof(LINUX_rw_lock));
 
     if (0 > pthread_mutex_init(&pLock->shared, NULL))
     {
@@ -972,7 +1009,7 @@ LINUX_recursiveMutexCreate(RTOS_MUTEX* pMutex, enum mutexTypes mutexType, int mu
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 
-    MOC_MEMSET((ubyte *)pPthreadMutex, 0x00, sizeof(pthread_mutex_t));
+    DIGI_MEMSET((ubyte *)pPthreadMutex, 0x00, sizeof(pthread_mutex_t));
 
     if (!(0 > pthread_mutex_init(pPthreadMutex, &attr)))
     {
@@ -1061,11 +1098,11 @@ LINUX_getHwAddrByIfname(const sbyte *ifname, sbyte *adapter_name, ubyte *macAddr
     }
     memset(&ifr, 0, sizeof(ifr));
 
-    (void) MOC_STRCBCPY((sbyte *)ifr.ifr_name, sizeof(ifr.ifr_name), ifname);
+    (void) DIGI_STRCBCPY((sbyte *)ifr.ifr_name, sizeof(ifr.ifr_name), ifname);
 
     if (-1 != ioctl(s, SIOCGIFHWADDR, &ifr))
     {
-        MOC_MEMCPY(macAddr, ifr.ifr_hwaddr.sa_data, len > IFHWADDRLEN ? IFHWADDRLEN : len);
+        DIGI_MEMCPY(macAddr, ifr.ifr_hwaddr.sa_data, len > IFHWADDRLEN ? IFHWADDRLEN : len);
         macAddrFound = 1;
         status = OK;
     }
@@ -1123,11 +1160,11 @@ LINUX_getHwAddr(ubyte *macAddr, ubyte4 len)
             {
                 memset(&ifr, 0, sizeof(ifr));
 
-                (void) MOC_STRCBCPY((sbyte *)ifr.ifr_name, sizeof(ifr.ifr_name), (const sbyte *)ifaddr->ifa_name);
+                (void) DIGI_STRCBCPY((sbyte *)ifr.ifr_name, sizeof(ifr.ifr_name), (const sbyte *)ifaddr->ifa_name);
 
                 if (-1 != ioctl(s, SIOCGIFHWADDR, &ifr))
                 {
-                    MOC_MEMCPY(macAddr, ifr.ifr_hwaddr.sa_data, len > IFHWADDRLEN ? IFHWADDRLEN : len);
+                    DIGI_MEMCPY(macAddr, ifr.ifr_hwaddr.sa_data, len > IFHWADDRLEN ? IFHWADDRLEN : len);
                     macAddrFound = 1;
                     status = OK;
                     break;
@@ -1178,7 +1215,7 @@ LINUX_semCreate(RTOS_SEM *pSem, sbyte4 initialValue)
         goto exit;
     }
 
-    MOC_MEMSET(*pSem, 0, sizeof(sem_t));
+    DIGI_MEMSET(*pSem, 0, sizeof(sem_t));
 
     if (sem_init((sem_t *)*pSem, 0, initialValue) < 0)
     {
@@ -1356,7 +1393,7 @@ extern MSTATUS LINUX_lockFileCreate(char *pLockFile, RTOS_LOCK *ppLock)
         goto exit;
     }
 
-    status = MOC_MALLOC((void **) ppLock, sizeof(int));
+    status = DIGI_MALLOC((void **) ppLock, sizeof(int));
     if (OK != status)
     {
         goto exit;
@@ -1440,7 +1477,7 @@ extern MSTATUS LINUX_lockFileFree(RTOS_LOCK *ppLock)
     }
 
     (void) close(*((int *)(*ppLock)));
-    status = MOC_FREE(ppLock);
+    status = DIGI_FREE(ppLock);
 
 exit:
 

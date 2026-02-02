@@ -116,13 +116,13 @@ MOC_EXTERN MSTATUS SSHC_doProtocolCommon(sbyte4 connectionInstance, intBoolean u
  */
 MOC_EXTERN sshcConnectDescr *SSHC_getConnectionFromInstance(sbyte4 connectionInstance);
 
-#if (defined(__ENABLE_MOCANA_SSH_CLIENT__) && defined(__ENABLE_MOCANA_SSH_X509V3_RFC_6187_SUPPORT__))
+#if (defined(__ENABLE_DIGICERT_SSH_CLIENT__) && defined(__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__))
 /**
  * @dont_show
  * @internal
  */
 MOC_EXTERN MSTATUS SSH_CERT_buildClientCertRSA(sshClientContext *pContextSSH,SizedBuffer *pCertificates, ubyte4 numCertificates, ubyte **ppRetHostBlob, ubyte4 *pRetHostBlobLen);
-#if (defined(__ENABLE_MOCANA_ECC__))
+#if (defined(__ENABLE_DIGICERT_ECC__))
 /**
  * @dont_show
  * @internal

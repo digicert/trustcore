@@ -18,7 +18,7 @@
  * @details    defines helper and utility functions required by smp_nanoroot_api.c
  */
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
 #include <stdlib.h>
 #include <string.h>
@@ -131,7 +131,7 @@ static ubyte* NanoROOT_fetchStr(ubyte* pBuf, ubyte* pOutBuf, ubyte4 outBufSize)
     /* Copy string and null-terminate */
     if (size > 0)
     {
-        (void) MOC_MEMCPY(pVal, pBuf, size);
+        (void) DIGI_MEMCPY(pVal, pBuf, size);
     }
     pVal[size] = '\0';
 
@@ -208,7 +208,7 @@ static MSTATUS NanoROOT_parseModule(ubyte *pModHead, ubyte *pModEnd)
     ubyte *pFullPath = NULL;
     ubyte4 confDirLen = 0;
 
-    status = MOC_CALLOC((void **) &pConf, 1, sizeof(NanoROOT_Config));
+    status = DIGI_CALLOC((void **) &pConf, 1, sizeof(NanoROOT_Config));
     if (OK != status)
         goto exit;
 
@@ -273,10 +273,10 @@ static MSTATUS NanoROOT_parseModule(ubyte *pModHead, ubyte *pModEnd)
     DB_PRINT("%s.%d: moduleidstr=%s.\n",__FUNCTION__, __LINE__, pValString);
 
     /* Convert module id string to HEX */
-    if (OK != (status = MOC_convertHexString(
-                (const char *)pValString,
-                pConf->deviceModuleIdStr,
-                sizeof(pConf->deviceModuleIdStr))))
+    if (OK != (status = DIGI_convertHexString(
+                    (const char *)pValString,
+                    pConf->deviceModuleIdStr,
+                    sizeof(pConf->deviceModuleIdStr))))
     {
         DB_PRINT("%s.%d: Error converting ID string \"%s\" to HEX value\n",
                  __FUNCTION__, __LINE__, pValString);
@@ -316,52 +316,52 @@ static MSTATUS NanoROOT_parseModule(ubyte *pModHead, ubyte *pModEnd)
             goto exit;
         }
         
-        fileNameLen = MOC_STRLEN((sbyte*)pFileName);
+        fileNameLen = DIGI_STRLEN((sbyte*)pFileName);
 
         NanoROOT_isPathRelative(pFileName, fileNameLen, &isPathRelative);
         if(isPathRelative)
         {
 #ifdef MANDATORY_BASE_PATH
-            confDirLen = MOC_STRLEN((const sbyte *)MANDATORY_BASE_PATH);
-            status = MOC_CALLOC((void **)&pFullPath, 1, confDirLen + fileNameLen + 1);
+            confDirLen = DIGI_STRLEN((const sbyte *)MANDATORY_BASE_PATH);
+            status = DIGI_CALLOC((void **)&pFullPath, 1, confDirLen + fileNameLen + 1);
             if (OK != status)
             {
                 DB_PRINT("%s.%d: Error allocating memory for credential file.\n",__FUNCTION__, __LINE__);
                 goto exit;
             }
 
-            status = MOC_MEMCPY(&pFullPath[0], MANDATORY_BASE_PATH, confDirLen);
+            status = DIGI_MEMCPY(&pFullPath[0], MANDATORY_BASE_PATH, confDirLen);
             if (OK != status)
             {
                 DB_PRINT("%s.%d: Error copying credential file dir.\n",__FUNCTION__, __LINE__);
                 goto exit;
             }
 #else
-            confDirLen = MOC_STRLEN((const sbyte *)CONF_FILE_DIR);
-            status = MOC_CALLOC((void **)&pFullPath, 1, confDirLen + fileNameLen + 1);
+            confDirLen = DIGI_STRLEN((const sbyte *)CONF_FILE_DIR);
+            status = DIGI_CALLOC((void **)&pFullPath, 1, confDirLen + fileNameLen + 1);
             if (OK != status)
             {
                 DB_PRINT("%s.%d: Error allocating memory for credential file.\n",__FUNCTION__, __LINE__);
                 goto exit;
             }
 
-            status = MOC_MEMCPY(&pFullPath[0], CONF_FILE_DIR, confDirLen);
+            status = DIGI_MEMCPY(&pFullPath[0], CONF_FILE_DIR, confDirLen);
             if (OK != status)
             {
                 DB_PRINT("%s.%d: Error copying credential file dir.\n",__FUNCTION__, __LINE__);
                 goto exit;
             }
 #endif
-            status = MOC_MEMCPY(&pFullPath[confDirLen], pFileName, fileNameLen);
+            status = DIGI_MEMCPY(&pFullPath[confDirLen], pFileName, fileNameLen);
             if (OK != status)
             {
                 DB_PRINT("%s.%d: Error copying credential file path.\n",__FUNCTION__, __LINE__);
                 goto exit;
             }
-            (void) MOC_FREE((void **) &pFileName);
+            (void) DIGI_FREE((void **) &pFileName);
             pFileName = NULL;
             pConf->credentialFile.pBuffer = pFullPath;
-            pConf->credentialFile.bufferLen = MOC_STRLEN((sbyte*)pFullPath);
+            pConf->credentialFile.bufferLen = DIGI_STRLEN((sbyte*)pFullPath);
         }
         else
         {
@@ -378,17 +378,17 @@ exit:
 
     if (NULL != pFileName)
     {
-        (void) MOC_FREE((void **) &pFileName);
+        (void) DIGI_FREE((void **) &pFileName);
     }
     if (NULL != pValString)
     {
-        (void) MOC_FREE((void **) &pValString);
+        (void) DIGI_FREE((void **) &pValString);
     }
 
     if (OK != status && NULL != pConf)
     {
-        (void) MOC_FREE((void **) &pConf->modDesc);
-        (void) MOC_FREE((void **) &pConf);
+        (void) DIGI_FREE((void **) &pConf->modDesc);
+        (void) DIGI_FREE((void **) &pConf);
     }
 
     return status;
@@ -556,11 +556,11 @@ MSTATUS NanoROOT_init(TAP_ConfigInfo *pConfigInfo)
         goto exit;
     }
 
-    status = MOC_MALLOC((void **) &pTmpConfig, pConfigInfo->configInfo.bufferLen + 1);
+    status = DIGI_MALLOC((void **) &pTmpConfig, pConfigInfo->configInfo.bufferLen + 1);
     if (OK != status)
         goto exit;
 
-    (void) MOC_MEMCPY(pTmpConfig, pConfigInfo->configInfo.pBuffer, pConfigInfo->configInfo.bufferLen);
+    (void) DIGI_MEMCPY(pTmpConfig, pConfigInfo->configInfo.pBuffer, pConfigInfo->configInfo.bufferLen);
     pTmpConfig[pConfigInfo->configInfo.bufferLen] = '\0';
 
     status = NanoROOT_parseConf(pTmpConfig);
@@ -580,7 +580,7 @@ MSTATUS NanoROOT_init(TAP_ConfigInfo *pConfigInfo)
 exit:
     if (NULL != pTmpConfig)
     {
-        (void) MOC_FREE((void **) &pTmpConfig);
+        (void) DIGI_FREE((void **) &pTmpConfig);
     }
 
     if (TRUE == isMutexLocked)
@@ -619,14 +619,14 @@ MSTATUS NanoROOT_deInit()
             goto exit;
     }
 
-    MOC_FREE((void **) &gpElementList);
+    DIGI_FREE((void **) &gpElementList);
     gpElementList = NULL;
 
     if(gpNanoROOTConfig)
     {
-        MOC_FREE((void **) &gpNanoROOTConfig->modDesc);
-        MOC_FREE((void **) &gpNanoROOTConfig->credentialFile.pBuffer);
-        MOC_FREE((void **) &gpNanoROOTConfig);
+        DIGI_FREE((void **) &gpNanoROOTConfig->modDesc);
+        DIGI_FREE((void **) &gpNanoROOTConfig->credentialFile.pBuffer);
+        DIGI_FREE((void **) &gpNanoROOTConfig);
         gpNanoROOTConfig = NULL;
     }
 
@@ -641,4 +641,4 @@ exit:
     return status;
 }
 
-#endif /* #if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__)) */
+#endif /* #if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__)) */

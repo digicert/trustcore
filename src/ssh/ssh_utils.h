@@ -34,8 +34,8 @@
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param pKeyFile         Pointer to buffer containing public key.
 @param fileSize         Number of bytes in public key (\p pPubKey).
@@ -66,8 +66,8 @@ MOC_EXTERN MSTATUS SSH_UTILS_sshParseAuthPublicKeyFile(sbyte* pKeyFile, ubyte4 f
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param pKeyFile         Pointer to buffer containing key.
 @param keyBlobLength    Number of bytes in key.
@@ -99,8 +99,8 @@ MOC_EXTERN MSTATUS SSH_UTILS_generateHostKeyFile(ubyte *pKeyFile, ubyte4 keyBlob
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param pKeyBlob             Pointer to buffer containing key.
 @param keyBlobLength        Number of bytes in key.
@@ -136,8 +136,8 @@ MOC_EXTERN MSTATUS SSH_publicKeyFingerPrints(ubyte *pKeyBlob, ubyte4 keyBlobLeng
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param pKeyBlob                 Pointer to buffer containing key.
 @param keyBlobLength            Number of bytes in key.
@@ -173,8 +173,8 @@ MOC_EXTERN MSTATUS SSH_UTILS_generateServerAuthKeyFile(ubyte *pKeyBlob, ubyte4 k
 
 @flags
 To enable this function, at least one of the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 
 @param ppRetEncodedAuthKey      Pointer to encoded authentication key file buffer.
 
@@ -191,15 +191,15 @@ To enable this function, at least one of the following flags must be defined in 
 */
 MOC_EXTERN MSTATUS SSH_UTILS_freeGenerateServerAuthKeyFile(ubyte **ppFreeEncodedAuthKey);
 
-#if defined(__ENABLE_MOCANA_DSA__)
-#if defined(__ENABLE_MOCANA_SSH_OLD_DSA_CONVERSION__)
+#if defined(__ENABLE_DIGICERT_DSA__)
+#if defined(__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__)
 /**
  * @dont_show
  * @internal
  */
 MOC_EXTERN MSTATUS SSH_UTILS_extractKeyBlob(ubyte *pKeyBlob, ubyte4 keyBlobLength, ubyte4 keyType, DSAKey *p_dsaContext);
 #endif
-#if defined(__ENABLE_MOCANA_DER_CONVERSION__)
+#if defined(__ENABLE_DIGICERT_DER_CONVERSION__)
 /**
  * @dont_show
  * @internal

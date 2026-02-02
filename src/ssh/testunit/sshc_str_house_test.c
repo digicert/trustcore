@@ -16,7 +16,7 @@
 
 #include "../../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -57,7 +57,7 @@ static sbyte* mock_string_list_callback(ubyte4 index, ubyte4 *pRetStringLength, 
 
     if (index < 3)
     {
-        *pRetStringLength = MOC_STRLEN(test_strings[index]);
+        *pRetStringLength = DIGI_STRLEN(test_strings[index]);
         return (sbyte*)test_strings[index];
     }
 
@@ -98,7 +98,7 @@ static void test_SSHC_STR_HOUSE_initStringBuffer_empty_string(void **ppState)
     MSTATUS status;
 
     /* Initialize test buffer */
-    MOC_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
+    DIGI_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
 
     /* Test with empty string */
     status = SSHC_STR_HOUSE_initStringBuffer(&testBuffer, (sbyte*)"");
@@ -127,7 +127,7 @@ static void test_SSHC_STR_HOUSE_initStringBuffer_normal_string(void **ppState)
     ubyte4 expectedLen = 5;
 
     /* Initialize test buffer */
-    MOC_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
+    DIGI_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
 
     /* Test with normal string */
     status = SSHC_STR_HOUSE_initStringBuffer(&testBuffer, (sbyte*)testString);
@@ -156,10 +156,10 @@ static void test_SSHC_STR_HOUSE_initStringBuffer_long_string(void **ppState)
     sshStringBuffer testBuffer;
     MSTATUS status;
     const char* testString = "Test_String_this_is_a_very_long_string_for_testing_purposes_with_more_than_255_characters_to_test_multi_byte_length_encoding_in_the_ssh_string_buffer_initialization_function_and_verify_that_it_handles_longer_strings_properly_without_any_issues_or_buffer_overflows";
-    ubyte4 expectedLen = MOC_STRLEN(testString);
+    ubyte4 expectedLen = DIGI_STRLEN(testString);
 
     /* Initialize test buffer */
-    MOC_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
+    DIGI_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
 
     /* Test with long string */
     status = SSHC_STR_HOUSE_initStringBuffer(&testBuffer, (sbyte*)testString);
@@ -194,7 +194,7 @@ static void test_SSHC_STR_HOUSE_createFromList_empty_list(void **ppState)
     MSTATUS status;
 
     /* Initialize test buffer */
-    MOC_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
+    DIGI_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
 
     /* Test with empty list callback */
     status = SSHC_STR_HOUSE_createFromList(&testBuffer, mock_empty_list_callback, 0);
@@ -223,7 +223,7 @@ static void test_SSHC_STR_HOUSE_createFromList_single_item(void **ppState)
     ubyte4 expectedContentLen = 6;
 
     /* Initialize test buffer */
-    MOC_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
+    DIGI_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
 
     /* Test with single item callback */
     status = SSHC_STR_HOUSE_createFromList(&testBuffer, mock_single_item_callback, 0);
@@ -253,10 +253,10 @@ static void test_SSHC_STR_HOUSE_createFromList_multiple_items(void **ppState)
     sshStringBuffer testBuffer;
     MSTATUS status;
     const char* expectedContent = "method1,method2,method3";
-    ubyte4 expectedContentLen = MOC_STRLEN(expectedContent);
+    ubyte4 expectedContentLen = DIGI_STRLEN(expectedContent);
 
     /* Initialize test buffer */
-    MOC_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
+    DIGI_MEMSET((ubyte*)&testBuffer, 0, sizeof(sshStringBuffer));
 
     /* Test with multiple items callback */
     status = SSHC_STR_HOUSE_createFromList(&testBuffer, mock_string_list_callback, 0);
@@ -416,7 +416,7 @@ static int testSetup(void **ppState)
     MOC_UNUSED(ppState);
     MSTATUS status;
 
-    status = MOCANA_initMocana();
+    status = DIGICERT_initDigicert();
     if (OK != status)
         goto exit;
 
@@ -432,7 +432,7 @@ static int testTeardown(void **ppState)
     /* Ensure string buffers are cleaned up */
     status = SSHC_STR_HOUSE_freeStringBuffers();
 
-    status = MOCANA_freeMocana();
+    status = DIGICERT_freeDigicert();
 
     return (OK == status) ? 0 : -1;
 }
@@ -446,7 +446,7 @@ int main(int argc, char* argv[])
     MOC_UNUSED(argc);
     MOC_UNUSED(argv);
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* SSHC_STR_HOUSE_initStringBuffer tests */
         cmocka_unit_test(test_SSHC_STR_HOUSE_initStringBuffer_empty_string),
@@ -475,4 +475,4 @@ int main(int argc, char* argv[])
 #endif
 }
 
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */

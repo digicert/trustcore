@@ -16,7 +16,7 @@
 
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_ECC__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_ECC__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -29,7 +29,7 @@
 #include "../common/random.h"
 #include "../common/vlong.h"
 #include "../common/prime.h"
-#ifdef __ENABLE_MOCANA_DSA__
+#ifdef __ENABLE_DIGICERT_DSA__
 #include "../crypto/dsa.h"
 #endif
 #include "../common/memory_debug.h"
@@ -41,18 +41,18 @@
 #include "../crypto/ca_mgmt.h"
 #include "../crypto/cert_store.h"
 #include "../ssh/ssh_str.h"
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 #include "../ssh/ssh_utils.h"
 #include "../ssh/ssh.h"
 #include "../ssh/ssh_str_house.h"
 #endif
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 #include "../ssh/client/sshc_str_house.h"
 #endif
 #include "../ssh/ssh_ecdsa.h"
 #include "../ssh/ssh_mpint.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/cryptointerface.h"
 #include "../crypto/ecc.h"
 #include "../crypto_interface/crypto_interface_ecc.h"
@@ -115,7 +115,7 @@ SSH_ECDSA_findByCurveName(ubyte *pCurveName, ubyte4 curveNameLen)
     for (index = 0; index < SSH_ECDSA_CURVE_TABLE_SIZE; index++)
     {
         if ((curveNameLen == m_curveLookupTable[index].curveNameLen) &&
-            (OK <= MOC_MEMCMP(m_curveLookupTable[index].curveName, pCurveName, m_curveLookupTable[index].curveNameLen, &result)) &&
+            (OK <= DIGI_MEMCMP(m_curveLookupTable[index].curveName, pCurveName, m_curveLookupTable[index].curveNameLen, &result)) &&
             (0 == result))
         {
             return &m_curveLookupTable[index];
@@ -160,7 +160,7 @@ SSH_ECDSA_generateEccKeyBlob(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,  
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
     /*RFC 5656 Section 6.1*/
     switch (pCurveDescr->curveId)
     {
@@ -193,7 +193,7 @@ SSH_ECDSA_generateEccKeyBlob(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,  
     }
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     /*RFC 5656 Section 6.1*/
     switch (pCurveDescr->curveId)
     {
@@ -226,7 +226,7 @@ SSH_ECDSA_generateEccKeyBlob(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,  
     }
 #endif
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &keyLen);
     if (OK != status)
         goto exit;
@@ -267,14 +267,14 @@ SSH_ECDSA_generateEccKeyBlob(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,  
         BIGEND32(pPubKeyBuffer, curveLen);
         index += 4;
 
-        MOC_MEMCPY(pPubKeyBuffer + index, curveName, curveLen);
+        DIGI_MEMCPY(pPubKeyBuffer + index, curveName, curveLen);
         index += curveLen;
     }
 
     BIGEND32(pPubKeyBuffer + index, keyLen);
     index += 4;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(MOC_ECC(hwAccelCtx) pECCKey, pPubKeyBuffer+index, keyLen);
     if (OK != status)
         goto exit;
@@ -316,7 +316,7 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
         goto exit;
     }
 
-#if (defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__))
+#if (defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__))
     status = CRYPTO_INTERFACE_getECCPublicKey (pKey, &pPub);
     if (OK != status)
         goto exit;
@@ -324,7 +324,7 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
     pPub = pKey->key.pECC;
 #endif
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pPub, &curveId);
     if(OK != status)
         goto exit;
@@ -337,7 +337,7 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
         status = ERR_SSH_UNSUPPORTED_CURVE;
         goto exit;
     }
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
     /*RFC 5656 Section 6.1*/
     switch (pCurveDescr->curveId)
     {
@@ -358,7 +358,7 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
     }
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     /*RFC 5656 Section 6.1*/
     switch (pCurveDescr->curveId)
     {
@@ -386,7 +386,7 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         *pRetLen = ssh_ecdsa_sig->stringLen + keyMaterialLength;
 #else
         status = ERR_SSH_CONFIG;
@@ -395,7 +395,7 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
     }
     else
     {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         *pRetLen = ssh_ecdsa_sig->stringLen + keyMaterialLength;
 #else
         status = ERR_SSH_CONFIG;
@@ -403,7 +403,7 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
 #endif
     }
 
-    status = MOC_MALLOC((void **) &buffer, 4 + *pRetLen);
+    status = DIGI_MALLOC((void **) &buffer, 4 + *pRetLen);
     if (OK != status)
         goto exit;
 
@@ -415,15 +415,15 @@ SSH_ECDSA_buildEcdsaCertificate(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
     /* signature string */
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        MOC_MEMCPY(buffer + index, ssh_ecdsa_sig->pString, (sbyte4)ssh_ecdsa_sig->stringLen);
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        DIGI_MEMCPY(buffer + index, ssh_ecdsa_sig->pString, (sbyte4)ssh_ecdsa_sig->stringLen);
         index += ssh_ecdsa_sig->stringLen;
 #endif
     }
     else
     {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        MOC_MEMCPY(buffer + index, ssh_ecdsa_sig->pString, (sbyte4)ssh_ecdsa_sig->stringLen);
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        DIGI_MEMCPY(buffer + index, ssh_ecdsa_sig->pString, (sbyte4)ssh_ecdsa_sig->stringLen);
         index += ssh_ecdsa_sig->stringLen;
 #endif
     }
@@ -451,7 +451,7 @@ exit:
     {
         FREE(buffer);
     }
-#if defined (__ENABLE_MOCANA_CRYPTO_INTERFACE__)
+#if defined (__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
     if ((NULL != pKey) && (akt_tap_ecc == pKey->type) && (NULL != pPub))
     {
 
@@ -495,7 +495,7 @@ SSH_ECDSA_calcEcdsaSignatureLength(AsymmetricKey *pKey, intBoolean isServer, uby
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getElementByteStringLenAux(pECCKey, &elementLen);
     if(OK != status)
         goto exit;
@@ -505,7 +505,7 @@ SSH_ECDSA_calcEcdsaSignatureLength(AsymmetricKey *pKey, intBoolean isServer, uby
         goto exit;
 #endif
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveId);
     if(OK != status)
         goto exit;
@@ -523,7 +523,7 @@ SSH_ECDSA_calcEcdsaSignatureLength(AsymmetricKey *pKey, intBoolean isServer, uby
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         switch (pCurveDescr->curveLength)
         {
             case 192: ssh_ecdsa_signature = ssh_ecdsa_signature_p192;
@@ -548,7 +548,7 @@ SSH_ECDSA_calcEcdsaSignatureLength(AsymmetricKey *pKey, intBoolean isServer, uby
         status = ERR_SSH_CONFIG;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
        switch (pCurveDescr->curveId)
         {
             case cid_EC_P192: ssh_ecdsa_signature = sshc_ecdsa_signature_p192;
@@ -621,7 +621,7 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
 
     pECCKey = pKey->key.pECC;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveId);
     if(OK != status)
         goto exit;
@@ -636,7 +636,7 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
         status = ERR_SSH_UNSUPPORTED_CURVE;
         goto exit;
     }
- #ifdef __ENABLE_MOCANA_SSH_SERVER__
+ #ifdef __ENABLE_DIGICERT_SSH_SERVER__
     switch (pCurveDescr->curveId)
     {
       case cid_EC_P192: ssh_ecdsa_signature = &ssh_ecdsa_signature_p192;
@@ -655,7 +655,7 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
                 goto exit;
     }
  #endif
- #ifdef __ENABLE_MOCANA_SSH_CLIENT__
+ #ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     switch (pCurveDescr->curveId)
     {
       case cid_EC_P192: ssh_ecdsa_signature = &sshc_ecdsa_signature_p192;
@@ -676,7 +676,7 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
  #endif
 
     /* create buffer for signature */
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getElementByteStringLenAux(pECCKey, &elementLen);
     if(OK != status)
         goto exit;
@@ -689,11 +689,11 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
     rawSignatureLen = (elementLen * 2);
 
     /* allocate buffer for signature */
-    status = MOC_MALLOC((void**)&pRawSignature, rawSignatureLen);
+    status = DIGI_MALLOC((void**)&pRawSignature, rawSignatureLen);
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (akt_ecc == (pKey->type & 0xff))
     {
         status = CRYPTO_INTERFACE_ECDSA_signDigestAux(MOC_ECC(hwAccelCtx) pECCKey, RANDOM_rngFun, g_pRandomContext, (ubyte*)hash,
@@ -726,7 +726,7 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
             goto exit;
     }
 
-#if defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)
+#if defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)
         if (cid_EC_Ed25519 == pCurveDescr->curveId)
         {
             sigLength = ssh_ecdsa_signature->stringLen + 4 + rawSignatureLen;
@@ -741,7 +741,7 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
 #endif
 
     /* malloc for worse case scenario */
-    status = MOC_MALLOC((void**)&pSignature, 4 + sigLength);
+    status = DIGI_MALLOC((void**)&pSignature, 4 + sigLength);
     if (OK != status)
         goto exit;
 
@@ -749,8 +749,8 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
     BIGEND32(pSignature, sigLength);
     index = 4;
 
-#if defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)
-    if (OK > (status = MOC_MEMCPY(pSignature + index, ssh_ecdsa_signature->pString, (sbyte4)ssh_ecdsa_signature->stringLen)))
+#if defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)
+    if (OK > (status = DIGI_MEMCPY(pSignature + index, ssh_ecdsa_signature->pString, (sbyte4)ssh_ecdsa_signature->stringLen)))
         goto exit;
     index += ssh_ecdsa_signature->stringLen;
 #else
@@ -764,7 +764,7 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
         BIGEND32(pSignature + index, rawSignatureLen);
         index += 4;
 
-        if (OK > (status = MOC_MEMCPY(pSignature + index, pRawSignature, rawSignatureLen)))
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, pRawSignature, rawSignatureLen)))
             goto exit;
         index += rawSignatureLen;
     }
@@ -775,11 +775,11 @@ SSH_ECDSA_buildEcdsaSignatureEx(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *
         index += 4;
 
         /* copy r & s to signature blob */
-        if (OK > (status = MOC_MEMCPY(pSignature + index, pMpintR, mpintRLen)))
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, pMpintR, mpintRLen)))
             goto exit;
         index += mpintRLen;
 
-        if (OK > (status = MOC_MEMCPY(pSignature + index, pMpintS, mpintSLen)))
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, pMpintS, mpintSLen)))
             goto exit;
         index += mpintSLen;
     }
@@ -794,7 +794,7 @@ exit:
         FREE(pSignature);
 
     if (NULL != pRawSignature)
-        MOC_FREE((void**)&pRawSignature);
+        DIGI_FREE((void**)&pRawSignature);
 
     if (NULL != pMpintS)
         FREE(pMpintS);
@@ -843,7 +843,7 @@ SSH_ECDSA_signHash(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getElementByteStringLenAux(pECCKey, &elementLen);
     if(OK != status)
         goto exit;
@@ -856,11 +856,11 @@ SSH_ECDSA_signHash(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,
     rawSignatureLen = (elementLen * 2);
 
     /* allocate buffer for signature */
-    status = MOC_MALLOC((void**)&pRawSignature, rawSignatureLen);
+    status = DIGI_MALLOC((void**)&pRawSignature, rawSignatureLen);
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_ECDSA_signDigestAux(MOC_ECC(hwAccelCtx) pECCKey, RANDOM_rngFun, g_pRandomContext, (ubyte*)pHash,
         hashLen, pRawSignature, rawSignatureLen, &rawSignatureLen);
     if (OK != status)
@@ -891,13 +891,13 @@ SSH_ECDSA_signHash(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,
 
 exit:
     if (NULL != pMpintR)
-        MOC_FREE((void **) &pMpintR);
+        DIGI_FREE((void **) &pMpintR);
 
     if (NULL != pMpintS)
-        MOC_FREE((void **) &pMpintS);
+        DIGI_FREE((void **) &pMpintS);
 
     if (NULL != pRawSignature)
-        MOC_FREE((void **) &pRawSignature);
+        DIGI_FREE((void **) &pRawSignature);
 
     return status;
 }
@@ -940,7 +940,7 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
 
     pECCKey = pKey->key.pECC;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveID);
     if(OK != status)
         goto exit;
@@ -955,7 +955,7 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
         status = ERR_SSH_UNSUPPORTED_CURVE;
         goto exit;
     }
- #ifdef __ENABLE_MOCANA_SSH_SERVER__
+ #ifdef __ENABLE_DIGICERT_SSH_SERVER__
     switch (pCurveDescr->curveLength)
     {
       case 192: ssh_ecdsa_signature = &ssh_ecdsa_signature_p192;
@@ -972,7 +972,7 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
                 goto exit;
     }
  #endif
- #ifdef __ENABLE_MOCANA_SSH_CLIENT__
+ #ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     switch (pCurveDescr->curveLength)
     {
       case 192: ssh_ecdsa_signature = &sshc_ecdsa_signature_p192;
@@ -996,14 +996,14 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         sigLength = ssh_ecdsa_signature->stringLen + 4 + mpintRLen + mpintSLen;
 #else
         status = ERR_SSH_CONFIG;
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         sigLength = ssh_ecdsa_signature->stringLen + 4 + mpintRLen + mpintSLen;
 #else
         status = ERR_SSH_CONFIG;
@@ -1012,7 +1012,7 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
     }
 
     /* malloc for worse case scenario */
-    status = MOC_MALLOC((void **) &pSignature, 4 + sigLength);
+    status = DIGI_MALLOC((void **) &pSignature, 4 + sigLength);
     if (OK != status)
         goto exit;
 
@@ -1022,14 +1022,14 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
 
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        if (OK > (status = MOC_MEMCPY(pSignature + index, ssh_ecdsa_signature->pString, (sbyte4)ssh_ecdsa_signature->stringLen)))
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, ssh_ecdsa_signature->pString, (sbyte4)ssh_ecdsa_signature->stringLen)))
             goto exit;
         index += ssh_ecdsa_signature->stringLen;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        if (OK > (status = MOC_MEMCPY(pSignature + index, ssh_ecdsa_signature->pString, (sbyte4)ssh_ecdsa_signature->stringLen)))
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        if (OK > (status = DIGI_MEMCPY(pSignature + index, ssh_ecdsa_signature->pString, (sbyte4)ssh_ecdsa_signature->stringLen)))
             goto exit;
         index += ssh_ecdsa_signature->stringLen;
 #endif
@@ -1040,11 +1040,11 @@ SSH_ECDSA_buildEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *pK
     index += 4;
 
     /* copy r & s to signature blob */
-    if (OK > (status = MOC_MEMCPY(pSignature + index, pMpintR, mpintRLen)))
+    if (OK > (status = DIGI_MEMCPY(pSignature + index, pMpintR, mpintRLen)))
         goto exit;
     index += mpintRLen;
 
-    if (OK > (status = MOC_MEMCPY(pSignature + index, pMpintS, mpintSLen)))
+    if (OK > (status = DIGI_MEMCPY(pSignature + index, pMpintS, mpintSLen)))
         goto exit;
     index += mpintSLen;
 
@@ -1229,7 +1229,7 @@ SSH_ECDSA_verifyEdDSASignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveId);
     if(OK != status)
         goto exit;
@@ -1244,7 +1244,7 @@ SSH_ECDSA_verifyEdDSASignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
         status = ERR_SSH_UNSUPPORTED_CURVE;
         goto exit;
     }
- #ifdef __ENABLE_MOCANA_SSH_SERVER__
+ #ifdef __ENABLE_DIGICERT_SSH_SERVER__
     switch (pCurveDescr->curveId)
     {
       case cid_EC_Ed25519: ssh_ecdsa_signature = &ssh_ecdsa_signature_ed25519;
@@ -1253,7 +1253,7 @@ SSH_ECDSA_verifyEdDSASignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
                 goto exit;
     }
  #endif
- #ifdef __ENABLE_MOCANA_SSH_CLIENT__
+ #ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     switch (pCurveDescr->curveId)
     {
       case cid_EC_Ed25519: ssh_ecdsa_signature = &sshc_ecdsa_signature_ed25519;
@@ -1271,8 +1271,8 @@ SSH_ECDSA_verifyEdDSASignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
     DEBUG_RELABEL_MEMORY(tempString->pString);
 
     /* check signature type */
-#if (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))
-    if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_ecdsa_signature->pString, ssh_ecdsa_signature->stringLen, &result)))
+#if (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))
+    if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_ecdsa_signature->pString, ssh_ecdsa_signature->stringLen, &result)))
         goto exit;
 #else
     status = ERR_SSH_CONFIG;
@@ -1305,7 +1305,7 @@ SSH_ECDSA_verifyEdDSASignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_ECDSA_verifyMessageExt(MOC_ECC(hwAccelCtx)
         pECCKey, hashAlgo, (ubyte*)pData, dataLen, pSigBuffer,
         sigBufferLen, (ubyte4 *) pIsGoodSignature, NULL);
@@ -1334,7 +1334,7 @@ exit:
     SSH_STR_freeStringBuffer(&rsString);
     
     if (NULL != pSigBuffer)
-        MOC_FREE((void**)&pSigBuffer);
+        DIGI_FREE((void**)&pSigBuffer);
     return status;
 
 } /* SSH_ECDSA_verifyEdDSASignature */
@@ -1382,7 +1382,7 @@ SSH_ECDSA_verifyRSValue(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,
     if (OK != status)
         goto exit;
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_ECDSA_verifySignatureDigestAux(MOC_ECC(hwAccelCtx) pECCKey, (ubyte*)hash, hashLen, pR, rLen, pS, sLen, (ubyte4*)pIsGoodSignature);
     if (OK != status)
         goto exit;
@@ -1400,10 +1400,10 @@ SSH_ECDSA_verifyRSValue(MOC_ECC(hwAccelDescr hwAccelCtx) ECCKey *pECCKey,
 exit:
     
     if (NULL != pR)
-        MOC_FREE((void**)&pR);
+        DIGI_FREE((void**)&pR);
 
     if (NULL != pS)
-        MOC_FREE((void**)&pS);
+        DIGI_FREE((void**)&pS);
     return status;
 
 }
@@ -1447,7 +1447,7 @@ SSH_ECDSA_verifyEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
         goto exit;
     }
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &curveId);
     if(OK != status)
         goto exit;
@@ -1462,7 +1462,7 @@ SSH_ECDSA_verifyEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
         status = ERR_SSH_UNSUPPORTED_CURVE;
         goto exit;
     }
- #ifdef __ENABLE_MOCANA_SSH_SERVER__
+ #ifdef __ENABLE_DIGICERT_SSH_SERVER__
     switch (pCurveDescr->curveLength)
     {
       case 192: ssh_ecdsa_signature = &ssh_ecdsa_signature_p192;
@@ -1479,7 +1479,7 @@ SSH_ECDSA_verifyEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
                 goto exit;
     }
  #endif
- #ifdef __ENABLE_MOCANA_SSH_CLIENT__
+ #ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     switch (pCurveDescr->curveLength)
     {
       case 192: ssh_ecdsa_signature = &sshc_ecdsa_signature_p192;
@@ -1507,16 +1507,16 @@ SSH_ECDSA_verifyEcdsaSignature(MOC_ECC(hwAccelDescr hwAccelCtx) AsymmetricKey *p
     /* check signature type */
     if (isServer)
     {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
-        if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_ecdsa_signature->pString, ssh_ecdsa_signature->stringLen, &result)))
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
+        if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_ecdsa_signature->pString, ssh_ecdsa_signature->stringLen, &result)))
             goto exit;
 #else
         status = ERR_SSH_CONFIG;
         goto exit;
 #endif
     } else {
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
-        if (OK > (status = MOC_MEMCMP(tempString->pString, ssh_ecdsa_signature->pString, ssh_ecdsa_signature->stringLen, &result)))
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
+        if (OK > (status = DIGI_MEMCMP(tempString->pString, ssh_ecdsa_signature->pString, ssh_ecdsa_signature->stringLen, &result)))
             goto exit;
 #else
         status = ERR_SSH_CONFIG;
@@ -1550,4 +1550,4 @@ exit:
 
 } /* SSH_ECDSA_verifyEcdsaSignature */
 
-#endif /* ((defined(__ENABLE_MOCANA_ECC__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))) */
+#endif /* ((defined(__ENABLE_DIGICERT_ECC__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))) */

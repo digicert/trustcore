@@ -1,0 +1,704 @@
+/*
+ * ucos_udp.c
+ *
+ * UCOS UDP Abstraction Layer
+ *
+ * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * For commercial licensing, contact DigiCert at sales@digicert.com.*
+ *
+ */
+
+#include "../common/moptions.h"
+
+#ifdef __UCOS_UDP__
+
+#include "../common/mdefs.h"
+#include "../common/mtypes.h"
+#include "../common/merrors.h"
+#include "../common/mrtos.h"
+#include "../common/mudp.h"
+#include "../common/mstdlib.h"
+#include "../common/debug_console.h"
+
+#ifndef _REENTRANT
+#define _REENTRANT
+#endif
+
+#include <Source/net_bsd.h>
+#include <Source/net_sock.h>
+#include <Source/net_util.h>
+#include <Source/net_err.h>
+#include <Source/net_app.h>
+#include <Source/net_dict.h>
+#include <Source/net_def.h>
+#include <Source/net_tcp.h>
+#include <Source/net_conn.h>
+#include <Source/net_buf.h>
+
+#if 0 /*defined(__ENABLE_DIGICERT_IKE_SERVER__) && defined(__ENABLE_DIGICERT_PFKEY__) && defined(__ENABLE_DIGICERT_SUPPORT_FOR_IP6__)*/
+#include "../pfkey/pfkeyv2_common.h"
+#include <netinet/udp.h>
+#endif
+
+
+/*------------------------------------------------------------------*/
+
+#ifdef __ENABLE_DIGICERT_IPV6__
+  #define M_SOCKADDR    struct sockaddr_in6
+  #define MS_FAMILY     sin6_family
+#else
+  #define M_SOCKADDR    struct sockaddr_in
+  #define MS_FAMILY     sin_family
+#endif
+
+
+typedef struct
+{
+    int                 udpFd;
+    M_SOCKADDR          serverAddress;
+
+} UCOS_UDP_interface;
+
+
+/*------------------------------------------------------------------*/
+
+#ifndef SOCKET_ERROR
+#define SOCKET_ERROR    (-1)
+#endif
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_init(void)
+{
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_shutdown(void)
+{
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_getInterfaceAddress(sbyte *pHostName,
+                                MOC_IP_ADDRESS_S *pRetIpAddress)
+{
+/*  MSTATUS status = OK;
+
+    *pRetIpAddress = ntohl(INADDR_ANY);
+*/
+    /* for example code we just default to the primary interface */
+    MSTATUS     status;
+    char        myHostName[255/*HOST_NAME_MAX*/];
+
+    if (NULL == pHostName)
+    {
+        if (SOCKET_ERROR == gethostname(myHostName, sizeof(myHostName)))
+        {
+            status = ERR_UDP_INTERFACE_NOT_FOUND;
+            goto exit;
+        }
+        pHostName = (sbyte *)myHostName;
+    }
+
+    status = UCOS_UDP_getAddressOfHost(pHostName, pRetIpAddress);
+
+exit:
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_getAddressOfHost(sbyte *pHostName, MOC_IP_ADDRESS_S *pRetIpAddress)
+{
+    MSTATUS status = ERR_UDP_HOSTNAME_NOT_FOUND;
+
+    if (NULL != pHostName)
+    {
+		struct addrinfo    Hints = { 0 }, *AddrInfo;
+		int         RetVal;
+		/*Hints.ai_canonname = (char *)pHostName;*/
+		Hints.ai_family = AF_UNSPEC;
+		Hints.ai_socktype = SOCK_DGRAM;
+		Hints.ai_flags = AI_PASSIVE;
+        
+#if __GLIBC__ == 2 && (__GLIBC_MINOR__ >= 9 && __GLIBC_MINOR__ < 23)
+#warning "this version of getaddrinfo() may contain security vulnerability"
+#endif
+        
+		RetVal = getaddrinfo((char *)pHostName, NULL, &Hints, &AddrInfo);
+
+		if (RetVal != 0)
+		{
+			status = ERR_UDP_HOSTNAME_NOT_FOUND;
+			return status;
+		}
+#ifdef __ENABLE_DIGICERT_IPV6__
+		if(AddrInfo->ai_family == AF_INET)
+		{
+			pRetIpAddress->family = AF_INET;
+			pRetIpAddress->uin.addr = ntohl((ubyte4)(((struct sockaddr_in *)(AddrInfo->ai_addr))->sin_addr.s_addr));
+			status = OK;
+		}
+		else if(AddrInfo->ai_family == AF_INET6)
+		{
+			pRetIpAddress->family = AF_INET6;
+			DIGI_MEMCPY((ubyte *) pRetIpAddress->uin.addr6,
+					   (ubyte *) ((struct sockaddr_in6 *) AddrInfo->ai_addr)->sin6_addr.s6_addr, 16);
+			pRetIpAddress->uin.addr6[4] = ((struct sockaddr_in6 *) AddrInfo->ai_addr)->sin6_scope_id;
+			status = OK;
+		}
+#else
+		if(AddrInfo->ai_family == AF_INET)
+		{
+			*pRetIpAddress = ntohl((ubyte4)(((struct sockaddr_in *)(AddrInfo->ai_addr))->sin_addr.s_addr));
+			status = OK;
+		}
+		freeaddrinfo(AddrInfo);
+#endif
+	}
+   return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+static MSTATUS
+UCOS_UDP_bindConnect(void **ppRetUdpDescr,
+                        MOC_IP_ADDRESS srcAddress, ubyte2 srcPortNo,
+                        MOC_IP_ADDRESS dstAddress, ubyte2 dstPortNo,
+                        intBoolean isNonBlocking, intBoolean connected)
+{
+    UCOS_UDP_interface     *pUdpIf = NULL;
+    MSTATUS                 status = ERR_UDP;
+    NET_ERR                 err;
+
+    M_SOCKADDR              *myAddr;
+
+    if (NULL == ppRetUdpDescr)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    if (connected && !dstAddress)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    *ppRetUdpDescr = NULL;
+
+    /* allocate UCOS_UDP_interface */
+    if (NULL == (pUdpIf = (UCOS_UDP_interface*)
+                            MALLOC(sizeof(UCOS_UDP_interface))))
+    {
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
+    }
+
+    myAddr = &pUdpIf->serverAddress;
+    DIGI_MEMSET((ubyte *)pUdpIf, 0x00, sizeof(UCOS_UDP_interface));
+
+    /* handle socket source end-point */
+#ifdef __ENABLE_DIGICERT_IPV6__
+    if ((srcAddress && (AF_INET6 == srcAddress->family)) ||
+        (!srcAddress &&
+         connected && (AF_INET6 == dstAddress->family)))
+    {
+        myAddr->MS_FAMILY = AF_INET6;
+
+        if (MOC_UDP_ANY_PORT != srcPortNo)
+            ((struct sockaddr_in6 *)myAddr)->sin6_port = htons(srcPortNo);
+
+        if (srcAddress)
+        {
+            ((struct sockaddr_in6 *)myAddr)->sin6_scope_id =
+                                                    srcAddress->uin.addr6[4];
+            DIGI_MEMCPY(((struct sockaddr_in6 *)myAddr)->sin6_addr.s6_addr,
+                       srcAddress->uin.addr6, 16);
+        }
+
+        if (dstAddress && (!srcAddress || (0 == srcAddress->uin.addr6[4])))
+        {
+            ((struct sockaddr_in6 *)myAddr)->sin6_scope_id =
+                                                    dstAddress->uin.addr6[4];
+        }
+    }
+    else
+#endif
+    {
+        myAddr->MS_FAMILY = AF_INET;
+
+        if (MOC_UDP_ANY_PORT != srcPortNo)
+            ((struct sockaddr_in *)myAddr)->sin_port = htons(srcPortNo);
+
+#ifdef __ENABLE_DIGICERT_IPV6__
+        if (srcAddress)
+            ((struct sockaddr_in *)myAddr)->sin_addr.s_addr =
+                                                htonl(srcAddress->uin.addr);
+#else
+        ((struct sockaddr_in *)myAddr)->sin_addr.s_addr = htonl(srcAddress);
+#endif
+    }
+
+    if (0 > (pUdpIf->udpFd = NetSock_Open((NET_SOCK_PROTOCOL_FAMILY) myAddr->MS_FAMILY, (NET_SOCK_TYPE) SOCK_DGRAM, 0, &err)))
+    {
+        status = ERR_UDP_SOCKET;
+        goto exit;
+    }
+
+    if (0 > NetSock_Bind(pUdpIf->udpFd, (NET_SOCK_ADDR *) myAddr, (socklen_t) sizeof(*myAddr), &err))
+    {
+        status = ERR_UDP_BIND;
+        goto exit;
+    }
+
+#if 0 /*defined(__ENABLE_DIGICERT_IKE_SERVER__) && defined(__ENABLE_DIGICERT_PFKEY__) && defined(__ENABLE_IPSEC_NAT_T__)*/
+    /* To enable Linux's "native" IPsec UDP-encap, the following code needs to be invoked at least once. */
+    if ((4500 == srcPortNo) || (connected && (4500 == dstPortNo)))
+    {
+#ifndef UDP_ENCAP
+#define UDP_ENCAP 100
+#endif
+#ifndef UDP_ENCAP_ESPINUDP
+#define UDP_ENCAP_ESPINUDP 2
+#endif
+        int type = UDP_ENCAP_ESPINUDP;
+        int ret = setsockopt(pUdpIf->udpFd, SOL_UDP, UDP_ENCAP, &type, sizeof(type));
+        if (0 > ret) printf("\n\n%s:%d ret=%d\n", __FUNCTION__, __LINE__, ret);
+    }
+#endif /* 0 */
+
+    if (connected)
+    {
+        /* handle socket destination end-point */
+#ifdef __ENABLE_DIGICERT_IPV6__
+        if (AF_INET6 == dstAddress->family)
+        {
+            myAddr->MS_FAMILY = AF_INET6;
+            ((struct sockaddr_in6 *)myAddr)->sin6_port = htons(dstPortNo);
+            DIGI_MEMCPY(((struct sockaddr_in6 *)myAddr)->sin6_addr.s6_addr,
+                       dstAddress->uin.addr6, 16);
+        }
+        else
+#endif
+        {
+            myAddr->MS_FAMILY = AF_INET;
+#ifdef __ENABLE_DIGICERT_IPV6__
+            ((struct sockaddr_in *)myAddr)->sin_addr.s_addr =
+                                                    htonl(dstAddress->uin.addr);
+#else
+            ((struct sockaddr_in *)myAddr)->sin_addr.s_addr = htonl(dstAddress);
+#endif
+            ((struct sockaddr_in *)myAddr)->sin_port = htons(dstPortNo);
+        }
+
+        if (0 > NetSock_Conn(pUdpIf->udpFd, (NET_SOCK_ADDR *) myAddr, (socklen_t) sizeof(*myAddr), &err))
+        {
+            status = ERR_UDP_CONNECT;
+            goto exit;
+        }
+    }
+
+    if (FALSE != isNonBlocking)
+    {
+        int on = 1;
+
+        if (-1 == ioctl(pUdpIf->udpFd, FIONBIO, &on))
+        {
+            status = ERR_UDP_SOCKET;
+            goto exit;
+        }
+    }
+
+    *ppRetUdpDescr = pUdpIf;  pUdpIf = NULL;
+
+    status = OK;
+
+exit:
+    if (NULL != pUdpIf)
+    {
+        if (0 < pUdpIf->udpFd)
+            (void) NetSock_Close(pUdpIf->udpFd, &err);
+
+        FREE(pUdpIf);
+    }
+
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_connect(void **ppRetUdpDescr,
+                MOC_IP_ADDRESS srcAddress, ubyte2 srcPortNo,
+                MOC_IP_ADDRESS dstAddress, ubyte2 dstPortNo,
+                intBoolean isNonBlocking)
+{
+    return UCOS_UDP_bindConnect(ppRetUdpDescr, srcAddress, srcPortNo,
+                                dstAddress, dstPortNo, isNonBlocking, TRUE);
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_simpleBind(void **ppRetUdpDescr,
+                    MOC_IP_ADDRESS srcAddress, ubyte2 srcPortNo,
+                    intBoolean isNonBlocking)
+{
+    return UCOS_UDP_bindConnect(ppRetUdpDescr, srcAddress, srcPortNo,
+                                0, 0, isNonBlocking, FALSE);
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_unbind(void **ppReleaseUdpDescr)
+{
+    UCOS_UDP_interface     *pUdpIf;
+    MSTATUS                 status = ERR_NULL_POINTER;
+    NET_ERR                 err;
+
+    if (NULL == ppReleaseUdpDescr)
+        goto exit;
+
+    pUdpIf = *((UCOS_UDP_interface **)ppReleaseUdpDescr);
+
+    /* de-allocate UCOS_UDP_interface */
+    if (NULL != pUdpIf)
+    {
+        if (0 < pUdpIf->udpFd)
+            (void) NetSock_Close(pUdpIf->udpFd, &err);
+
+        FREE(pUdpIf);
+    }
+
+    *ppReleaseUdpDescr = NULL;
+
+    status = OK;
+
+exit:
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_send(void *pUdpDescr, ubyte *pData, ubyte4 dataLength)
+{
+    UCOS_UDP_interface     *pUdpIf = (UCOS_UDP_interface *)pUdpDescr;
+    MSTATUS                 status = OK;
+    NET_ERR                 err;
+
+    if (0 > NetSock_TxData( (NET_SOCK_ID) pUdpIf->udpFd, (void *) pData, (CPU_INT16U) dataLength, 0, &err))
+        status = ERR_UDP_WRITE;
+
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_sendTo(void *pUdpDescr, MOC_IP_ADDRESS peerAddress,
+                ubyte2 peerPortNo, ubyte *pData, ubyte4 dataLength)
+{
+    UCOS_UDP_interface     *pUdpIf = (UCOS_UDP_interface *)pUdpDescr;
+    MSTATUS                 status = OK;
+
+    M_SOCKADDR              destAddress = { 0 };
+    NET_ERR                 err;
+
+#ifdef __ENABLE_DIGICERT_IPV6__
+    if (AF_INET6 == peerAddress->family)
+    {
+        struct sockaddr_in6 *addr = (struct sockaddr_in6 *)&destAddress;
+
+        addr->sin6_family = AF_INET6;
+        addr->sin6_port = htons(peerPortNo);
+        DIGI_MEMCPY(addr->sin6_addr.s6_addr, peerAddress->uin.addr6, 16);
+
+        if (0 == (addr->sin6_scope_id =
+            ((struct sockaddr_in6 *)&pUdpIf->serverAddress)->sin6_scope_id))
+            addr->sin6_scope_id = peerAddress->uin.addr6[4];
+    }
+    else
+    {
+        ((struct sockaddr_in *)&destAddress)->sin_family = AF_INET;
+        ((struct sockaddr_in *)&destAddress)->sin_addr.s_addr =
+                                                htonl(peerAddress->uin.addr);
+        ((struct sockaddr_in *)&destAddress)->sin_port = htons(peerPortNo);
+    }
+#else
+    ((struct sockaddr_in *)&destAddress)->sin_family = AF_INET;
+    ((struct sockaddr_in *)&destAddress)->sin_addr.s_addr = htonl(peerAddress);
+    ((struct sockaddr_in *)&destAddress)->sin_port = htons(peerPortNo);
+#endif
+
+    if (0 > NetSock_TxDataTo( (NET_SOCK_ID) pUdpIf->udpFd, (void *) pData, (CPU_INT16U) dataLength, 0,
+                              (NET_SOCK_ADDR *) &destAddress, (NET_SOCK_ADDR_LEN) sizeof(destAddress), &err))
+    {
+        status = ERR_UDP_WRITE;
+    }
+
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_getFd(void *pUdpDescr, sbyte4 *fd)
+{
+    UCOS_UDP_interface     *pUdpIf = (UCOS_UDP_interface *)pUdpDescr;
+    MSTATUS                 status = OK;
+
+    *fd = pUdpIf->udpFd;
+
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_recv(void *pUdpDescr, ubyte *pBuf, ubyte4 bufSize,
+                ubyte4 *pRetDataLength)
+{
+    UCOS_UDP_interface     *pUdpIf = (UCOS_UDP_interface *)pUdpDescr;
+    ssize_t                 result;
+    MSTATUS                 status = OK;
+    NET_ERR                 err;
+
+    *pRetDataLength = 0;
+
+    if (bufSize > DEF_INT_16U_MAX_VAL) 
+    {
+        return ERR_UDP_READ;
+    }
+
+    result = (ssize_t) NetSock_RxData( (NET_SOCK_ID) pUdpIf->udpFd, (void *) pBuf, (CPU_INT16U) bufSize, 0, &err);
+
+    if (SOCKET_ERROR == result)
+    {
+        if (EAGAIN != errno)
+            status = ERR_UDP_READ;
+    }
+    else *pRetDataLength = (ubyte4)result;
+
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_recvFrom(void *pUdpDescr, MOC_IP_ADDRESS_S *pPeerAddress,
+                    ubyte2 *pPeerPortNo, ubyte *pBuf, ubyte4 bufSize,
+                    ubyte4 *pRetDataLength)
+{
+    UCOS_UDP_interface     *pUdpIf = (UCOS_UDP_interface *)pUdpDescr;
+    int                     result;
+    MSTATUS                 status = OK;
+
+    M_SOCKADDR              fromAddress = { 0 };
+    int                     fromLen = sizeof(fromAddress);
+
+    NET_SOCK_ADDR_LEN       addr_len = (NET_SOCK_ADDR_LEN) fromLen;
+    NET_ERR                 err;
+
+    *pRetDataLength = 0;
+
+    if (bufSize > DEF_INT_16U_MAX_VAL) 
+    {
+        return ERR_UDP_READ;
+    }
+
+    result = (int) NetSock_RxDataFrom( (NET_SOCK_ID) pUdpIf->udpFd, (void *) pBuf, (CPU_INT16U) bufSize, 0,
+                                       (NET_SOCK_ADDR *) &fromAddress, &addr_len, 
+                                       (void *) 0, (CPU_INT08U) 0u, (CPU_INT08U *) 0, &err);
+
+    if (SOCKET_ERROR == result)
+    {
+        if (EAGAIN != errno)
+            status = ERR_UDP_READ;
+
+        goto exit;
+    }
+
+    *pRetDataLength = (ubyte4)result;
+
+#ifdef __ENABLE_DIGICERT_IPV6__
+    if (AF_INET6 == pUdpIf->serverAddress.MS_FAMILY)
+    /*if (AF_INET6 == fromAddress.MS_FAMILY)*/
+    {
+        pPeerAddress->family = AF_INET6;
+        *pPeerPortNo = ntohs(((struct sockaddr_in6 *)&fromAddress)->sin6_port);
+        DIGI_MEMCPY((ubyte *) pPeerAddress->uin.addr6,
+                ((struct sockaddr_in6 *)&fromAddress)->sin6_addr.s6_addr, 16);
+        /* we need to preserve the scope id for later */
+        pPeerAddress->uin.addr6[4] = ((struct sockaddr_in6 *)&fromAddress)->
+                                                            sin6_scope_id;
+    }
+    else
+    {
+        pPeerAddress->family = AF_INET;
+        *pPeerPortNo = ntohs(((struct sockaddr_in *)&fromAddress)->sin_port);
+        pPeerAddress->uin.addr = ntohl(((struct sockaddr_in *)&fromAddress)->
+                                                            sin_addr.s_addr);
+    }
+#else
+    *pPeerAddress = ntohl(((struct sockaddr_in *)&fromAddress)->
+                                                            sin_addr.s_addr);
+    *pPeerPortNo = ntohs(((struct sockaddr_in *)&fromAddress)->sin_port);
+#endif
+
+exit:
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_getSrcPortAddr(void *pUdpDescr, ubyte2 *pRetPortNo,
+                            MOC_IP_ADDRESS_S *pRetAddr)
+{
+    UCOS_UDP_interface     *pUdpIf = (UCOS_UDP_interface *)pUdpDescr;
+    MSTATUS                 status = OK;
+
+    M_SOCKADDR              myAddress = { 0 };
+    sbyte4                  addrLen = sizeof(myAddress);
+
+    if (0 > getsockname(pUdpIf->udpFd, (struct sockaddr *)&myAddress,
+                        (socklen_t *)&addrLen))
+    {
+        status = ERR_UDP_GETSOCKNAME;
+        goto exit;
+    }
+
+#ifdef __ENABLE_DIGICERT_IPV6__
+    if (AF_INET6 == pUdpIf->serverAddress.MS_FAMILY)
+    /*if (AF_INET6 == myAddress.MS_FAMILY)*/
+    {
+        pRetAddr->family = AF_INET6;
+        *pRetPortNo = ntohs(((struct sockaddr_in6 *)&myAddress)->sin6_port);
+        DIGI_MEMCPY((ubyte *) pRetAddr->uin.addr6,
+                   ((struct sockaddr_in6 *)&myAddress)->sin6_addr.s6_addr, 16);
+    }
+    else
+    {
+        pRetAddr->family = AF_INET;
+        *pRetPortNo = ntohs(((struct sockaddr_in *)&myAddress)->sin_port);
+        pRetAddr->uin.addr = ntohl(((struct sockaddr_in *)&myAddress)->
+                                                            sin_addr.s_addr);
+    }
+#else
+    *pRetPortNo = htons(((struct sockaddr_in *)&myAddress)->sin_port);
+    *pRetAddr = htonl(((struct sockaddr_in *)&myAddress)->sin_addr.s_addr);
+#endif
+
+exit:
+    return status;
+}
+
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+UCOS_UDP_selReadAvl(void *ppUdpDescr[], sbyte4 numUdpDescr,
+                    ubyte4 msTimeout)
+{
+    MSTATUS         status = OK;
+
+    fd_set*         pSocketList = NULL;
+    struct timeval  timeout;
+    int             ret;
+    sbyte4          i;
+    NET_ERR         err;
+
+    if (0 >= numUdpDescr) goto exit;
+
+    if (NULL == ppUdpDescr)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    if (NULL == (pSocketList = (fd_set *) MALLOC(sizeof(fd_set))))
+    {
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
+    }
+
+    /* add the socket of interest to the list */
+    FD_ZERO(pSocketList);
+
+    for (i=0; i < numUdpDescr; i++)
+    {
+        UCOS_UDP_interface *pUdpIf = (UCOS_UDP_interface *) ppUdpDescr[i];
+        if (NULL != pUdpIf)
+        {
+            FD_SET(pUdpIf->udpFd, pSocketList);
+        }
+    }
+
+    /* compute timeout (milliseconds) */
+    timeout.tv_sec  = msTimeout / 1000;
+    timeout.tv_usec = (msTimeout % 1000) * 1000;    /* convert ms to us */
+
+    /* Note: Windows ignores the first parameter '1' */
+    /* other platforms may want (highest socket + 1) */
+    ret = (int) NetSock_Sel((NET_SOCK_QTY) FD_SETSIZE, (NET_SOCK_DESC *) pSocketList, NULL, NULL, (NET_SOCK_TIMEOUT *) &timeout, &err);
+
+    if (0 == ret) /* timed out */
+    {
+        status = ERR_UDP_READ_TIMEOUT;
+        goto exit;
+    }
+    if (SOCKET_ERROR == ret)
+    {
+        status = ERR_UDP_READ;
+        goto exit;
+    }
+
+    for (i=0; i < numUdpDescr; i++)
+    {
+        UCOS_UDP_interface *pUdpIf = (UCOS_UDP_interface *) ppUdpDescr[i];
+        if (NULL != pUdpIf)
+        {
+            if (!FD_ISSET(pUdpIf->udpFd, pSocketList))
+                ppUdpDescr[i] = NULL; /* !!! */
+        }
+    }
+
+exit:
+    if (NULL != pSocketList)
+        FREE(pSocketList);
+
+    return status;
+}
+
+
+#endif /* __UCOS_UDP__ */

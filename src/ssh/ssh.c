@@ -25,22 +25,22 @@
 @flags
 To enable any of this file's functions, the following flag must be defined in
 moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_SERVER__
 
 Whether the following flags are defined determines which functions are enabled:
-+ \c \__DISABLE_MOCANA_INIT__
-+ \c \__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-+ \c \__ENABLE_MOCANA_SSH_FTP_SERVER__
-+ \c \__ENABLE_MOCANA_SSH_PING__
-+ \c \__ENABLE_MOCANA_SSH_PORT_FORWARDING__
-+ \c \__USE_MOCANA_SSH_SERVER__
++ \c \__DISABLE_DIGICERT_INIT__
++ \c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
++ \c \__ENABLE_DIGICERT_SSH_FTP_SERVER__
++ \c \__ENABLE_DIGICERT_SSH_PING__
++ \c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__
++ \c \__USE_DIGICERT_SSH_SERVER__
 
 @filedoc    ssh.c
 */
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -64,10 +64,10 @@ Whether the following flags are defined determines which functions are enabled:
 #include "../crypto/dsa.h"
 #include "../crypto/rsa.h"
 #include "../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto/ecc.h"
 #include "../crypto_interface/crypto_interface_ecc.h"
 #endif
@@ -91,7 +91,7 @@ Whether the following flags are defined determines which functions are enabled:
 #include "../ssh/ssh.h"
 #include "../harness/harness.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_rsa.h"
 #include "../crypto_interface/crypto_interface_dsa.h"
 #endif
@@ -119,7 +119,7 @@ extern sbyte4 SSH_INTERNAL_API_setOpenState(sbyte4 connectionInstance);
 extern sbyte4 SSH_sendErrMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize, sbyte4 *pBytesSent);
 
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 static sbyte4 getPfSessionFromChannel(sshContext * pContextSSH, ubyte4 channel, sshPfSession** ppPfSession)
 {
     MSTATUS status = ERR_SSH_BAD_ID;
@@ -141,7 +141,7 @@ static sbyte4 getPfSessionFromChannel(sshContext * pContextSSH, ubyte4 channel, 
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 
 /*------------------------------------------------------------------*/
@@ -155,7 +155,7 @@ SSH_sshSettings(void)
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 static sbyte4
 sshProtocolUpcall(sbyte4 connectionInstance, enum sshSessionTypes sessionEvent,
                   ubyte *pMesg, ubyte4 mesgLen)
@@ -245,12 +245,12 @@ sshProtocolUpcall(sbyte4 connectionInstance, enum sshSessionTypes sessionEvent,
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_init(sbyte4 sshMaxConnections)
 {
@@ -259,12 +259,12 @@ SSH_init(sbyte4 sshMaxConnections)
     intBoolean      isHwAccelInit = FALSE;
     MSTATUS         status;
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
     gMocanaAppsRunning++;
 #endif
 
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__) || defined(__ENABLE_DIGICERT_ECC_EDDSA_448__))
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_EC_createCombMutexes();
 #else
     status = EC_createCombMutexes();
@@ -273,15 +273,15 @@ SSH_init(sbyte4 sshMaxConnections)
         goto exit;
 #endif
 
-#if ((defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__)) || \
-     (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__)) )
+#if ((defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) || \
+     (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) )
     if (OK > (status = (MSTATUS)HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSH, &hwAccelCookie)))
         goto exit;
 
     isHwAccelInit = TRUE;
 #endif
 
-    MOC_MEMSET((ubyte *)&m_sshSettings, 0x00, sizeof(sshSettings));
+    DIGI_MEMSET((ubyte *)&m_sshSettings, 0x00, sizeof(sshSettings));
 
     if (NULL == g_connectTable)
     {
@@ -294,7 +294,7 @@ SSH_init(sbyte4 sshMaxConnections)
             goto exit;
         }
 
-        MOC_MEMSET((ubyte *)g_connectTable, 0x00, sizeof(sshConnectDescr) * sshMaxConnections);
+        DIGI_MEMSET((ubyte *)g_connectTable, 0x00, sizeof(sshConnectDescr) * sshMaxConnections);
     }
     else
     {
@@ -340,18 +340,18 @@ SSH_init(sbyte4 sshMaxConnections)
     if (OK > (status = SSH_STR_HOUSE_initStringBuffers()))
         goto exit;
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     if (OK > (status = SSH_FTP_initStringBuffers()))
         goto exit;
 #endif
 
-#if (!defined(__DISABLE_MOCANA_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
     if (OK > (status = SSH_TRANS_initRsaKeyExchange(hwAccelCookie)))
         goto exit;
 #endif
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = SSH_TRANS_initSafePrimesDHG(hwAccelCookie)))
         goto exit;
 #endif
@@ -379,7 +379,7 @@ exit:
     return (sbyte4)status;
 
 } /* SSH_init */
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
@@ -439,7 +439,7 @@ sshGetNextInstance(void)
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_acceptConnection(TCP_SOCKET tempSocket)
 {
@@ -489,12 +489,12 @@ SSH_acceptConnection(TCP_SOCKET tempSocket)
 exit:
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 static MSTATUS
 doProtocol(sshContext *pContextSSH, sbyte4 index, intBoolean useTimeout, ubyte4 timeout)
 {
@@ -520,7 +520,7 @@ doProtocol(sshContext *pContextSSH, sbyte4 index, intBoolean useTimeout, ubyte4 
         /* handle across events time outs */
         timeout   = SSH_TIMER_MS_EXPIRE(pContextSSH);
 
-#ifdef __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__
+#ifdef __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__
         if (0 < pContextSSH->maxSessionTimeLimit)
         {
             useTimeout = TRUE;
@@ -545,7 +545,7 @@ doProtocol(sshContext *pContextSSH, sbyte4 index, intBoolean useTimeout, ubyte4 
                     timeout = pContextSSH->maxSessionTimeLimit - RTOS_deltaMS(&pContextSSH->sessionStartTime, NULL);
             }
         }
-#endif /* __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__ */
+#endif /* __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__ */
 
         if (TCP_NO_TIMEOUT != timeout)
         {
@@ -590,7 +590,7 @@ doProtocol(sshContext *pContextSSH, sbyte4 index, intBoolean useTimeout, ubyte4 
     while ((FALSE == isReKeyDone) && (OK == status) && ((OK == (status = CIRC_BUF_bytesAvail(g_connectTable[index].pCircBufDescr, &numBytesPending))) && (0 == numBytesPending)) );
 
 exit:
-#ifdef __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__
+#ifdef __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__
     if ((ERR_TCP_READ_TIMEOUT == status) && (0 < pContextSSH->maxSessionTimeLimit))
     {
         /* did we reach time limit? */
@@ -600,12 +600,12 @@ exit:
             SSH_setErrorCode(pContextSSH->connectionInstance, status);
         }
     }
-#endif /* __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__ */
+#endif /* __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__ */
 
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
     {
-#ifdef __DISABLE_MOCANA_SSHS_TIMEOUT_WARNING__
+#ifdef __DISABLE_DIGICERT_SSHS_TIMEOUT_WARNING__
         if (status != ERR_TCP_READ_TIMEOUT)
 #endif
         {
@@ -616,12 +616,12 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_negotiateConnection(sbyte4 connectionInstance)
 {
@@ -646,7 +646,7 @@ SSH_negotiateConnection(sbyte4 connectionInstance)
 
             g_connectTable[index].numBytesRead = 0;
 
-#ifdef __ENABLE_MOCANA_SSH_STREAM_API__
+#ifdef __ENABLE_DIGICERT_SSH_STREAM_API__
             g_connectTable[index].lenStream = 0;
 #endif
 
@@ -659,19 +659,19 @@ SSH_negotiateConnection(sbyte4 connectionInstance)
         }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_negotiateConnection() returns status = ", status);
 #endif
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_sendMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize, sbyte4 *pBytesSent)
 {
@@ -688,7 +688,7 @@ SSH_sendMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize, sb
         if ((connectionInstance == g_connectTable[index].instance) &&
             (CONNECT_OPEN       == g_connectTable[index].connectionState))
         {
-#ifdef __ENABLE_MOCANA_SSH_SENDER_RECV__
+#ifdef __ENABLE_DIGICERT_SSH_SENDER_RECV__
             if (((MAX_SESSION_WINDOW_SIZE / 8) >= g_connectTable[index].pContextSSH->sessionState.windowSize) ||
                 (bufferSize >= g_connectTable[index].pContextSSH->sessionState.windowSize))
             {
@@ -709,20 +709,20 @@ SSH_sendMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize, sb
         }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_sendMessage() returns status = ", status);
 #endif
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __ENABLE_MOCANA_SSH_PING__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_PING__
 extern sbyte4
 SSH_sendPing(sbyte4 connectionInstance)
 {
@@ -734,7 +734,7 @@ SSH_sendPing(sbyte4 connectionInstance)
         if ((connectionInstance == g_connectTable[index].instance) &&
             (CONNECT_OPEN       == g_connectTable[index].connectionState))
         {
-#ifdef __ENABLE_MOCANA_SSH_SENDER_RECV__
+#ifdef __ENABLE_DIGICERT_SSH_SENDER_RECV__
             if ((MAX_SESSION_WINDOW_SIZE / 8) >= g_connectTable[index].pContextSSH->sessionState.windowSize) {
                 /* read data to prevent blocking on SSH transport window changes */
                 if (OK > (status = doProtocol(g_connectTable[index].pContextSSH, index, TRUE, 100)))
@@ -758,7 +758,7 @@ SSH_sendPing(sbyte4 connectionInstance)
     }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_sendPing() returns status = ", status);
 #endif
@@ -766,7 +766,7 @@ exit:
     return (sbyte4)status;
 }
 #endif
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
@@ -788,7 +788,7 @@ SSH_sendErrMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize,
         if ((connectionInstance == g_connectTable[index].instance) &&
             (CONNECT_OPEN       == g_connectTable[index].connectionState))
         {
-#ifdef __ENABLE_MOCANA_SSH_SENDER_RECV__
+#ifdef __ENABLE_DIGICERT_SSH_SENDER_RECV__
             if (0 == g_connectTable[index].pContextSSH->sessionState.windowSize)
             {
                 /* read data to prevent blocking on SSH transport window changes */
@@ -818,7 +818,7 @@ SSH_sendErrMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize,
     }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_sendErrMessage() returns status = ", status);
 #endif
@@ -829,7 +829,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 extern sbyte4
 SSH_sendPortForwardMessage(sbyte4 connectionInstance, sbyte4 channel, sbyte *pBuffer, sbyte4 bufferSize, sbyte4 *pBytesSent)
 {
@@ -847,7 +847,7 @@ SSH_sendPortForwardMessage(sbyte4 connectionInstance, sbyte4 channel, sbyte *pBu
         if ((connectionInstance == g_connectTable[index].instance) &&
             (CONNECT_OPEN       == g_connectTable[index].connectionState))
         {
-#ifdef __ENABLE_MOCANA_SSH_SENDER_RECV__
+#ifdef __ENABLE_DIGICERT_SSH_SENDER_RECV__
             if (0 == g_connectTable[index].pContextSSH->sessionState.windowSize)
             {
                 /* read data to prevent blocking on SSH transport window changes */
@@ -952,12 +952,12 @@ extern sbyte4 SSH_sendPortFwdOpen(sbyte4 connectionInstance, ubyte* pConnectHost
 exit:
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 static MSTATUS
 SSH_sendAck(sshContext *pContextSSH, ubyte4 index, enum sshSessionTypes sessionEvent)
 {
@@ -967,7 +967,7 @@ SSH_sendAck(sshContext *pContextSSH, ubyte4 index, enum sshSessionTypes sessionE
     intBoolean  boolSendAck = FALSE;
     MSTATUS     status = OK;
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     if (SSH_PF_DATA == sessionEvent)
         pSshSession = &(pContextSSH->portForwardingSessionState);
 #endif
@@ -1017,14 +1017,14 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 static MSTATUS
 SSH_ackData(sshContext *pContextSSH, ubyte4 index, enum sshSessionTypes sessionEvent, ubyte4 numBytesToAck)
 {
     sshSession* pSshSession = &(pContextSSH->sessionState);
     MSTATUS     status;
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     if (SSH_PF_DATA == sessionEvent)
         pSshSession = &(pContextSSH->portForwardingSessionState);
 #endif
@@ -1049,7 +1049,7 @@ SSH_ackData(sshContext *pContextSSH, ubyte4 index, enum sshSessionTypes sessionE
 
 /*------------------------------------------------------------------*/
 
-#if ((!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && (!defined(__ENABLE_MOCANA_SSH_STREAM_API__)))
+#if ((!defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__)) && (!defined(__ENABLE_DIGICERT_SSH_STREAM_API__)))
 extern sbyte4
 SSH_recvMessage(sbyte4 connectionInstance, sbyte4 *pMessageType,
                 sbyte *pRetMessage, sbyte4 *pNumBytesReceived, ubyte4 timeout)
@@ -1159,12 +1159,12 @@ exit:
 
     return (sbyte4)status;
 }
-#endif /* ((!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && (!defined(__ENABLE_MOCANA_SSH_STREAM_API__))) */
+#endif /* ((!defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__)) && (!defined(__ENABLE_DIGICERT_SSH_STREAM_API__))) */
 
 
 /*------------------------------------------------------------------*/
 
-#if ((!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_MOCANA_SSH_STREAM_API__))
+#if ((!defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_DIGICERT_SSH_STREAM_API__))
 extern sbyte4
 SSH_recv(sbyte4 connectionInstance, sbyte4 *pMessageType,
          ubyte *pRetBuffer, ubyte4 bufferSize,
@@ -1293,12 +1293,12 @@ exit:
 
     return (sbyte4)status;
 }
-#endif /* ((!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_MOCANA_SSH_STREAM_API__)) */
+#endif /* ((!defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_DIGICERT_SSH_STREAM_API__)) */
 
 
 /*------------------------------------------------------------------*/
 
-#if ((!defined(__ENABLE_MOCANA_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_MOCANA_SSH_STREAM_API__))
+#if ((!defined(__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__)) && defined(__ENABLE_DIGICERT_SSH_STREAM_API__))
 extern sbyte4
 SSH_recvPending(sbyte4 connectionInstance, sbyte4 *pRetBooleanIsPending)
 {
@@ -1335,7 +1335,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
 {
@@ -1347,26 +1347,11 @@ SSH_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
         if ((connectionInstance == g_connectTable[index].instance) &&
             (CONNECT_NEGOTIATE  <= g_connectTable[index].connectionState))
         {
-            MOCANA_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH close connection.");
+            DIGICERT_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH close connection.");
 
             if (NULL != g_connectTable[index].pContextSSH)
             {
                 SSH_SESSION_sendClose(g_connectTable[index].pContextSSH, errorCode);
-
-#ifdef __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__
-                /* Before closing socket on server side let's drain pending messages from the client */
-                if (TCP_IS_SOCKET_VALID(g_connectTable[index].socket))
-                {
-                    static ubyte drainBuf[256];
-                    ubyte4 drained;
-                    do
-                    {
-                         drained = 0;
-                        (void)TCP_READ_AVL(g_connectTable[index].socket, (sbyte*)drainBuf, sizeof(drainBuf), &drained, 100);
-                    } while(0 != drained);
-                }
-#endif /* __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__ */
-
                 SSH_CONTEXT_deallocStructures(&(g_connectTable[index].pContextSSH));
             }
 
@@ -1390,7 +1375,7 @@ SSH_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
@@ -1484,41 +1469,41 @@ SSH_getTerminalSettingDescr(sbyte4 connectionInstance, terminalState **ppTermina
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __USE_DIGICERT_SSH_SERVER__
 extern sbyte4
 SSH_startServer(void)
 {
     return (sbyte4)SSH_SERVER_start();
 }
-#endif /* __USE_MOCANA_SSH_SERVER__ */
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __USE_DIGICERT_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __USE_DIGICERT_SSH_SERVER__
 extern void
 SSH_stopServer(void)
 {
     SSH_SERVER_stop();
 }
-#endif /* __USE_MOCANA_SSH_SERVER__ */
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __USE_DIGICERT_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __USE_DIGICERT_SSH_SERVER__
 extern void
 SSH_disconnectAllClients(void)
 {
     SSH_SERVER_disconnectClients();
 }
-#endif /* __USE_MOCANA_SSH_SERVER__ */
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __USE_DIGICERT_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
@@ -1527,30 +1512,30 @@ SSH_disconnectAllClients(void)
 extern sbyte4
 SSH_shutdown(void)
 {
-    MOCANA_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH server shutting down.");
+    DIGICERT_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH server shutting down.");
 
-#if (defined(__ENABLE_MOCANA_ECC_EDDSA_25519__) || defined(__ENABLE_MOCANA_ECC_EDDSA_448__))
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_ECC_EDDSA_25519__) || defined(__ENABLE_DIGICERT_ECC_EDDSA_448__))
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     CRYPTO_INTERFACE_EC_deleteAllCombsAndMutexes();
 #else
     EC_deleteAllCombsAndMutexes();
 #endif
 #endif
 
-#ifndef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifndef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
+#ifdef __USE_DIGICERT_SSH_SERVER__
     SSH_SERVER_stop();
     SSH_SERVER_disconnectClients();
-#endif /* __USE_MOCANA_SSH_SERVER__ */
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __USE_DIGICERT_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
     SSH_STR_HOUSE_freeStringBuffers();
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     SSH_FTP_freeStringBuffers();
-#endif /* __ENABLE_MOCANA_SSH_FTP_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_SERVER__ */
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
     gMocanaAppsRunning--;
 #endif
 
@@ -1572,7 +1557,7 @@ SSH_releaseTables(void)
 
     SSH_TRANS_releaseStaticKeys();
 
-#ifdef __USE_MOCANA_SSH_SERVER__
+#ifdef __USE_DIGICERT_SSH_SERVER__
     SSH_SERVER_releaseMutex();
 #endif
 
@@ -1623,8 +1608,8 @@ SSH_compareAuthKeys(const ubyte *pPubKey,  ubyte4 pubKeyLength,
 
     if (akt_dsa == p_keyDescr.type)
     {
-#if (defined(__ENABLE_MOCANA_SSH_DSA_SUPPORT__))
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_SSH_DSA_SUPPORT__))
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
         status = CRYPTO_INTERFACE_DSA_equalKey(MOC_DSA(hwAccelCtx) p_keyDescr.key.pDSA, p_keyFileContext.key.pDSA, (byteBoolean*)pRetIsMatch);
 #else
         status = DSA_equalKey(MOC_DSA(hwAccelCtx) p_keyDescr.key.pDSA, p_keyFileContext.key.pDSA, (byteBoolean*)pRetIsMatch);
@@ -1635,8 +1620,8 @@ SSH_compareAuthKeys(const ubyte *pPubKey,  ubyte4 pubKeyLength,
     }
     else if (akt_rsa == p_keyDescr.type)
     {
-#if (defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__))
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__))
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_RSA_equalKey(MOC_RSA(hwAccelCtx) p_keyDescr.key.pRSA, p_keyFileContext.key.pRSA, (byteBoolean*)pRetIsMatch);
     if (OK != status)
         goto exit;
@@ -1644,13 +1629,13 @@ SSH_compareAuthKeys(const ubyte *pPubKey,  ubyte4 pubKeyLength,
     status = RSA_equalKey(MOC_RSA(hwAccelCtx) p_keyDescr.key.pRSA, p_keyFileContext.key.pRSA, (byteBoolean*)pRetIsMatch);
     if (OK != status)
         goto exit;
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
-#endif /* __ENABLE_MOCANA_SSH_RSA_SUPPORT__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_SSH_RSA_SUPPORT__ */
     }
     else if ((akt_ecc == p_keyDescr.type) || (akt_ecc_ed == p_keyDescr.type))
     {
-#ifdef __ENABLE_MOCANA_ECC__
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_ECC__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
        status = CRYPTO_INTERFACE_EC_equalKeyAux(MOC_ECC(hwAccelCtx) p_keyDescr.key.pECC, p_keyFileContext.key.pECC, (byteBoolean*)pRetIsMatch);
        if (OK != status)
             goto exit;
@@ -1658,10 +1643,10 @@ SSH_compareAuthKeys(const ubyte *pPubKey,  ubyte4 pubKeyLength,
        status = EC_equalKeyEx(MOC_ECC(hwAccelCtx) p_keyDescr.key.pECC, p_keyFileContext.key.pECC, (byteBoolean*)pRetIsMatch);
        if (OK != status)
             goto exit;
-#endif /* __ENABLE_MOCANA_CRYPTO_INTERFACE__ */
-#endif /* __ENABLE_MOCANA_ECC__ */
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
     }
-#ifdef __ENABLE_MOCANA_PQC__
+#ifdef __ENABLE_DIGICERT_PQC__
     else if (akt_qs == p_keyDescr.type)
     {
         status = CRYPTO_INTERFACE_QS_equalKey(p_keyDescr.pQsCtx, p_keyFileContext.pQsCtx, MOC_ASYM_KEY_TYPE_PUBLIC, (byteBoolean*)pRetIsMatch);
@@ -1669,7 +1654,7 @@ SSH_compareAuthKeys(const ubyte *pPubKey,  ubyte4 pubKeyLength,
             goto exit;
     }
 #endif
-#ifdef __ENABLE_MOCANA_PQC_COMPOSITE__
+#ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
     else if (akt_hybrid == p_keyDescr.type)
     {
         /* NOTE: if hybrid with RSA is ever allowed this will need an RSA branch */
@@ -1729,7 +1714,7 @@ nocleanup:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_init(sbyte4 sshMaxConnections)
 {
@@ -1738,19 +1723,19 @@ SSH_ASYNC_init(sbyte4 sshMaxConnections)
     intBoolean      isHwAccelInit = FALSE;
     MSTATUS     status = OK;
 
-#ifndef __DISABLE_MOCANA_INIT__
+#ifndef __DISABLE_DIGICERT_INIT__
     gMocanaAppsRunning++;
 #endif
 
-#if ((defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__)) || \
-     (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__)) )
+#if ((defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) || \
+     (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) )
     if (OK > (status = (MSTATUS)HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSH, &hwAccelCookie)))
         goto exit;
 
     isHwAccelInit = TRUE;
 #endif
 
-    MOC_MEMSET((ubyte *)&m_sshSettings, 0x00, sizeof(sshSettings));
+    DIGI_MEMSET((ubyte *)&m_sshSettings, 0x00, sizeof(sshSettings));
 
     if (NULL == g_connectTable)
     {
@@ -1763,7 +1748,7 @@ SSH_ASYNC_init(sbyte4 sshMaxConnections)
             goto exit;
         }
 
-        MOC_MEMSET((ubyte *)g_connectTable, 0x00, sizeof(sizeof(sshConnectDescr) * sshMaxConnections));
+        DIGI_MEMSET((ubyte *)g_connectTable, 0x00, sizeof(sizeof(sshConnectDescr) * sshMaxConnections));
     }
     else
     {
@@ -1790,18 +1775,18 @@ SSH_ASYNC_init(sbyte4 sshMaxConnections)
     if (OK > (status = SSH_STR_HOUSE_initStringBuffers()))
         goto exit;
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
     if (OK > (status = SSH_FTP_initStringBuffers()))
         goto exit;
 #endif
 
-#if (!defined(__DISABLE_MOCANA_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_MOCANA_SSH_RSA_SUPPORT__) && defined(__ENABLE_MOCANA_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_MOCANA_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
     if (OK > (status = SSH_TRANS_initRsaKeyExchange(hwAccelCookie)))
         goto exit;
 #endif
 
-#if (defined(__ENABLE_MOCANA_DHG_KEY_EXCHANGE__))
-#ifndef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#if (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__))
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = SSH_TRANS_initSafePrimesDHG(hwAccelCookie)))
         goto exit;
 #endif
@@ -1830,12 +1815,12 @@ exit:
 
 } /* SSH_ASYNC_init */
 
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_setListeningPort(ubyte4 listeningPort)
 {
@@ -1847,13 +1832,13 @@ SSH_ASYNC_setListeningPort(ubyte4 listeningPort)
 
 } /* SSH_ASYNC_setListeningPort */
 
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
                            ubyte *pClientHelloString,
@@ -1887,7 +1872,7 @@ SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
             if (OK > (status = SSH_CONTEXT_allocStructures(&pContextSSH)))
                 goto exit;
 
-            if (OK > (status = MOC_STREAM_open(&(pContextSSH->pSocketOutStreamDescr), socket, MOCANA_SSH_SOCKET_STREAM_SIZE, (funcStreamWriteData)TCP_WRITE)))
+            if (OK > (status = DIGI_STREAM_open(&(pContextSSH->pSocketOutStreamDescr), socket, MOCANA_SSH_SOCKET_STREAM_SIZE, (funcStreamWriteData)TCP_WRITE)))
                 goto exit;
 
             SOCKET(pContextSSH)                   = socket;
@@ -1916,7 +1901,7 @@ SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
                     goto exit;
                 }
 
-                MOC_MEMCPY(pTempClientHelloClone, pClientHelloString, clientHelloStringLength);
+                DIGI_MEMCPY(pTempClientHelloClone, pClientHelloString, clientHelloStringLength);
             }
             else
             {
@@ -1947,8 +1932,8 @@ SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
             {
                 DEBUG_PRINTNL(DEBUG_SSH_TRANSPORT, "SSH_ASYNC_acceptConnection: use provided server hello string");
 
-                MOC_MEMCPY(pTempServerHelloClone, SERVER_HELLO_VERSION_STRING, sizeof(SERVER_HELLO_VERSION_STRING) -1);
-                MOC_MEMCPY((pTempServerHelloClone + sizeof(SERVER_HELLO_VERSION_STRING) -1), pServerHelloString, (serverHelloStringLength - sizeof(SERVER_HELLO_VERSION_STRING) + 1));
+                DIGI_MEMCPY(pTempServerHelloClone, SERVER_HELLO_VERSION_STRING, sizeof(SERVER_HELLO_VERSION_STRING) -1);
+                DIGI_MEMCPY((pTempServerHelloClone + sizeof(SERVER_HELLO_VERSION_STRING) -1), pServerHelloString, (serverHelloStringLength - sizeof(SERVER_HELLO_VERSION_STRING) + 1));
 
             }
             else
@@ -1956,7 +1941,7 @@ SSH_ASYNC_acceptConnection(TCP_SOCKET tempSocket,
                 DEBUG_PRINTNL(DEBUG_SSH_TRANSPORT, "SSH_ASYNC_acceptConnection: send default server hello string");
 
                 /* copy default server hello string */
-                MOC_MEMCPY(pTempServerHelloClone, (ubyte *)SERVER_HELLO_STRING, serverHelloStringLength);
+                DIGI_MEMCPY(pTempServerHelloClone, (ubyte *)SERVER_HELLO_STRING, serverHelloStringLength);
 
             }
 
@@ -2003,12 +1988,12 @@ exit:
 
 } /* SSH_ASYNC_acceptConnection */
 
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_startProtocolV2(sbyte4 connectionInstance)
 {
@@ -2029,19 +2014,19 @@ SSH_ASYNC_startProtocolV2(sbyte4 connectionInstance)
         }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_ASYNC_startProtocolV2() returns status = ", status);
 #endif
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_recvMessage(sbyte4 connectionInstance,
                       ubyte *pBytesReceived, ubyte4 numBytesReceived)
@@ -2061,7 +2046,7 @@ SSH_ASYNC_recvMessage(sbyte4 connectionInstance,
             sshContext *pContextSSH = g_connectTable[index].pContextSSH;
 
 
-#ifdef __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__
+#ifdef __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__
             if (0 < pContextSSH->maxSessionTimeLimit)
             {
                 /* did we reach time limit? */
@@ -2072,7 +2057,7 @@ SSH_ASYNC_recvMessage(sbyte4 connectionInstance,
                     goto exit;
                 }
             }
-#endif /* __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__ */
+#endif /* __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__ */
 
             /* check if we're waiting for any events */
             if (kNotWaiting != pContextSSH->waitEvent)
@@ -2110,7 +2095,7 @@ SSH_ASYNC_recvMessage(sbyte4 connectionInstance,
                             goto exit;
                         }
 
-                        MOC_MEMCPY(pContextSSH->pAsyncCacheMessage, pBytesReceived, numBytesReceived);
+                        DIGI_MEMCPY(pContextSSH->pAsyncCacheMessage, pBytesReceived, numBytesReceived);
                         pContextSSH->asyncCacheMessageLength = numBytesReceived;
 
                         numBytesReceived = 0;
@@ -2122,19 +2107,19 @@ SSH_ASYNC_recvMessage(sbyte4 connectionInstance,
         }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_ASYNC_recvMessage() returns status = ", status);
 #endif
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_ackReceivedMessageBytes(sbyte4 connectionInstance, enum sshSessionTypes sessionEvent, ubyte4 numBytesAck)
 {
@@ -2154,7 +2139,7 @@ SSH_ASYNC_ackReceivedMessageBytes(sbyte4 connectionInstance, enum sshSessionType
                 break;
             }
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
             if (SSH_PF_DATA == sessionEvent)
                 pSshSession = &(pContextSSH->portForwardingSessionState);
 #endif
@@ -2173,12 +2158,12 @@ SSH_ASYNC_ackReceivedMessageBytes(sbyte4 connectionInstance, enum sshSessionType
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 extern sbyte4
 SSH_ackPortFwdReceivedMessageBytes(sbyte4 connectionInstance, enum sshSessionTypes sessionEvent, ubyte4 numBytesAck, ubyte4 channel)
 {
@@ -2227,12 +2212,12 @@ SSH_ackPortFwdReceivedMessageBytes(sbyte4 connectionInstance, enum sshSessionTyp
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__*/
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__*/
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_recvContinueMessage(sbyte4 connectionInstance, sbyte4 result)
 {
@@ -2286,19 +2271,19 @@ SSH_ASYNC_recvContinueMessage(sbyte4 connectionInstance, sbyte4 result)
         }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_ASYNC_recvContinueMessage() returns status = ", status);
 #endif
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_sendMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize, sbyte4 *pBytesSent)
 {
@@ -2323,23 +2308,23 @@ SSH_ASYNC_sendMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSi
         }
 
 exit:
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_ASYNC_sendMessage() returns status = ", status);
 #endif
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_sendMessagePending(sbyte4 connectionInstance, ubyte4 *pRetNumBytesPending)
 {
-#if defined(__ENABLE_MOCANA_SSH_FTP_SERVER__)
+#if defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__)
     ubyte4  numSftpBytesPending = 0;
 #endif
     sbyte4  index;
@@ -2352,12 +2337,12 @@ SSH_ASYNC_sendMessagePending(sbyte4 connectionInstance, ubyte4 *pRetNumBytesPend
         {
             sshContext *pContextSSH = g_connectTable[index].pContextSSH;
 
-            if (OK > (status = MOC_STREAM_flush(pContextSSH->pSocketOutStreamDescr, pRetNumBytesPending, NULL)))
+            if (OK > (status = DIGI_STREAM_flush(pContextSSH->pSocketOutStreamDescr, pRetNumBytesPending, NULL)))
                 break;
 
-#if defined(__ENABLE_MOCANA_SSH_FTP_SERVER__)
+#if defined(__ENABLE_DIGICERT_SSH_FTP_SERVER__)
             if (NULL != pContextSSH->sessionState.pSftpOutStreamDescr)
-                if (OK > (status = MOC_STREAM_flush(pContextSSH->sessionState.pSftpOutStreamDescr, &numSftpBytesPending, NULL)))
+                if (OK > (status = DIGI_STREAM_flush(pContextSSH->sessionState.pSftpOutStreamDescr, &numSftpBytesPending, NULL)))
                     break;
 
             if (pRetNumBytesPending)
@@ -2368,7 +2353,7 @@ SSH_ASYNC_sendMessagePending(sbyte4 connectionInstance, ubyte4 *pRetNumBytesPend
         }
     }
 
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_ASYNC_sendMessagePending() returns status = ", status);
 #endif
@@ -2380,7 +2365,7 @@ SSH_ASYNC_sendMessagePending(sbyte4 connectionInstance, ubyte4 *pRetNumBytesPend
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__
 extern sbyte4
 SSH_ASYNC_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
 {
@@ -2391,26 +2376,11 @@ SSH_ASYNC_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
         if ((connectionInstance == g_connectTable[index].instance) &&
             (CONNECT_NEGOTIATE  <= g_connectTable[index].connectionState))
         {
-            MOCANA_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH close connection.");
+            DIGICERT_log((sbyte4)MOCANA_SSH, (sbyte4)LS_INFO, (sbyte *)"SSH close connection.");
 
             if (NULL != g_connectTable[index].pContextSSH)
             {
                 SSH_SESSION_sendClose(g_connectTable[index].pContextSSH, errorCode);
-
-#ifdef __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__
-                /* Before closing socket on server side let's drain pending messages from the client */
-                if (TCP_IS_SOCKET_VALID(g_connectTable[index].socket))
-                {
-                    static ubyte drainBuf[256];
-                    ubyte4 drained;
-                    do
-                    {
-                         drained = 0;
-                        (void)TCP_READ_AVL(g_connectTable[index].socket, (sbyte*)drainBuf, sizeof(drainBuf), &drained, 100);
-                    } while(0 != drained);
-                }
-#endif /* __ENABLE_MOCANA_SSH_DRAIN_CLIENT_MSG__ */
-
                 SSH_CONTEXT_deallocStructures(&(g_connectTable[index].pContextSSH));
             }
 
@@ -2420,14 +2390,14 @@ SSH_ASYNC_closeConnection(sbyte4 connectionInstance, MSTATUS errorCode)
             break;
         }
 
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_ASYNC_closeConnection() returns status = ", status);
 #endif
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_ASYNC_SERVER_API__ */
+#endif /* __ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__ */
 
 
 /*------------------------------------------------------------------*/
@@ -2512,7 +2482,7 @@ SSH_getSocketId(sbyte4 connectionInstance, TCP_SOCKET *pRetSocket)
 
 exit:
 
-#ifdef __ENABLE_MOCANA_DEBUG_CONSOLE__
+#ifdef __ENABLE_DIGICERT_DEBUG_CONSOLE__
     if (OK > status)
         DEBUG_ERROR(DEBUG_SSH_MESSAGES, "SSH_getSocketId() returns status = ", status);
 #endif
@@ -2523,7 +2493,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 extern sbyte4
 SSH_setUserPortForwardingPermissions(sbyte4 connectionInstance, ubyte4 memberGroups)
 {
@@ -2540,7 +2510,7 @@ SSH_setUserPortForwardingPermissions(sbyte4 connectionInstance, ubyte4 memberGro
 
     return (sbyte4)status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 
 /*------------------------------------------------------------------*/
@@ -2674,7 +2644,7 @@ SSH_ioctl(sbyte4 connectionInstance, ubyte4 ioctlSelector, ubyte4 ioctlValue)
             {
                 switch (ioctlSelector)
                 {
-#ifdef __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__
+#ifdef __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__
                     case SET_SSH_MAX_SESSION_TIME_LIMIT:
                     {
                         g_connectTable[index].pContextSSH->maxSessionTimeLimit = ioctlValue;            /* 0 means no time limit */
@@ -2740,7 +2710,7 @@ SSH_assignCertificateStore(sbyte4 connectionInstance, certStorePtr pCertStore)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_MOCANA_DSA__))
+#if (defined(__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_DIGICERT_DSA__))
 extern sbyte4
 SSH_convertOldKeyBlobToNew(ubyte *pOldDsaPublicKeyBlob, ubyte4 oldDsaPublicKeyBlobLength,
                            ubyte *pOldDsaPrivateKeyBlob, ubyte4 oldDsaPrivateKeyBlobLength,
@@ -2776,7 +2746,7 @@ exit:
 
 } /* SSH_convertOldKeyBlobToNew */
 
-#endif /* (defined(__ENABLE_MOCANA_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_MOCANA_DSA__)) */
+#endif /* (defined(__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__) && defined(__ENABLE_DIGICERT_DSA__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -2865,4 +2835,4 @@ exit:
     return (sbyte4)status;
 }
 
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */

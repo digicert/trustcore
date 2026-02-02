@@ -4,19 +4,19 @@
  * SSH Session Handler
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -37,7 +37,7 @@
 #include "../crypto/crypto.h"
 #include "../crypto/dsa.h"
 #include "../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -56,7 +56,7 @@
 #include "../ssh/ssh_server.h"
 #include "../ssh/ssh_ftp.h"
 #include "../ssh/ssh.h"
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/crypto_interface_dh.h"
 #endif
 
@@ -127,12 +127,12 @@ static requestTypeDescr ssh_sessionTypes[] =
 
 #define NUM_CHANNEL_TYPES (sizeof(ssh_sessionTypes)/sizeof(requestTypeDescr))
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 static MSTATUS isPfChannelActive(sshContext *pContextSSH, ubyte4 ownChannel, sshPfSession** ppSession);
 static MSTATUS sendLpfClose(sshContext *pContextSSH, sshPfSession*  pPfSession);
 static MSTATUS sendLpfEof(sshContext *pContextSSH, sshPfSession*  pPfSession);
 static MSTATUS createPortFwdChannelNumber(sshContext *pContextSSH, sshPfSession* pNewSession, ubyte4* pChannelNo);
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 /*------------------------------------------------------------------*/
 
@@ -146,7 +146,7 @@ findChoice(ubyte *pChannelType, ubyte4 channelTypeLength)
     while (0 <= index)
     {
         if ((channelTypeLength == ssh_sessionTypes[index].pRequestString->stringLen) &&
-            (OK <= MOC_MEMCMP(pChannelType, (ubyte *)ssh_sessionTypes[index].pRequestString->pString, channelTypeLength, &memResult)) &&
+            (OK <= DIGI_MEMCMP(pChannelType, (ubyte *)ssh_sessionTypes[index].pRequestString->pString, channelTypeLength, &memResult)) &&
             (0 == memResult))
         {
             result = index;
@@ -175,8 +175,8 @@ getUbyte4(ubyte *pInteger)
     return value;
 }
 /*------------------------------------------------------------------*/
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
-extern MSTATUS 
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
+extern MSTATUS
 SSH_SESSION_sendPortFwdOpen(sshContext *pContextSSH,
                                          ubyte* pConnectHost, ubyte4 connectPort,
                                          ubyte* pSrc,ubyte4 srcPort, ubyte4 *rmyChannel)
@@ -198,7 +198,7 @@ SSH_SESSION_sendPortFwdOpen(sshContext *pContextSSH,
     ubyte4 bufIndex = 0;
     ubyte4 windowSize = 0;
     ubyte4 written = 0;
-    ubyte4 hostLen = MOC_STRLEN((sbyte *) pConnectHost);
+    ubyte4 hostLen = DIGI_STRLEN((sbyte *) pConnectHost);
     sshPfSession*   pTmpSession = NULL;
 
     chMesg = &ssh_forwardedService;
@@ -207,8 +207,8 @@ SSH_SESSION_sendPortFwdOpen(sshContext *pContextSSH,
         status = ERR_MEM_ALLOC_FAIL;
         goto exit;
     }
-    MOC_MEMSET( (ubyte*)pTmpSession, 0x00, sizeof(sshPfSession) );
-    
+    DIGI_MEMSET( (ubyte*)pTmpSession, 0x00, sizeof(sshPfSession) );
+
     createPortFwdChannelNumber(pContextSSH, pTmpSession, &myChannel);
 
     *rmyChannel = myChannel;
@@ -235,7 +235,7 @@ SSH_SESSION_sendPortFwdOpen(sshContext *pContextSSH,
     *pBuffer = SSH_MSG_CHANNEL_OPEN;
     bufIndex++;
 
-    MOC_MEMCPY(pBuffer + bufIndex, chMesg->pString, chMesg->stringLen);
+    DIGI_MEMCPY(pBuffer + bufIndex, chMesg->pString, chMesg->stringLen);
     bufIndex += chMesg->stringLen;
 
     /* client channel */
@@ -259,7 +259,7 @@ SSH_SESSION_sendPortFwdOpen(sshContext *pContextSSH,
 
     bufIndex += 12;
 
-    MOC_MEMCPY(pBuffer + bufIndex, srcAdd->pString, srcAdd->stringLen);
+    DIGI_MEMCPY(pBuffer + bufIndex, srcAdd->pString, srcAdd->stringLen);
     bufIndex += srcAdd->stringLen;
 
     *(pBuffer + bufIndex    )  = (ubyte)(srcPort >> 24);
@@ -338,14 +338,14 @@ static MSTATUS handleChannelOpenConfirmation(sshContext *pContextSSH, ubyte *pMe
 exit:
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 /*------------------------------------------------------------------*/
 static MSTATUS
 handleGlobalMesgReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 {
     ubyte4              numBytesWritten;
     ubyte               msgReqFailed = SSH_MSG_REQUEST_FAILURE;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ 
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     ubyte               msgReqSuc = SSH_MSG_REQUEST_SUCCESS;
     ubyte4              dstPort;
     ubyte4              orgPort;
@@ -353,7 +353,7 @@ handleGlobalMesgReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
     MSTATUS             status       = OK;
     ubyte4              channelTypeLength;
     sbyte4              channelChoice;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ 
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     sshStringBuffer*    pDstLocation = NULL;
     byteBoolean         bFreeDstLocation = FALSE ;
     byteBoolean         WantReply;
@@ -370,24 +370,24 @@ handleGlobalMesgReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 
     /* find the type of channel the user requires */
     channelChoice = findChoice(1 + pMesg, 4 + channelTypeLength);
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ 
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     /* Get the 'want reply' content */
     WantReply     = pMesg[1 + 4 + channelTypeLength];
 #endif
 
     switch(channelChoice)
     {
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ 
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
         /* Handle reverse port forwarding */
         case kForwardRequest:
         {
-            ubyte4 index = 1 + 4 + channelTypeLength + 1; 
+            ubyte4 index = 1 + 4 + channelTypeLength + 1;
             /* fetch the bind address parameter from mesg */
             bFreeDstLocation = TRUE ;
             if (OK > (status = SSH_STR_copyStringFromPayload(pMesg, mesgLen, &index, &pDstLocation)))
                 goto exit;
 
-            /* get the port to listen on */ 
+            /* get the port to listen on */
             dstPort = getUbyte4(pMesg + index);
             orgPort = dstPort; /* needed when requested port no. is 0 */
 
@@ -406,7 +406,7 @@ handleGlobalMesgReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
                 {
                     sbyte4  port = 0;
                     status = -1;
-                    while(OK > status) 
+                    while(OK > status)
                     {
                         dstPort = MOCANA_SSH_REVERSE_PORT_FWD_PORT_VALUE + port;
                         status = (MSTATUS)SSH_sshSettings()->funcCheckPort(dstPort);
@@ -470,7 +470,7 @@ handleGlobalMesgReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 
             break;
         }
-#endif 
+#endif
         default:
         {
             ubyte4 length = getUbyte4(1 + pMesg);
@@ -486,7 +486,7 @@ handleGlobalMesgReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
         }
     }
 exit:
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ 
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     if(bFreeDstLocation == TRUE)
     {
         SSH_STR_freeStringBuffer(&pDstLocation);
@@ -495,7 +495,7 @@ exit:
     return status;
 }
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 /*------------------------------------------------------------------*/
 
 static MSTATUS
@@ -596,7 +596,7 @@ closePfChannel(sshContext *pContextSSH, ubyte4 ownChannel)
     return status;
 }
 
-#endif /* #ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* #ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 /*------------------------------------------------------------------*/
 #define MIN_OPEN_CHANNEL_MSG_LEN (1/*type*/+ 4/*channel type lengh*/ + 4 + 4 + 4)
 static MSTATUS
@@ -611,13 +611,13 @@ handleChannelOpenReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
     ubyte4              maxPacketSize;
     ubyte4              channelTypeLength;
     sbyte4              channelChoice;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     sbyte*              pConnectString = NULL;
     sshStringBuffer*    pDstLocation = NULL;
     ubyte2              dstPort;
     sshStringBuffer*    pSrcLocation = NULL;
     ubyte2              srcPort;
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
     ubyte4              sshChannel;
     ubyte4              sshWindowSize;
     enum sshSessionTypes sessionEvent;
@@ -627,7 +627,7 @@ handleChannelOpenReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
     {
         status = ERR_SESSION_BAD_PAYLOAD;
         goto exit;
-    } 
+    }
     channelTypeLength = getUbyte4(1 + pMesg);
 
     /* make sure we have some minimal number of bytes, before processing */
@@ -675,7 +675,7 @@ handleChannelOpenReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             break;
         }
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
         case kDirectRequest:        /* direct-tcpip */
         {
             ubyte4 index = 1 + 4 + channelTypeLength + 12;
@@ -730,8 +730,8 @@ handleChannelOpenReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
                 status = ERR_MEM_ALLOC_FAIL;
                 goto exit;
             }
-            MOC_MEMSET( (ubyte*)pTmpSession, 0x00, sizeof(sshPfSession) );
-            
+            DIGI_MEMSET( (ubyte*)pTmpSession, 0x00, sizeof(sshPfSession) );
+
             createPortFwdChannelNumber(pContextSSH, pTmpSession, &sshChannel);
 
             if (NULL != (pConnectString = MALLOC(1 + connectStrLen)))
@@ -739,7 +739,7 @@ handleChannelOpenReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
                 sbyte4 ignoreRequest = TRUE;    /* always default to safest path */
 
                 /* clone and null terminate string */
-                MOC_MEMCPY((ubyte *)pConnectString, 4 + pDstLocation->pString, connectStrLen);
+                DIGI_MEMCPY((ubyte *)pConnectString, 4 + pDstLocation->pString, connectStrLen);
                 pConnectString[connectStrLen] = '\0';
                 /* handler may block, re-direct, or use non-socket interface to transport */
                 if (NULL != SSH_sshSettings()->funcPtrConnect)
@@ -777,7 +777,7 @@ handleChannelOpenReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 
             break;
         }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
         default:
             goto sendfail;
@@ -847,11 +847,11 @@ sendfail:
     pPayload[8] = failType;
 
     /* copy reason for failure */
-    if (OK > (status = MOC_MEMCPY(9 + pPayload, failMessage->pString, failMessage->stringLen)))
+    if (OK > (status = DIGI_MEMCPY(9 + pPayload, failMessage->pString, failMessage->stringLen)))
         goto exit;
 
     /* copy language tag */
-    if (OK > (status = MOC_MEMCPY(9 + pPayload + failMessage->stringLen, ssh_languageTag.pString, ssh_languageTag.stringLen)))
+    if (OK > (status = DIGI_MEMCPY(9 + pPayload + failMessage->stringLen, ssh_languageTag.pString, ssh_languageTag.stringLen)))
         goto exit;
 
     status = SSH_OUT_MESG_sendMessage(pContextSSH, pPayload, 9 + failMessage->stringLen + ssh_languageTag.stringLen, &numBytesWritten);
@@ -860,13 +860,13 @@ exit:
     if (NULL != pPayload)
         FREE(pPayload);
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     if (NULL != pConnectString)
         FREE(pConnectString);
 
     SSH_STR_freeStringBuffer(&pDstLocation);
     SSH_STR_freeStringBuffer(&pSrcLocation);
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
     return status;
 
@@ -907,7 +907,7 @@ SSH_SESSION_sendWindowAdjust(sshContext *pContextSSH, ubyte mesgType, ubyte4 num
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 extern MSTATUS
 SSH_SESSION_sendPortFwdWindowAdjust(sshContext *pContextSSH, ubyte mesgType, ubyte4 numBytesToAck, ubyte4 recipientChannel )
 {
@@ -936,7 +936,7 @@ SSH_SESSION_sendPortFwdWindowAdjust(sshContext *pContextSSH, ubyte mesgType, uby
 
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 /*------------------------------------------------------------------*/
 
@@ -946,9 +946,9 @@ handleWindowAdjust(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
     ubyte4  recipientChannel;
     ubyte4  numBytesAdd;
     MSTATUS status = ERR_SESSION_BAD_PAYLOAD;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     sshPfSession*  pSession = NULL;
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
     if (9 == mesgLen)
     {
@@ -963,13 +963,13 @@ handleWindowAdjust(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             pContextSSH->sessionState.windowSize += numBytesAdd;
             status = OK;
         }
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
         else if ( OK == ( status = isPfChannelActive( pContextSSH, recipientChannel, &pSession ) ) )
         {
             pSession->pfSessionData.windowSize += numBytesAdd;
             status = OK;
         }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
     }
 
     return status;
@@ -982,9 +982,9 @@ static MSTATUS
 handleCloseSession(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 {
     ubyte4  recipientChannel;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     sshPfSession* pSession = NULL;
-#endif /* #ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* #ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
     MSTATUS status = ERR_SESSION_BAD_PAYLOAD;
 
@@ -1004,14 +1004,14 @@ handleCloseSession(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             pContextSSH->sessionState.isChannelActive  = FALSE;
             pContextSSH->sessionState.channelState     = SESSION_CLOSED;
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
             if (SFTP_SESSION_ESTABLISHED == pContextSSH->sessionState.isShellActive)
             {
                 SSH_FTP_closeAllOpenHandles(pContextSSH);
             }
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_SERIAL_CHANNEL__
+#ifdef __ENABLE_DIGICERT_SSH_SERIAL_CHANNEL__
             if (NULL != SSH_SESSION_CHANNEL_CLOSE_UPCALL)
                 status = SSH_SESSION_CHANNEL_CLOSE_UPCALL(CONNECTION_INSTANCE(pContextSSH), SSH_SESSION_CHANNEL_CLOSED, NULL, 0);
 #else
@@ -1020,7 +1020,7 @@ handleCloseSession(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 #endif
 
         }
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
         else if ( OK == ( status = isPfChannelActive( pContextSSH, recipientChannel, &pSession ) ) )
         {
 
@@ -1040,7 +1040,7 @@ handleCloseSession(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             closePfChannel(pContextSSH, pSession->ownChannel);
             status = OK;
         }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
     }
     return status;
 }
@@ -1053,9 +1053,9 @@ handleEofSession(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 {
     ubyte4  recipientChannel;
     MSTATUS status = ERR_SESSION_BAD_PAYLOAD;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     sshPfSession* pSession = NULL;
-#endif /* #ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* #ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
     if (5 == mesgLen)
     {
         recipientChannel = getUbyte4(pMesg + 1);
@@ -1072,7 +1072,7 @@ handleEofSession(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             if (NULL != SSH_SESSION_EOF_UPCALL)
                 status = SSH_SESSION_EOF_UPCALL(CONNECTION_INSTANCE(pContextSSH), SSH_SESSION_EOF, NULL, 0);
         }
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
         else if ( OK == ( status = isPfChannelActive( pContextSSH, recipientChannel, &pSession ) ) )
         {
 
@@ -1090,7 +1090,7 @@ handleEofSession(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             }
             status = OK;
         }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
     }
 
     return status;
@@ -1104,9 +1104,9 @@ handleIncomingMessage(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 {
     ubyte4  recipientChannel;
     MSTATUS status = ERR_SESSION_NOT_OPEN;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     sshPfSession* pSession = NULL;
-#endif /* #ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* #ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
     /* ignore all data messages, if client has eof'd */
     if (TRUE == pContextSSH->sessionState.isEof)
@@ -1126,14 +1126,14 @@ handleIncomingMessage(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 
         status = ERR_SESSION_BAD_PAYLOAD;
 
-#ifdef __ENABLE_MOCANA_SSH_MAX_PACKET_SIZE_ERROR__
+#ifdef __ENABLE_DIGICERT_SSH_MAX_PACKET_SIZE_ERROR__
         if(dataLen > MAX_SESSION_WINDOW_SIZE)
         {
             DEBUG_PRINTNL(DEBUG_SSH_MESSAGES, (sbyte *) "dataLen exceeds maxPacketSize");
-	
+
             goto exit ;
         }
-#endif /* __ENABLE_MOCANA_SSH_MAX_PACKET_SIZE_ERROR__ */
+#endif /* __ENABLE_DIGICERT_SSH_MAX_PACKET_SIZE_ERROR__ */
 
         if (mesgLen == (dataLen + 9))
         {
@@ -1150,7 +1150,7 @@ handleIncomingMessage(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 
             /* notify upper layer that message data has been received */
             /* copy the message data */
-#ifdef __ENABLE_MOCANA_SSH_SCP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SCP_SERVER__
 #if 0 /* CUSTOM_SCP for future release */
             if (SCP_SESSION_ESTABLISHED == pContextSSH->sessionState.isShellActive)
             {
@@ -1161,8 +1161,8 @@ handleIncomingMessage(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             }
             else
 #endif
-#endif /* __ENABLE_MOCANA_SSH_SCP_SERVER__ */
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#endif /* __ENABLE_DIGICERT_SSH_SCP_SERVER__ */
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
             if (SFTP_SESSION_ESTABLISHED == pContextSSH->sessionState.isShellActive)
             {
                 if (OK > (status = SSH_FTP_doProtocol(pContextSSH, pData, dataLen)))
@@ -1192,7 +1192,7 @@ handleIncomingMessage(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             }
         }
     }
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     else if ( OK == ( status = isPfChannelActive( pContextSSH, recipientChannel, &pSession ) ) )
     {
         ubyte4 dataLen = getUbyte4(pMesg + 5);
@@ -1200,13 +1200,13 @@ handleIncomingMessage(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 
         status = ERR_SESSION_BAD_PAYLOAD;
 
-#ifdef __ENABLE_MOCANA_SSH_MAX_PACKET_SIZE_ERROR__
+#ifdef __ENABLE_DIGICERT_SSH_MAX_PACKET_SIZE_ERROR__
         if(dataLen > MAX_SESSION_WINDOW_SIZE)
-	
+
         {
             goto exit ;
         }
-#endif /* __ENABLE_MOCANA_SSH_MAX_PACKET_SIZE_ERROR__ */
+#endif /* __ENABLE_DIGICERT_SSH_MAX_PACKET_SIZE_ERROR__ */
 
         if (mesgLen == (dataLen + 9))
         {
@@ -1228,7 +1228,7 @@ handleIncomingMessage(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
                     goto exit;
         }
     }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 exit:
     return status;
@@ -1275,10 +1275,10 @@ handleIncomingExtendedData(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen
             pContextSSH->sessionState.unAckRecvdData += dataLen;
 
             /* notify upper layer that message data has been received */
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
             if (SFTP_SESSION_ESTABLISHED != pContextSSH->sessionState.isShellActive)
 #endif
-#ifdef __ENABLE_MOCANA_SSH_SCP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SCP_SERVER__
             if (SCP_SESSION_ESTABLISHED != pContextSSH->sessionState.isShellActive)
 #endif
                 if (NULL != SSH_STDERR_UPCALL)
@@ -1337,7 +1337,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 
         isReplyRequired = (0 == pMesg[1 + 4 + 4 + getUbyte4(pMesg + 5)]) ? FALSE : TRUE;
 
-        if (OK > (status = MOC_MEMCMP(pMesg + 5, ssh_terminalType.pString, ssh_terminalType.stringLen, &result)))
+        if (OK > (status = DIGI_MEMCMP(pMesg + 5, ssh_terminalType.pString, ssh_terminalType.stringLen, &result)))
             goto exit;
 
         if (0 == result)
@@ -1383,7 +1383,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
                 goto exit;
             }
 
-            MOC_MEMCPY((ubyte *)(pTerminal->pTerminalEnvironment), (4 + pTerminalEnvironment->pString), pTerminalEnvironment->stringLen - 4);
+            DIGI_MEMCPY((ubyte *)(pTerminal->pTerminalEnvironment), (4 + pTerminalEnvironment->pString), pTerminalEnvironment->stringLen - 4);
             pTerminal->pTerminalEnvironment[pTerminalEnvironment->stringLen - 4] = '\0';
             pTerminal->terminalEnvironmentLength = pTerminalEnvironment->stringLen - 4;
 
@@ -1395,7 +1395,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
                     goto exit;
                 }
 
-                MOC_MEMCPY((ubyte *)pTerminal->pEncodedTerminalModes, 4 + pTerminalEncoded->pString, pTerminalEncoded->stringLen - 4);
+                DIGI_MEMCPY((ubyte *)pTerminal->pEncodedTerminalModes, 4 + pTerminalEncoded->pString, pTerminalEncoded->stringLen - 4);
                 pTerminal->encodedTerminalModes = pTerminalEncoded->stringLen - 4;
             }
 
@@ -1403,7 +1403,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             callbackEvent = SSH_SESSION_PTY_REQUEST;
         }
 
-        if (OK > (status = MOC_MEMCMP(pMesg + 5, ssh_shellType.pString, ssh_shellType.stringLen, &result)))
+        if (OK > (status = DIGI_MEMCMP(pMesg + 5, ssh_shellType.pString, ssh_shellType.stringLen, &result)))
             goto exit;
 
         if (0 == result)
@@ -1426,7 +1426,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             callbackEvent = SSH_SESSION_OPEN_SHELL;
         }
 
-        if (OK > (status = MOC_MEMCMP(pMesg + 5, ssh_windowChange.pString, ssh_windowChange.stringLen, &result)))
+        if (OK > (status = DIGI_MEMCMP(pMesg + 5, ssh_windowChange.pString, ssh_windowChange.stringLen, &result)))
             goto exit;
 
         if (0 == result)
@@ -1451,9 +1451,9 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             callbackEvent = SSH_SESSION_WINDOW_CHANGE;
         }
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_SERVER__
         /*!!!! disable upcalls when SFTP is enabled */
-        if (OK > (status = MOC_MEMCMP(pMesg + 5, ssh_subSystem.pString, ssh_subSystem.stringLen, &result)))
+        if (OK > (status = DIGI_MEMCMP(pMesg + 5, ssh_subSystem.pString, ssh_subSystem.stringLen, &result)))
             goto exit;
 
         if (0 == result)
@@ -1475,7 +1475,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
                 goto exit;
             }
 
-            if (OK > (status = MOC_STREAM_open(&(pContextSSH->sessionState.pSftpOutStreamDescr),
+            if (OK > (status = DIGI_STREAM_open(&(pContextSSH->sessionState.pSftpOutStreamDescr),
                                                (void*)pContextSSH, SFTP_SERVER_STREAM_BUF_SIZE,
                                                (funcStreamWriteData)SSH_SESSION_sendMessage)))
             {
@@ -1485,14 +1485,14 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             callbackFunc  = SSH_SESSION_OPEN_SFTP_UPCALL;
             callbackEvent = SSH_SESSION_OPEN_SFTP;
         }
-#endif /* __ENABLE_MOCANA_SSH_FTP_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_SERVER__ */
 
-        if (OK > (status = MOC_MEMCMP(pMesg + 5, ssh_execRequest.pString, ssh_execRequest.stringLen, &result)))
+        if (OK > (status = DIGI_MEMCMP(pMesg + 5, ssh_execRequest.pString, ssh_execRequest.stringLen, &result)))
             goto exit;
 
         if (0 == result)
         {
-#ifdef __ENABLE_MOCANA_SSH_EXEC__
+#ifdef __ENABLE_DIGICERT_SSH_EXEC__
             /* handle break */
             isGoodMessage = TRUE;
 
@@ -1521,10 +1521,10 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
 #else
             status = ERR_SSH_DISCONNECT_BY_APPLICATION;
             goto exit;
-#endif /* __ENABLE_MOCANA_SSH_EXEC__ */
+#endif /* __ENABLE_DIGICERT_SSH_EXEC__ */
         }
 
-        if (OK > (status = MOC_MEMCMP(pMesg + 5, ssh_breakOperation.pString, ssh_breakOperation.stringLen, &result)))
+        if (OK > (status = DIGI_MEMCMP(pMesg + 5, ssh_breakOperation.pString, ssh_breakOperation.stringLen, &result)))
             goto exit;
 
         if (0 == result)
@@ -1546,7 +1546,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             callbackEvent = SSH_SESSION_BREAK_OP;
         }
 
-#ifdef __ENABLE_MOCANA_SSH_SCP_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SCP_SERVER__
 #if 0 /* CUSTOM_SCP for future release */
         /* NOTE: This is not original SCP support (RCP over SSH). */
         else
@@ -1555,7 +1555,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             if (18 < mesgLen)
             {
                 /* check for the existance of "exec" */
-                if (OK > (status = MOC_MEMCMP((pMesg + 5), ssh_scpExec.pString, ssh_scpExec.stringLen, &result)))
+                if (OK > (status = DIGI_MEMCMP((pMesg + 5), ssh_scpExec.pString, ssh_scpExec.stringLen, &result)))
                     goto exit;
 
                 if (0 == result)
@@ -1594,7 +1594,7 @@ handleChannelRequest(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
             }
         }
 #endif
-#endif /* __ENABLE_MOCANA_SSH_SCP_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SCP_SERVER__ */
 
         /* only reply, if requested */
         if (FALSE == isReplyRequired)
@@ -1737,7 +1737,7 @@ SSH_SESSION_receiveMessage(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newM
         }
         case SSH_MSG_CHANNEL_OPEN_CONFIRMATION:
         {
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
             status = handleChannelOpenConfirmation(pContextSSH, pNewMesg, newMesgLen);
             break;
 #endif
@@ -1768,7 +1768,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 extern MSTATUS
 SSH_SESSION_forwardMessage(sshContext *pContextSSH, ubyte *pMesg,
                            ubyte4 mesgLen, ubyte4 *pBytesSent,
@@ -1834,7 +1834,7 @@ SSH_SESSION_forwardMessage(sshContext *pContextSSH, ubyte *pMesg,
         pMessage[7] = (ubyte)(numBytesToWrite >>  8);
         pMessage[8] = (ubyte)(numBytesToWrite);
 
-        MOC_MEMCPY(pMessage + 9, pMesg, numBytesToWrite);
+        DIGI_MEMCPY(pMessage + 9, pMesg, numBytesToWrite);
 
         if (OK > (status = SSH_OUT_MESG_sendMessage(pContextSSH, pMessage,
                                                     numBytesToWrite + 9, &numBytesWritten)))
@@ -1855,7 +1855,7 @@ exit:
     return status;
 
 } /* SSH_SESSION_forwardMessage */
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 
 /*------------------------------------------------------------------*/
@@ -1927,7 +1927,7 @@ SSH_SESSION_sendMessage(sshContext *pContextSSH, ubyte *pMesg,
         pMessage[7] = (ubyte)(numBytesToWrite >>  8);
         pMessage[8] = (ubyte)(numBytesToWrite);
 
-        MOC_MEMCPY(pMessage + 9, pMesg, numBytesToWrite);
+        DIGI_MEMCPY(pMessage + 9, pMesg, numBytesToWrite);
 
         if (OK > (status = SSH_OUT_MESG_sendMessage(pContextSSH, pMessage,
                                                     numBytesToWrite + 9, &numBytesWritten)))
@@ -1952,7 +1952,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PING__
+#ifdef __ENABLE_DIGICERT_SSH_PING__
 extern MSTATUS
 SSH_SESSION_sendPingMessage(sshContext *pContextSSH)
 {
@@ -1971,7 +1971,7 @@ SSH_SESSION_sendPingMessage(sshContext *pContextSSH)
 
     *pTemp = SSH_MSG_GLOBAL_REQUEST;  pTemp++;
 
-    MOC_MEMCPY(pTemp, ssh_pingChannel.pString, ssh_pingChannel.stringLen);
+    DIGI_MEMCPY(pTemp, ssh_pingChannel.pString, ssh_pingChannel.stringLen);
     pTemp = pTemp + ssh_pingChannel.stringLen;
 
     /* want reply == yes */
@@ -2061,7 +2061,7 @@ SSH_SESSION_sendStdErrMessage(sshContext *pContextSSH, ubyte *pMesg,
         pMessage[11] = (ubyte)(numBytesToWrite >>  8);
         pMessage[12] = (ubyte)(numBytesToWrite);
 
-        MOC_MEMCPY(pMessage + 13, pMesg, numBytesToWrite);
+        DIGI_MEMCPY(pMessage + 13, pMesg, numBytesToWrite);
 
         if (OK > (status = SSH_OUT_MESG_sendMessage(pContextSSH, pMessage,
                                                     numBytesToWrite + 13, &numBytesWritten)))
@@ -2086,7 +2086,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 static MSTATUS sendLpfEof(sshContext *pContextSSH, sshPfSession*  pPfSession)
 {
     ubyte   payload[5];
@@ -2169,7 +2169,7 @@ extern MSTATUS SSH_SESSION_lpfSendClose(sshContext *pContextSSH, sshPfSession*  
 exit:
     return status;
 }
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 extern MSTATUS SSH_SESSION_sendCloseChannel(sshContext *pContextSSH)
 {
@@ -2201,10 +2201,10 @@ extern MSTATUS SSH_SESSION_sendCloseChannel(sshContext *pContextSSH)
 
         status = SSH_OUT_MESG_sendMessage(pContextSSH, payload, 5, &numBytesWritten);
 
-        MOC_MEMSET(pContextSSH->sshKeyExCtx.pBytesSharedSecret, 0x00, pContextSSH->sshKeyExCtx.bytesSharedSecretLen);
-        MOC_FREE((void**)&(pContextSSH->sshKeyExCtx.pBytesSharedSecret));
+        DIGI_MEMSET(pContextSSH->sshKeyExCtx.pBytesSharedSecret, 0x00, pContextSSH->sshKeyExCtx.bytesSharedSecretLen);
+        DIGI_FREE((void**)&(pContextSSH->sshKeyExCtx.pBytesSharedSecret));
         pContextSSH->sshKeyExCtx.bytesSharedSecretLen = 0;
-        
+
     }
 
 exit:
@@ -2223,28 +2223,30 @@ extern void
 SSH_SESSION_sendClose(sshContext *pContextSSH, MSTATUS errorCode)
 {
     MSTATUS status;
+#ifdef __ENABLE_DIGICERT_SERVER_SKIP_DISCONNECT_ON_CLOSE__
     intBoolean wasAlreadyClosed = (SESSION_CLOSED == pContextSSH->sessionState.channelState);
-
+#endif
     status = SSH_SESSION_sendCloseChannel(pContextSSH);
     /* so we know that the session is really closed */
     pContextSSH->sessionState.channelState = SESSION_CLOSED;
 
     if (OK == status)
     {
+#ifdef __ENABLE_DIGICERT_SERVER_SKIP_DISCONNECT_ON_CLOSE__
         /* Don't send disconnect message if client already closed the channel,
          * or for client-initiated EOF and timeouts to prevent TCP RST */
         if ((TRUE == wasAlreadyClosed)
               || (TRUE == pContextSSH->sessionState.isEof)
-#ifdef __ENABLE_MOCANA_SSH_MAX_SESSION_TIME_LIMIT__
+#ifdef __ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__
               || (ERR_SSH_MAX_SESSION_TIME_LIMIT_EXCEEDED == pContextSSH->errorCode)
 #endif
         )
         {
             /* Client initiated the close or timeout - skip disconnect to avoid TCP RST */
-            MOC_MEMSET(pContextSSH->sshKeyExCtx.pBytesSharedSecret, 0x00, pContextSSH->sshKeyExCtx.bytesSharedSecretLen);
-            MOC_FREE((void**)&(pContextSSH->sshKeyExCtx.pBytesSharedSecret));
+            DIGI_MEMSET(pContextSSH->sshKeyExCtx.pBytesSharedSecret, 0x00, pContextSSH->sshKeyExCtx.bytesSharedSecretLen);
+            DIGI_FREE((void**)&(pContextSSH->sshKeyExCtx.pBytesSharedSecret));
             pContextSSH->sshKeyExCtx.bytesSharedSecretLen = 0;
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
             CRYPTO_INTERFACE_DH_freeDhContext(&(pContextSSH->sshKeyExCtx.p_dhContext), NULL);
 #else
             DH_freeDhContext(&(pContextSSH->sshKeyExCtx.p_dhContext), NULL);
@@ -2258,8 +2260,11 @@ SSH_SESSION_sendClose(sshContext *pContextSSH, MSTATUS errorCode)
                 SSH_TRANS_sendDisconnectMesg(pContextSSH, SSH_DISCONNECT_BY_APPLICATION);
             }
         }
+#else
+        SSH_TRANS_sendDisconnectMesg(pContextSSH, SSH_DISCONNECT_BY_APPLICATION);
+#endif /* __ENABLE_DIGICERT_SERVER_SKIP_DISCONNECT_ON_CLOSE__ */
     }
 }
 
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */
 

@@ -18,7 +18,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -39,7 +39,7 @@
 #include "../crypto/crypto.h"
 #include "../crypto/dsa.h"
 #include "../crypto/dh.h"
-#ifdef __ENABLE_MOCANA_ECC__
+#ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto/primefld.h"
 #include "../crypto/primeec.h"
 #endif
@@ -80,8 +80,8 @@ static MSTATUS UTILS_arrayToUbyte4(const ubyte *in, ubyte4 *out)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
 static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
 {
     if (NULL == out)
@@ -101,7 +101,7 @@ static MSTATUS UTILS_ubyte8ToArray(ubyte8 i, ubyte *out)
     return OK;
 }
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ receiveVersionString(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *p
             goto exit;
         }
 
-        MOC_MEMCPY(INBOUND_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
+        DIGI_MEMCPY(INBOUND_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
                *ppPacketPayload, bytesRead);
 
         INBOUND_BYTES_READ(pContextSSH) += bytesRead;
@@ -181,7 +181,7 @@ receiveVersionString(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *p
         }
 
         /* check version string "SSH-2." */
-        if (OK > (status = MOC_MEMCMP(INBOUND_BUFFER(pContextSSH), (ubyte *)EXPECTED_CLIENT_STRING, sizeof(EXPECTED_CLIENT_STRING) - 1, &cmpResult)))
+        if (OK > (status = DIGI_MEMCMP(INBOUND_BUFFER(pContextSSH), (ubyte *)EXPECTED_CLIENT_STRING, sizeof(EXPECTED_CLIENT_STRING) - 1, &cmpResult)))
             goto exit;
 
         if (0 != cmpResult)
@@ -193,7 +193,7 @@ receiveVersionString(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *p
             }
 
             /* Look for "SSH-1.99" == 8 bytes */
-            if (OK > (status = MOC_MEMCMP(INBOUND_BUFFER(pContextSSH), (ubyte *)EXPECTED_CLIENT_STRING1, sizeof(EXPECTED_CLIENT_STRING1) - 1, &cmpResult)))
+            if (OK > (status = DIGI_MEMCMP(INBOUND_BUFFER(pContextSSH), (ubyte *)EXPECTED_CLIENT_STRING1, sizeof(EXPECTED_CLIENT_STRING1) - 1, &cmpResult)))
                 goto exit;
 
             if (0 != cmpResult)
@@ -281,7 +281,7 @@ verifyMAC(sshContext *pContextSSH)
 
     if (OK <= status)
     {
-        if (OK == (status = MOC_CTIME_MATCH(tempMac, 
+        if (OK == (status = DIGI_CTIME_MATCH(tempMac, 
                                             INBOUND_BUFFER(pContextSSH) + INBOUND_PACKET_LENGTH(pContextSSH) + 4,
                                             INBOUND_MAC_SIZE(pContextSSH), &result)))
         {
@@ -328,7 +328,7 @@ receiveFirstBlock(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPac
             goto exit;
         }
 
-        status = MOC_MEMCPY(INBOUND_BUFFER(pContextSSH),
+        status = DIGI_MEMCPY(INBOUND_BUFFER(pContextSSH),
             *ppPacketPayload, *pPacketLength);
         if (OK != status)
             goto exit;
@@ -362,7 +362,7 @@ receiveFirstBlock(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPac
                 goto exit;
             }
 
-            status = MOC_MEMCPY(INBOUND_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
+            status = DIGI_MEMCPY(INBOUND_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
                     *ppPacketPayload, bytesRead);
             if (OK != status)
                 goto exit;
@@ -406,7 +406,7 @@ receiveFirstBlock(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPac
                 goto exit;
             }
 
-            MOC_MEMCPY(INBOUND_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
+            DIGI_MEMCPY(INBOUND_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
                 *ppPacketPayload, bytesRead);
 
             INBOUND_BYTES_READ(pContextSSH) += bytesRead;
@@ -430,8 +430,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
 static MSTATUS
 getPacketLength(sshContext *pContextSSH, ubyte *pPacketLength)
 {
@@ -462,7 +462,7 @@ exit:
     return status;
 }
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
 
 /*------------------------------------------------------------------*/
 
@@ -471,8 +471,8 @@ decryptFirstBlock(sshContext *pContextSSH)
 {
     sshAeadAlgo*    pAeadSuite;
     MSTATUS         status = OK;
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     ubyte           pPacketLength[4];
 #endif
 #endif
@@ -481,11 +481,11 @@ decryptFirstBlock(sshContext *pContextSSH)
     if (NULL != INBOUND_CIPHER_ALGORITHM(pContextSSH))
     {
         /* see if we are using chacha20 with poly1305 cipher suite */
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
         if (CHACHA20_POLY1305_OPENSSH == INBOUND_CIPHER_TYPE(pContextSSH))
         {
-            status = MOC_MEMCPY(pPacketLength, INBOUND_BUFFER(pContextSSH), 4);
+            status = DIGI_MEMCPY(pPacketLength, INBOUND_BUFFER(pContextSSH), 4);
             if (OK != status)
             {
                 goto exit;
@@ -503,7 +503,7 @@ decryptFirstBlock(sshContext *pContextSSH)
         }
         else
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
         {
             if (INBOUND_MAC_IS_ETM(pContextSSH))
             {
@@ -543,8 +543,8 @@ decryptFirstBlock(sshContext *pContextSSH)
     }
 
     /* translate packet length from network byte order */
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     if (CHACHA20_POLY1305_OPENSSH != INBOUND_CIPHER_TYPE(pContextSSH))
 #endif
 #endif
@@ -654,7 +654,7 @@ receiveBlocks(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPacketL
             goto exit;
         }
 
-        status = MOC_MEMCPY(INBOUND_BUFFER(pContextSSH) + bufferOffset,
+        status = DIGI_MEMCPY(INBOUND_BUFFER(pContextSSH) + bufferOffset,
             *ppPacketPayload, bytesRead);
         if (OK != status)
             goto exit;
@@ -692,8 +692,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
 static MSTATUS decryptAeadBlocksEx(sshContext *pContextSSH)
 {
     sshAeadAlgo*    pAeadSuite;
@@ -739,7 +739,7 @@ exit:
     return status;
 }
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
 
 
 /*------------------------------------------------------------------*/
@@ -859,7 +859,7 @@ receiveMAC(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPacketLeng
     /* copy digested bytes from packet to buffer, update indices and counters */
     if (bytesRead)
     {
-        MOC_MEMCPY(INBOUND_MAC_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
+        DIGI_MEMCPY(INBOUND_MAC_BUFFER(pContextSSH) + INBOUND_BYTES_READ(pContextSSH),
                *ppPacketPayload, bytesRead);
 
         INBOUND_BYTES_READ(pContextSSH) += bytesRead;
@@ -890,7 +890,7 @@ receiveMAC(sshContext *pContextSSH, ubyte **ppPacketPayload, ubyte4 *pPacketLeng
                 intBoolean result = -1;
 
                 /* verify the MAC sent is correct */
-                if (OK == (status = MOC_CTIME_MATCH(tempMac, INBOUND_MAC_BUFFER(pContextSSH),
+                if (OK == (status = DIGI_CTIME_MATCH(tempMac, INBOUND_MAC_BUFFER(pContextSSH),
                                                     INBOUND_MAC_SIZE(pContextSSH), &result)))
                 {
                     if (0 != result)
@@ -1008,15 +1008,15 @@ SSH_IN_MESG_processMessage(sshContext *pContextSSH,
                 break;
 
             case kDecryptAeadBlocks:
-#if (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__))
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__))
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
                 if (CHACHA20_POLY1305_OPENSSH == INBOUND_CIPHER_TYPE(pContextSSH))
                 {
                     status = decryptAeadBlocksEx(pContextSSH);
                 }
                 else
 #endif
-#endif /* (defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)) */
+#endif /* (defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)) */
                 {
                     status = decryptAeadBlocks(pContextSSH);
                 }
@@ -1103,6 +1103,6 @@ SSH_IN_MESG_deallocStructures(sshContext *pContextSSH)
 }
 
 
-#endif /* __ENABLE_MOCANA_SSH_SERVER__ */
+#endif /* __ENABLE_DIGICERT_SSH_SERVER__ */
 
 

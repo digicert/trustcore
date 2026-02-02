@@ -27,7 +27,7 @@
 @flags
 To use this file's enumerations, structures, and functions, the following flag
 must be defined:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @filedoc    sshc_filesys.h
 */
@@ -39,7 +39,7 @@ must be defined:
 extern "C" {
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 #ifndef SFTP_MAX_FILENAME_LENGTH
 #define SFTP_MAX_FILENAME_LENGTH    64
@@ -111,7 +111,7 @@ typedef struct
 @flags
 To use this structure's callbacks, the following flag
 must be defined:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 */
 typedef struct
@@ -129,7 +129,7 @@ typedef struct
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @param connectionInstance       Connection instance returned from SSHC_connect().
 @param p_sftpFileHandleDescr    File handle descriptor returned
@@ -157,7 +157,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @param connectionInstance       Connection instance returned from SSHC_connect().
 @param p_sftpFileHandleDescr    File handle descriptor returned from
@@ -185,7 +185,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @param connectionInstance       Connection instance returned from SSHC_connect().
 @param p_sftpFileHandleDescr    File handle descriptor returned
@@ -213,7 +213,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @param connectionInstance       Connection instance returned from SSHC_connect().
 @param p_sftpFileHandleDescr    File handle descriptor returned from
@@ -244,7 +244,7 @@ To enable this function, the following flag must be defined in moptions.h:
 
 @flags
 To enable this function, the following flag must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @param connectionInstance       Connection instance returned from SSHC_connect().
 @param statusCode               Error/status code contained in the payload of
@@ -305,8 +305,8 @@ MOC_EXTERN void   SSHC_sftpSetWriteLocation(sftpcFileHandleDescr *p_sftpFileHand
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc_filesys.h
 
@@ -338,8 +338,8 @@ MOC_EXTERN void   SSHC_sftpSetWriteBuffer(sftpcFileHandleDescr *p_sftpFileHandle
 
 @flags
 To enable this function, the following flags must be defined in moptions.h:
-+ \c \__ENABLE_MOCANA_SSH_CLIENT__
-+ \c \__ENABLE_MOCANA_SSH_FTP_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_CLIENT__
++ \c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__
 
 @inc_file sshc_filesys.h
 
@@ -365,7 +365,7 @@ MOC_EXTERN void   SSHC_sftpSetWriteBufferSize(sftpcFileHandleDescr *p_sftpFileHa
  */
 MOC_EXTERN ubyte4 SSHC_sftpGetMaxWrite(sbyte4 connectionInstance);
 
-#endif /* __ENABLE_MOCANA_SSH_FTP_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_CLIENT__ */
 
 #ifdef __cplusplus
 }

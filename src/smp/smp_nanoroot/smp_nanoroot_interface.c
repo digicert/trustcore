@@ -20,7 +20,7 @@
  *           communicate/manage NanoROOT NanoSMP module plugin.
  */
 
-#if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__))
+#if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 #include "smp_nanoroot_interface.h"
 #include "smp_nanoroot.h"
 #include "smp_nanoroot_api.h"
@@ -111,7 +111,7 @@ MSTATUS SMP_NanoROOT_dispatcher(
         TAP_RequestContext *pCtx,
         SMP_CmdReq *pCmdReq,
         SMP_CmdRsp *pCmdRsp
-#ifndef __DISABLE_MOCANA_SMP_EXTENDED_ERROR__
+#ifndef __DISABLE_DIGICERT_SMP_EXTENDED_ERROR__
        , TAP_ErrorAttributes *pErrorRules
        , TAP_ErrorAttributes **ppErrAttrReturned
 #endif
@@ -968,4 +968,4 @@ exit:
     return status;
 }
 
-#endif /* #if (defined (__ENABLE_MOCANA_SMP__) && defined (__ENABLE_MOCANA_SMP_NANOROOT__)) */
+#endif /* #if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__)) */

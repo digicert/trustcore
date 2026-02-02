@@ -18,7 +18,7 @@
 
 #include "../common/moptions.h"
 
-#if ((defined(__ENABLE_MOCANA_CRYPTO_INTERFACE__)) && (defined(__ENABLE_MOCANA_PQC__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__)))
+#if ((defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)) && (defined(__ENABLE_DIGICERT_PQC__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__)))
 
 #include "../common/mtypes.h"
 #include "../common/mocana.h"
@@ -38,17 +38,17 @@
 #include "../crypto/pubcrypto.h"
 #include "../crypto/sha1.h"
 #include "../ssh/ssh_str.h"
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
 #include "../ssh/ssh_utils.h"
 #include "../ssh/ssh.h"
 #include "../ssh/ssh_str_house.h"
 #endif
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 #include "../ssh/client/sshc_str_house.h"
 #endif
 #include "../ssh/ssh_qs.h"
 
-#ifdef __ENABLE_MOCANA_CRYPTO_INTERFACE__
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #include "../crypto_interface/cryptointerface.h"
 #include "../crypto_interface/crypto_interface_qs.h"
 #include "../crypto_interface/crypto_interface_qs_sig.h"
@@ -64,21 +64,21 @@ typedef struct QsEntry
 
 static QsEntry g_qsNames[] =
 {
-#ifdef __ENABLE_MOCANA_SSH_SERVER__
+#ifdef __ENABLE_DIGICERT_SSH_SERVER__
         {   &ssh_mldsa44_signature, cid_PQC_MLDSA_44, FALSE },
         {   &ssh_mldsa65_signature, cid_PQC_MLDSA_65, FALSE },
         {   &ssh_mldsa87_signature, cid_PQC_MLDSA_87, FALSE },
-#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+#ifdef __ENABLE_DIGICERT_PRE_DRAFT_PQC__
         {   &ssh_cert_mldsa44_signature, cid_PQC_MLDSA_44, TRUE },
         {   &ssh_cert_mldsa65_signature, cid_PQC_MLDSA_65, TRUE },
         {   &ssh_cert_mldsa87_signature, cid_PQC_MLDSA_87, TRUE },
 #endif
 #endif
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
         {   &sshc_mldsa44_signature, cid_PQC_MLDSA_44, FALSE },
         {   &sshc_mldsa65_signature, cid_PQC_MLDSA_65, FALSE },
         {   &sshc_mldsa87_signature, cid_PQC_MLDSA_87, FALSE },
-#ifdef __ENABLE_MOCANA_PRE_DRAFT_PQC__
+#ifdef __ENABLE_DIGICERT_PRE_DRAFT_PQC__
         {   &sshc_cert_mldsa44_signature, cid_PQC_MLDSA_44, TRUE },
         {   &sshc_cert_mldsa65_signature, cid_PQC_MLDSA_65, TRUE },
         {   &sshc_cert_mldsa87_signature, cid_PQC_MLDSA_87, TRUE },
@@ -111,7 +111,7 @@ SSH_QS_getQsEntryByName(const sshStringBuffer* pQsEntryName)
         if (pQsEntryName->stringLen == pEntry->pQsName->stringLen)
         {
             cmpRes = -1;
-            if (OK > MOC_MEMCMP(pQsEntryName->pString, pEntry->pQsName->pString, pEntry->pQsName->stringLen, &cmpRes))
+            if (OK > DIGI_MEMCMP(pQsEntryName->pString, pEntry->pQsName->pString, pEntry->pQsName->stringLen, &cmpRes))
                 return NULL;
 
             if (0 == cmpRes)
@@ -198,7 +198,7 @@ SSH_QS_getNameLengthFromIds(ubyte4 qsAlgId, intBoolean isCertificate, ubyte4 *pN
         goto exit;
     }
 
-    *pNameLen = MOC_NTOHL(pEntry->pQsName->pString);
+    *pNameLen = DIGI_NTOHL(pEntry->pQsName->pString);
 
 exit:
     return status;
@@ -224,7 +224,7 @@ SSH_QS_getNameFromIds(ubyte4 qsAlgId, intBoolean isCertificate, ubyte *pName, ub
     }
 
     pAlgoName = pEntry->pQsName;
-    expectedNameLen = MOC_NTOHL(pAlgoName->pString);
+    expectedNameLen = DIGI_NTOHL(pAlgoName->pString);
 
     if (expectedNameLen > nameLen)
     {
@@ -232,7 +232,7 @@ SSH_QS_getNameFromIds(ubyte4 qsAlgId, intBoolean isCertificate, ubyte *pName, ub
         goto exit;
     }
 
-    status = MOC_MEMCPY(pName, pAlgoName->pString + 4, expectedNameLen);
+    status = DIGI_MEMCPY(pName, pAlgoName->pString + 4, expectedNameLen);
 
 exit:
 
@@ -261,7 +261,7 @@ MOC_EXTERN MSTATUS SSH_QS_verifyAlgorithmNameEx(const ubyte *pQsName, ubyte4 qsN
 
     BIGEND32(pAlgoName->pString, qsName);
 
-    status = MOC_MEMCPY(pAlgoName->pString + 4, pQsName, qsName);
+    status = DIGI_MEMCPY(pAlgoName->pString + 4, pQsName, qsName);
     if (OK != status)
         goto exit;
 
@@ -451,7 +451,7 @@ SSH_QS_buildQsKey(AsymmetricKey *pKey, intBoolean isCertificate,
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC((void **) &pAlgoName, algoNameLen);
+    status = DIGI_MALLOC((void **) &pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -465,7 +465,7 @@ SSH_QS_buildQsKey(AsymmetricKey *pKey, intBoolean isCertificate,
 
     keyBlobLen = 4 + algoNameLen + 4 + qsKeyLen;
 
-    status = MOC_MALLOC((void **) &pKeyBlob, keyBlobLen + 4);
+    status = DIGI_MALLOC((void **) &pKeyBlob, keyBlobLen + 4);
     if (OK != status)
         goto exit;
 
@@ -477,7 +477,7 @@ SSH_QS_buildQsKey(AsymmetricKey *pKey, intBoolean isCertificate,
     BIGEND32(pTmpBuf, algoNameLen);
     pTmpBuf += 4;
 
-    status = MOC_MEMCPY(pTmpBuf, pAlgoName, algoNameLen);
+    status = DIGI_MEMCPY(pTmpBuf, pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -499,12 +499,12 @@ exit:
 
     if (NULL != pAlgoName)
     {
-        (void) MOC_FREE((void **) &pAlgoName);
+        (void) DIGI_FREE((void **) &pAlgoName);
     }
 
     if (NULL != pKeyBlob)
     {
-        (void) MOC_MEMSET_FREE(&pKeyBlob, keyBlobLen + 4);
+        (void) DIGI_MEMSET_FREE(&pKeyBlob, keyBlobLen + 4);
     }
 
     return status;
@@ -595,7 +595,7 @@ SSH_QS_buildQsSignature(MOC_HASH(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, i
     if (OK != status)
         goto exit;
 
-    status = MOC_MALLOC((void **) &pAlgoName, algoNameLen);
+    status = DIGI_MALLOC((void **) &pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -611,7 +611,7 @@ SSH_QS_buildQsSignature(MOC_HASH(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, i
     /* have sufficient data to generate signature */
     sigBufLen = (4 + algoNameLen) + (4 + qsSigLen);
 
-    status = MOC_MALLOC((void **) &pSigBuf, sigBufLen + 4);
+    status = DIGI_MALLOC((void **) &pSigBuf, sigBufLen + 4);
     if (OK != status)
         goto exit;
 
@@ -626,7 +626,7 @@ SSH_QS_buildQsSignature(MOC_HASH(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, i
     pTmpBuf += 4;
     tmpBufLen -= 4;
 
-    status = MOC_MEMCPY(pTmpBuf, pAlgoName, algoNameLen);
+    status = DIGI_MEMCPY(pTmpBuf, pAlgoName, algoNameLen);
     if (OK != status)
         goto exit;
 
@@ -637,7 +637,7 @@ SSH_QS_buildQsSignature(MOC_HASH(hwAccelDescr hwAccelCtx) AsymmetricKey *pKey, i
     pTmpBuf += 4;
     tmpBufLen -= 4;
 
-    status = MOC_MEMCPY(pTmpBuf, pQsSig, qsSigLen);
+    status = DIGI_MEMCPY(pTmpBuf, pQsSig, qsSigLen);
     if (OK != status)
         goto exit;
     
@@ -656,15 +656,15 @@ exit:
 
     if (NULL != pAlgoName)
     {
-        (void) MOC_FREE((void **) &pAlgoName);
+        (void) DIGI_FREE((void **) &pAlgoName);
     }
     if (NULL != pQsSig)
     {
-        (void) MOC_MEMSET_FREE(&pQsSig, qsSigLen);
+        (void) DIGI_MEMSET_FREE(&pQsSig, qsSigLen);
     }
     if (NULL != pSigBuf)
     {
-        (void) MOC_MEMSET_FREE(&pSigBuf, sigBufLen + 4);
+        (void) DIGI_MEMSET_FREE(&pSigBuf, sigBufLen + 4);
     }
 
     return status;
@@ -725,7 +725,7 @@ SSH_QS_verifyQsSignature(MOC_DSA(hwAccelDescr hwAccelCtx) AsymmetricKey *pPublic
         goto exit;
 
     /* get length of signature from payload */
-    qsSigLen = MOC_NTOHL(pQsSig->pString);
+    qsSigLen = DIGI_NTOHL(pQsSig->pString);
 
     sigResult = 1;
     status = CRYPTO_INTERFACE_QS_SIG_verify(MOC_HASH(hwAccelCtx) pPublicKey->pQsCtx, (ubyte *) hash, hashLen,
@@ -753,4 +753,4 @@ exit:
 
 } /* SSH_QS_verifyQsSignature */
 
-#endif /* ((defined(__ENABLE_MOCANA_PQC__)) && (defined(__ENABLE_MOCANA_SSH_SERVER__) || defined(__ENABLE_MOCANA_SSH_CLIENT__))) */
+#endif /* ((defined(__ENABLE_DIGICERT_PQC__)) && (defined(__ENABLE_DIGICERT_SSH_SERVER__) || defined(__ENABLE_DIGICERT_SSH_CLIENT__))) */

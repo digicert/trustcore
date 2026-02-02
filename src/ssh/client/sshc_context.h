@@ -73,21 +73,21 @@
  * for inbound and outbound ciphers, they match the index of
  * mCipherSuites in ssh_trans.c */
 enum mCiphers {
-#if (defined(__ENABLE_MOCANA_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES128_CIPHER__))
+#if (defined(__ENABLE_DIGICERT_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES128_CIPHER__))
     AES_128_GCM,
 #ifndef __DISABLE_OPEN_SSH_AES_GCM__
     AES_128_GCM_OPENSSH,
 #endif
 #endif
-#if (defined(__ENABLE_MOCANA_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES256_CIPHER__))
+#if (defined(__ENABLE_DIGICERT_GCM__) && !defined(__DISABLE_AES_CIPHERS__) && !defined(__DISABLE_AES256_CIPHER__))
     AES_256_GCM,
 #ifndef __DISABLE_OPEN_SSH_AES_GCM__
     AES_256_GCM_OPENSSH,
 #endif
 #endif
 
-#if defined(__ENABLE_MOCANA_CHACHA20__) && defined(__ENABLE_MOCANA_POLY1305__)
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#if defined(__ENABLE_DIGICERT_CHACHA20__) && defined(__ENABLE_DIGICERT_POLY1305__)
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     CHACHA20_POLY1305_OPENSSH,
 #endif
 #endif
@@ -95,33 +95,33 @@ enum mCiphers {
 #if (!defined(__DISABLE_AES_CIPHERS__))
 #if (!defined(__DISABLE_AES128_CIPHER__))
     AES128_CTR,
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     AES128_CBC,
     RIJNDAEL128_CBC,
 #endif
 #endif
 #if (!defined(__DISABLE_AES256_CIPHER__))
     AES256_CTR,
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     AES256_CBC,
     RIJNDAEL256_CBC,
 #endif
 #endif
 #ifndef __DISABLE_AES192_CIPHER__
     AES192_CTR,
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     AES192_CBC,
     RIJNDAEL192_CBC,
 #endif
 #endif
 #endif /* __DISABLE_AES_CIPHERS__ */
 #ifdef __ENABLE_BLOWFISH_CIPHERS__
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     BLOWFISH_CBC,
 #endif
 #endif
 #ifndef __DISABLE_3DES_CIPHERS__
-#ifdef __ENABLE_MOCANA_SSH_WEAK_CIPHERS__
+#ifdef __ENABLE_DIGICERT_SSH_WEAK_CIPHERS__
     THREE_DES_CBC,
 #endif
 #endif
@@ -335,27 +335,27 @@ typedef struct
     moctime_t               timeOfLastAck;
 
     intBoolean              isEof;
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
     ubyte4                  clientWindowSize;
-#endif /* __ENABLE_MOCANA_SSH_FTP_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_CLIENT__ */
     intBoolean              rxdClosed;              /* true if other side sent closed */
 
     enum sshSessionStates sessionState;
 
     /* sftp/scp state information */
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
     ubyte4                  sftpVersion;
 
     sshStringBuffer*        pCurrentPath;           /* set by user application code */
 
     sftpcFileHandleDescr    fileHandles[SFTP_NUM_HANDLES];
 
-#endif /* __ENABLE_MOCANA_SSH_FTP_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_CLIENT__ */
 
-#ifdef __ENABLE_MOCANA_SSH_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     ubyte4                  clientChannel;       /* Own/client side channel number */
     enum sshcChannelReqType channelRqstType;
-#endif /* __ENABLE_MOCANA_SSH_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_CLIENT__ */
 
 } sshClientSession;
 
@@ -367,7 +367,7 @@ enum sftpClientInternalStates
     SFTP_RECEIVE_MESSAGE_COMPLETED
 };
 
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
 typedef struct lpfSession
 {
     sshClientSession        lpfSessionData;
@@ -387,21 +387,21 @@ typedef struct rpfContext
     ubyte4          assignedBindPort;
     ubyte4          channelList[SSH_MAX_REMOTE_PORT_FWD_CHANNEL];
 }rpfContextData;
-#endif /* #ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* #ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 
 typedef struct sshClientContext
 {
     TCP_SOCKET              socket;
     sbyte4                  connectionInstance;
 
-#ifdef __ENABLE_MOCANA_SSH_ASYNC_CLIENT_API__
+#ifdef __ENABLE_DIGICERT_SSH_ASYNC_CLIENT_API__
     sbyte4                  waitEvent;          /* 0 == none, 1 == auth, 2 == hw offload */
     ubyte*                  pAsyncCacheMessage;
     ubyte*                  pAsyncCacheTemp;
     ubyte4                  asyncCacheMessageLength;
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_FTP_CLIENT__
+#ifdef __ENABLE_DIGICERT_SSH_FTP_CLIENT__
 /*!!!! move to sshClientSession or create sftpSession structure */
     ubyte*                  p_sftpIncomingBuffer;
     ubyte4                  sftpIncomingBufferSize;
@@ -409,7 +409,7 @@ typedef struct sshClientContext
     ubyte4                  sftpNumBytesRequired;
     ubyte4                  sftpState;
     ubyte                   sftpLengthBuffer[4];
-#endif /* __ENABLE_MOCANA_SSH_FTP_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_SSH_FTP_CLIENT__ */
 
     /* Authentication Context */
     authDescr               authContext;
@@ -522,17 +522,17 @@ typedef struct sshClientContext
     /* developer programmable cookie */
     hwAccelDescr            hwAccelCookie;          /* hardware accelerator cookie */
     sbyte4                  cookie;
-#ifdef __ENABLE_MOCANA_SSH_PORT_FORWARDING__
+#ifdef __ENABLE_DIGICERT_SSH_PORT_FORWARDING__
     sshcPfSession*          pLpfHead;
     rpfContextData          rpfTable[SSH_MAX_RPF_HOSTS];
-#endif /* __ENABLE_MOCANA_SSH_PORT_FORWARDING__ */
+#endif /* __ENABLE_DIGICERT_SSH_PORT_FORWARDING__ */
 #if 1
     /* for harness support */
     poolHeaderDescr         smallPool;
     poolHeaderDescr         mediumPool;
 #endif
 
-#ifdef __ENABLE_MOCANA_SSH_X509V3_SIGN_SUPPORT__
+#ifdef __ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__
     sbyte*                  pCommonName;         /* NOT MALLOC'd */
     struct certStore*       pCertStore;
 #endif

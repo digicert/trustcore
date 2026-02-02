@@ -1,7 +1,7 @@
 #include "../common/moptions.h"
 
 #if defined(__LINUX_RTOS__) && !defined(__RTOS_ZEPHYR__)
-#if defined(__ENABLE_MOCANA_RTOS_PROCESS__)
+#if defined(__ENABLE_DIGICERT_RTOS_PROCESS__)
 
 #include <stdio.h>
 #include <unistd.h>
@@ -44,18 +44,18 @@ extern MSTATUS LINUX_processExecute(
 
     while (FMGMT_fgets(pBuffer, INITIAL_BUFFER_SIZE, pPipe) != NULL)
     {
-        bufferLen = MOC_STRLEN(pBuffer);
+        bufferLen = DIGI_STRLEN(pBuffer);
 
-        status = MOC_MALLOC((void **) &pTmp, outputLen + bufferLen + 1);
+        status = DIGI_MALLOC((void **) &pTmp, outputLen + bufferLen + 1);
         if (OK != status)
         {
             goto exit;
         }
 
-        MOC_MEMCPY(pTmp, pOutput, outputLen);
-        MOC_MEMCPY(pTmp + outputLen, pBuffer, bufferLen);
+        DIGI_MEMCPY(pTmp, pOutput, outputLen);
+        DIGI_MEMCPY(pTmp + outputLen, pBuffer, bufferLen);
 
-        MOC_FREE((void **) &pOutput);
+        DIGI_FREE((void **) &pOutput);
         pOutput = pTmp; pTmp = NULL;
         outputLen += bufferLen;
     }
@@ -69,12 +69,12 @@ exit:
 
     if (NULL != pOutput)
     {
-        MOC_FREE((void **) &pOutput);
+        DIGI_FREE((void **) &pOutput);
     }
 
     if (NULL != pTmp)
     {
-        MOC_FREE((void **) &pTmp);
+        DIGI_FREE((void **) &pTmp);
     }
 
     if (NULL != pPipe)
@@ -111,7 +111,7 @@ extern MSTATUS LINUX_processExecuteWithArg(
 
     /* Build argument array */
     argv[argc++] = pPath;
-    if (NULL != pArg && MOC_STRLEN(pArg) > 0)
+    if (NULL != pArg && DIGI_STRLEN(pArg) > 0)
     {
         argv[argc++] = pArg;
     }
@@ -173,9 +173,9 @@ extern MSTATUS LINUX_processExecuteWithArg(
         /* Read output from child process */
         while (FMGMT_fgets(pBuffer, INITIAL_BUFFER_SIZE, pReadStream) != NULL)
         {
-            bufferLen = MOC_STRLEN(pBuffer);
+            bufferLen = DIGI_STRLEN(pBuffer);
             
-            status = MOC_MALLOC((void **) &pTmp, outputLen + bufferLen + 1);
+            status = DIGI_MALLOC((void **) &pTmp, outputLen + bufferLen + 1);
             if (OK != status)
             {
                 fclose(pReadStream);
@@ -185,11 +185,11 @@ extern MSTATUS LINUX_processExecuteWithArg(
             
             if (pOutput != NULL)
             {
-                MOC_MEMCPY(pTmp, pOutput, outputLen);
+                DIGI_MEMCPY(pTmp, pOutput, outputLen);
             }
-            MOC_MEMCPY(pTmp + outputLen, pBuffer, bufferLen);
+            DIGI_MEMCPY(pTmp + outputLen, pBuffer, bufferLen);
             
-            MOC_FREE((void **) &pOutput);
+            DIGI_FREE((void **) &pOutput);
             pOutput = pTmp; pTmp = NULL;
             outputLen += bufferLen;
         }
@@ -230,12 +230,12 @@ exit:
 
     if (NULL != pOutput)
     {
-        MOC_FREE((void **) &pOutput);
+        DIGI_FREE((void **) &pOutput);
     }
 
     if (NULL != pTmp)
     {
-        MOC_FREE((void **) &pTmp);
+        DIGI_FREE((void **) &pTmp);
     }
 
     if (NULL != pReadStream)
@@ -246,5 +246,5 @@ exit:
     return status;
 }
 
-#endif /* __ENABLE_MOCANA_RTOS_PROCESS__ */
+#endif /* __ENABLE_DIGICERT_RTOS_PROCESS__ */
 #endif /* __LINUX_RTOS__ */
