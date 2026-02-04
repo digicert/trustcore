@@ -69,23 +69,6 @@ jobs:
           cd mss/projects/smp_nanoroot_unittest
           ./run_unit_tests.sh --verbose
 
-      - name: Baseline Coverage
-        run: |
-          cd mss
-          lcov --no-external --capture --initial --directory . --output-file /tmp/nanoroot_base.info
-
-      - name: Capture Coverage
-        run: |
-          cd mss
-          lcov --no-external --capture --directory . --output-file /tmp/nanoroot_test.info
-          lcov --add-tracefile /tmp/nanoroot_base.info --add-tracefile /tmp/nanoroot_test.info --output-file /tmp/nanoroot_total.info
-
-      - name: Print Coverage Summary
-        run: |
-          echo "Coverage Summary:"
-          lcov --extract /tmp/nanoroot_total.info '*/src/smp/smp_nanoroot/*' --output-file /tmp/nanoroot_filtered.info
-          lcov --list /tmp/nanoroot_filtered.info
-
       - name: Test RSA Algorithms (Standard Path)
         run: |
           cd mss
@@ -319,6 +302,22 @@ jobs:
           # Verify data integrity
           diff plaintext_seal.txt decrypted_seal.txt && echo "Seal/Unseal data integrity verified"
 
+      - name: Baseline Coverage
+        run: |
+          cd mss
+          lcov --no-external --capture --initial --directory . --output-file /tmp/nanoroot_base.info
+
+      - name: Capture Coverage
+        run: |
+          cd mss
+          lcov --no-external --capture --directory . --output-file /tmp/nanoroot_test.info
+          lcov --add-tracefile /tmp/nanoroot_base.info --add-tracefile /tmp/nanoroot_test.info --output-file /tmp/nanoroot_total.info
+
+      - name: Print Coverage Summary
+        run: |
+          echo "NanoROOT Coverage Summary:"
+          lcov --extract /tmp/nanoroot_total.info '*/src/smp/smp_nanoroot/*' --output-file /tmp/nanoroot_filtered.info
+          lcov --list /tmp/nanoroot_filtered.info
 
   Build-and-Test-SecurePath:
     name: Build and Test (SECURE_PATH Enabled)
