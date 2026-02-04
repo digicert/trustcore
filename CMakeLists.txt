@@ -32,14 +32,19 @@ option(ENABLE_EST_PROXY "Enable EST proxy support." OFF)
 option(ENABLE_EST_UNITTEST "Enable EST Unit Test" OFF)
 
 # SSL Build options
-option(CM_ENABLE_SSL "Enable SSL library build" ON)
+option(CM_ENABLE_SSL               "Enable SSL library build" ON)
 option(CM_ENABLE_SSL_MAUTH_SUPPORT "Enable Mutual Authentication" OFF)
+option(CM_ENABLE_SSL_OCSP          "Enable OCSP support" OFF)
 if(CM_ENABLE_SSL)
   option(DISABLE_SSL_CLIENT "Disable SSL Client." OFF)
   option(DISABLE_SSL_SERVER "Disable SSL Server." OFF)
 else()
   option(DISABLE_SSL_CLIENT "Disable SSL Client." ON)
   option(DISABLE_SSL_SERVER "Disable SSL Server." ON)
+endif()
+if(CM_ENABLE_SSL_OCSP)
+  set(CM_ENABLE_URI ON CACHE BOOL "Build with URI support." FORCE)
+  set(CM_ENABLE_OCSP ON CACHE BOOL "Build with OCSP support." FORCE)
 endif()
 
 # MQTT build options

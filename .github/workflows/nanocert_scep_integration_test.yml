@@ -1,0 +1,85 @@
+name: "NanoCert SCEP Integration Tests"
+
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 8 * * 1'   # Monday 2:00 PM IST
+    - cron: '30 8 * * 4'   # Thursday 2:00 PM IST
+
+jobs:
+  nanocert-scep-integration-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Clone mocn-qa-m-products
+      env:
+        MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+      run: |
+        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake python3-pip valgrind expect
+        cmake --version
+        pip3 install --upgrade pip
+        pip3 install psutil
+        pip3 install tls-client
+        pip3 install typing_extensions
+        pip3 install pexpect
+        sudo apt-get install -y lcov
+        lcov --version
+        valgrind --version
+        expect -v
+
+    - name: Prepare thirdparty_app directory
+      run: |
+        mkdir -p ~/thirdparty_app
+
+    - name: Install OpenSSL 3.0.7
+      run: |
+        cd ~/thirdparty_app
+        wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
+        tar -xf openssl-3.0.7.tar.gz
+        cd openssl-3.0.7
+        ./config
+        make -j$(nproc)
+        sudo make install
+        cd ..
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Copy SCEP Test Files
+      run: |
+        cp -r ~/mocn-qa-m-products/scepc_test/test_opensource/* .
+
+    - name: Run NanoCert SCEP + TLS Integration Test
+      env:
+        CM_ENV_CODE_COVERAGE: 1
+        DigiCert_Demo_IOT_Server_CRED: ${{ secrets.DIGICERT_DEMO_IOT_SERVER_CRED }}
+        DigiCert_TLM_DEMO_Server_CRED: ${{ secrets.DIGICERT_TLM_DEMO_SERVER_CRED }}
+        DigiCert_TLM_PROD_Server_CRED: ${{ secrets.DIGICERT_TLM_PROD_SERVER_CRED }}
+      run: |
+        PYTHONUNBUFFERED=1 python3 scep_client.py build_client_cap_no_tap.json
+
+    - name: Baseline Coverage
+      run: |
+        lcov --no-external --capture --initial --directory . --output-file /tmp/scep_base.info
+
+    - name: Capture Coverage
+      run: |
+        lcov --no-external --capture --directory . --output-file /tmp/scep_test.info
+        lcov --ignore-errors inconsistent --add-tracefile /tmp/scep_base.info --add-tracefile /tmp/scep_test.info --output-file /tmp/scep_total.info
+
+    - name: Print Coverage Summary
+      run: |
+        echo "Coverage Summary:"
+        lcov --list /tmp/scep_total.info
+
+    - name: Cleanup mocn-qa-m-products
+      run: |
+        rm -rf ~/mocn-qa-m-products
+

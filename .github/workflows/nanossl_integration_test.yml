@@ -3,38 +3,114 @@ name: "NanoSSL Integration Tests"
 on:
   workflow_dispatch: {}
 
+  schedule:
+    - cron: '30 5 * * 2'   # Tuesday 11:00 AM IST
+    - cron: '30 5 * * 5'   # Friday 11:00 AM IST
+
 jobs:
   nanossl-integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
 
-    - name: Install Dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y cmake
-        cmake --version
-        sudo apt-get install -y python3-pip
-        pip install tls-client
     - name: Clone mocn-qa-m-products
       env:
         MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
       run: |
-        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
-    - name: Checkout develop_trustcore branch
+        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+
+    - name: Install Dependencies
       run: |
-        cd mocn-qa-m-products
-        git checkout develop_trustcore
-        git pull
+        sudo apt update
+        sudo apt install -y cmake python3-pip valgrind expect
+        cmake --version
+        pip3 install --upgrade pip
+        pip3 install psutil
+        pip3 install tls-client
+        pip3 install typing_extensions
+        sudo apt-get install -y lcov
+        lcov --version
+        valgrind --version
+        expect -v
+
+    - name: Prepare thirdparty_app directory
+      run: |
+        mkdir -p ~/thirdparty_app
+
+    - name: Install OpenSSL 1.0.2l
+      run: |
+        cd ~/thirdparty_app
+        wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz
+        tar -xf openssl-1.0.2l.tar.gz
+        cd openssl-1.0.2l
+        ./config
+        make -j$(nproc)
+        sudo make install
         cd ..
+
+    - name: Install OpenSSL 1.1.1k
+      run: |
+        cd ~/thirdparty_app
+        wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+        tar -xf openssl-1.1.1k.tar.gz
+        cd openssl-1.1.1k
+        ./config
+        make -j$(nproc)
+        sudo make install
+        cd ..
+        cd ..
+
+    - name: Install OpenSSL 3.0.7
+      run: |
+        cd ~/thirdparty_app
+        wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
+        tar -xf openssl-3.0.7.tar.gz
+        cd openssl-3.0.7
+        ./config
+        make -j$(nproc)
+        sudo make install
+        cd ..
+
+    - name: Install OpenSSL 3.5.0
+      run: |
+        cd ~/thirdparty_app
+        wget https://www.openssl.org/source/openssl-3.5.0.tar.gz
+        tar -xf openssl-3.5.0.tar.gz
+        cd openssl-3.5.0
+        ./config
+        make -j$(nproc)
+        sudo make install
+        cd ..
+        cd ..
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     - name: Copy SSL Test Files
       run: |
-        cp -r mocn-qa-m-products/ssl_test/test_integration/* .
+        cp -r ~/mocn-qa-m-products/ssl_test/test_opensource/* .
+
     - name: Run NanoSSL Integration Test
+      env:
+        CM_ENV_CODE_COVERAGE: 1
       run: |
          python3 nanossl_integration_test.py build_server_cap_no_tap.json
+  
+    - name: Baseline Coverage
+      run: |
+        lcov --no-external --capture --initial --directory . --output-file /tmp/ssl_base.info
+
+    - name: Capture Coverage
+      run: |
+        lcov --no-external --capture --directory . --output-file /tmp/ssl_test.info
+        lcov --add-tracefile /tmp/ssl_base.info --add-tracefile /tmp/ssl_test.info --output-file /tmp/ssl_total.info
+
+    - name: Print Coverage Summary
+      run: |
+        echo "Coverage Summary:"
+        lcov --list /tmp/ssl_total.info
+
     - name: Cleanup mocn-qa-m-products
       run: |
         rm -rf mocn-qa-m-products
+
