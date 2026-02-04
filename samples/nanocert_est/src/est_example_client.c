@@ -198,15 +198,16 @@
 #define MAX_CERT_PATH_NAME (230)
 #define MAX_FILE_NAME (100)
 #ifdef __ENABLE_DIGICERT_TAP__
-#ifdef __RTOS_WIN32__
+#ifdef __ENABLE_DIGICERT_SECURE_PATH__
 #define TPM2_CONFIGURATION        "tpm2.conf"
 #define TPM12_CONFIGURATION       "tpm12.conf"
 #define TEE_CONFIGURATION         "tee_smp.conf"
+#define PKCS11_CONFIGURATION      "pkcs11_smp.conf"
 #else
 #define TPM2_CONFIGURATION        "/etc/digicert/tpm2.conf"
 #define TPM12_CONFIGURATION       "/etc/digicert/tpm12.conf"
-#define PKCS11_CONFIGURATION      "/etc/digicert/pkcs11_smp.conf"
 #define TEE_CONFIGURATION         "/etc/digicert/tee_smp.conf"
+#define PKCS11_CONFIGURATION      "/etc/digicert/pkcs11_smp.conf"
 #endif
 #define ESTC_DEF_TAP_MODULEID           1
 #endif

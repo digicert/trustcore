@@ -78,7 +78,6 @@ jobs:
           -DENABLE_EST=ON \
           -DENABLE_SCEP=ON \
           -DSECURE_PATH="$(pwd)" \
-          -DENABLE_TPM2=ON \
           -D${{ matrix.feature }}=ON \
           -B build -S . && \
         cmake --build build
