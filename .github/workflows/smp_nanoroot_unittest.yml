@@ -1,0 +1,628 @@
+name: NanoROOT SMP Unit Tests
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "DTM-5886" ]
+
+permissions:
+  contents: read
+
+jobs:
+  Build-and-Test-Standard:
+    name: Build and Test (Standard Path)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: mss
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install cmake cpuid iproute2 lcov pkg-config libcmocka-dev
+          lcov --version
+
+      - name: Setup Configuration Files
+        run: |
+          cd mss
+          sudo mkdir -p /etc/digicert/
+          sudo chown -R $USER:$USER /etc/digicert/
+          sudo chmod 777 /etc/digicert/
+          cp samples/nanoroot/config/default-fingerprint.json /etc/digicert/
+          # Detect the first non-loopback, UP interface name
+          IFACE=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo | head -n1)
+          echo "Detected interface: $IFACE"
+          # Update the argument field for MAC ADDRESS in /etc/digicert/default-fingerprint.json
+          sed -i "s/\"argument\": \"eno1\"/\"argument\": \"$IFACE\"/g" /etc/digicert/default-fingerprint.json
+          cp samples/nanoroot/config/get_cpuid.sh /etc/digicert/
+          cp samples/nanoroot/config/get_mac_address.sh /etc/digicert/
+          cp samples/nanoroot/config/nanoroot_smp.conf /etc/digicert/
+          chmod +x /etc/digicert/get_cpuid.sh
+          chmod +x /etc/digicert/get_mac_address.sh
+          ip link show
+
+      - name: Build NanoROOT Library with Coverage
+        run: |
+          cd mss
+          export CM_ENV_CODE_COVERAGE=1
+          rm -rf build lib/libsmpnanoroot.so
+          cmake -DENABLE_NANOROOT=ON -DBUILD_SAMPLES=ON -B build -S .
+          cmake --build build
+
+      - name: Verify Coverage Instrumentation
+        run: |
+          cd mss
+          GCNO_COUNT=$(find build/projects/smp_nanoroot -name "*.gcno" 2>/dev/null | wc -l)
+          echo "Found ${GCNO_COUNT} .gcno files"
+
+      - name: Set Environment Variables
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          echo "DIGICERT_SMP_NANOROOT_FINGERPRINT_CREDFILE=$DIGICERT_SMP_NANOROOT_FINGERPRINT_CREDFILE" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=${{ github.workspace }}/mss/lib/:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
+      - name: Build and Run Unit Tests
+        run: |
+          cd mss/projects/smp_nanoroot_unittest
+          ./run_unit_tests.sh --verbose
+
+      - name: Baseline Coverage
+        run: |
+          cd mss
+          lcov --no-external --capture --initial --directory . --output-file /tmp/nanoroot_base.info
+
+      - name: Capture Coverage
+        run: |
+          cd mss
+          lcov --no-external --capture --directory . --output-file /tmp/nanoroot_test.info
+          lcov --add-tracefile /tmp/nanoroot_base.info --add-tracefile /tmp/nanoroot_test.info --output-file /tmp/nanoroot_total.info
+
+      - name: Print Coverage Summary
+        run: |
+          echo "Coverage Summary:"
+          lcov --extract /tmp/nanoroot_total.info '*/src/smp/smp_nanoroot/*' --output-file /tmp/nanoroot_filtered.info
+          lcov --list /tmp/nanoroot_filtered.info
+
+      - name: Test RSA Algorithms (Standard Path)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing RSA algorithms without SECURE_PATH..."
+          
+          # Create test data
+          echo "Test document for RSA signing" > test_document.txt
+          
+          # Test RSA-2048
+          echo "Testing RSA-2048..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile rsa2048_signature.bin \
+            --pubKey rsa2048_public_key.pem \
+            --keyId 0x100000002 \
+            --signBuffer \
+            --hashType 1
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile rsa2048_signature.bin \
+            --pubKey rsa2048_public_key.pem \
+            --keyId 0x100000002 \
+            --verify \
+            --hashType 1
+
+          # Test RSA-3072
+          echo "Testing RSA-3072..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile rsa3072_signature.bin \
+            --pubKey rsa3072_public_key.pem \
+            --keyId 0x100000003 \
+            --signBuffer \
+            --hashType 1
+
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile rsa3072_signature.bin \
+            --pubKey rsa3072_public_key.pem \
+            --keyId 0x100000003 \
+            --verify \
+            --hashType 1
+          
+          # Test RSA-4096
+          echo "Testing RSA-4096..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile rsa4096_signature.bin \
+            --pubKey rsa4096_public_key.pem \
+            --keyId 0x100000004 \
+            --signBuffer \
+            --hashType 2
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile rsa4096_signature.bin \
+            --pubKey rsa4096_public_key.pem \
+            --keyId 0x100000004 \
+            --verify \
+            --hashType 2
+
+      - name: Test ECC Algorithms (Standard Path)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing ECC algorithms without SECURE_PATH..."
+          
+          # Test ECC P-256
+          echo "Testing ECC P-256..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile ecc_p256_signature.bin \
+            --pubKey ecc_p256_public_key.pem \
+            --keyId 0x300000001 \
+            --signBuffer \
+            --hashType 1
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile ecc_p256_signature.bin \
+            --pubKey ecc_p256_public_key.pem \
+            --keyId 0x300000001 \
+            --verify \
+            --hashType 1
+          
+          # Test ECC P-384
+          echo "Testing ECC P-384..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile ecc_p384_signature.bin \
+            --pubKey ecc_p384_public_key.pem \
+            --keyId 0x300000002 \
+            --signBuffer \
+            --hashType 1
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile ecc_p384_signature.bin \
+            --pubKey ecc_p384_public_key.pem \
+            --keyId 0x300000002 \
+            --verify \
+            --hashType 1
+
+          # Test ECC P-521
+          echo "Testing ECC P-521..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile ecc_p521_signature.bin \
+            --pubKey ecc_p521_public_key.pem \
+            --keyId 0x300000003 \
+            --signBuffer \
+            --hashType 2
+
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile ecc_p521_signature.bin \
+            --pubKey ecc_p521_public_key.pem \
+            --keyId 0x300000003 \
+            --verify \
+            --hashType 2
+
+      - name: Test MLDSA Algorithms (Standard Path)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing MLDSA (Post-Quantum) algorithms without SECURE_PATH..."
+          
+          # Test MLDSA-44
+          echo "Testing MLDSA-44..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile mldsa44_signature.bin \
+            --pubKey mldsa44_public_key.pem \
+            --keyId 0x200000001 \
+            --signBuffer \
+            --hashType 0
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile mldsa44_signature.bin \
+            --pubKey mldsa44_public_key.pem \
+            --keyId 0x200000001 \
+            --verify \
+            --hashType 0
+          
+          # Test MLDSA-65
+          echo "Testing MLDSA-65..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile mldsa65_signature.bin \
+            --pubKey mldsa65_public_key.pem \
+            --keyId 0x200000002 \
+            --signBuffer \
+            --hashType 0
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile mldsa65_signature.bin \
+            --pubKey mldsa65_public_key.pem \
+            --keyId 0x200000002 \
+            --verify \
+            --hashType 0
+          
+          # Test MLDSA-87
+          echo "Testing MLDSA-87..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile mldsa87_signature.bin \
+            --pubKey mldsa87_public_key.pem \
+            --keyId 0x200000003 \
+            --signBuffer \
+            --hashType 0
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile test_document.txt \
+            --sigfile mldsa87_signature.bin \
+            --pubKey mldsa87_public_key.pem \
+            --keyId 0x200000003 \
+            --verify \
+            --hashType 0
+
+      - name: Test Seal/Unseal Operations (Standard Path)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing Seal/Unseal operations without SECURE_PATH..."
+
+          # Create plaintext file
+          echo "Confidential data for seal/unseal test" > plaintext_seal.txt
+
+          # Seal operation
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile plaintext_seal.txt \
+            --outfile encrypted_seal.bin \
+            --seal \
+            --passphrase mySecretPassword
+
+          # Unseal operation
+          ./samples/bin/tap_nanoroot_example \
+            --config /etc/digicert/nanoroot_smp.conf \
+            --infile encrypted_seal.bin \
+            --outfile decrypted_seal.txt \
+            --unseal \
+            --passphrase mySecretPassword
+
+          # Verify data integrity
+          diff plaintext_seal.txt decrypted_seal.txt && echo "Seal/Unseal data integrity verified"
+
+
+  Build-and-Test-SecurePath:
+    name: Build and Test (SECURE_PATH Enabled)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: mss
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install cmake cpuid iproute2
+
+      - name: Setup SECURE_PATH Directory
+        run: |
+          cd mss
+          sudo mkdir -p /opt/digicert/
+          sudo chown -R $USER:$USER /opt/digicert/
+          sudo chmod 777 /opt/digicert/
+          cp samples/nanoroot/config/default-fingerprint.json /opt/digicert/
+          # Detect the first non-loopback, UP interface name
+          IFACE=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo | head -n1)
+          echo "Detected interface: $IFACE"
+          # Update the argument field for MAC ADDRESS in /opt/digicert/default-fingerprint.json
+          sed -i "s/\"argument\": \"eno1\"/\"argument\": \"$IFACE\"/g" /opt/digicert/default-fingerprint.json
+          sed -i 's|/etc/|/opt/|g' /opt/digicert/default-fingerprint.json
+          cp samples/nanoroot/config/get_cpuid.sh /opt/digicert/
+          cp samples/nanoroot/config/get_mac_address.sh /opt/digicert/
+          cp samples/nanoroot/config/nanoroot_smp.conf /opt/digicert/
+          chmod +x /opt/digicert/get_cpuid.sh
+          chmod +x /opt/digicert/get_mac_address.sh
+
+      - name: Build NanoROOT with SECURE_PATH
+        run: |
+          cd mss
+          rm -rf build lib/libsmpnanoroot.so
+          cmake -DENABLE_NANOROOT=ON -DBUILD_SAMPLES=ON -DSECURE_PATH=/opt/digicert/ -B build -S .
+          cmake --build build
+
+      - name: Set Environment Variables
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          echo "DIGICERT_SMP_NANOROOT_FINGERPRINT_CREDFILE=$DIGICERT_SMP_NANOROOT_FINGERPRINT_CREDFILE" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=${{ github.workspace }}/mss/lib/:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
+      - name: Test RSA Algorithms (SECURE_PATH)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing RSA algorithms with SECURE_PATH enabled..."
+          
+          # Create test data
+          echo "Test document for RSA signing with SECURE_PATH" > /opt/digicert/test_document_secure.txt
+          
+          # Test RSA-2048
+          echo "Testing RSA-2048 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/rsa2048_signature_secure.bin \
+            --pubKey /opt/digicert/rsa2048_public_key_secure.pem \
+            --keyId 0x100000002 \
+            --signBuffer \
+            --hashType 1
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/rsa2048_signature_secure.bin \
+            --pubKey /opt/digicert/rsa2048_public_key_secure.pem \
+            --keyId 0x100000002 \
+            --verify \
+            --hashType 1
+
+          # Test RSA-3072
+          echo "Testing RSA-3072 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/rsa3072_signature_secure.bin \
+            --pubKey /opt/digicert/rsa3072_public_key_secure.pem \
+            --keyId 0x100000003 \
+            --signBuffer \
+            --hashType 1
+
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/rsa3072_signature_secure.bin \
+            --pubKey /opt/digicert/rsa3072_public_key_secure.pem \
+            --keyId 0x100000003 \
+            --verify \
+            --hashType 1
+          
+          # Test RSA-4096
+          echo "Testing RSA-4096 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/rsa4096_signature_secure.bin \
+            --pubKey /opt/digicert/rsa4096_public_key_secure.pem \
+            --keyId 0x100000004 \
+            --signBuffer \
+            --hashType 2
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/rsa4096_signature_secure.bin \
+            --pubKey /opt/digicert/rsa4096_public_key_secure.pem \
+            --keyId 0x100000004 \
+            --verify \
+            --hashType 2
+
+      - name: Test ECC Algorithms (SECURE_PATH)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing ECC algorithms with SECURE_PATH enabled..."
+          
+          # Test ECC P-256
+          echo "Testing ECC P-256 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/ecc_p256_signature_secure.bin \
+            --pubKey /opt/digicert/ecc_p256_public_key_secure.pem \
+            --keyId 0x300000001 \
+            --signBuffer \
+            --hashType 1
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/ecc_p256_signature_secure.bin \
+            --pubKey /opt/digicert/ecc_p256_public_key_secure.pem \
+            --keyId 0x300000001 \
+            --verify \
+            --hashType 1
+          
+          # Test ECC P-384
+          echo "Testing ECC P-384 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/ecc_p384_signature_secure.bin \
+            --pubKey /opt/digicert/ecc_p384_public_key_secure.pem \
+            --keyId 0x300000002 \
+            --signBuffer \
+            --hashType 1
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/ecc_p384_signature_secure.bin \
+            --pubKey /opt/digicert/ecc_p384_public_key_secure.pem \
+            --keyId 0x300000002 \
+            --verify \
+            --hashType 1
+
+          # Test ECC P-521
+          echo "Testing ECC P-521 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/ecc_p521_signature_secure.bin \
+            --pubKey /opt/digicert/ecc_p521_public_key_secure.pem \
+            --keyId 0x300000003 \
+            --signBuffer \
+            --hashType 2
+
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/ecc_p521_signature_secure.bin \
+            --pubKey /opt/digicert/ecc_p521_public_key_secure.pem \
+            --keyId 0x300000003 \
+            --verify \
+            --hashType 2
+
+      - name: Test MLDSA Algorithms (SECURE_PATH)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing MLDSA (Post-Quantum) algorithms with SECURE_PATH enabled..."
+          
+          # Test MLDSA-44
+          echo "Testing MLDSA-44 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/mldsa44_signature_secure.bin \
+            --pubKey /opt/digicert/mldsa44_public_key_secure.pem \
+            --keyId 0x200000001 \
+            --signBuffer \
+            --hashType 0
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/mldsa44_signature_secure.bin \
+            --pubKey /opt/digicert/mldsa44_public_key_secure.pem \
+            --keyId 0x200000001 \
+            --verify \
+            --hashType 0
+          
+          # Test MLDSA-65
+          echo "Testing MLDSA-65 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/mldsa65_signature_secure.bin \
+            --pubKey /opt/digicert/mldsa65_public_key_secure.pem \
+            --keyId 0x200000002 \
+            --signBuffer \
+            --hashType 0
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/mldsa65_signature_secure.bin \
+            --pubKey /opt/digicert/mldsa65_public_key_secure.pem \
+            --keyId 0x200000002 \
+            --verify \
+            --hashType 0
+          
+          # Test MLDSA-87
+          echo "Testing MLDSA-87 with SECURE_PATH..."
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/mldsa87_signature_secure.bin \
+            --pubKey /opt/digicert/mldsa87_public_key_secure.pem \
+            --keyId 0x200000003 \
+            --signBuffer \
+            --hashType 0
+          
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/test_document_secure.txt \
+            --sigfile /opt/digicert/mldsa87_signature_secure.bin \
+            --pubKey /opt/digicert/mldsa87_public_key_secure.pem \
+            --keyId 0x200000003 \
+            --verify \
+            --hashType 0
+
+      - name: Test Seal/Unseal Operations (SECURE_PATH)
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Testing Seal/Unseal operations with SECURE_PATH enabled..."
+
+          # Create plaintext file
+          echo "Confidential data for seal/unseal test" > /opt/digicert/plaintext_seal.txt
+
+          # Seal operation
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/plaintext_seal.txt \
+            --outfile /opt/digicert/encrypted_seal.bin \
+            --seal \
+            --passphrase mySecretPassword
+
+          # Unseal operation
+          ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /opt/digicert/encrypted_seal.bin \
+            --outfile /opt/digicert/decrypted_seal.txt \
+            --unseal \
+            --passphrase mySecretPassword
+
+          # Verify data integrity
+          diff /opt/digicert/plaintext_seal.txt /opt/digicert/decrypted_seal.txt && echo "Seal/Unseal data integrity verified"
+
+      - name: Verify SECURE_PATH Enforcement
+        run: |
+          cd mss
+          source samples/nanoroot/config/setFingerPrintValues.sh
+          export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+          echo "Verifying SECURE_PATH enforcement (expect failure)..."
+          
+          # Attempt to access file outside SECURE_PATH - should fail
+          echo "Test data outside SECURE_PATH" > /tmp/test_outside.txt
+          
+          if ./samples/bin/tap_nanoroot_example \
+            --config /opt/digicert/nanoroot_smp.conf \
+            --infile /tmp/test_outside.txt \
+            --sigfile /tmp/signature.bin \
+            --pubKey /tmp/public_key.pem \
+            --keyId 0x100000002 \
+            --signBuffer \
+            --hashType 1 2>&1 | grep -i "error\|fail\|denied"; then
+            echo "✓ SECURE_PATH enforcement working correctly - access denied as expected"
+          else
+            echo "✗ WARNING: SECURE_PATH may not be enforcing restrictions properly"
+            exit 1
+          fi
+
+      - name: Job Status
+        run: echo "🍏 This job's status is ${{ job.status }}."
