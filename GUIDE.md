@@ -23,10 +23,10 @@
 |---------------- |-----------------------|-------------------------------------------------------|
 | **NanoROOT**    | NanoROOT SMP library  | **[→ Build & Run](samples/nanoroot/BUILD_RUN.md)**    |
 
-### 🔒 Crypto Interface Example
+### 🔒 NanoCrypto Example
 | Component                    | Description                         | Guide                                                              |
 |-------------------------     |-------------------------------------|--------------------------------------------------------------------|
-| **Crypto Interface Example** | Demonstrates crypto interface usage | **[→ Build & Run](samples/crypto_interface_example/BUILD_RUN.md)** |
+| **NanoCrypto Example** | Demonstrates NanoCrypto usage via crypto interface | **[→ Build & Run](samples/crypto_interface_example/BUILD_RUN.md)** |
 
 ### 🛠️ NanoSSL
 | Component       | Description           | Guide                                                 |
