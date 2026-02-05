@@ -17,7 +17,7 @@ on:
 
 jobs:
   trustcore-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     env:
       GIT_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
