@@ -1,15 +1,22 @@
 # NanoCert EST Client Build and Run Guide
 
-> **Note:** Run all commands from the root of the repository.
+> **Note:** Run all commands from the root of the repository unless otherwise specified.
+
+## Table of Contents
+
+1. [CMake Options](#cmake-options)
+2. [Native Build](#build)
+3. [Docker Build and Run](#docker-build-and-run)
+4. [Environment Setup](#environment-setup)
+5. [EST Operations](#est-operations)
 
 ## CMake Options
 
 | Option                   | Description                             | Default |
 |--------------------------|-----------------------------------------|---------|
 | `ENABLE_EST`             | Enable EST support                      | `OFF`   |
-| `ENABLE_EST_PROXY`       | Enable EST proxy support                | `OFF`   |
 | `BUILD_SAMPLES`          | Build sample applications               | `OFF`   |
-| `WITH_LOGGING`           | Build with logging enabled              | `OFF`   |
+| `WITH_LOGGING`           | Build with debug logging enabled        | `OFF`   |
 | `ENABLE_TPM2`            | Build with TPM2 support                 | `OFF`   |
 
 > **Note:** For common build options, see [`GUIDE.md`](../../GUIDE.md).
@@ -23,6 +30,66 @@ cmake --build build
 
 
 > For TPM2 Support, add -DENABLE_TPM2=ON in build command
+
+## Docker Build and Run
+
+### Building the Docker Image
+
+The EST sample can be run in a Docker container with TPM 2.0 software emulation. This is useful for testing without requiring physical TPM hardware.
+
+**Build the Docker image (auto-detects platform):**
+```bash
+docker build -t estsample -f samples/nanocert_est/Dockerfile samples/nanocert_est/
+```
+
+**Build for specific architecture (cross-compile):**
+```bash
+# For AMD64/x86_64
+docker build --platform linux/amd64 -t estsample:amd64 -f samples/nanocert_est/Dockerfile samples/nanocert_est/
+
+# For ARM64/aarch64
+docker build --platform linux/arm64 -t estsample:arm64 -f samples/nanocert_est/Dockerfile samples/nanocert_est/
+
+# For ARM32
+docker build --platform linux/arm/v7 -t estsample:arm32 -f samples/nanocert_est/Dockerfile samples/nanocert_est/
+```
+
+### Running the Docker Container
+
+**Display help:**
+```bash
+docker run --rm estsample
+```
+
+**Run EST enrollment with persistent storage with virtual TPM2:**
+```bash
+docker run --rm \
+  -v $(pwd)/keystore:/opt/trustcore/keystore \
+  estsample -est_uri <server_url>/simpleenroll \
+  -est_keytype RSA \
+  -est_keysize 2048 \
+  -est_pass <password> \
+  -est_keyalias <alias> \
+  -est_keysource TPM2
+```
+
+### Docker Container Components
+
+The container includes:
+- **TrustCore** - DigiCert's security library with EST and TPM2 support
+- **swtpm** - Software TPM 2.0 emulator (runs on ports 2321/2322)
+- **libtpms** - Core TPM functionality library
+- **TPM2 Tools** - DigiCert's tools for TPM provisioning and management
+- **EST Sample** - Certificate enrollment application
+
+### Docker Automatic Initialization
+
+On first run, the container automatically:
+1. Starts the swtpm daemon (if not running)
+2. Provisions the TPM with Endorsement Key (EK) and Storage Root Key (SRK)
+3. Generates TPM configuration at `/etc/digicert/tpm2.conf`
+
+**Security Note:** The Docker container is configured for testing with empty TPM passwords. For production use, configure hardware TPM with strong passwords.
 
 
 ## Environment Setup
