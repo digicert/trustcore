@@ -1,6 +1,7 @@
 name: PKCS11 SoftHSM2 Build
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - projects/smp_pkcs11/**
