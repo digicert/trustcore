@@ -1,6 +1,7 @@
 name: "Unit test ASN1"
 
 on:
+  workflow_dispatch: {}
   push:
     paths:
       - projects/asn1_unittest/**

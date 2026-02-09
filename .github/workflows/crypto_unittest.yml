@@ -1,6 +1,7 @@
 name: Crypto Unit Tests
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - projects/crypto_unittest/**

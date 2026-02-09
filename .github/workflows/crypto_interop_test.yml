@@ -1,6 +1,7 @@
 name: Crypto Interop Test
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - projects/crypto_interop_test/**

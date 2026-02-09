@@ -1,6 +1,7 @@
 name: SCEP Unit Tests
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - .github/workflows/scep_unittest.yml

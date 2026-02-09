@@ -1,6 +1,7 @@
 name: Common Unit Tests
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - projects/common_unittest/**

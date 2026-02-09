@@ -1,6 +1,7 @@
 name: Asn1 Unit Tests
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - projects/asn1_unittest/**
