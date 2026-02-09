@@ -22,14 +22,6 @@ jobs:
         with:
           path: trustcore-test
 
-      - name: Checkout conditional tests
-        uses: actions/checkout@v4
-        with:
-          repository: digicert/device-trust-jenkins-conditional-tests
-          ref: main
-          path: jct
-          token: ${{ secrets.GIT_ACCESS_TOKEN }}
-
       - name: Install dependencies
         run: |
           sudo apt-get update
