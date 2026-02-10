@@ -9,6 +9,7 @@
 | `ENABLE_SSH_SERVER`               | Build SSH Server library and sample binaries | `OFF`   |
 | `ENABLE_SSH_SERVER_CERT_AUTH`     | Enable SSH Server certificate authentication | `OFF`   |
 | `ENABLE_SSH_ASYNC_API_SUPPORT`    | Enable asynchronous SSH APIs                 | `OFF`   |
+| `ENABLE_PQC_COMPOSITE`            | Enable PQC composite algorithm support       | `OFF`   |
 
 > **Note:** For the complete list of options and their details, refer to [`projects/nanossh/CMakeLists.txt`](../../projects/nanossh/CMakeLists.txt).
 > For common build options (e.g., `BUILD_SAMPLES`), see [`GUIDE.md`](../../GUIDE.md).

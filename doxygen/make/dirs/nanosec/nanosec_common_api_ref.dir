@@ -1,0 +1,32 @@
+/**
+@dir    src/common 
+@brief  Mocana common code base API functions.
+*/
+        
+/**
+@defgroup    common_nanosec_tree     Common
+
+This API provides functions used by multiple Mocana products.
+
+*/
+
+/**
+@defgroup    common_callback_functions Callback Functions
+@ingroup     common_nanosec_tree
+
+Provides common callback functions used by multiple Mocana
+components.
+*/
+
+/**
+@defgroup    common_functions Functions
+@ingroup     common_nanosec_tree
+
+Provides common functions used by multiple Mocana
+components.
+*/
+
+/**
+@defgroup    common_pages    Pages
+@ingroup     common_nanosec_tree
+*/

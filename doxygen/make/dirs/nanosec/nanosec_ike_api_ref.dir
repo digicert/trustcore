@@ -1,0 +1,65 @@
+/**
+@dir    ike
+@brief  NanoSec IKE (ike)
+*/
+
+/**
+@defgroup   ike_tree    NanoSec IKE
+
+This API contains functions for configuring IPsec stack using automatic keys, as 
+well as those for populating the SADB (security association database), and 
+requesting IKE services to establish an SA (security association).
+
+<table class="table">
+    <tr>
+        <td align="center">@image html new.jpg ""</td>
+        <td>For detailed NanoSec IKE feature information and integration procedures (including IKEv2), refer to the @moc_doc_NanoSec_xref.</td>
+    </tr>
+</table>
+
+IKE SAs can be established in either of two key exchange modes:
+
+- <b>Main mode key exchange</b>&mdash;Uses six messages (three round trips).
+- <b>Aggressive mode key exchange</b>&mdash;Uses half the number of messages used by main mode key exchange. Although identity protection is not provided (thereby making aggressive mode key exchange less desirable), this is the only exchange possible in remote access situations where the address of the initiator cannot be known by the responder and both parties require the use of preshared key authentication.
+Aggressive mode is faster, but main mode is more flexible.
+
+@note       To use aggressive mode, you must define the \c
+            \__ENABLE_IKE_AGGRESSIVE_MODE__ flag in moptions.h.
+        
+@note       To use certificate-based authentication in IKEv2, you must define the
+            \c \__ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__ flag in moptions.h.
+
+<table class="table">
+    <tr>
+        <td>@image html alert_important.jpg ""</td>
+        <td>To view a full-size version of the NanoSec IKE flowchart, click the thumbnail image.</td>
+    </tr>
+</table>
+
+@htmlonly
+  <table class="moc_flowchart">
+      <tr>
+          <td><a href="images/nanosec/flowchart_ike.jpg">NanoSec IKE<br/><br/><image src="images/nanosec/flowchart_ike_thumbnail.jpg"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ike.png}{NanoSec IKE}
+@endlatexonly
+
+*/
+
+/**
+@defgroup   ike_pages   Pages
+@ingroup    ike_tree
+*/
+
+/**
+@defgroup   ike_callback_functions  Callback Functions
+@ingroup    ike_tree
+*/
+
+/**
+@defgroup   ike_functions   Functions
+@ingroup    ike_tree
+*/

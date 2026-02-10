@@ -1,0 +1,44 @@
+/**
+@page       overview_aes_ctr    AES-CTR Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+AES in CTR mode is a confidentiality-only mode. As with AES in OFB mode, you
+use AES in CTR mode to use AES as a stream cipher.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_overview_aes_ctr    CTR Mode Overview
+
+To encrypt a plaintext buffer, AES in CTR mode parses the submitted
+plaintext into 128-bit blocks. The mode then encrypts a counter that it XORs
+with the first plaintext block. For each subsequent block, the mode
+increments the counter, encrypts it, and then XORs it with the plaintext
+block. For the final plaintext block, if the last block of input is not a
+full 128 bits, there is no need to pad. Instead, the value XORed internally
+against the partial block of plaintext is applied bit-by-bit for the length
+of the partial text block. The resultant ciphertext output buffer is the
+same length as the input plaintext buffer.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_aes_ctr     Usage Caveats for AES in CTR Mode
+
+In CTR mode, confidentiality is compromised if you reuse the counter value
+under the same key. Because the counter is managed internally, there is
+little danger of reusing the counter if you do not explicitly reset its
+value in your DoAESCTR() call.
+
+The most likely scenario for accidentally re-using a counter would be
+calling CreateAESCTRCtx() more than once without changing the key material
+input for each call. Internal to the CreateAESCTRCtx() function, the counter
+is tracked using a four-byte value. Therefore, under the same key, this
+function can encrypt a just over 500 GB before running out of counter
+values. However, this value assumes full usage of all blocks. When planning
+your key management scheme, the best practice it to never to approach this
+value under a single key.
+*/

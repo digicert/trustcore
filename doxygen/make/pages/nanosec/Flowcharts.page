@@ -1,0 +1,23 @@
+/**
+@page       nanosec_flowcharts Flowcharts
+@brief      The following flowchart shows the typical NanoSec IKE process flow.
+@details    
+
+Click the flowchart thumbnail below to see the full-size version:
+
+@htmlonly
+<!++ NanoSec IKE Flowchars ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row"><br/><b>NanoSec IKE Flowchart</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanosec/flowchart_ike.jpg">NanoSec IKE<br/><br/><image src="images/nanosec/flowchart_ike_thumbnail.jpg"></a></td>
+      </tr>
+</table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ike.png}{NanoSec IKE}
+@endlatexonly
+
+*/

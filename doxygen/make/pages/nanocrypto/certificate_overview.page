@@ -1,0 +1,74 @@
+/**
+@page       certificate_overview    Certificate Overview
+@ingroup    crypto_pages
+@brief      @moc_platform certificate handling and management
+
+A \e certificate is digital information that identifies a subject and that 
+subject's key, and is digitally signed by an authority that certifies the 
+certificate's information. A certificate includes the following components:
++ version
++ serial number
++ issuer
++ subject
++ expiration dates
++ certificate flags
++ signing algorithm
++ public key
++ signature
+
+Certificate verification is a critical part of security authentication. 
+Frequently, however, a party performing certificate verification does not know 
+all the intermediary certificate authorities involved in a communication 
+sequence. In such cases, a <em>certificate chain</em> is employed.
+
+## Certificate Chains
+
+A certificate chain is a collection of certificates linked together to form a 
+chain of identity proof. The first certificate in a chain is the identity of a 
+%server or %client, whose identity will be proven (verified) by a chain of 
+certificate authorities. The \e last certificate in the chain is the root 
+\e certificate. The \e issuer of a certificate is the identity vouching for the 
+\e subject's identity.
+
+A party wishing to verify a given certificate begins at the first certificate in 
+a chain, and carefully verifies the certificate flags and signatures up the 
+chain until the root certificate is reached. Once the root certificate is 
+reached, the system then only needs to verify that the root certificate matches 
+a trusted root certificate authority in order to confirm the first certificate's 
+identity.
+
+@moc_platform automatically verifies a certificate chain, checking the
+relevant flags  and signatures up the chain to a root certificate for
+authenticating a %client or %server certificate.
+
+The diagram shows a certificate chain of three separate certificates. 
+The arrows show equality; that is, the issuer of a certificate becomes the 
+subject of the next certificate. The last certificate (the one on the right) is 
+the root certificate.
+
+@image html cert_chain.jpg "Certificate Chain"
+@image latex cert_chain "" width=2.0in
+
+The diagram shows a root certificate (on the right) and a certificate 
+higher up in the certificate chain (on the left). The matching Origin (O) and 
+Country (C) fields show the issuer and subject equivalence.
+
+@image html example_cert.jpg "Example Certificate"
+@image latex example_cert.jpg "" width=2.0in
+
+## Incomplete Certificate Chains
+
+In some cases, a %server or %client may send an incomplete certificate chain, 
+where the last certificate in the chain (the root certificate) is missing. In 
+those instances, @moc_platform makes appropriate calls to hookup 
+functions that you define in your application. Those hookup functions then 
+complete the chain and verification by using the certificates found in a trusted 
+certificate store.
+
+@todo_techpubs (fix \@ref to refer to the correct callback group)
+
+For information about certificate management hookup functions, see
+@ref using_certificate_management_callbacks.
+\n\n
+
+*/

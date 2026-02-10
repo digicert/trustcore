@@ -1,0 +1,294 @@
+/**
+@dir    ssl
+@brief  NanoSSL (ssl) functions.
+*/
+
+/* main tree */
+
+/**
+@defgroup    ssl_tree    NanoSSL
+
+NanoSSL client and NanoSSL server provide all the functions
+necessary to securely connect devices and remote servers to each other.
+
+<table class="table">
+    <tr>
+        <td align="center">@image html new.jpg ""</td>
+        <td>For detailed NanoSSL feature information and integration procedures, refer to the @moc_doc_NanoSSL_xref.</td>
+    </tr>
+    <tr>
+        <td align="center">@image html alert_important.jpg ""</td>
+        <td>To view a full-size version of any of the following NanoSSL flowcharts, click the thumbnail image.</td>
+    </tr>
+</table>
+
+@htmlonly
+<table class="moc_flowchart">
+    <tr>
+        <td><a href="images/flowchart_ssl_client.jpg">NanoSSL Client<br/><br/><img src="images/flowchart_ssl_client_thumbnail.jpg" alt="flowchart_ssl_client_thumbnail.jpg"></a></td>
+        <td><a href="images/flowchart_ssl_server_sync.jpg">NanoSSL Synch Server <br/><br/><img src="images/flowchart_ssl_server_sync_thumbnail.jpg" alt="flowchart_ssl_server_sync_thumbnail.jpg"></a></td>
+        <td><a href="images/flowchart_ssl_server_async.jpg">NanoSSL Async Server<br/><br/><img src="images/flowchart_ssl_server_async_thumbnail.jpg" alt="flowchart_ssl_server_async_thumbnail.jpg"</a></td>
+    </tr>
+</table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ssl_client.png}{NanoSSL Client}
+\mocFlowchartPicture{flowchart_ssl_server_synch.png}{NanoSSL Sync Server}
+\mocFlowchartPicture{flowchart_ssl_server_asynch.png}{NanoSSL Async Server}
+@endlatexonly
+
+@sa @ref    ssl_alert_codes
+@sa @ref    ssl_tls_standards_support
+
+The following table lists the NanoSSL API functions and shows whether
+they are used for synchronous and/or asynchronous clients and/or servers.
+
+Function|Synchronous Client|Asynchronous Client|Synchronous Server|Asynchronous Server
+--------|------------------|-------------------|------------------|---------------------|
+|SSL_ASYNC_acceptConnection()|&nbsp;|&nbsp;|&nbsp;|x|
+|SSL_ASYNC_closeConnection()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_connect()|&nbsp;|x|&nbsp;|&nbsp;|
+|SSL_ASYNC_getRecvBuffer()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_getSendBuffer()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_init()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_initServer()|&nbsp;|&nbsp;|&nbsp;|x|
+|SSL_ASYNC_recvMessage()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_recvMessage2()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_sendMessage()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_sendMessagePending()|&nbsp;|x|&nbsp;|x|
+|SSL_ASYNC_start()|&nbsp;|x|&nbsp;|&nbsp;|
+|&nbsp;|&nbsp;|&nbsp;|&nbsp;|&nbsp;|
+|SSL_acceptConnection()|&nbsp;|&nbsp;|x|&nbsp;|
+|SSL_assignCertificateStore()|x|x|x|x|
+|SSL_closeConnection()|x|&nbsp;|x|&nbsp;|
+|SSL_connect()|x|&nbsp;|&nbsp;|&nbsp;|
+|SSL_enableCiphers()|x|x|x|x|
+|SSL_getCipherInfo()|x|x|x|x|
+|SSL_getClientSessionInfo()|x|x|&nbsp;|&nbsp;|
+|SSL_setDNSNames()|x|x|&nbsp;|&nbsp;|
+|SSL_setServerNameList()|x|x|&nbsp;|&nbsp;|
+|SSL_getCookie()|x|x|x|x|
+|SSL_getInstanceFromSocket()|x|x|x|x|
+|SSL_getSessionFlags()|x|x|x|x|
+|SSL_getSessionStatus()|x|x|x|x|
+|SSL_getSocketId()|x|x|x|x|
+|SSL_init()|x|&nbsp;|x|&nbsp;|
+|SSL_initiateRehandshake()|x|x|x|x|
+|SSL_initServerCert()|&nbsp;|&nbsp;|x|x|
+|SSL_ioctl()|x|x|x|x|
+|SSL_isSessionSSL()|x|x|x|x|
+|SSL_lookupAlert()|x|x|x|x|
+|SSL_negotiateConnection()|x|&nbsp;|x|&nbsp;|
+|SSL_recv()|x|&nbsp;|x|&nbsp;|
+|SSL_recvPending()|x|&nbsp;|x|&nbsp;|
+|SSL_releaseTables()|x|x|x|x|
+|SSL_send()|x|&nbsp;|x|&nbsp;|
+|SSL_sendAlert()|x|x|x|x|
+|SSL_sendPending()|x|&nbsp;|x|&nbsp;|
+|SSL_setCookie()|x|x|x|x|
+|SSL_setSessionFlags()|x|x|x|x|
+|SSL_shutdownStack()|x|x|x|x|
+|SSL_sslSettings()|x|x|x|x
+*/
+ 
+/**
+@defgroup    ssl_pages   Pages
+@ingroup     ssl_tree
+*/
+
+/**
+@defgroup   ssl_callback_functions  Callback Functions
+@ingroup    ssl_tree
+*/
+
+/**
+@defgroup    ssl_function_groups    Functions
+@ingroup     ssl_tree
+*/
+
+/* Callback groups */
+
+/**
+@defgroup   cb_ssl_async_client     Asynchronous Client Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable asynchronous NanoSSL %client callbacks.
+*/
+
+/**
+@defgroup   cb_ssl_async_server     Asynchronous Server Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable asynchronous NanoSSL server callbacks.
+*/
+
+/**
+@defgroup   cb_ssl_cert_mgmt        Certificate Management Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable certificate management callbacks.
+*/
+
+/**
+@defgroup   cb_ssl_core         Core (Async and Sync) Client and Server Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable NanoSSL asynchronous and synchronous, server and %client callbacks.
+The following callbacks can be customized for your application:
+*/
+
+/**
+@defgroup   cb_ssl_core_server      Core (Async and Sync) Server Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable asynchronous and synchronous NanoSSL server callbacks.
+The following callbacks can be customized for your application:
+*/
+
+/**
+@defgroup   cb_ssl_core_client      Core (Async and Sync) Client Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable asynchronous and synchronous NanoSSL %client callbacks.
+*/
+/**
+@defgroup   cb_ssl_sync             Synchronous Client and Server Callbacks
+@ingroup    ssl_callback_functions
+*/
+
+/**
+@defgroup   cb_ssl_srtp             SRTP Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable SRTP callbacks.
+*/
+
+/**
+@defgroup   cb_ssl_ungrouped        Ungrouped Callbacks
+@ingroup    ssl_callback_functions
+
+Customizable "Ungrouped" callbacks.
+*/
+
+/* Function groups */
+
+/* Async functions */
+
+/**
+@defgroup   func_ssl_async_client   Asynchronous Client Functions
+@ingroup    ssl_function_groups
+
+Asynchronous NanoSSL %client functions.
+
+@sa @ref    func_ssl_async
+@sa @ref    func_ssl_core_client
+@sa @ref    func_ssl_core
+*/
+
+/**
+@defgroup   func_ssl_async          Asynchronous Client and Server Functions
+@ingroup    ssl_function_groups
+
+Asynchronous NanoSSL %client and %server functions.
+
+@sa @ref    func_ssl_async_client
+@sa @ref    func_ssl_async_server
+@sa @ref    func_ssl_core_client
+@sa @ref    func_ssl_core
+@sa @ref    func_ssl_core_server
+*/
+
+/**
+@defgroup   func_ssl_async_server   Asynchronous Server Functions
+@ingroup    ssl_function_groups
+
+Asynchronous NanoSSL server functions.
+
+@sa @ref    func_ssl_async
+@sa @ref    func_ssl_core
+@sa @ref    func_ssl_core_server
+*/
+
+/* Core (Async and Sync) functions */
+
+/**
+@defgroup   func_ssl_core_client    Core (Async and Sync) Client Functions
+@ingroup    ssl_function_groups
+
+Core functions required by both asynchronous and synchronous NanoSSL clients.
+
+@sa @ref    func_ssl_async_client
+@sa @ref    func_ssl_sync_client
+@sa @ref    func_ssl_core
+*/
+
+/**
+@defgroup   func_ssl_core       Core (Async and Sync) Client and Server Functions
+@ingroup    ssl_function_groups
+
+Core functions required by both asynchronous and synchronous NanoSSL clients and
+servers.
+
+@sa @ref    func_ssl_async_client
+@sa @ref    func_ssl_async
+@sa @ref    func_ssl_async_server
+@sa @ref    func_ssl_sync_client
+@sa @ref    func_ssl_sync
+@sa @ref    func_ssl_sync_server
+*/
+
+/**
+@defgroup   func_ssl_core_server    Core (Async and Sync) Server Functions
+@ingroup    ssl_function_groups
+
+Core functions required by both asynchronous and synchronous NanoSSL servers.
+
+@sa @ref    func_ssl_async
+@sa @ref    func_ssl_async_server
+@sa @ref    func_ssl_sync
+@sa @ref    func_ssl_sync_server
+*/
+
+/* Sync functions */
+
+/**
+@defgroup   func_ssl_sync_client    Synchronous Client Functions
+@ingroup    ssl_function_groups
+
+Synchronous NanoSSL %client functions.
+
+@sa @ref    func_ssl_sync
+@sa @ref    func_ssl_core_client
+@sa @ref    func_ssl_core
+*/
+
+/**
+@defgroup   func_ssl_sync           Synchronous Client and Server Functions
+@ingroup    ssl_function_groups
+
+Synchronous NanoSSL %client and %server functions.
+
+@sa @ref    func_ssl_sync_client
+@sa @ref    func_ssl_sync_server
+@sa @ref    func_ssl_core_client
+@sa @ref    func_ssl_core
+@sa @ref    func_ssl_core_server
+*/
+
+/**
+@defgroup   func_ssl_sync_server    Synchronous Server Functions
+@ingroup    ssl_function_groups
+
+Synchronous NanoSSL server functions.
+
+@sa @ref    func_ssl_sync
+@sa @ref    func_ssl_core
+@sa @ref    func_ssl_core_server
+*/
+
+/**
+@defgroup   func_ssl_ungrouped      Ungrouped Functions
+@ingroup    ssl_function_groups
+
+NanoSSL functions that aren't part of any other function group.
+*/

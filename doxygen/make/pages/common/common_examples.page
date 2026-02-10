@@ -1,0 +1,11 @@
+/**
+@page       common_examples Common Examples
+@ingroup    common_pages 
+@brief      Mocana %common code examples.
+
+The following files contain Mocana %common code examples:
++ \ref mocana_example.c
+
+@example mocana_example.c
+
+*/

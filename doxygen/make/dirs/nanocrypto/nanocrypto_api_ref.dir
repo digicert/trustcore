@@ -1,0 +1,239 @@
+/** 
+@dir    ncrp_crypto
+@brief  NanoCrypto (crypto) functions.
+*/
+
+/**
+@defgroup   crypto_tree     Cryptography
+
+Cryptography functions used by NanoCrypto.
+
+*/
+
+<!-- -------------------------------------------------------------------- -->
+
+/**
+@defgroup   key_utils                       Key Utilities
+@ingroup    crypto_tree
+*/
+
+<!-- -------------------------------------------------------------------- -->
+
+/**
+@page       symmetric_cipher_pages          About Symmetric Ciphers
+NanoCrypto symmetric cipher functions.
+
+See the following overviews:
++ @subpage  overview_aes
++ @subpage  overview_aes_ccm
++ @subpage  overview_rc2algo
++ @subpage  overview_blowfish
++ @subpage  overview_aes_ecb
++ @subpage  overview_three_des
++ @subpage  overview_aes_ctr
++ @subpage  overview_des
+*/
+/**
+@defgroup   symmetric_ciphers               Symmetric Ciphers
+@ingroup    crypto_tree
+
+NanoCrypto symmetric cipher functions.
+*/
+/**
+@defgroup   aes_cbc_functions               AES-CBC CFB OFB Functions
+@ingroup    symmetric_ciphers
+
+AES-CBC in CFB (Cipher FeedBack) and OFB (Output FeedBack) mode.
+@copydoc    overview_aes
+*/
+/**
+@defgroup   aes_ccm_functions               AES-CCM Functions
+@ingroup    symmetric_ciphers
+
+AES-CCM functions.
+@copydoc    overview_aes_ccm
+*/
+/**
+@defgroup   aes_ctr_functions               AES-CTR Functions
+@ingroup    symmetric_ciphers
+
+AES-CTR functions.
+@copydoc    overview_aes_ctr
+*/
+/**
+@defgroup   aes_ecb_functions               AES-ECB Functions
+@ingroup    symmetric_ciphers
+
+AES-ECB functions.
+@copydoc    overview_aes_ecb
+*/
+/**
+@defgroup   blowfish_functions              Blowfish Functions
+@ingroup    symmetric_ciphers
+
+Blowfish functions.
+@copydoc    overview_blowfish
+*/
+/**
+@defgroup   aes_des_functions               AES-DES Functions
+@ingroup    symmetric_ciphers
+
+AES-DES functions.
+@copydoc    overview_des
+*/
+/**
+@defgroup   three_des_functions             3DES Functions
+@ingroup    symmetric_ciphers
+
+3DES functions.
+@copydoc    overview_three_des
+*/
+/**
+@defgroup   rc2_functions                   RC2 Functions
+@ingroup    symmetric_ciphers
+
+RC2 functions.
+@copydoc    overview_rc2algo
+*/
+
+<!-- -------------------------------------------------------------------- -->
+
+/**
+@page       asymmetric_cipher_pages         About Asymmetric Ciphers
+NanoCrypto asymmetric cipher functions.
+
+See the following overviews:
++ @subpage    overview_dh
+*/
+/**
+@defgroup   asymmetric_ciphers              Asymmetric Ciphers
+@ingroup    crypto_tree
+
+NanoCrypto asymmetric cipher functions.
+*/
+/**
+@defgroup   dh_functions                    DH Functions
+@ingroup    asymmetric_ciphers
+
+DH Functions
+@copydoc    overview_dh
+*/
+/**
+@defgroup   ecdh_functions                  ECDH Functions
+@ingroup    asymmetric_ciphers
+
+ECDH Functions
+*/
+/**
+@defgroup   general_ec_functions            General EC Functions
+@ingroup    asymmetric_ciphers
+
+General EC Functions
+*/
+/**
+@defgroup   primeec_functions               PRIME-EC Functions
+@ingroup    asymmetric_ciphers
+
+PRIME-EC Functions
+*/
+/**
+@defgroup   prime_field_functions           PRIME FIELD Functions
+@ingroup    asymmetric_ciphers
+
+PRIME FIELD Functions
+*/
+/**
+@defgroup   ecdsa_functions                 ECDSA Functions
+@ingroup    asymmetric_ciphers
+
+ECDSA Functions
+*/
+/**
+@defgroup   rsa_functions                   RSA Functions
+@ingroup    asymmetric_ciphers
+
+RSA Functions
+*/
+/**
+@defgroup   dsa_functions                   DSA Functions
+@ingroup    asymmetric_ciphers
+
+DSA Functions
+*/
+/**
+@defgroup   asymmetric_ungrouped            Ungrouped Functions
+@ingroup    asymmetric_ciphers
+
+Ungrouped Functions
+*/
+
+<!-- -------------------------------------------------------------------- -->
+
+/**
+@page       hashing_algorithms_pages         About Hashing Algorithms
+NanoCrypto hashing algorithms.
+
+See the following overviews:
++ @subpage    overview_gcm
+*/
+/**
+@defgroup   hashing_algorithms              Hashing Algorithms
+@ingroup    crypto_tree
+
+NanoCrypto hashing algorithm funtions.
+*/
+/**
+@defgroup   aes_cmac_functions              AES-CMAC Functions
+@ingroup    hashing_algorithms
+
+AES-CMAC Functions
+*/
+/**
+@defgroup   sha1_functions                  SHA1 Functions
+@ingroup    hashing_algorithms
+
+SHA1 Functions
+*/
+/**
+@defgroup   sha224_functions                SHA224 Functions
+@ingroup    hashing_algorithms
+
+SHA224 Functions
+*/
+/**
+@defgroup   sha256_functions                SHA256 Functions
+@ingroup    hashing_algorithms
+
+SHA256 Functions
+*/
+/**
+@defgroup   sha384_functions                SHA384 Functions
+@ingroup    hashing_algorithms
+
+SHA384 Functions
+*/
+/**
+@defgroup   sha512_functions                SHA512 Functions
+@ingroup    hashing_algorithms
+
+SHA512 Functions
+*/
+/**
+@defgroup   hmac_functions                  HMAC Functions
+@ingroup    hashing_algorithms
+
+HMAC Functions
+*/
+/**
+@defgroup   gcm_functions                   GCM Functions
+@ingroup    hashing_algorithms
+
+GCM Functions
+@copydoc    overview_gcm
+*/
+/**
+@defgroup   hashing_ungrouped               Ungrouped Functions
+@ingroup    hashing_algorithms
+
+Ungrouped Functions
+*/

@@ -5,7 +5,15 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    paths:
+      - .github/workflows/nanossh_sanity_test.yml
+      - samples/ssh_client/**
+      - samples/ssh_server/**
+      - src/common/**
+      - src/ssh/**
+      - projects/nanossh/**
+      - projects/nanossh_testunit/**
+      - scripts/sanity_tests.sh
 
 jobs:
   sanity-tests:

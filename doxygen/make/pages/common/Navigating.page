@@ -1,0 +1,115 @@
+/**
+@page       navigating Navigating the API Reference
+@brief      Tips and tricks for using the Doxygen-produced Web interface to
+            explore and search the <em>moc_product  API
+            Reference</em>.
+
+@todo_110   (convert from DoxyS navigation to Doxygen)
+
+This API Reference is generated directly from the @moc_platform code by
+Doxygen&mdash;a C/C++ documentation tool. (This process is very similar to using
+Javadoc for Java API documentation.)
+
+@note   Be sure to scroll down and read the "What to Look For" section; it will
+        definitely help you navigate through this API Reference.
+
+## The DoxyS Interface
+
+The HTML interface components consist of a banner, navigation pane, display tabs,
+and display pane.
+
+@image html html_if_main.png "HTML Interface"
+
+## Navigation Pane
+The navigation pane allows you to browse through the Mocana code directory
+structure, just as if you were exploring the code directly. Your current
+location is shown in the <b>Directory Location Bar</b> &mdash;the navigation pane's
+top line. (The directory location bar background is blue when a directory is
+shown in the display pane; otherwise the background is gray.)
+
+Depending where in the directory structure you are, the navigation pane's contents include the following:
++ <b>Directories</b> &mdash;The list of subdirectories "below" the current directory (as shown in the directory location bar).
++ <b>Pages</b> &mdash;Informational pages related to the current directory.
++ <b>Structs</b> &mdash;Structures global to the current directory.
++ <b>Functions</b> &mdash;Externally-accessible API functions in the current directory.
+
+When you first open the <em>Mocana API Reference</em>, the banner shows
+"Mocana Security Suite". The \b Directories list shows each product's code
+directory, which directly corresponds to the code's structure. And the \b Pages
+list includes information that is applicable to the Mocana Security Suite as a
+whole.
+
+## Banner
+The banner displays two lines of information:
++ The first line tells what is currently shown in the display pane.
++ The second line provides a }breadcrumb path}&mdash;the list of navigation
+links used to get to the page currently shown in the display pane. For example,
+when viewing the \c funcPtrClientOpenStateUpcall description, the breadcrumb path
+shows how you got there:
+
+ -# From the top level (Mocana Security Suite) navigation pane's \b Directories options, click \b %ssl.
+ -# From the %ssl navigation pane's \b Structs options, click \b %sslSettings.
+ -# In the $%sslSettings$ display pane, click \b funcPtrClientOpenStateUpcall.
+
+@image html ex_breadcrumbs.png "Breadcrumb Path Example"
+
+<b>Tip</b> &nbsp;&nbsp;&nbsp;&nbsp;Every \em breadcrumb in the breadcrumb path is a live
+hyperlink that can be clicked to quickly return to a previous display pane's
+contents or navigation pane level.
+
+## Display Tabs
+The display tabs provide options for viewing general descriptions, lists of
+overview pages and code elements (such as functions and structures), and
+information such as Todo lists. When you click a display tab, its background
+changes to blue and the display pane's contents are updated.
+
+## Display Pane
+The display pane's contents change whenever you select an option from the
+navigation pane or click a display tab.
+
+If the display contains a long list of entries, such as the full list of
+functions for the entire Mocana Security Suite, the list will be shown in a
+\e compact format. You can see an item's brief description by moving your mouse
+over the item's name, as shown below.
+
+@image html ex_mouseover.png "Mouseover Example"
+
+## What to Look For
+
+As you navigate through the <em>Mocana API Reference</em>, you'll find %common elements:
+
+- <b>Hyperlinks</b> &mdash;You'll quickly notice a plethora of hyperlinks in this API
+Reference. Functions contain hyperlinks to their source files; descriptions
+contain hyperlinks to related pages; pages contain hyperlinks to functions and
+files; and so on. You can quickly find yourself unsure how you got to a display!
+So don't forget the breadcrumb path, and of course your browser's Back button.
+
+- <b>File lists</b> &mdash;Every directory has a page listing the files
+that contain that product's externally-accessible API functions. To display the
+file list, do either of the following:
+ - From the navigation pane's \b Pages options, click <b>NNN Files</b> (where <b><em>NNN</em></b>
+ is the name of the directory you're in, or "API Files" at the top level).
+ - From the display pane's description section, click the appropriate hyperlink;
+ its location varies depending on which directory you're in.
+
+@image html ex_file_list.png "Viewing a Product's File List"
+
+- <b>Function lists</b> &mdash;Every directory has one or more pages listing the
+corresponding product's or component's externally-accessible API functions.
+These lists are logical function groups, such as "EAP-FAST Functions" and
+"EAP-RADIUS Functions", of the the alphabetical function list provided in the
+navigation pane.
+
+- <b>Descriptions</b> &mdash;Every page, structure, function, and so on has a description page.
+
+- <b>Callback functions</b> &mdash;Callback functions do not appear directly in the
+navigation pane. Instead, you access them through the structure in which their
+function pointer is assigned. For example, the $%funcPtrLookupPSK$ callback
+function description is accessible from the $%sslSettings$ structure
+description.
+
+<b>Tip</b> &nbsp;&nbsp;&nbsp;&nbsp;Many of the directories have a page that lists the
+applicable callback functions and provides direct hyperlinks. For example, the
+%ssl directory has a page titled, "sslSettings Callbacks".
+
+*/

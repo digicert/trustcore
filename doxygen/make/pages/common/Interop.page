@@ -1,0 +1,15 @@
+/**
+ 
+@page       interoperability Operating Systems and Protocols
+@brief      
+@details    
+
+@moc_platform components may be installed on many operating systems out-of-the-box, including Linux, MontaVista Linux, ThreadX, pSOS, MQX, Windows, Solaris, Cygwin, VxWorks, OS X, Nucleus, and Fusion. Each component is agnostic, which means that your implementation is free to use any messaging protocol, and work with all certificates that are compliant with ITU (International Telecommunications Union) specification X.509v3.
+
+DigiCert&reg; is continually adding to the wide array of chipsets supported. For the latest list or to request support to be added for a particular chipset, contact the DigiCert Support Team via the DigiCert Helpdesk.
+
+## Standards
+
+The cryptographic libraries in @moc_platform are certified according to Federal Information Processing Standard (FIPS) 140-2 (see http://csrc.nist.gov/publications/fips) and is cleared for export. For more information about export clearances, refer to the U.S. Department of Commerce Web page at <a href="http://www.bis.doc.gov/Licensing/index.htm">http://www.bis.doc.gov/Licensing/index.htm</a>. 
+
+*/

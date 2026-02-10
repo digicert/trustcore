@@ -10,6 +10,7 @@
 | `ENABLE_SSH_CLIENT_CERT_AUTH`     | Enable SSH Client certificate authentication | `OFF`   |
 | `ENABLE_SSH_CLIENT_AUTH`          | Enable SSH Client public key authentication  | `OFF`   |
 | `ENABLE_SSH_CLIENT_SHELL_EXAMPLE` | Build SSH client shell example               | `OFF`   |
+| `ENABLE_PQC_COMPOSITE`            | Enable PQC composite algorithm support       | `OFF`   |
 
 > **Note:** For the complete list of options and their details, refer to [`projects/nanossh/CMakeLists.txt`](../../projects/nanossh/CMakeLists.txt).
 > For common build options (e.g., `BUILD_SAMPLES`), see [`GUIDE.md`](../../GUIDE.md).

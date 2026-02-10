@@ -1,0 +1,72 @@
+/**
+@page       sotp_flowcharts Flowcharts
+@brief      To display a full-size version of any of the following @moc_product flowcharts, click the thumbnail image.
+@htmlonly
+<!++ Symmetric Ciphers Flowcharts ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>Symmetric Ciphers Flowcharts</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_aes_cbc.jpg">AES-CBC<br/><br/><image src="images/nanocrypto/flowchart_aes_cbc_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_aes_ofb.png">AES-OFB<br/><br/><image src="images/nanocrypto/flowchart_aes_ofb_thumbnail.png"></a></td>
+          <td><a href="images/nanocrypto/flowchart_aes_cfb.png">AES-CFB<br/><br/><image src="images/nanocrypto/flowchart_aes_cfb_thumbnail.png"></a></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_aes_ccm.jpg">AES-CCM<br/><br/><image src="images/nanocrypto/flowchart_aes_ccm_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_aes_ctr.jpg">AES-CTR<br/><br/><image src="images/nanocrypto/flowchart_aes_ctr_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_aes_ecb.jpg">AES-ECB<br/><br/><image src="images/nanocrypto/flowchart_aes_ecb_thumbnail.jpg"></a></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_blowfish.jpg">Blowfish<br/><br/><image src="images/nanocrypto/flowchart_blowfish_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_des.jpg">DES<br/><br/><image src="images/nanocrypto/flowchart_des_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_3des.jpg">3DES<br/><br/><image src="images/nanocrypto/flowchart_3des_thumbnail.jpg"></a></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_rc2.jpg">RC2<br/><br/><image src="images/nanocrypto/flowchart_rc2_thumbnail.jpg"></a></td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+      </tr>
+</table>
+
+<!++ Asymmetric Ciphers Flowcharts ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>Asymmetric Ciphers Flowcharts</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_ecdh.jpg">ECDH<br/><br/><image src="images/nanocrypto/flowchart_ecdh_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_ecdsa.jpg">ECDSA<br/><br/><image src="images/nanocrypto/flowchart_ecdsa_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_rsa.jpg">RSA<br/><br/><image src="images/nanocrypto/flowchart_rsa_thumbnail.jpg"></a></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_dsa.jpg">DSA<br/><br/><image src="images/nanocrypto/flowchart_dsa_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_dh.jpg">DH<br/><br/><image src="images/nanocrypto/flowchart_dh_thumbnail.jpg"></a></td>
+          <td>&nbsp;</a></td>
+      </tr>
+  </table>
+
+<!++ Hashing Algorithms Flowcharts ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>Hashing Algorithms</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_aes_cmac.jpg">AES_CMAC<br/><br/><image src="images/nanocrypto/flowchart_aes_cmac_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_sha1.jpg">SHA1<br/><br/><image src="images/nanocrypto/flowchart_sha1_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_sha224.jpg">SHA224<br/><br/><image src="images/nanocrypto/flowchart_sha224_thumbnail.jpg"></a></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_sha256.jpg">SHA256<br/><br/><image src="images/nanocrypto/flowchart_sha256_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_sha384.jpg">SHA384<br/><br/><image src="images/nanocrypto/flowchart_sha384_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_sha512.jpg">SHA512<br/><br/><image src="images/nanocrypto/flowchart_sha512_thumbnail.jpg"></a></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanocrypto/flowchart_hmac_sha_all.jpg">HMAC-SHA*<br/><br/><image src="images/nanocrypto/flowchart_hmac_sha_all_thumbnail.jpg"></a></td>
+          <td><a href="images/nanocrypto/flowchart_hmac_md5_all.jpg">HMAC-MD5<br/><br/><image src="images/nanocrypto/flowchart_hmac_md5_all_thumbnail.jpg"></a></td>
+          <td>&nbsp;</td>
+      </tr>
+  </table>
+@endhtmlonly
+
+*/

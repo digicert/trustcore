@@ -1,0 +1,25 @@
+/**
+@page       sshc_ftp_status_codes       SFTP Client FTP Status Codes
+@ingroup    sshc_pages
+@brief      SFTP client FTP %status codes.
+
+The table lists the FTP operation status codes from sshc_filesys.h.
+
+|Definition|Value
+-----------|-----|
+|SSH_FTP_OK|0|
+|SSH_FTP_EOF|1|
+|SSH_FTP_NO_SUCH_FILE|2|
+|SSH_FTP_PERMISSION_DENIED|3|
+|SSH_FTP_FAILURE|4|
+|SSH_FTP_BAD_MESSAGE|5|
+|SSH_FTP_NO_CONNECTION|6|
+|SSH_FTP_CONNECTION_LOST|7|
+|SSH_FTP_OP_UNSUPPORTED|8|
+|SSH_FTP_INVALID_HANDLE|9|
+|SSH_FTP_NO_SUCH_PATH|10|
+|SSH_FTP_FILE_ALREADY_EXISTS|11|
+|SSH_FTP_WRITE_PROTECT|12|
+|SSH_FTP_NO_MEDIA|13|
+
+*/

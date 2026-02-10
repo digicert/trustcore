@@ -1,0 +1,121 @@
+/** 
+@dir    ncrt_crypto
+@brief  Certificate Management (crypto) functions.
+*/
+
+/**
+@defgroup   crypto_tree     Certificate Management
+
+The cryptography API certificate management functions are convenience functions 
+provided for your application's use; they are not used by Mocana SoT Platform
+internal code.
+
+
+@sa     For information about certificates, see @ref certificate_overview.
+*/
+
+/**
+@defgroup   crypto_pages                    Pages
+@ingroup    crypto_tree
+*/
+/**
+@defgroup   crypto_callback_functions       Callback Functions
+@ingroup    crypto_tree
+*/
+/**
+@defgroup   crypto_function_groups          Functions
+@ingroup    crypto_tree
+*/
+
+/**
+@defgroup   cb_cert_mgmt_cms                CMS (Cryptographic Message Syntax) Callback Functions
+@ingroup    crypto_callback_functions
+*/
+/*
+@defgroup   cb_cert_mgmt_cert_store         Certificate Store Callback Functions
+@ingroup    crypto_callback_functions
+
+Customizable certificate management callbacks.
+
+@todo_eng_review (which sslSettings callback functions are relevant after the 
+                  SoTP 6.4's certificate store revisions?)
+*/
+/**
+@defgroup   cb_cert_mgmt_pkcs12         PKCS&nbsp;\#12 Callback Functions
+@ingroup    crypto_callback_functions
+*/
+/**
+@defgroup   cb_cert_mgmt_pkcs7          PKCS&nbsp;\#7 Callback Functions
+@ingroup    crypto_callback_functions
+*/
+
+
+/**
+@defgroup   cert_mgmt_functions     Certificate Management Functions
+@ingroup    crypto_function_groups
+
+Certificate management convenience functions for your application code.
+*/
+
+/**
+@defgroup   cert_store_functions    Certificate Store Functions
+@ingroup    crypto_function_groups
+
+Certificate store convenience functions for your application code.
+*/
+
+/**
+@defgroup   pkcs_functions      PKCS Functions
+@ingroup    crypto_function_groups
+
+PKCS functionality.
+*/
+
+/**
+@defgroup   cms_functions      CMS (Cryptographic Message Syntax) Functions
+@ingroup    crypto_function_groups
+
+Provides CMS (Cryptographic Message Syntax) streaming functionality.
+*/
+
+/**
+@dir    ocsp
+@brief  NanoCert OCSP functions
+*/
+
+/**
+@defgroup   ocsp_tree   NanoCert OCSP
+
+Internal functions used by NanoCert OCSP clients to obtain a certificate's
+revocation %status.
+
+*/
+
+/**
+@defgroup   ocsp_http_functions NanoCert OCSP via HTTP Functions
+@ingroup    ocsp_tree
+
+This API contains the functions used by OCSP clients using HTTP.
+
+*/
+
+/*
+@note       To add pages, change the comment opener for Doxygen.
+
+@defgroup   ocsp_pages  Pages
+@ingroup    ocsp_tree
+*/
+
+/**
+@dir    ocsp/client
+@brief  NanoCert OCSP %client functions.
+*/
+
+/**
+@defgroup   ocsp_client_functions NanoCert OCSP Client Functions
+@ingroup    ocsp_tree
+
+This API contains the functions used by OCSP clients to obtain a certificate's
+revokation %status.
+
+*/

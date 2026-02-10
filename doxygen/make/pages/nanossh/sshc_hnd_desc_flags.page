@@ -1,0 +1,18 @@
+/**
+@page       sshc_hnd_desc_flags     Handle Descriptor Attribute Flags
+@ingroup    sshc_pages
+@brief      Handle descriptor attribute flags.
+
+The following handle descriptor attribute flags are defined in src\ssh\ssh_defs.h:
++ \c SSH_FILEXFER_ATTR_SIZE
++ \c SSH_FILEXFER_ATTR_UIDGID
++ \c SSH_FILEXFER_ATTR_PERMISSIONS
++ \c SSH_FILEXFER_ATTR_ACCESSTIME
++ \c SSH_FILEXFER_ATTR_CREATETIME
++ \c SSH_FILEXFER_ATTR_MODIFYTIME
++ \c SSH_FILEXFER_ATTR_ACL
++ \c SSH_FILEXFER_ATTR_OWNERGROUP
++ \c SSH_FILEXFER_ATTR_SUBSECOND_TIMES
++ \c SSH_FILEXFER_ATTR_EXTENDED
+
+*/

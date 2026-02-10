@@ -1,0 +1,18 @@
+/**
+@page       documents Product Documentation
+@brief      The following documents are provided with this release of @moc_product:
+
+<ul>
+  <li><a href="pdfs/nanossl/NSSL-PUG-0001-20171128_NanoSSL_User_Guide.pdf"><i>NanoSSL User Guide</i></a></li>
+  <li><a href="pdfs/nanossl/NDTL-PUG-0001_NanoDTLS_User_Guide.pdf"><i>NanoDTLS User Guide</i></a></li>
+  <li><i>NanoSSL API Reference</i> (this document)</li>
+  <li><a href="pdfs/common/GDOC-RME-0001_Mocana_Security_Platform_Read_Me_First.pdf"><i>Mocana Security Platform Read Me First</i></a></li>
+  <li><a href="pdfs/common/GDOC-IMAT-0001_Porting_Mocana_IoT_Security_Platform_Code.pdf"><i>Porting Mocana Security Platform Code</i></a></li>
+  <li><a href="pdfs/common/GDOC-IMAT-0002_Building_Mocana_Security_Platform_Components.pdf"><i>Building Mocana Security Platform Components</i></a></li>
+  <li><a href="pdfs/common/GDOC-CSS-0001_Supported_IETF_RFCs.pdf"><i>IETF RFCs Supported by Mocana Security Platform</i></a></li>
+  <li><a href="pdfs/common/GDOC-PRN-0004-20171128_Mocana_Security_Platform_Release_Brief.pdf"><i>Mocana Security Platform GA0217 U3 Release Brief</i></a></li>
+  <li><a href="pdfs/common/GDOC-PRN-0004-20171002_Mocana_Security_Platform_Release_Brief.pdf"><i>Mocana Security Platform GA0217 U2 Release Brief</i></a></li>
+  <li><a href="pdfs/common/GDOC-PRN-0004-20170807_Mocana_Security_Platform_Release_Brief.pdf"><i>Mocana Security Platform GA0217 U1 Release Brief</i></a></li>
+  <li><a href="pdfs/common/GDOC-PRN-0005_Mocana_Security_Platform_Release_Notes.pdf"><i>Mocana Security Platform GA0217 Release Notes</i></a></li>
+
+*/

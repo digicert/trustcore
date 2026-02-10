@@ -1,0 +1,12 @@
+/** Information for DoxyS documentation generation.
+
+\page "HTTP Client Files"
+
+!!! HTTP Client Files
+
+The following file contains the externally accessible HTTP Client API 
+functions:
+\n
+- http_request.c
+
+*/

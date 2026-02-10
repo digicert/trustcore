@@ -1,0 +1,38 @@
+/**
+@dir    sotp_common 
+@brief  SoT Platform common code base API functions.
+*/
+        
+/**
+@defgroup    common_tree     Common
+
+This API provides functions used by multiple Mocana Security of Things (SoT)
+Platform products.
+
+*/
+ 
+/**
+@defgroup    common_pages    Pages
+@ingroup     common_tree
+*/
+
+/**
+@defgroup    common_function_groups  Functions
+@ingroup     common_tree
+*/
+
+/**
+@defgroup    common_functions Common Functions
+@ingroup     common_function_groups
+
+Provides common SoT Platform functions, used by multiple SoT Platform
+components.
+*/
+
+/**
+@defgroup    common_callback_functions Callback Functions
+@ingroup     common_function_groups
+
+Provides common SoT Platform callback functions, used by multiple SoT Platform
+components.
+*/

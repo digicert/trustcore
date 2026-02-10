@@ -1,0 +1,80 @@
+/**
+@page       overview_dh     DH Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_about_dh        About the DH Cipher
+
+In the standard DH scenario, two participants publicly negotiate a
+\e Generator value and a <em>Large Prime</em> modulus value. In private, both
+participants then select a random number (their private key). Using
+these values, each participant generates a public key: the \e Generator
+raised to the power of the private key, modulo the <em>Large Prime</em>.
+(This calculation is presented in the table below.) Each participant
+then sends its public key to the other. Using these openly
+communicated values and their private keys, each participant can
+generate an identical shared secret value. (The calculation is presented
+in the table below.)
+
+Using this shared secret value as a key, both parties can encrypt their
+subsequent communications using a symmetric cipher. The following table
+summarizes the standard DH protocol and how one uses the fundamental
+DigiCert DH API to implement that protocol. In this table, you will see
+references to a "client" and a "server." In this case, the client is
+the initiator of the negotiation, and the server is the responder to the
+initial request.
+
+<!-- -------------------------------------------------------------------- -->
+<!-- Doxygen seems to require that there be no linefeeds in a markdown table
+     cell. So do NOT join/indent the lines in the table below.            -->
+<!-- -------------------------------------------------------------------- -->
+
+Step| Action| Role of Client and Server
+----|-------|--------------------------
+| 1 | Call DH_allocate(). | Both client and server use this function to allocate and initialize a \c diffieHellmanContext structure, which is used by the DH API to maintain DH context information. For details, see the description of the \c diffieHellmanContext structure and its members. |
+| 2 | Negotiate the \e Generator and the <em>Large Prime</em>. | During this step of the protocol, the client should contact the server and negotiate the values for the <em>Large Prime</em> and the \e Generator. The security of the protocol depends on the <em>Large Prime</em> being truly <b><em>large</em></b>. For the \e Generator, agree on a primitive root of the <em>Large Prime</em>. To enhance security, choose a \e Generator that generates a large subgroup of the multiplicative group mod <em>Large Prime</em>; a single-digit prime number is the usual choice. To generate suitable \e Generator and <em>Large Prime</em> values for the negotiation, use the functions, DH_getP() and DH_getG(). \n\n When exchanging \e Generator and <em>Large Prime</em> values with a peer, use the ASN.1 object and identifiers specified in the RSA document, <em>PKCS&nbsp;\#3: Diffie-Hellman Key-Agreement Standard</em>, a publication of RSA Laboratories. Section 9 of the publication defines the following: \n\n <tt>dhKeyAgreement OBJECT IDENTIFIER ::= { pkcs-3 1</tt> \n\n <tt>pkcs-3 OBJECT IDENTIFIER ::=</tt>\n <tt>{ iso(1) member-body(2) US(840) rsadsi(113549)</tt>\n <tt>pkcs(1) 3 }</tt> \n\n <tt>DHParameter ::= SEQUENCE {</tt>\n <tt>&nbsp;&nbsp;prime INTEGER, -- p </tt>\n <tt>&nbsp;&nbsp;base INTEGER, -- g</tt> \n <tt>&nbsp;&nbsp;privateValueLength INTEGER OPTIONAL } </tt> |
+| 3 | Call DH_setPG(). | Both the client and server use this function to add the \e Generator and the <em>Large Prime</em> to the context information stored in their respective \c diffieHellmanContext structures. The \e Generator and the <em>Large Prime</em> are stored under the members, \c dh_g and \c dh_p. The DH_setPG() function also selects the caller's <em>Private Key</em>, a random number. After selecting the caller's <em>Private Key</em>, this function calculates the caller's <em>Public Key</em>, using the formula:\n\n @image html DiffieHellmanEquationsY_Equation.png "" @image latex DiffieHellmanEquationsY_Equation.png "" width=1.5in \n\n @note Using the DH_setPG() function, you do not directly access your <em>Private Key</em>. If you need to access the <em>Private Key</em>, read the \c dh_y member of the \c diffieHellmanContext structure, but keep in mind that this is the <b><em>private</em></b> key and that you must keep it private. Also, note that each exercise of this protocol makes its own call to DH_setPG(), and therefore the <em>Private Key</em> changes from exercise to exercise, which is required for the security of the DH protocol. Do not reuse the <em>Private Key</em> from one exercise to the next. |
+| 4 | Send your <em>Public Key</em> to the peer. | To obtain this <em>Public Key</em>, read the \c dh_f member of the \c diffieHellmanContext structure \e after a successful call to DH_setPG().\n\n @note Both client and server find their respective <em>Public Key</em> values in the \c dh_f member of their \c diffieHellmanContext structure. The \c dh_f member stores the local <em>Public Key</em>. |
+| 5 | Receive the <em>Public Key</em> from the peer. | Upon receiving the peer's <em>Public Key</em>, both client and server store it in the \c dh_e member of their respective \c diffieHellmanContext structures.\n\n @note Whether you are client or server, use the \e dh_e member to store the <em>Public Key</em> of the other. |
+| 6 | Call DH_computeKeyExchange(). | After the successful completion of a DH_computeKeyExchange() call, both client and server can find the shared secret in the \c dh_k member of their respective \c diffieHellmanContext structures.\n\n @image html DiffieHellmanSharedSecretFormula.png "" @image latex DiffieHellmanSharedSecretFormula.png "" width=1.5in \n\n @note Internally, DH_computeKeyExchange() validates the public key that is received from the other. An invalid key could indicate manipulation by a <em>man in the middle</em>. In this case, you should stop any further processing of this protocol. Because the <em><b>standard</b></em> DH protocol does not include a means of authentication, it is susceptible to the <em>man in the middle</em> attack. |
+| 7 | DH_freeDhContext() | After you are done with the shared secret or have copied it to a secure location, use DH_freeDhContext() to free the \c diffieHellmanContext structure allocated by the call to DH_allocate(). |
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_dh_allocate_client_server     Using DH_allocateClient() and DH_allocateServer()
+
+Before negotiating with the server for the \e Generator and <em>Large Prime</em>
+values, the client calls DH_allocateClient(), which does the following:
++# Allocates a \c diffieHellmanContext structure for the client.
++# Chooses a <em>Large Prime</em> value, which it stores in \c
+    diffieHellmanContext::dh_p member.
++# Chooses a private key for the client, which it stores in \c diffieHellmanContext::dh_y member.
+
+Calling DH_allocateClient() does not choose a \e Generator value. To get a
+\e Generator value for your negotiation with the server, call DH_getG().
+After completing the negotiation with the server for the \e Generator and
+<em>Large Prime</em>, the client continues the protocol from step 3 in the
+table above.
+
+After receiving a request from a client, the server calls DH_allocateServer(),
+which does the following:
+-# Allocates a \c diffieHellmanContext structure.
+-# Picks a \e Generator value, which it stores in \c diffieHellmanContext::dh_g.
+-# Picks a <em>Large Prime</em> value, which it stores in \c
+    diffieHellmanContext::dh_p.
+-# Picks a <em>Private Key</em>, which it stores in \c
+    diffieHellmanContext::dh_y.
+-# Generates the <em>Public Key</em>, which it stores in \c
+    diffieHellmanContext::dh_f.
+
+The DH_allocateServer() function's default operation assumes that the negotiation over the \e Generator and <em>Large Prime</em> modulus value consists of the server telling the client what the values will be. If that is the case, the server continues the protocol from step 4 in the table above. If that is \b not the case&mdash;that is, if the server truly negotiates these values with the client&mdash; the server picks up the protocol from step 3 in the table above.
+
+@todo       For the above, it would be good to include a discussion of
+            variants on DH, but this will have to do for now.
+*/

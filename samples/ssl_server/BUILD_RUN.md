@@ -9,6 +9,7 @@
 | `ENABLE_TAP`                      | Enable TAP (tpm2) support                    | `OFF`   |
 | `CM_ENABLE_SSL_MAUTH_SUPPORT`     | Enable Mutual Authentication                 | `OFF`   |
 | `CM_ENABLE_SSL_OCSP`              | Enable OCSP support                          | `OFF`   |
+| `ENABLE_PQC_COMPOSITE`            | Enable PQC composite algorithm support       | `OFF`   |
 | `DISABLE_SSL_CLIENT`              | Build the server only and disable the client | `OFF`   |
 
 > **Note:** The Server is enabled by default, ie no enable flag is needed. For the complete list of options and their details, refer to [`projects/nanossl/CMakeLists.txt`](../../projects/nanossl/CMakeLists.txt).

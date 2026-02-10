@@ -1,0 +1,13 @@
+/**
+@dir    ntap_common
+@brief  Mocana common code base API functions.
+*/
+
+
+/**
+@defgroup    smp_functions     NanoSMP 
+@ingroup     nanosmp_tree
+Lists functions implemented by NanoSMP
+
+*/
+

@@ -1,0 +1,36 @@
+/**
+@page       nanotap_callgraphs Call Graphs
+@brief      This page lists the call graphs available for @moc_product.
+
+@latexonly
+\label{Callgraphs}
+@endlatexonly
+
+To display a full-size version of any of the following call graphs, click the thumbnail image.
+
+@htmlonly
+<!++ NanoTAP Call Graphs ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>NanoTAP Call Graphs</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanotap/TAP_asymKey-SM.png">Asymmetric Key Generation<br/><br/><image src="images/nanotap/TAP_asymKey-SM_thumbnail.png"></a></td>
+          <td><a href="images/nanotap/TAP_symKey-SM.png">Symmetric Key Generation<br/><br/><image src="images/nanotap/TAP_symKey-SM_thumbnail.png"></a></td>
+		  <td><a href="images/nanotap/TAP_PolicyStorage-SM.png">Policy Storage<br/><br/><image src="images/nanotap/TAP_PolicyStorage-SM_thumbnail.png"></a></td>
+	  </tr>
+	    <tr>
+          <td><a href="images/nanotap/TAP_initializeSequence-SM.png">Initialization Sequence<br/><br/><image src="images/nanotap/TAP_initializeSequence-SM_thumbnail.png"></a></td>
+          <td><a href="images/nanotap/TAP_uninitializeSequence-SM.png">Uninitialization Sequence<br/><br/><image src="images/nanotap/TAP_uninitializeSequence-SM_thumbnail.png"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocCallgraphPicture{TAP_asymKey-SM.png}{Asymmetric Key Generation}
+\mocCallgraphPicture{TAP_symKey-SM.png.png}{Symmetric Key Generation}
+\mocCallgraphPicture{TAP_PolicyStorage-SM.png}{Policy Storage}
+\mocCallgraphPicture{TAP_initializeSequence-SM.png}{Initialization Sequence}
+\mocCallgraphPicture{TAP_uninitializeSequence-SM.png}{Uninitialization Sequence}
+@endlatexonly
+
+*/

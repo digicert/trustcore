@@ -1,0 +1,247 @@
+/**
+@page       overview_aes    AES Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+AES in CBC, CFB, and OFB modes provides confidentiality but no
+authentication. CBC mode is unsuitable for stream data; CFB and OFB modes can
+encrypt stream data.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_about_aes   About the AES Cipher
+
+The NanoCrypto implementation of the AES cipher is a FIPS-approved
+implementation of the AES cipher, as described in the Federal Information
+Processing Standards Publication 197, which is available at:
+http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf.
+
+@note       The following information about AES is a summary of the
+            information in FIPS Publication 197, and is intended to establish
+            the vocabulary necessary for discussing the external features of
+            the NanoCrypto AES API.
+
+The AES cipher is a block cipher with a fixed block size of 128 bits, which
+is the size of both the input block and the output block.
+
+@todo_eng_review    Does "size of both" mean the "sum of the two" or that
+                    "the input block is 128, and the output block is 128"?
+
+Each input block is treated as a 4 by 1 matrix of 32-bit words. The cipher
+is defined in terms of a series of reversible byte-oriented transformative
+operations that, after initialization, are applied to a matrix containing
+the input block. These transformations are described in section 5.1 of FIPS
+publication 197.
+
+Each set of operations is known as a \e round, and the number of rounds
+applied is determined by the key size. The AES cipher supports key sizes of
+128, 192, or 256 bits, and these keys are associated with 10, 12, and 14
+transformative rounds respectively. During the transformations of a round,
+one applies a value known as a <em>round key</em>. This round key is taken
+from a set of keys known as the <em>key schedule</em>, which is a set of
+values derived from the input cipher key. The process by which the key
+schedule is derived from the cipher key is known as <em>key expansion</em>.
+For a detailed description of key expansion, see section 5.2 of FIPS
+Publication 197.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_aes_IVs     Generating Initialization Vectors (IVs)
+
+As input, CBC, CFB, OFB, and CTR modes require an <em>initialization
+vector (IV)</em>, sometimes referred to as a \e nonce&mdash;a value used
+"not more than once". The generation of this IV is external to the
+NanoCrypto API functions; that is, you must handle it within your
+application. Further, the message recipient must know the IV in order to
+decrypt the message. For these modes, the IV need not be secret, which
+simplifies the problem of getting the IV to the recipient. However, to save
+bandwidth, you might prefer a method in which the recipient independently
+generates the IV, although such a method might not be suitable for the CBC
+and CFB modes.
+
+@warning    Appropriately managing initialization vectors is critical to the
+            confidentiality of the modes that depend on IVs. Mismanaging IVs
+            can destroy confidentiality.
+
+In CBC and CFB modes, although the IV need not be secret, it must be
+unpredictable for any given plaintext. One way to produce an unpredictable
+IV is to apply the encryption function (using the same key as is used to
+encrypt the data) to a nonce. This nonce must be a data block that is unique
+for each buffer encrypted under the same key.
+
+For OFB and CTR modes, reusing an IV destroys confidentiality. For these
+modes, the IV need not be unpredictable, but it must be unique for each
+message encrypted under the same key. For this purpose, the nonce can be a
+counter, such as a message number. For OFB mode, confidentiality can be
+compromised if you use an IV that is an encrypted block from the plain text.
+In addition, you must not generate initialization vectors for OFB mode by
+invoking the block cipher on another IV.
+
+As a source of unique nonce values, you can use a counter (as described in
+Appendix B of NIST Special Publication 800-38A, 2001 Edition) or a message
+number. Another commonly used method is to generate a random data block
+using a FIPS-approved (and therefore cryptographically strong) random number
+generator to use for the nonce. In addition, IVs for CFB mode should be
+unique for all messages encrypted under the same key. Reusing an IV leaks
+information on the first block of plaintext, and on any prefix shared by the
+two messages.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_overview_aes_cbc    Overview of CBC Mode
+
+To encrypt a plaintext buffer in CBC mode, the CreateAESCtx() function
+parses the plaintext into 128-bit blocks. If the plaintext is not an even
+multiple of 128 bits, the function abandons encryption and returns an error.
+If the submitted data is an even multiple of 128 bits, encryption proceeds.
+To encrypt the first plaintext block, the mode XORs the plaintext block with
+the initialization vector, and AES encrypts the result. For the subsequent
+blocks, the mode XORs the block with the previously encrypted block and then
+AES encrypts the result.
+
+Decryption is a reversal of the encryption procedure. The CreateAESCtx()
+function parses the ciphertext buffer into 128-bit blocks. If the ciphertext
+is not an even multiple of 128 bits, the function abandons decryption and
+returns an error. If the submitted ciphertext data is an even multiple of
+128 bits, decryption proceeds. To decrypt the first ciphertext block, the
+mode AES decrypts the block, and then XORs the result with the
+initialization vector. For subsequent blocks, the mode AES decrypts the
+ciphertext and then XORs the result against the previous ciphertext block.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_aes_cbc     Usage Caveats for AES in CBC Mode
+
+AES in CBC mode requires that all buffers input for encryption or decryption
+have a size that is an even multiple of the AES block size, 128 bits. If the
+buffer is smaller than an even multiple of 128 bits, you must pad the buffer
+before submitting it to the DoAES() function. To prevent leakage of
+information from the first block, CBC mode requires that you never reuse an
+initialization vector under the same key. Therefore, to encrypt a series of
+messages under the same AES key in CBC mode, you must base the
+initialization vector on a counter that is guaranteed not to repeat for as
+many \e messages (not \e blocks) as you will want to encrypt under that key.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_aes_cbc_padding     AES-CBC Mode Data Padding
+
+For CBC mode, the input for encryption or decryption must be an even
+multiple of the block size. In the NanoCrypto implementation of this mode,
+if the input data does not meet this requirement, processing stops and the
+function returns an error. Therefore, you should check the size of data
+buffers before submitting them to NanoCrypto functions that implement CBC
+modes. If the data is not an even multiple of the block size, you must pad
+it. You can pad the data however you want, and there are a number of well
+documented padding schemes from which you can choose. Step 3.1 in RFC&nbsp;1321
+describes a common bit-oriented scheme. If you would prefer a byte-oriented
+padding scheme, section 6.3 of RFC 5652 provides one. You might also want to
+consider the byte-oriented scheme provided in ANSI X.923.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_overview_aes_cfb    Overview of CFB Mode
+
+To encrypt a plaintext buffer in CFB mode, the CreateAESCFBCtx() function
+parses the plaintext into 128-bit blocks, but does \b not check that the
+plaintext parses into an even multiple of 128 bits. That is, the final block
+need not be a full 128 bits. The mode then encrypts the initialization
+vector, which it XORs against the first plaintext block (plaintext<sub>\e
+0</sub>). The result is ciphertext<sub>\e 0</sub>.
+
+To encrypt the subsequent blocks, the mode AES encrypts the previous
+ciphertext block, which it then XORs against the next plaintext block
+(plaintext<sub>\e 1</sub>), which produces ciphertext<sub>\e 1</sub>. The
+process continues until the final plaintext block. For this final block, if
+it is not a full 128 bits, the mode encrypts the previous ciphertext, and
+then XORs the result against the partial block bit-by-bit for the length of
+the partial block. The resulting output is the same length as the input.
+
+To decrypt a ciphertext, the CreateAESCFBCtx() function parses the
+ciphertext into 128-bit blocks, allowing the final block to be less than a
+full 128 bits. The mode then encrypts the initialization vector, which it
+XORs against the first ciphertext block (ciphertext<sub>\e 0</sub>). The
+results is the recovered plaintext<sub>\e 0</sub>.
+
+To decrypt the subsequent blocks, the mode AES encrypts the previous
+ciphertext block, which it then XORs against the current ciphertext block
+(ciphertext<sub>\e 1</sub>) to recover plaintext<sub>\e 1</sub>. The
+process continues until the final ciphertext block. For this final block,
+if it is not a full 128 bits, the mode encrypts the previous ciphertext, and
+then XORs the result against the partial block bit-by-bit for the length of
+the partial block. The resulting output is the same length as the input.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_aes_cfb     Usage Caveats for AES in CFB Mode
+
+For CFB mode, although the IV need not be secret, it must be unpredictable
+for any given plaintext. One way to produce an unpredictable IV is to apply
+the encryption function (using the same key as is used to encrypt the data)
+to a nonce. This nonce must be a data block that is unique for each buffer
+encrypted under the same key.
+
+As a source of unique nonce values, you can use a counter (as described in
+Appendix B of NIST Special Publication 800-38A, 2001 Edition) or a message
+number. Another commonly used method is to generate a random data block
+using a FIPS-approved (and therefore cryptographically strong) random number
+generator to use for the nonce. In addition, IVs for CFB mode should be
+unique for all messages encrypted under the same key. Reusing an IV leaks
+information on the first block of plaintext, and on any prefix shared by the
+two messages.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_overview_aes_ofb    Overview of OFB Mode
+
+To encrypt a plaintext buffer in OFB mode, the CreateAESOFBCtx() function
+parses the plaintext into 128-bit blocks, but does \b not check that the
+plaintext parses into an even multiple of 128 bits. That is, the final block
+need not be a full 128 bits. The mode then encrypts the initialization
+vector. For the purpose of this explanation, call this XORvalue<sub>\e
+0</sub>. The mode then XORs the first plaintext block (plaintext<sub>\e
+0</sub>) against XORvalue<sub>\e 0</sub>. The result is ciphertext<sub>\e
+0</sub>.
+
+To encrypt the subsequent blocks, the mode AES encrypts the previous
+XORvalue<sub>\e 0</sub> to produce XORvalue<sub>\e 1</sub>, which it then
+XORs against the next plaintext block (plaintext<sub>\e 1</sub>), which
+produces ciphertext<sub>\e 1</sub>. The process continues until the final
+plaintext block. For this final block, if it is not be a full 128 bits, the
+value XORed against the partial block is applied bit-by-bit for the length
+of the partial block. The resulting output is the same length as the input.
+
+To decrypt a ciphertext, the CreateAESOFBCtx() function parses the
+ciphertext into 128 blocks, allowing the final block to be less than the
+full block size, 128 bits. The mode then encrypts the initialization
+vector. For the purpose of this explanation, call this XORvalue<sub>\e
+0</sub>. The mode then XORs the first ciphertext block (ciphertext<sub>\e
+0</sub>) against XORvalue<sub>\e 0</sub>, which recovers plaintext<sub>\e
+0</sub>.
+
+To decrypt the subsequent block, the mode AES encrypts the previous
+XORvalue<sub>\e 0</sub> to produce XORvalue<sub>\e 1</sub>, which it then
+XORs against the next ciphertext block (ciphertext<sub>\e 1</sub>) to
+recover plaintext<sub>\e 1</sub>. The process continues until the final
+ciphertext block. For this final block, which may not be a full 128 bits,
+the value XORed against the partial block is applied bit-by-bit for the
+length of the partial block. The resulting output is the same length as the
+input.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_aes_ofb     Usage Caveats for AES in OFB Mode
+
+OFB requires that for each message encrypted under the same key, the
+initialization vector (IV) must be unique. Using the same IV for multiple
+messages would compromise the confidentiality of those messages, especially
+if an eavesdropper knows the plaintext value of \e any of the messages.
+Confidentiality is also compromised if you use an input block to the
+encryption function as the IV for the encryption of another message under
+the same key. Therefore, you must not generate an IV for OFB mode by invoking
+AES on another IV.
+*/

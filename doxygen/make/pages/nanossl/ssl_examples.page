@@ -1,0 +1,15 @@
+/**
+@page       ssl_examples @moc_product Examples
+@ingroup    ssl_pages 
+@brief      @moc_product code examples.
+
+@todo_eng_review (there are many ssl example files in the \\examples
+            directory; which examples in the \\examples directory, beyond the
+            obvious ssl_example.c, should be included in the @moc_doc_API_Ref?)
+
+The following files contain @moc_product code examples:
++ @ref ssl_example.c
+
+@example ssl_example.c
+
+*/
