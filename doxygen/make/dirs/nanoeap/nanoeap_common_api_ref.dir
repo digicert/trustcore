@@ -1,0 +1,32 @@
+/**
+@dir    src/common
+@brief  Mocana common code base API functions.
+*/
+        
+/**
+@defgroup    common_eap_tree     Common
+
+This API provides functions used by multiple Mocana Security Platform products.
+
+@SuiteB_disclaimer
+*/
+ 
+/**
+@defgroup    common_callback_functions Callback Functions
+@ingroup     common_eap_tree
+
+Provides common Mocana Security Platform callback functions used by multiple components.
+*/
+
+/**
+@defgroup    common_functions Functions
+@ingroup     common_eap_tree
+
+Provides common Mocana Security Platform functions used by multiple components.
+*/
+
+/**
+@defgroup    common_pages    Pages
+@ingroup     common_eap_tree
+*/
+

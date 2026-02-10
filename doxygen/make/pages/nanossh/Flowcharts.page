@@ -1,0 +1,30 @@
+/**
+@page       nanossh_flowcharts Flowcharts
+@brief      This page lists all workflow flowcharts available for @moc_product.
+
+@latexonly
+\label{Flowcharts}
+@endlatexonly
+
+To display a full-size version of any of the following flowcharts, click the thumbnail image.
+
+@htmlonly
+<!++ NanoSSH Flowcharts ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>NanoSSH Flowcharts</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanossh/flowchart_ssh_client.png">NanoSSH Client<br/><br/><image src="images/nanossh/flowchart_ssh_client_thumbnail.png"></a></td>
+          <td><a href="images/nanossh/flowchart_ssh_server_sync.png">NanoSSH Sync Server<br/><br/><image src="images/nanossh/flowchart_ssh_server_sync_thumbnail.png"></a></td>
+          <td><a href="images/nanossh/flowchart_ssh_sftp_client.png">NanoSSH SFTP Client<br/><br/><image src="images/nanossh/flowchart_ssh_sftp_client_thumbnail.png"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ssh_client.png}{NanoSSH Client}
+\mocFlowchartPicture{flowchart_ssh_server_sync.png}{NanoSSH Sync Server}
+\mocFlowchartPicture{flowchart_ssh_sftp_client.png}{NanoSSH SFTP Client}
+@endlatexonly
+
+*/

@@ -1,0 +1,28 @@
+/**
+  
+@page       export Export
+@brief      
+
+@details
+
+For more information about export clearances, refer to the U.S. Department of Commerce Web page at: http://www.bis.doc.gov/Licensing/index.htm.
+
+The following table lists the CCATS number for individual @moc_platform components:
+
+Commodity|CCATS\#
+---------|-----
+|NanoBoot (September 2008)| G066112
+|NanoCAP (June 2019)|G180373
+|NanoCert (May 2009)|G071830|
+|NanoCrypto (November 2009)|G075791|
+|NanoDTLS server (July 2009)|G071833|
+|NanoDTLS %client|G071834|
+|NanoSec (July 2009)|G071832|
+|NanoSSH %client (July 2009)|G071823|
+|NanoSSH server (July 2009)|G071824|
+|NanoSSL %client (July 2009)|G071825|
+|NanoSSL server (July 2009)|G071827|
+|NanoTAP (June 2017) | G171071 
+|NanoUpdate (September 2008)|G066110
+|NanoWireless (June 2008)|G063214
+*/

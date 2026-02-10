@@ -1,0 +1,440 @@
+/**
+@page       compilation_flags Compilation Flags
+@brief      This page lists the compilation flags (compiler directives) that may
+			be used to customize @moc_platform.
+
+@details    TrustCore SDK code may be easily customized by defining compilation
+            flags. For example, the memory footprint may be reduced by defining
+            compilation flags to disable products or features that are not
+            running, which removes those products' code from the resultant
+            executable. Similarly, debug flags may be undefined, which also
+            serves to increase execution speed.
+
+These compilation flags also enable easy porting of TrustCore SDK code to any
+operating system. For additional guidance on defining flags for %common tasks, refer
+@moc_product documentation.
+
+@note   In addition to the documented flags, TrustCore SDK reserves the right to use
+        undocumented compile-time flags (named with a prefix of \c
+        \__DISABLE_DIGICERT_ or \c \__ENABLE_DIGICERT_) for internal development
+        and testing. Do not define such flags in your implementation because
+        the results may be unexpected.
+
+The following table describes the set of compilation flags, presented in
+alphabetical order:
+
+Flag | Description
+-----|------------
+|\c \__3DES_HARDWARE_CIPHER__|Turns on hardware 3DES support (and disables corresponding software).|
+|\c \__AES_HARDWARE_CIPHER__|Turns on hardware AES support (and disables corresponding software).|
+|\c \__ARC2_HARDWARE_CIPHER__|Turns on hardware ARC2 support (and disables corresponding software).|
+|\c \__ARC4_HARDWARE_CIPHER__|Turns on hardware ARC4 support (and disables corresponding software).|
+|\c \__ASM_386__|Turns on assembly language optimizations for Intel x86 processors using Microsoft compilers.|
+|\c \__ASM_386_GCC__|Turns on assembly language optimizations for Intel x86 processors using GCC compilers.|
+|\c \__ASM_ARM__|Turns on assembly language optimizations for ARM processors. (This flag replaces the older \c \__ASM_ARM7__ flag.)|
+|\c \__ASM_COLDFIRE_DIABDATA__|Turns on assembly language optimizations for Freescale Coldfire processors using the DiabData compiler.|
+|\c \__ASM_H8S__|Turns on assembly language optimizations for Hitachi/Renasas H8S processors.|
+|\c \__ASM_M68K_CROSSCODE__|Turns on assembly language optimizations for Motorola/Freescale 68K series processors.|
+|\c \__ASM_MIPS__|Turns on assembly language optimizations for MIPS processors.|
+|\c \__ASM_PPC__|Turns on assembly language optimizations for PowerPC processors. If your PowerPC has an Altivec unit, be sure to use the correct flags for the compiler to enable using the Altivec unit; for example, \c -maltivec for the GCC compiler.|
+|\c \__ATMOS_RTOS__|Enables ATM operating system support.|
+|\c \__ATMOS_TCP__|Abstraction layer flag that enables ATM operating system support.|
+|\c \__CYGWIN_RTOS__|Enables Cygwin operating system support.|
+|\c \__CYGWIN_TCP__|Abstraction layer flag that enables Cygwin operating system support.|
+|\c \__DES_HARDWARE_CIPHER__|Turns on hardware DES support (and disables corresponding software).|
+|\c \__DISABLE_3DES_CIPHERS__|Disables 3DES cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES_CIPHERS__|Disables AES cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES128_CIPHER__|Disables AES 128-bit keys cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES192_CIPHER__|Disables AES 192-bit keys cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES256_CIPHER__|Disables AES 256-bit keys cipher suite support (both hardware and software).|
+|\c \__DISABLE_ARC4_CIPHERS__|Disables ARC-4 cipher suite support (both hardware and software).|
+|\c \__DISABLE_CERT_VALIDATE_TIME__|Disables certificate expiration checks if calendar clock is not available.|
+|\c \__DEBUG_*| (Recommended to leave undefined) Enables debug information for DigiCert support.|
+|\c \__DISABLE_IPSEC_TUNNEL_MODE__| (Default = defined/enabled) Enables IPsec tunnel mode, which is used for IPsec VPN support.|
+|\c \__DISABLE_DIGICERT_ADD_ENTROPY__|Disables DigiCert functions that allow system entropy (random data) to update the random number generator. If you're using your own random number generator, you can define this flag.|
+|\c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__|Disables DigiCert certificate generation code. If you define this flag, you should also define the \c \__DISABLE_DIGICERT_RSA_SIGN__ flag.|
+|\c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__|Disables DigiCert certificate parsing code. If you're using IKE, this flag should not be defined. If you define this flag, you should also define the \c \__DISABLE_DIGICERT_RSA_SIGN__ flag.|
+|\c \__DISABLE_DIGICERT_ECC__|Disables elliptical curve cryptography&mdash;a very fast asymmetrical %crypto algorithm for key exchanges and authentication.|
+|\c \__DISABLE_DIGICERT_ECC_P256__|Disables ECC P-256 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P384__|Disables ECC P-384 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P521__|Disables ECC P-521 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P192__|Disables ECC P-192 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P224__|Disables ECC P-224 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECDH__|Disables Elliptic Curve Diffie-Hellman cipher suite support.|
+|\c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__|Disables DigiCert ANSI file system helper functions, such as DIGICERT_readFile and DIGICERT_writeFile.|
+|\c \__DISABLE_DIGICERT_IKE_EAP__|Disables EAP methods when both IKE and EAP are enabled.|
+|\c \__DISABLE_DIGICERT_INIT__|Disables DigiCert %common initialization and de-initialization code (in common/mocana.c).|
+|\c \__DISABLE_DIGICERT_KEY_GENERATION__|Disables DigiCert key generation code.|
+|\c \__DISABLE_DIGICERT_MAIN_FUNC_ENTRY__|Disables the main function in the DigiCert example code, allowing operation on embedded systems (as opposed to Linux-based desktop systems).
+|\c \__DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__|Disables memory-intensive (but faster executing) algorithm for calculating MOD exponents. The result is less memory use and slower calculations.|
+|\c \__DISABLE_DIGICERT_PRIME_TEST__|Disables DigiCert prime test code used to verify whether a number is prime. (If it's left enabled, and hardware prime test support is enabled, then the hardware can use the DigiCert prime test code.)|
+|\c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__|Disables DigiCert entropy threads; initialization of the random number seed is still performed.|
+|\c \__DISABLE_DIGICERT_RAND_SEED__|Disables DigiCert entropy threads and initialization of random number seed.|
+|\c \__DISABLE_DIGICERT_RNG__|Disables DigiCert default random number generator (in random.c). If you define this flag, you must provide your own random number generator factory that is API compatible with DigiCert's random number generator.|
+|\c \__DISABLE_DIGICERT_RSA_DECRYPTION__|Disables RSA decryption support.|
+|\c \__DISABLE_DIGICERT_RSA_SIGN__|Disables DigiCert certificate signing code. If you've disabled DigiCert certificate code (by defining the \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__ or \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__ flags), it's safe to define this flag.|
+|\c \__DISABLE_DIGICERT_RSA_VERIFY__|Disables DigiCert RSA signature verification code. If you're running SSL %client but not SSL server, define this flag to disable mutual authentication.|
+|\c \__DISABLE_DIGICERT_SHA256__|Disables SHA256 cipher support (both hardware and software).|
+|\c \__DISABLE_DIGICERT_SHA512__|Disables SHA512 cipher support (both hardware and software).|
+|\c \__DISABLE_DIGICERT_SSH_COMMON_NAME_CHECK__| (Not recommended) Disables %common name validation during SSH handshaking.|
+|\c \__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__|Disables RSA support for SSH key exchange.|
+|\c \__DISABLE_DIGICERT_SSL_COMMON_NAME_CHECK__| (Not recommended) Disables %common name validation during SSL handshaking.|
+|\c \__DISABLE_DIGICERT_STARTUP_GUARD__|Disables DigiCert initialization code guard, which ignores subsequent calls to DIGICERT_initDigicert().|
+|\c \__DISABLE_NULL_MD5_CIPHER__|Disables SSL NULL MD5 cipher suite support.|
+|\c \__DISABLE_OPEN_SSH_AES_GCM__|Disables the aes128-gcm@openssh.com and aes256-gcm@openssh.com ciphers.|
+|\c \__DISABLE_SSL_GET_SOCKET_API__|Disables function that retrieves an original socket ID for a connection instance.|
+|\c \__DISABLE_SSL_IOCTL_API__|Disables the IOCTL function, which sets the version number (SSLv3 or TLS 1.0) to use for connection.|
+|\c \__DISABLE_SSL_IS_SESSION_API__|Disables function that verifies whether a given connection instance is for a given SSL session.|
+|\c \__DISABLE_SSL_SESSION_FLAGS_API__|Disables functions that set SSL flags (in ssl.h).|
+|\c \__DP_USE_WPCAP__| (WPA2 only) For DigiCert internal use to enable the Windows XP packet capture library for lower-layer communications; must be defined to enable pre-authentication. If you define this flag, you must \b not define the \c \__XP_NDIS_5_1__ flag.|
+|\c \__ENABLE_ALL_DEBUGGING__|Displays extensive debug information from all DigiCert modules to the debug console.|
+|\c \__ENABLE_2KEY_3DES_CIPHER__|Enables 3DES with 2 keys cipher suite support.|
+|\c \__ENABLE_BCM582x_HARDWARE_ACCEL__|Enables hardware accelerator support for the Broadcomm 582x chipset.|
+|\c \__ENABLE_BLOWFISH_CIPHERS__| (Default = undefined/disabled) Enables Blowfish cipher suite support.|
+|\c \__ENABLE_DES_CIPHER__| (Default = undefined/disabled) Enables DES cipher suite support. This is disabled by default because it's a weak cipher; however, 3DES is enabled by default.|
+|\c \__ENABLE_FREESCALE_8248_HARDWARE_ACCEL__|Enables hardware accelerator support for the Freescale 8248 chipset.|
+|\c \__ENABLE_FREESCALE_875_HARDWARE_ACCEL__|Enables hardware accelerator support for the Freescale 875 chipset.|
+|\c \__ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__|Enables asynchronous hardware accelerator support.|
+|\c \__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__|Enables synchronous hardware accelerator support.|
+|\c \__ENABLE_IKE_AGGRESSIVE_MODE__|Enables IKE aggressive mode for key exchanges.|
+|\c \__ENABLE_IKE_CP__|Enables IKE configuration payload; typically used when implementing a VPN client or server.|
+|\c \__ENABLE_IKE_FRAGMENTATION__|Enables IKE [v1] fragmentation.|
+|\c \__ENABLE_IKE_MODE_CFG__|Enables support for the ISAKMP configuration method (draft-dukes-ike-mode-cfg-02.txt).|
+|\c \__ENABLE_IKE_REDIRECT__|Enables the redirect mechanism for IKEv2 to redirect the VPN client to another gateway.|
+|\c \__ENABLE_IKE_SIG_AUTH_RFC7427__|Enables support for RFC 7427 (Signature Authentication in the Internet Key Exchange Version 2 (IKEv2)).|
+|\c \__ENABLE_IKE_XAUTH__|Enables IKE XAUTH; typically used when implementing a VPN client or server.|
+|\c \__ENABLE_IPSEC_COOKIE__|Enables IPsec Cookie support, which allows customized filtering, such as VLAN ID, for IPsec security policies.|
+|\c \__ENABLE_IPSEC_ESN__|Enables support for RFC 4304 (Extended Sequence Number to IPsecDOI for ISAKMP).|
+|\c \__ENABLE_IPSEC_FRAGMENTATION__|Enables DigiCert IP fragmentation reassembly code. Do not define this if you do not want to use DigiCert fragmentation code; for example, if you have your own fragmentation code.|
+|\c \__ENABLE_IPSEC_NAT_T__|Enables IPsec NAT-Traversal.|
+|\c \__ENABLE_IPSEC_NULL_TUNNEL__|Enables IPsec tunnels with NULL encryption and no authorization.|
+|\c \__ENABLE_IPSEC_OCSP_EXT__|Enables support for RFC 4806 (Online Certificate Status Protocol (OCSP) Extensions to IKEv2).|
+|\c \__ENABLE_IPSEC_PORT_RANGE__|Enables you to specify a range of ports in the SPD (security policy database). If you do not define this flag, you can specify only a single port value (which does include specifying 0 for all ports).|
+|\c \__ENABLE_LOOKUP_TABLE__|Enables retrieval of C-string error messages corresponding to error codes.|
+|\c \__ENABLE_DIGICERT_64_BIT__| (Products using DigiCert cryptography) Enables support for 64-bit processors (x86_64: Intel, AMD, and PowerPC), thereby improving performance for 64-bit executables.|
+|\c \__ENABLE_DIGICERT_AEAD_CIPHER__|Enables AEAD (Authenticated Encryption with Associated Data) cipher mode.|
+|\c \__ENABLE_DIGICERT_BASIC_TYPES_OVERRIDE__|Disables DigiCert default typedefs, allowing custom typedefs to be defined in moptions.h.|
+|\c \__ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__|Enables search support for certificate attributes such as serial number and CRL.|
+|\c \__ENABLE_DIGICERT_CMP_CLIENT__|Enables DigiCert CMP %client.|
+|\c \__ENABLE_DIGICERT_CMP_CLIENT_EXAMPLE__|Enables DigiCert CMP %client example code.|
+|\c \__ENABLE_DIGICERT_CMS__|Enables streaming CMS support.|
+|\c \__ENABLE_DIGICERT_DEBUG_CONSOLE__|Enables the DigiCert debug console, which logs debugging information to \c stdout or (if \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__ is not defined) to a telnet port.|
+|\c \__ENABLE_DIGICERT_DEBUG_MEMORY__|Enables the DigiCert memory leak debugger, which detects memory leaks, double frees, and other memory issues. File and line numbers for every call to \c malloc and \c free are recorded.|
+|\c \__ENABLE_DIGICERT_DER_CONVERSION__|Enables DigiCert's DER file support. Allows reading public and private key data from an OpenSSL DER file.|
+|\c \__ENABLE_DIGICERT_DSA__|Enables DigiCert digital signature algorithm code. This flag must be defined to enable SSH DSA support (as configured by the \c \__ENABLE_DIGICERT_SSH_DSA_SUPPORT__ flag).|
+|\c \__ENABLE_DIGICERT_DTLS_CLIENT__|Enables DigiCert DTLS (asynchronous) %client.|
+|\c \__ENABLE_DIGICERT_DTLS_SERVER__|Enables DigiCert DTLS (asynchronous) %server.|
+|\c \__ENABLE_DIGICERT_EAP_AUTH__|Enables the EAP-AUTH method.|
+|\c \__ENABLE_DIGICERT_EAP_FAST__|Enables the EAP-FAST method.|
+|\c \__ENABLE_DIGICERT_EAP_GTC__|Enables the EAP-GTC method.|
+|\c \__ENABLE_DIGICERT_EAP_LEAP__|Enables the EAP-LEAP method.|
+|\c \__ENABLE_DIGICERT_EAP_MD5__|Enables the EAP-MD5 method.|
+|\c \__ENABLE_DIGICERT_EAP_MSCHAPv2__|Enables the EAP-MS-CHAP-V2 method.|
+|\c \__ENABLE_DIGICERT_EAP_PEAP__|Enables the EAP-PEAP method.|
+|\c \__ENABLE_DIGICERT_EAP_PEAPV2__|Enables the EAP-PEAPV2 method.|
+|\c \__ENABLE_DIGICERT_EAP_PEER__|Enables DigiCert EAP %client (which functions  as the peer/supplicant).|
+|\c \__ENABLE_DIGICERT_EAP_PSK__|Enables the EAP-PSK method.|
+|\c \__ENABLE_DIGICERT_EAP_RADIUS__|Enables the EAP-RADIUS method.|
+|\c \__ENABLE_DIGICERT_EAP_SIM__|Enables the EAP-SIM method.|
+|\c \__ENABLE_DIGICERT_EAP_SIM_PEER__| (Test use only) Enables the EAP-SIM 802.1x %client.|
+|\c \__ENABLE_DIGICERT_EAP_SRP__|Enables the EAP-SRP method.|
+|\c \__ENABLE_DIGICERT_EAP_TLS__|Enables the EAP-TLS method. If you enable EAP-TLS, you must also define the \c \__ENABLE_DIGICERT_SSL_ASYNC_API_EXTENSIONS__ flag.|
+|\c \__ENABLE_DIGICERT_EAP_TTLS__|Enables the EAP-TTLS method.|
+|\c \__ENABLE_DIGICERT_EAPOL__| (Test use only) Enables EAP over LAN support.|
+|\c \__ENABLE_DIGICERT_ECC__|Enables elliptical curve cryptography&mdash;a very fast asymmetrical %crypto algorithm for key exchanges and authentication. Define for Suite&nbsp;B cipher support.|
+|\c \__ENABLE_DIGICERT_EST_CLIENT__|Enables DigiCert EST protocol client code.|
+|\c \__ENABLE_DIGICERT_EXAMPLES__|Enables DigiCert example code.|
+|\c \__ENABLE_DIGICERT_EXAMPLE_SSH_RADIUS_PASSWORD_AUTH__|Enables example code for using RADIUS Client with SSH server.|
+|\c \__ENABLE_DIGICERT_EXTRACT_CERT_BLOB__|Enables bit (raw data) access to a certificate's subject or issuer data.|
+|\c \__ENABLE_DIGICERT_FAST_PRIME_SEARCH__|Enables the use of a larger table for prime searches, which increases speed but also increases the memory footprint.|
+|\c \__ENABLE_DIGICERT_FAST_RAND__|Enables random number generator initialization even if entropy threads are disabled; also enables an additional round of entropy generation.|
+|\c \__ENABLE_DIGICERT_FIREWALL__|Enables DigiCert NanoWall.|
+|\c \__ENABLE_DIGICERT_FW_INBOUND_FLOW__|Enables NanoWall INBOUND TCP flow.|
+|\c \__ENABLE_DIGICERT_GCM__|Enables GCM (Galois/Counter Mode) symmetric key ciphers. Define  for Suite&nbsp;B cipher support.|
+|\c \__ENABLE_DIGICERT_GCM_64K__|Enables GCM 64&nbsp;KB table size cipher.|
+|\c \__ENABLE_DIGICERT_GCM_4K__|Enables GCM 4&nbsp;KB table size cipher.|
+|\c \__ENABLE_DIGICERT_GCM_256B__|Enables GCM 256&nbsp;KB table size cipher.|
+|\c \__ENABLE_DIGICERT_HARDWARE_CRYPTO_ACCEL__|Enables DigiCert hardware acceleration support, which allows the hardware acceleration to be initialized when DIGICERT_initDigicert() is called.|
+|\c \__ENABLE_DIGICERT_HARNESS__|Enables DigiCert acceleration harness for hardware offload, improving performance.|
+|\c \__ENABLE_DIGICERT_HARNESS_MEMORY_DEBUG__| (For development use only) Enables the DigiCert harness memory tracker, which confirms that memory allocation takes place on the hardware offload target.|
+|\c \__ENABLE_DIGICERT_HW_SECURITY_MODULE__| Enables the DigiCert secmod abstraction layer.|
+|\c \__ENABLE_DIGICERT_HTTP_CLIENT__|Enables DigiCert HTTP %client.|
+|\c \__ENABLE_DIGICERT_HTTP_CLIENT_EXAMPLE__|Enables DigiCert HTTP %client example code.|
+|\c \__ENABLE_DIGICERT_HTTPCC_CLIENT__|Enables DigiCert HTTPCC %client.|
+|\c \__ENABLE_DIGICERT_HTTPCC_SERVER__|Enables DigiCert HTTPCC server.|
+|\c \__ENABLE_DIGICERT_IKE_SERVER__|Enables DigiCert IKE server/peer code.|
+|\c \__ENABLE_DIGICERT_INNER_APP__|Enables TTLSv1 support. (TTLsv1 uses the SSL inner application payload.)
+|\c \__ENABLE_DIGICERT_IPSEC_SERVICE__|Enables DigiCert IPsec stack.|
+|\c \__ENABLE_DIGICERT_IPV6__|Enables DigiCert IPv6 support.|
+|\c \__ENABLE_DIGICERT_KEY_UTILS__|Enables DigiCert key utilities function support.|
+|\c \__ENABLE_DIGICERT_LDAP_CLIENT__|Enables DigiCert LDAP %client.|
+|\c \__ENABLE_DIGICERT_LDAP_TLS_EXTENSION__|Enables secure LDAP %client (LDAP with TLS stack).|
+|\c \__ENABLE_DIGICERT_LEAP__|Enables the EAP-LEAP method.|
+|\c \__ENABLE_DIGICERT_MEM_PART__|Enables DigiCert memory partition code.|
+|\c \__ENABLE_DIGICERT_MEM_PART_MUTEX__|Enables race condition prevention in synchronous applications; not necessary for asynchronous applications.|
+|\c \__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__|Enables accessing all a certificate's %common names. If disabled, only the certificate's first %common name is accessible.|
+|\c \__ENABLE_DIGICERT_NETWORK_TYPES_OVERRIDE__|Enables redefinition of the IP address data type (by default, an unsigned long).|
+|\c \__ENABLE_DIGICERT_OCSP_CLIENT__|Enables DigiCert OCSP %client. If you define this flag, you should also define the \c \__ENABLE_DIGICERT_HTTP_CLIENT__ flag.|
+|\c \__ENABLE_DIGICERT_PEM_CONVERSION__|Enables code that allows OpenSSH and OpenSSL PEM files to be used.|
+|\c \__ENABLE_DIGICERT_PFKEY__|Enables IKE PF_KEY functionality.|
+|\c \__ENABLE_DIGICERT_PKCS5__|Enables code to support PKCS&nbsp;\#5&mdash;key strengthened key derivation functions using an input password or passphrase and a salt value.|
+|\c \__ENABLE_DIGICERT_PKCS7__|Enables code to support PKCS&nbsp;\#7&mdash;a standard for signing and encrypting messages, as well as certificate dissemination.|
+|\c \__ENABLE_DIGICERT_PKCS8__|Enables code to support PKCS&nbsp;\#8&mdash;a syntax for private-key information.|
+|\c \__ENABLE_DIGICERT_PKCS10__|Enables code to support PKCS&nbsp;\#10&mdash;a standard for a certificate authority to upgrade a self-signed certificate to one signed by a certificate authority.|
+|\c \__ENABLE_DIGICERT_PKCS12__|Enables code to support PKCS&nbsp;\#12&mdash;a file format for password-based symmetric key certificate protection.|
+|\c \__ENABLE_DIGICERT_PKI_CLIENT__|Enables DigiCert NanoCert LTE PKI %client.|
+|\c \__ENABLE_DIGICERT_PKI_CLIENT_BACKROUND__|Sets up the PKI %client for background processing.|
+|\c \__ENABLE_DIGICERT_PKI_CLIENT_FOREROUND__|Sets up the PKI %client for foreground processing.|
+|\c \__ENABLE_DIGICERT_PKI_CLIENT_EXAMPLE__|Enables PKI %client example code.|
+|\c \__ENABLE_DIGICERT_PQC__|Enables Post Quantum cryptography code.|
+|\c \__ENABLE_DIGICERT_PQC_SIG__|Enables Post Quantum cryptography signature generation code.|
+|\c \__ENABLE_DIGICERT_PQC_KEM__|Enables Post Quantum cryptography key encapsulation mechanism code.|
+|\c \__ENABLE_DIGICERT_PROPAGATING_FIREWALL__|For future use.|
+|\c \__ENABLE_DIGICERT_RADIUS_CLIENT__|Enables DigiCert RADIUS %client.|
+|\c \__ENABLE_DIGICERT_RNG_DRBG_CTR__|Enables the CTR based NIST Random Number Generator (RNG).|
+|\c \__ENABLE_DIGICERT_RNG_DRBG_ECC__|Enables the ECC based NIST Random Number Generator (RNG).|
+|\c \__ENABLE_DIGICERT_SCEPCC_SERVER__|Enables DigiCert SCEP server connection concentrator.|
+|\c \__ENABLE_DIGICERT_SCEP_CLIENT__|Enables DigiCert SCEP %client. If you define this flag, you should also define the \c \__ENABLE_DIGICERT_HTTP_CLIENT__ flag.|
+|\c \__ENABLE_DIGICERT_SEC_BOOT__|Enables the DigiCert NanoBoot security verification program.|
+|\c \__ENABLE_DIGICERT_SIGN_BOOT__|Enables the DigiCert NanoBoot signing program.|
+|\c \__ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__|Reduces the size of the executable, at the expense of execution speed. Depending on which products are included and which options are enabled, defining this flag may reduce heap and stack requirements.|
+|\c \__ENABLE_DIGICERT_SMP__| Enables SMP features in NanoTAP.|
+|\c \__ENABLE_DIGICERT_SRTP__|Enables DigiCert NanoSRTP.|
+|\c \__ENABLE_DIGICERT_SRTP_DTLS_EXAMPLE__|Enables DTLS-SRTP example code.|
+|\c \__ENABLE_DIGICERT_SRTP_POLICY_STRING_DATA__|Enables retrieving a string representation of an SRTP session's security policies.|
+|\c \__ENABLE_DIGICERT_SSH_ASYNC_SERVER_API__|Enables DigiCert SSH asynchronous server.|
+|\c \__ENABLE_DIGICERT_SSH_AUTH_BANNER__|Enables DigiCert SSH display banner support for the client.|
+|\c \__ENABLE_DIGICERT_SSH_CHANNEL_ID_DEBUG__|Enables inclusion of channel Id in NanoSSH (client and server) debug and log messages.|
+|\c \__ENABLE_DIGICERT_SSH_CLIENT__|Enables DigiCert SSH synchronous %client.|
+|\c \__ENABLE_DIGICERT_SSH_DSA_SUPPORT__|Enables DSA use by DigiCert SSH. This flag has no effect unless both the following flags are also defined: \c \__ENABLE_DIGICERT_SSH_SERVER__ and \c \__ENABLE_DIGICERT_DSA__.|
+|\c \__ENABLE_DIGICERT_SSH_FTP_CLIENT__|Enables DigiCert SSH SFTP %client.|
+|\c \__ENABLE_DIGICERT_SSH_FTP_SERVER__|Enables DigiCert SSH SFTP server.|
+|\c \__ENABLE_DIGICERT_SSH_MAX_SESSION_TIME_LIMIT__|Enables configuring a maximum user session time, after which the user is automatically logged out (regardless of whether the session is active or idle).|
+|\c \__ENABLE_DIGICERT_SSH_OLD_DSA_CONVERSION__|Enables converting key blobs from Embedded SSH versions 1.4 and earlier to version 2.02 and later. (The 2.02 format adds RSA and ECC keys.)
+|\c \__ENABLE_DIGICERT_SSH_PING__|Enables DigiCert SSH connection pings.|
+|\c \__ENABLE_DIGICERT_SSH_PORT_FORWARDING__|Enables DigiCert SSH server support for port forwarding. (DigiCert SSH %client does not support port forwarding.)
+|\c \__ENABLE_DIGICERT_SSH_RADIUS_PASSWORD_AUTH_API__|For future use.|
+|\c \__ENABLE_DIGICERT_SSH_RSA_SUPPORT__|Enables RSA use by DigiCert SSH.|
+|\c \__ENABLE_DIGICERT_SSH_SCP_SERVER__|Should not be defined.|
+|\c \__ENABLE_DIGICERT_SSH_SENDER_RECV__|Enables deadlock prevention by allowing the SSH server to receive the SSH %client Acks for the smaller blocks already sent.|
+|\c \__ENABLE_DIGICERT_SSH_SERVER__|Enables DigiCert SSH synchronous server code. (Note that this is distinct from the \c \__USE_DIGICERT_SSH_SERVER__ flag, which enables DigiCert's SSH daemon for handling accepts and spawning threads for servicing requests.)
+|\c \__ENABLE_DIGICERT_SSH_STREAM_API__|Enables DigiCert SSH Stream API support, which allows data to be streamed rather than delivered as an entire message.|
+|\c \__ENABLE_DIGICERT_SSH_X509V3_SIGN_SUPPORT__|Enables SSH certificate support.|
+|\c \__ENABLE_DIGICERT_SSH_X509V3_RFC_6187_SUPPORT__|Enables SSH RFC 6187 support.|
+|\c \__ENABLE_DIGICERT_SSL_ALERTS__|Enables SSL/TLS alert support. Required for EAP-TLS, EAP-PEAP, EAP-FAST, and EAP-TTLS methods.|
+|\c \__ENABLE_DIGICERT_SSL_ANON_SUPPORT__| (SSL only) Enables Anonymous Diffie-Hellman cipher suite support.|
+|\c \__ENABLE_DIGICERT_SSL_ASYNC_API_EXTENSIONS__|Enables copy-less receive buffer processing. This flag must be defined if EAP-TLS is enabled (by defining the \c \__ENABLE_DIGICERT_EAP_TLS__ flag).|
+|\c \__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__|Enables DigiCert SSL asynchronous %client.|
+|\c \__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__|Enables DigiCert SSL asynchronous server.|
+|\c \__ENABLE_DIGICERT_SSL_CIPHER_SUITES_SELECT__|Enables dynamic cipher suite selection through a user callback in the SSL Server.|
+|\c \__ENABLE_DIGICERT_SSL_CLIENT__|Enables DigiCert SSL synchronous %client code.|
+|\c \__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__|Enables SSL Diffie-Hellman Anonymous cipher suite support.|
+|\c \__ENABLE_DIGICERT_SSL_DHE_SUPPORT__|Enables SSL Diffie-Hellman Ephemeral cipher suite support.|
+|\c \__ENABLE_DIGICERT_SSL_DUAL_MODE_API__|Enables simultaneous synchronous and asynchronous operation (%client or server).|
+|\c \__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__|Enables Anonymous Elliptic Curve Diffie-Hellman cipher suite support in SSL products.|
+|\c \__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__|Enables Elliptic Curve Diffie-Hellman cipher suite support in SSL products.|
+|\c \__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__|Enables Ephemeral Elliptic Curve Diffie-Hellman cipher suite support in SSL products.|
+|\c \__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_CERT_SINGLE_ONLY__|Enables authentication using only a single certificate (instead of a certificate chain).|
+|\c \__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__|Enables SSL mutual authentication; can be set for NanoSSH %client or server. This flag must be defined to enable setting the \c SSL_FLAG_REQUIRE_MUTUAL_AUTH runtime flag.|
+|\c \__ENABLE_DIGICERT_SSL_NEW_HANDSHAKE__|Enables the callback to be activated when a peer that's already successfully performed handshaking asks again.|
+|\c \__ENABLE_DIGICERT_SSL_REHANDSHAKE__|Enables the SSL Rehandshake feature.|
+|\c \__ENABLE_DIGICERT_SSL_PSK_SUPPORT__|Enables SSL Pre-shared Key support.|
+|\c \__ENABLE_DIGICERT_SSL_SERVER__|Enables DigiCert SSL synchronous server code.|
+|\c \__ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__|Disables DigiCert standard library functions and enables your native \c stdlib() functions, such as \c memcpy() and \c memcmp().|
+|\c \__ENABLE_DIGICERT_TAP__| Enables the NanoTAP module.|
+|\c \__ENABLE_DIGICERT_TPM__| Enables support for TPM 1.2 chips under the DigiCert secmod abstraction layer.  This flag also requires \__ENABLE_DIGICERT_HW_SECURITY_MODULE__ to be set.|
+|\c \__ENABLE_DIGICERT_TPM2__| Enables the TPM 2.0 SMP features in NanoTAP.|
+|\c \__ENABLE_DIGICERT_UMP__|Enables DigiCert Secure Firmware Update (update-message processor).|
+|\c \__ENABLE_DIGICERT_URI__| (SCEP %client example code and CMP code only) Enables code to support parsing and constructing URIs.|
+|\c \__ENABLE_DIGICERT_VERIFY_RSA_SIGNATURE__|Enables a self-test (internal to the DigiCert certificate code) to ensure that the signature can be verified via CRT (Chinese remainder theorem); if the self-test shows that the signature can't be verified via CRT, then the long algorithm will be used.|
+|\c \__ENABLE_DIGICERT_WPA2__|Enables DigiCert WPA2.|
+|\c \__ENABLE_DIGICERT_WPA2_SUITE_B__|Enables Suite-B compliant connection, access points, and other Suite-B specific features for DigiCert WPA2.|
+|\c \__ENABLE_DIGICERT_WPA2_ROAMING__|Enables software based roaming when the driver/hardware lacks roaming capability.|
+|\c \__ENABLE_DIGICERT_WPA2_WEXT__|Required on Linux platforms (in addition to \c \__RTOS_LINUX__) when using WEXT (Wireless extension) to manage the WLAN driver.|
+|\c \__ENABLE_MOCTPM_ESTC__|Enables the EST client; needed for the shim.|
+|\c \__ENABLE_MW_ASM__|Enables MetroWerks assembly language optimizations.|
+|\c \__ENABLE_MW_PROFILER__|Enables MetroWerks profiler optimizations.|
+|\c \__ENABLE_NIL_CIPHER__|Enables SSL NULL cipher suite support.|
+|\c \__ENABLE_RFC3546__|Enables TLS %extensions support (as defined by RFC 3546), which is required for elliptic curve ciphers and EAP.|
+|\c \__ENABLE_RFC3576__|Enables RADIUS %extensions for CoA (change of authorization) support.|
+|\c \__ENABLE_SSH_VERSION1_SUPPORT__|Enables the coexistence of an SSHv1 stack with the DigiCert SSHv2 stack. (SSHv1 should not be used alone.)
+|\c \__ENABLE_SSL_DYNAMIC_CERTIFICATE__|Enables your application to dynamically select (through a user callback) which certificate to use for the given SSL server.|
+|\c \__ENABLE_SSL_TO_REMOTE_TPM__|Specifies to use SSL for remote connections instead of TCP.|
+|\c \__ENABLE_TAP_REMOTE__| Enables remote support for a NanoTAP client-server build.  Without this flag, NanoTAP is built in local-only mode.|
+|\c \__ENABLE_TLSEXT_RFC6066__|Enables support in the SSL API for the RFC 6066 %extentsions: Server Name Indication (SNI) and Certificate Status (OCSP stapling).  For more information, see the descriptions for: SSL_setCertifcateStatusRequestExtensions(), SSL_setOcspResponderUrl(), and SSL_setSNI().
+|\c \__ENABLE_UNICODE__|Enables Unicode support for password entry in the secmod abstraction layer.|
+|\c \__ENABLE_VXWORKS_PIPE_EXAMPLE__|Enables example code for the SSH server to use VxWorks pipes.|
+|\c \__ENABLE_VXWORKS_SOCKET_EXAMPLE__|Enables example code for the SSH server to use VxWorks sockets.|
+|\c \__ERROR_LOOKUP_TABLE__|For DigiCert internal use for displaying error messages; do not define.|
+|\c \__FAST_DSA_KEY_GENERATION__|Enables faster, but less secure, DSA key generation. If defined, \c \__VERIFY_DSA_KEY_GENERATION__ is automatically defined.|
+|\c \__FUSION_TCP__|Abstraction layer flag enabling Fusion operating system support.|
+|\c \__FUSION_TCP_API_7_DOT_1__|Abstraction layer flag that enables Fusion 7.1 operating system support.|
+|\c \__HMAC_MD5_HARDWARE_HASH__|Enables hardware support for HMAC MD5.|
+|\c \__HMAC_SHA1_HARDWARE_HASH__|Enables hardware support for HMAC SHA1.|
+|\c \__IKE_MULTI_HOMING__|Enables IKE multihoming applications.|
+|\c \__INCREMENTAL_DSA_KEYGEN__|Enables a small speed increase for DSA key generation, with no security weakness (unlike key generation with the \c \__FAST_DSA_KEY_GENERATION__ flag defined).|
+|\c \__LINUX_RTOS__|Enables Linux operating system support.|
+|\c \__LINUX_TCP__|Abstraction layer flag that enables Linux operating system support.|
+|\c \__LINUX_UDP__|Abstraction layer flag that enables Linux operating system support.|
+|\c \__MD5_HARDWARE_HASH__|Enables hardware support for MD5.|
+|\c \__MD5_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step MD5 operations.|
+|\c \__DIGICERT_DISABLE_CERT_TIME_VERIFY__|Disables the certificate verification code from checking the certificate's expiration date.|
+|\c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__|Sends enabled debug messages to \c stdout. (When this flag is defined, the \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__ setting is ignored).|
+|\c \__DIGICERT_ENABLE_LONG_LONG__|Enables optimization of big integer math code. (Whether this results in faster code execution depends on your CPU.)|
+|\c \__DIGICERT_FORCE_ENTROPY__|If enabled, calls the function DIGICERT_addExternalEntropy from the function DIGICERT_initDigicert to add entropy from an external source (/dev/random on Linux). In addition,\c \ __DISABLE_DIGICERT_ADD_ENTROPY__ must not be defined.|
+|\c \__MQX_RTOS__|Enables MQX operating system support.|
+|\c \__NATIVE_INT64__| (Recommended to leave undefined; SHA-512 only) Redefines integer sizes.|
+|\c \__NETBURNER_RTOS__|Enables NetBurner operating system support.|
+|\c \__NNOS_RTOS__|Enables NNOS operating system support.|
+|\c \__NNOS_TCP__|Abstraction layer flag that enables NNOS operating system support.|
+|\c \__NO_CATL_SHIM__|Specifies to not use the DigiCert EST shim for AIKs. The EST shim handles AIK certificate requests until a CA exists to implement the TCG-defined identity proof request.|
+|\c \__NO_SELF_SIGNED_CERTIFICATES__|Prevents SSL clients and servers from using self-signed certificates to authenticate themselves.|
+|\c \__NUCLEUS_RTOS__|Enables Nucleus operating system support.|
+|\c \__NUCLEUS_TCP__|Abstraction layer flag that enables Nucleus operating system support.|
+|\c \__OSE_RTOS__|Enables OSE operating system support.|
+|\c \__OSE_TCP__|Abstraction layer flag that enables OSE operating system support.|
+|\c \__OSX_RTOS__|Enables OS X operating system support.|
+|\c \__OSX_TCP__|Abstraction layer flag that enables OS X operating system support.|
+|\c \__OSX_UDP__|Abstraction layer flag that enables OS X operating system support.|
+|\c \__PLATFORM_HAS_GETOPT__|Facilitates parsing command-line tokens. Define for operating systems that provide a \c getopt function (such as Linux); otherwise leave undefined, in which case the Nano code will perform rudimentary command-line parsing to attempt to extract the arguments.|
+|\c \__PRIME_GEN_HARDWARE__|Enables hardware acceleration chip support for prime number generation.|
+|\c \__PSOS_RTOS__|Enables pSOS operating system support.|
+|\c \__PSOS_TCP__|Abstraction layer flag that enables pSOS operating system support.|
+|\c \__PSOS_UDP__|Abstraction layer flag that enables pSOS operating system support.|
+|\c \__RSA_HARDWARE_ACCELERATOR__|Enables hardware support for RSA.|
+|\c \__RTCS_TCP__|Abstraction layer flag that enables ARC operating system support.|
+|\c \__RTOS_ARC__|Defines the \c \__MQX_* and \c \__RTCS_* flags for ARC operating system support.|
+|\c \__RTOS_CYGWIN__|Defines the \c \__CYGWIN_* flags for Cygwin operating system support.|
+|\c \__RTOS_LINUX__|Defines the \c \__LINUX_* flags for Linux operating system support.|
+|\c \__RTOS_NETBURNER__|Defines the \c \__NETBURNER_* flags for NetBurner operating system support.|
+|\c \__RTOS_NNOS__|Defines the \c \__NNOS_* flags for NNOS operating system support.|
+|\c \__RTOS_NUCLEUS__|Defines the \c \__NUCLEUS_* flags for Nucleus operating system support.|
+|\c \__RTOS_OSE__|Defines the \c \__OSE_* flags for OSE operating system support.|
+|\c \__RTOS_OSX__|Defines the \c \__OSX_* flags for OS X operating system support.|
+|\c \__RTOS_PSOS__|Defines the \c \__PSOS_* flags for pSOS operating system support.|
+|\c \__RTOS_SOLARIS__|Defines the \c \__SOLARIS_* flags for Solaris operating system support.|
+|\c \__RTOS_THREADX__|Defines the \c \__THREADX_* flags for ThreadX operating system support.|
+|\c \__RTOS_VXWORKS__|Defines the \c \__VXWORKS_* flags for VxWorks operating system support.|
+|\c \__RTOS_WIN32__|Defines the \c \__WIN32_* flags for 32-bit Windows operating system support.|
+|\c \__SHA1_HARDWARE_HASH__|Enables hardware support for SHA1.|
+|\c \__SHA1_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA1.|
+|\c \__SHA224_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-224.|
+|\c \__SHA256_HARDWARE_HASH__|Enables hardware support for SHA-256.|
+|\c \__SHA256_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-256.|
+|\c \__SHA384_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-384.|
+|\c \__SHA512_HARDWARE_HASH__|Enables hardware support for SHA-512.|
+|\c \__SHA512_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-256.|
+|\c \__SINGLE_THREAD_SSH_SERVER__|Disables spawning threads for new SSH server connections if the \c \__USE_DIGICERT_SSH_SERVER__ flag is defined.|
+|\c \__SOLARIS_RTOS__|Enables Solaris operating system support.|
+|\c \__SOLARIS_TCP__|Abstraction layer flag that enables Solaris operating system support.|
+|\c \__SOLARIS_UDP__|Abstraction layer flag that enables Solaris operating system support.|
+|\c \__THREADX_RTOS__|Enables ThreadX operating system support.|
+|\c \__THREADX_TCP__|Abstraction layer flag that enables ThreadX operating system support.|
+|\c \__TRECK_TCP__|Abstraction layer flag that enables Treck operating system support.|
+|\c \__USE_DIGICERT_SSH_SERVER__|Enables DigiCert's SSH daemon, used for handling accepts and spawning threads for servicing requests. In most instances, this will not be enabled; instead, the existing telnet daemon will be used. (Note that this is distinct from the \c \__ENABLE_DIGICERT_SSH_SERVER__ flag, which enables inclusion of the SSH server into the executable.|
+|\c \__USE_TPM_EMULATOR__| NanoTAP flag used to run against TPM 1.2 SW emulator instead of actual HW.|
+|\c \__VERIFY_DSA_KEY_GENERATION__| (Default = defined/enabled if \c \__FAST_DSA_KEY_GENERATION__ is defined) Enables verification of successful DSA key generation.|
+|\c \__VLONG_MOD_OPERATOR_HARDWARE_ACCELERATOR__|Disables DigiCert very long integer \c mod() function (in vlong.c), and uses the equivalent code in the chip's hardware accelerator.|
+|\c \__VLONG_MODEXP_OPERATOR_HARDWARE_ACCELERATOR__|Disables DigiCert very long integer \c modexp() function (in vlong.c), and uses the equivalent code in the chip's hardware accelerator.|
+|\c \__VLONG_MODINV_OPERATOR_HARDWARE_ACCELERATOR__|Disables DigiCert very long integer \c modinv() function (in vlong.c), and uses the equivalent code in the chip's hardware accelerator.|
+|\c \__VXWORKS_IPV6__|Enables the proper connection call selection based on the protocol version in use.|
+|\c \__VXWORKS_RTOS__|Enables VxWorks operating system support.|
+|\c \__VXWORKS_TCP__|Abstraction layer flag that enables VxWorks operating system support.|
+|\c \__VXWORKS_UDP__|Abstraction layer flag that enables VxWorks operating system support.|
+|\c \__WIN32_RTOS__|Enables 32-bit Windows operating system support.|
+|\c \__WIN32_TCP__|Abstraction layer flag that enables 32-bit Windows operating system support.|
+|\c \__WIN32_UDP__|Abstraction layer flag that enables 32-bit Windows operating system support.|
+|\c \__XP_NDIS_5_1__| (WPA2 only) For DigiCert internal use to enable the Windows XP NDISUIO 5.1 protocol driver for lower-layer communications. If you define this flag, you must \b not define the \c \__DP_USE_WPCAP__ flag.|
+|\c _AFX_NO_AFXCMN_SUPPORT|Enables MFC support for Windows %common controls in IPsec/IKE example code.|
+|\c _BMAP_PAD_AFTER|Adds padding after ID map entries so that each entry falls on a block boundary.|
+|\c _BMAP_PAD_BEFORE|Prepends padding to ID map entries so that each entry falls on a block boundary.|
+|\c _BMAP_PAGEALIGN|Adds padding to D maps so that they fall on page boundaries.|
+|\c _BMAP_PROTECT|Defines \c MPROTECT and \c _BMAP_PAGEALIGN flags.|
+|\c _CONSIST|Enables bitmap consistency checks.|
+|\c _FULL_CONSIST|Enables more frequent consistency checks.|
+|\c _MSC_VER|Enables strict compilation of example code for Microsoft compiler support.|
+|\c ASM_SHIFT_LEFT_DEFINED|Enables assembly language implementation of big integer shift left operations, which is faster than the corresponding C function.|
+|\c ASM_SHIFT_RIGHT_DEFINED| Enables assembly language implementation of big integer shift right operations, which is faster than the corresponding C function.|
+|\c AUTH_MAX_NUM_PROMPTS|Maximum number of times a user can attempt to log on. SSH clients will typically use one attempt to log on without a password without the user's knowledge. Therefore, if you set this value to n, only (n-1) prompts will be provided. |
+|\c AUTH_MAX_NUM_PROMPTS | Maximum number of times a user can attempt to log on. SSH clients will typically use one attempt to log on without a password without the user's knowledge. Therefore, if you set this value to n, only (n-1) prompts will be provided. |
+|\c BIG_ENDIAN | (IPsec, IKE, and EAP only) Specifies that the CPU is big endian. For EAP, if you define this flag, \c LITTLE_ENDIAN must be undefined.|
+|\c COUNTOF|Constant used throughout DigiCert code.|
+|\c CSR_LINE_LENGTH|Maximum Base 64 encoded output length of PKS10 certificate request.|
+|\c CUSTOM_IKE_GET_PSK| (IKE only) Enables custom pre-shared key functions.|
+|\c CUSTOM_IKE_USE_RSA_SIG| (IKE only) Enables custom host certificate functions.|
+|\c EAP_EXAMPLE_MD5|Enables EAP-MD5 example code.|
+|\c EAP_EXAMPLE_TLS|Enables EAP-TLS example code.|
+|\c FALSE|Constant used throughout DigiCert code. Can be redefined, but results are unpredictable. (Internal structures are initialized to 0, so redefining NULL and FALSE can be problematic within the code.)|
+|\c FREE|Enables redefinition of the \c FREE function to something other than the default (free()).|
+|\c FSL_SEC_SYNC_TIMEOUT_MS| (Default = 1000) Timeout in milliseconds for Freescale %crypto operations.|
+|\c IKE_CERT_CACHE_MAX| (IKE only) Maximum number of entries in the cache table of peer certificates.|
+|\c IKE_CERT_CHAIN_MAX| (IKE only) Maximum number of certificates (including the root and all leaves) allowed in a single certificate chain.|
+|\c IKE_EVENT_MAX| (IKE only) Maximum number of concurrent pending phase 2 exchanges allowed.|
+|\c IKE_IPSECSA_MAX| (IKE only) Maximum number of concurrent phase 2 quick mode negotiations allowed per established phase 1 channel.|
+|\c IKE_P2_SA_MAX| (IKE only) Maximum number of SA payloads allowed per phase 2 quick mode negotiation.|
+|\c IKE_SA_MAX| (IKE only) Maximum number of concurrent phase 1 negotiations (both established and pending) allowed.|
+|\c IMMR_ADDRESS| (Freescale processors only) Internal Memory Map Register address necessary to enable hardware offload.|
+|\c IPSEC_DGRAM_MAX|Maximum number of pending IP datagrams allowed for IP reassembly.|
+|\c IPSEC_DGRAM_SIZE_MAX|Maximum IP payload size (in bytes) for IP fragmentation reassembly.|
+|\c IPSEC_NEST_MAX|Maximum SA bundle size&mdash;how many separate headers can protect the payload. For example, if a payload can be protected by both AH and ESP, then define \c IPSEC_NEXT_MAX as 2.|
+|\c IPSEC_PACKETS_MAX|Maximum number of packets per IP datagram (reassembly only).|
+|\c IPSEC_REPLAY_SIZE|Replay window size in packets/bits. Values must be multiples of 8; and >= 32 is recommended.|
+|\c IPSEC_SADB_MAX|Maximum number of IPsec SAs to %include in the SADB.|
+|\c IPSEC_SPD_MAX|Maximum number of IPsec policies per direction; must be <= 65536.|
+|\c kMaxAsnParseStackDepth| (Default = 40) Recursive call depth for a certificate.|
+|\c LITTLE_ENDIAN| (IPsec, IKE, and EAP only) Specifies that the CPU is little endian. For EAP, if you define this flag, \c BIG_ENDIAN must be undefined.|
+|\c MACRO_MULTIPLICATION_LOOP|Enables custom assembly language code to handle big integer multiplication.|
+|\c MACRO_SHIFT_LEFT|Optimizes the shift-left functions of shlVlong() (in vlong.c) to assembly code.|
+|\c MACRO_SHIFT_RIGHT|Optimizes the shift-right functions of shrVlong() (in vlong.c) to assembly code.|
+|\c MACRO_SQR_LOOP|Enables custom assembly language code to handle big integer squares.|
+|\c MALLOC|Enables redefinition of the MALLOC function to something than the default (malloc()).|
+|\c MAX_DNE_STRING_LENGTH|Maximum number of bytes (excluding the terminating NULL) of the string containing a distinguished name element.|
+|\c MAX_SESSION_WINDOW_SIZE|Maximum amount of data (in bytes) the SSH server allows an SSH %client to push.|
+|\c MOC_BIG_ENDIAN| (IPsec, IKE, and EAP only) Specifies that the CPU is big endian. For EAP, if you define this flag, \c MOC_LITTLE_ENDIAN must be undefined.|
+|\c MOC_LITTLE_ENDIAN| (IPsec, IKE, and EAP only) Specifies that the CPU is little endian. For EAP, if you define this flag, \c MOC_BIG_ENDIAN must be undefined.|
+|\c MOC_MIN_PARTITION_SIZE| (Do not change) Minimum number of bytes required for the DigiCert memory partition code.|
+|\c MOC_UNUSED|Prevents the compiler from issuing unused argument warnings. For most compilers, add the following to moptions.h: <tt>\#define MOC_UNUSED(X)   X=X</tt>|
+|\c MOCANA_DEBUG_CONSOLE_PORT|Port number to which enabled debug messages are sent(if \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__ is not defined).|
+|\c DIGICERT_RNG_GET_PERSONALIZATION_STRING|Points to an arbitrary function that will return a personalization string. By default, this flag points to a function that returns a NULL personalization string.|
+|\c MOCANA_SSH_CONNECT_STR_LEN|Maximum number of bytes (excluding the terminating NULL) of the string containing the port forwarding destination host name.|
+|\c MOCANA_SSH_SOCKET_STREAM_SIZE|Stream buffer size (in bytes) used for SSH asynchronous non-blocking sockets.|
+|\c MOCANA_THREAD_PRIO|Priority assigned to all threads spawned by DigiCert code.|
+|\c MOCANA_UPPER_PRIVILEGE_PORT|Port number to use for SSH port forwarding.|
+|\c MULT_ADDCX|Optimizes big integer math operations; redefine based on your compiler.|
+|\c NULL|Constant used throughout DigiCert code. Can be redefined, but results are unpredictable. (Internal structures are initialized to 0, so redefining NULL and FALSE can be problematic within the code.)|
+|\c OFFSETOF|Constant used throughout DigiCert code. Can be redefined, but results are unpredictable.|
+|\c PATCH_CONST|Defines static data as a constant, as required by some environments' compiler/patch management code.|
+|\c RADIUS_CLEANUP_TIME_MS|Age in milliseconds at which an authentication record is considered stale; the record will subsequently be recycled.|
+|\c RADIUS_MAX_CONNECTIONS|Maximum number of concurrent requests (all RADIUS requests are for authentication).|
+|\c RADIUS_MAX_SERVERS|Maximum number of RADIUS servers with which a %client will communicate.|
+|\c RADIUS_REQUEST_ALLOCATION|Maximum number of bytes per %radius packet (header + payload), from 20 to 4096.|
+|\c RADIUS_RETRY_COUNT|Maximum number of times a RADIUS %client can re-request authentication (excludes the initial request).|
+|\c RADIUS_RETRY_INTERVAL_MS|Time in milliseconds between a RADIUS client's retries for authentication.|
+|\c RBTREE_OUTSIDE_NODE| (Recommended to leave undefined) Enables use of the red-black tree&mdash;a very fast self-balancing binary search tree.|
+|\c RFC3576_NASPORT|Default port number to which the RADIUS server sends messages in cases of authorization issues.|
+|\c SFTP_MAX_FILENAME_LENGTH| (Default = 64) Maximum length (in bytes) of SFTP filenames and directory names.|
+|\c SFTP_MAX_PATH_DEPTH| (Default = 32) Maximum folder depth. For example, if folder A contains folder B, which in turn contains folder C, then folder A has a depth of 3.|
+|\c SFTP_READFILE_BUF_SIZE|Maximum number of bytes at a time that can be read or written to a file for the SFTP server.|
+|\c SFTP_SERVER_STREAM_BUF_SIZE|Number of bytes of the circular buffer used to stream data. This streaming buffer provides a work around for SSH SFTP clients that do not support the shorter block sizes used by DigiCert to conserve the server's memory usage.|
+|\c SOMAXCONN|Depth of the TCP listen queue (used for pending TCP connections).|
+|\c SSH_MAX_BUFFER_SIZE|Maximum number of bytes of the buffer for messages received by the SSH server.|
+|\c SSH_OUT_CUSTOM_MUTEX|Prevents messages from being interlaced during %crypto operations when multiple threads or processes send data to the same SSH %client.|
+|\c SSHC_MAX_BUFFER_SIZE|Maximum number of bytes in the SSH %client message buffer (headers + payload).|
+|\c SSL_CERT_VERIFY_ARG|Sum of bitmaps specifying which items out of the header's policy field must be checked.|
+|\c SSL_DEFAULT_SMALL_BUFFER|Default number of bytes for initial SSL message buffers.|
+|\c SSL_MALLOC_BLOCK_SIZE| (Recommended to leave unchanged) Number of bytes allocated per block; defined for efficient hardware accelerator use so that the SSL payload is on a 16-byte paragraph boundary.|
+|\c SSL_MESG_TOO_LONG_COUNTER|Mapping to a global variable to increment when an SSL message is longer than the maximum size.|
+|\c SSL_PACKED|Prevents compilers from padding field structures so that they end on boundaries.|
+|\c SSL_PACKED_POST|Prevents compilers from padding field structures so that they end on boundaries.|
+|\c SSL_RECORDSIZE| (Recommended to leave unchanged) Maximum SSL record size (in bytes); defined as 16384 per the SSL specification.|
+|\c SSL_SESSION_RESUME_TIMEOUT|Number of milliseconds a %client-server connection can remain inactive before handshaking is required to resume the connection.|
+|\c SSL_WRITE_FAIL_RETRY_TIME| (Synchronous SSL only) Enables SSL handshaking to handle a write failure with a non-blocking socket.|
+|\c TCP_SHARE_SOCKET| (Example code only) Enables a parent thread to share a socket with a %client thread.|
+|\c TIMEOUT_IPSEC_REASSEMBLY| (Default = 1500) Number of milliseconds allowed for an IPsec reassembly operation before a timeout error is generated.|
+|\c TLS_EAP_PAD| (Recommended to leave unchanged) Buffer padding for EAP-TLS message.|
+|\c TRUE|Constant used throughout DigiCert code. Can be redefined, but results are unpredictable.|
+|\c \__USE_WLAN_API__|Enables NanoWireless to be built for Windows 8 and 10 target platforms.|
+|\c ULONG_PTR| (IKE example code) Data type definition for an unsigned long pointer.|
+|\c VC_EXTRALEAN| (IPsec examples for Visual C compiler) Reduces the size of Windows header files.|
+
+*/

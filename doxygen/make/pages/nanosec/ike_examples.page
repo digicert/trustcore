@@ -1,0 +1,11 @@
+/**
+@page       ike_examples NanoSec IKE Examples
+@ingroup    ike_pages 
+@brief      Mocana NanoSec IKE code examples.
+
+The following files contain Mocana NanoSec IKE code examples:
++ @ref ike_example.c
+
+@example ike_example.c
+
+*/

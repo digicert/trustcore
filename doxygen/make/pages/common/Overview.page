@@ -1,0 +1,25 @@
+/**
+@page       overview Overview of DigiCert&reg; TrustCore SDK
+@brief
+
+@htmlonly
+
+DigiCert&reg; TrustCore SDK is an easy-to-use, flexible, high
+performance, small footprint software solution for securing networked devices
+and network communications. It is used today in mission critical settings by
+industry leading, publicly traded companies across a range of industries
+including VoIP, IP Video, Wi-Fi, Aerospace & Defense and many others.
+
+@endhtmlonly
+
+DigiCert&reg; products share a %common source code base to reduce memory footprint
+and ease porting and integration. The shared code contains %common cryptographic
+functions, such as algorithms for key generation and exchange, symmetrical
+ciphers and secure digest.
+
+The following diagram provides a high-level view of the relationships between
+DigiCert&reg; TrustCore SDK components.
+
+@image html trustcore_sdk_components.png  "DigiCert&reg; TrustCore SDK Components"
+
+*/

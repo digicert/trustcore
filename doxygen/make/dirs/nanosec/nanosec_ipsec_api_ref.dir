@@ -1,0 +1,32 @@
+/**
+@dir    ipsec
+@brief  NanoSec IPsec (ipsec)
+*/
+
+/**
+@defgroup   ipsec_tree  NanoSec IPsec
+
+This API contains functions for configuring and using the IPsec stack, including 
+interpreting message header data, deciding whether to proceed with packet 
+processing or whether to drop the packet, and message fragmentation and 
+reassembly (deconstruction and reconstruction).
+
+<table class="table">
+    <tr>
+        <td align="center">@image html new.jpg ""></td>
+        <td>For detailed NanoSec IPsec feature information and integration procedures, refer to the @moc_doc_NanoSec_xref.</td>
+    </tr>
+</table>
+
+@sa     For background information, see @ref ipsec_provisioning.
+*/
+
+/**
+@defgroup   ipsec_pages Pages
+@ingroup    ipsec_tree
+*/
+
+/**
+@defgroup   ipsec_functions Functions
+@ingroup    ipsec_tree
+*/

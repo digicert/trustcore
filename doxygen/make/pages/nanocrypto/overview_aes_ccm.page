@@ -1,0 +1,117 @@
+/**
+@page       overview_aes_ccm    AES-CCM Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+CCM mode provides confidentiality and a data authenticity check. CCM mode is
+defined for block ciphers with a block length of 128 bits. CCM is defined for
+use with AES in RFC&nbsp;3610.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_overview_aes_ccm    Overview of AES in CCM Mode
+
+CCM mode, also known as Counter with CBC-MAC, combines two cryptographic
+mechanisms: CTR mode and CBC-MAC mode. In CCM mode, data is encrypted in CTR
+mode, which provides confidentiality. In CBC-MAC mode, CCM mode uses AES to
+produce a MAC (message authentication code) for input data for encryption
+and input data for authentication.
+
+Although CCM uses the CTR and CBC-MAC modes internally, the inputs that CCM
+supplies to these modes are more complex than in the basic CCM mode
+implementation. For example, the counter value used in the CCM version of
+CTR mode is not a simple counter, but is a formatted 16-octet block
+containing an initial flags octet, followed by a set of nonce octets,
+followed by a set of blocks dedicated to an actual counter. The number of
+octets dedicated to the nonce and the number of octets dedicated to the
+counter are interdependent: together they must fit within 15 octets. That
+is, the longer the nonce, the shorter the counter, and vice-versa.
+
+The MAC is not simply the final value of the application of CBC-MAC applied
+to the input payload and extra data. To understand the MAC value and its
+length requirements, you must consider the entire CCM generation-encryption
+process.
+
+The table describes the internal NanoCrypto AES-CCM API processes.
+
+<!-- -------------------------------------------------------------------- -->
+<!-- Doxygen seems to require that there be no linefeeds in a markdown table
+     cell. So do NOT join/indent the lines in the table below.            -->
+<!-- -------------------------------------------------------------------- -->
+
+Step| Description
+----|------------
+| 1 | Pass the nonce, additional data, and payload data to the formatting function to produce the blocks B<sub>\e 0</sub>, B<sub>\e 1</sub>, &hellip;, B<sub>\e r</sub>.\n\n The layout of the first block (referred to as B<sub>\e 0</sub> in RFC&nbsp;3610) is different from that of subsequent output blocks. This first block starts with a flags octet, followed by a set of octets containing the nonce, followed by a set of octets containing a value indicating the length of the entire message. With B<sub>\e 1</sub>, you get the start of a series of blocks containing the authentication-only data, if any. These are followed by a set of blocks containing the payload data (which is encrypted elsewhere in the NanoCrypto AES-CCM API). For details about the layout of B<sub>\e 0</sub>, B<sub>\e 1</sub> &hellip;, B<sub>\e r</sub>, which you do not need to know to use the API, refer to RFC&nbsp;3610 and NIST Special Publication 800-38C. |
+| 2 | Set Y<sub>\e 0</sub> = AES_Encrypt(B<sub>\e 0</sub>). |
+| 3 | For i = 1 to r, calculate Y<sub>\e i</sub> = AES_Encrypt(B<sub>\e i</sub> &oplus; Y<sub><em>i-1</em></sub>). \n\n The value Y<sub>\e r</sub> is the CBC-MAC of B. Before this value is returned, it is further modified; see steps 4 and 8. |
+| 4 | Set T = MSB<sub>\e Tlen</sub>(Y<sub>\e r</sub>).\n\n In this step, T, an intermediate value in the process used to generate the reported MAC, is set to the Tlen most significant bits of the actual CBC-MAC stored in Y<sub>\e r</sub>. The Tlen value is configurable. In the NanoCrypto AES-CCM API, use the M parameter to specify the value of Tlen, as the number of octets (not bits).
+| 5 | Use the counter generation function to generate the counter blocks Ctr<sub>\e 0</sub>, Ctr<sub>\e 1</sub>, &hellip;, Ctr<sub>\e m</sub>; where m = (Payload Length)/128. Here, m is the number of blocks in the message. As previously explained, m is not a simple incrementing integer. It is a 16-octet block containing an initial flags octet, followed by a set of nonce octets, followed by a set of blocks dedicated to an actual counter. \n\n Generating the counter blocks is the beginning of the encryption process. |
+| 6 | For j=0 to m, do S<sub>\e j</sub> = AES_encrypt(Ctr<sub>\e j</sub>). |
+| 7 | Set S = S<sub>\e 1</sub>, S<sub>\e 2</sub>, &hellip; , S<sub>\e m</sub>. |
+| 8 | Return: \n\n Encrypted Payload = (Payload &oplus; MSB<sub>\e Plen</sub>(S)) \n\n MAC = (T &oplus; MSB<sub>\e Tlen</sub>(S<sub>\e 0</sub>)) |
+
+The MAC is equal to the value of T that is XORed with the Tlen
+most significant bits of S<sub>\e 0</sub>. In the NanoCrypto AES-CCM API, use the M parameter to specify the
+value of Tlen, as the number of octets (not bits).
+
+@note   When comparing the information in RFC&nbsp;3610 and NIST Special
+        Publication 800-38C, you should know that the L parameter in
+        RFC&nbsp;3610 is the q parameter in the NIST document. For M, follow
+        the value of Tlen (a bit count) and t (a count of octets).
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_aes_ccm     Usage Caveats for AES-CCM
+
+The nonce must be unique for each AESCCM_encrypt() call under the same key.
+Otherwise, confidentiality is lost.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_aes_ccm_L_M     Choosing Values for L (Nonce Length) and M (MAC Length)
+
+When you choose the L value (the length of the nonce expressed as a count of
+octets) you are also choosing the size of the counter (which is 15 octets -
+L octets) becasue they share a 128-bit (16-octet) space. Therefore, the size
+of the counter determines the size of the message payload that the AES-CCM
+API can encrypt. That is, you must make the tradeoff between the maximum
+message size and the length of the nonce. The longer the nonce, the shorter
+the maximum message size, and vice-versa. Conformant with RFC&nbsp;3610, the
+NanoCrypto AES-CCM API allows integer L values from 2 to 8 (inclusive).
+Which L value to use depends on your application. For example,
+RFC&nbsp;4309, <em>Using Advanced Encryption Standard (AES) CCM Mode with
+IPsec Encapsulating Security Payload (ESP)</em>, requires an L value of 4.
+This value is chosen because it allows for a counter that is large enough to
+encrypt an IPv6 Jumbogram.
+
+In general, to calculate the maximum message length for a given value of L:
+
+<pre>    Length = 2<sup>8L</sup> bits</pre>
+
+Length is a count of bits, and L is a count of octets, which results in a
+factor of 8.
+
+Use the M value to specify how many of the most significant octets of the
+MAC to report. The maximum size is 16 octets. The larger the MAC, the
+stronger the authentication, and the harder it will be for somebody to
+modify the message without detection. However, if the size of the message
+itself is quite small, adding the overhead of 16 octets of MAC is hard to
+justify, and you should specify a smaller MAC. And again, how do you choose?
+For most applications, RFC&nbsp;3610 recommends an M value of at least 8.
+Valid values for M are 4, 6, 8, 10, 12, 14, and 16 octets.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_aes_ccm_nonce       Choosing a Nonce
+
+Within the scope of the same key, CCM mode requires that a nonce never be
+used more than once. One method to guarantee a unique nonce is to use a
+counter that you increment for each message that is encrypted under the same
+key. You can also use sequential counter values to detect replay attacks and
+message reordering. In many situations (such as IPsec ESP) the sequence
+numbers are already available.
+*/

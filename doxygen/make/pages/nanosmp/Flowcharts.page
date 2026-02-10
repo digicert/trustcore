@@ -1,0 +1,30 @@
+/**
+@page       nanosmp_flowcharts Flowcharts
+@brief      This page lists all workflow flowcharts available for @moc_product.
+
+@latexonly
+\label{Flowcharts}
+@endlatexonly
+
+To display a full-size version of any of the following flowcharts, click the thumbnail image.
+
+@htmlonly
+<!++ NanoSMP Flowcharts ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>NanoTAP Flowcharts</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanotap/client-server.jpg">NanoTAP Client-Server Architecture<br/><br/><image src="images/nanotap/client-server_thumbnail.png"></a></td>
+          <td><a href="images/nanotap/no_remote_support.jpg">NanoTAP with No Remote Support<br/><br/><image src="images/nanotap/no_remote_support_thumbnail.png"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{client-server.jpg}{NanoTAP Client-Server Architecture}
+\mocFlowchartPicture{no_remote_support.jpg}{NanoTAP with No Remote Support}
+@endlatexonly
+
+
+
+*/

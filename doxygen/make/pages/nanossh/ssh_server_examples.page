@@ -1,0 +1,11 @@
+/**
+@page       ssh_server_examples     @moc_product Server Examples
+@ingroup    sshs_pages
+@brief      @moc_product server code examples.
+
+The following files contain @moc_names server code examples:
++ @ref ssh_example.c
+
+@example ssh_example.c
+
+*/

@@ -1,0 +1,21 @@
+/**
+@dir    nanocap
+@brief  NanoCAP 
+*/
+
+/**
+@defgroup   nanocap_tree  NanoCAP
+
+This API contains functions for NanoCAP.
+
+*/
+
+/**
+@defgroup   nanocap_pages Pages
+@ingroup    nanocap_tree
+*/
+
+/**
+@defgroup   nanocap_functions Functions
+@ingroup    nanocap_tree
+*/

@@ -1,0 +1,14 @@
+/**
+@page       certificate_examples Certificate Management Examples
+@ingroup    crypto_pages 
+@brief      DigiCert certificate management/store code examples.
+
+The following files contain certificate management and certificate store
+examples:
++ @ref ca_mgmt_example.c
++ @ref ssl_client_example.c
+
+@example ca_mgmt_example.c
+@example ssl_client_example.c
+
+*/

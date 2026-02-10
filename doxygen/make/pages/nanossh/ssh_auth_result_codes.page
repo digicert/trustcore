@@ -1,0 +1,16 @@
+/**
+@page       ssh_auth_result_codes   @moc_product Authentication Result Codes
+@ingroup    sshs_pages
+@brief      @moc_product authentication result codes.
+
+The table lists NanoSSH authentication result codes (from ssh.h).
+
+Result Code Definition|Value
+----------------------|-----|
+|\c AUTH_FAIL|0|
+|\c AUTH_PASS|1|
+|\c AUTH_MORE|2|
+|\c AUTH_WAIT|3|
+|\c AUTH_FAIL_MORE|4|
+
+*/

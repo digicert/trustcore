@@ -1,0 +1,15 @@
+/**
+
+@page       ssh_client_examples   @moc_product Client Examples
+@ingroup    sshc_pages
+@brief      @moc_product client code examples.
+
+The following files contain @moc_product client code examples:
+
++ @ref  sshc_shell_example.c
++ @ref  sshc_example.c
+
+@example    sshc_shell_example.c
+@example    sshc_example.c
+
+*/

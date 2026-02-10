@@ -1,0 +1,52 @@
+/**
+@page       nanoeap_flowcharts Flowcharts
+@brief      This page lists all workflow flowcharts available for @moc_product.
+
+@latexonly
+\label{Flowcharts}
+@endlatexonly
+
+To display a full-size version of any of the following flowcharts for @moc_product, click the thumbnail image.
+
+@htmlonly
+<!++ NanoEAP Flowcharts ++>
+<table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>NanoEAP Flowcharts</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanoeap/flowchart_eap_common_loop.png">EAP Common Loop Flow<br/><br/><img src="images/nanoeap/flowchart_eap_common_loop_thumbnail.png"></a></td>
+          <td><a href="images/nanoeap/flowchart_eap_recv_send.png">EAP Common Events: Receive Packet and Send Alert<br/><br/><image src="images/nanoeap/flowchart_eap_recv_send_thumbnail.png"></a></td>
+          <td><a href="images/nanoeap/flowchart_eap_process_methd.png">EAP Common Events: Process Method<br/><br/><image src="images/nanoeap/flowchart_eap_process_methd_thumbnail.png"></a></td>
+      </tr>
+	  <tr>
+          <td><a href="images/nanoeap/flowchart_eap_tls.png">EAP: method = TLS<br/><br/><image src="images/nanoeap/flowchart_eap_tls_thumbnail.png"></a></td>
+          <td><a href="images/nanoeap/flowchart_eap_md5.png">EAP: method = MD5<br/><br/><image src="images/nanoeap/flowchart_eap_md5_thumbnail.png"></a></td>
+          <td><a href="images/nanoeap/flowchart_eap_peap_tls_0.png">EAP: method = PEAP, tls state = 0<br/><br/><image src="images/nanoeap/flowchart_eap_peap_tls_0_thumbnail.png"></a></td>
+      </tr>
+	  <tr>
+          <td><a href="images/nanoeap/flowchart_eap_peap_tls_1.png">EAP: method = PEAP, tls state = 1<br/><br/><image src="images/nanoeap/flowchart_eap_peap_tls_1_thumbnail.png"></a></td>
+          <td><a href="images/nanoeap/flowchart_eap_peap_tls_2_p1of3.png">EAP: method = PEAP, tls state = 2 (1 of 3)<br/><br/><image src="images/nanoeap/flowchart_eap_peap_tls_2_p1of3_thumbnail.png"></a></td>
+          <td><a href="images/nanoeap/flowchart_eap_peap_tls_2_p2of3.png">EAP: method = PEAP, tls state = 2 (2 of 3)<br/><br/><image src="images/nanoeap/flowchart_eap_peap_tls_2_p2of3_thumbnail.png"></a></td>
+      </tr>
+	  <tr>
+          <td><a href="images/nanoeap/flowchart_eap_peap_tls_2_p3of3.png">EAP: method = PEAP, tls state = 2 (3 of 3)<br/><br/><image src="images/nanoeap/flowchart_eap_peap_tls_2_p3of3_thumbnail.png"></a></td>
+          <td><a href="images/nanoeap/flowchart_eap_mschap.png">EAP: method = MSCHAP<br/><br/><image src="images/nanoeap/flowchart_eap_mschap_thumbnail.png"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_eap_common_loop.png}{EAP Common Loop Flow}
+\mocFlowchartPicture{flowchart_eap_recv_send.png}{EAP Common Events: Receive Packet and Send Alert}
+\mocFlowchartPicture{flowchart_eap_process_methd.png}{EAP Common Events: Process Method}
+\mocFlowchartPicture{flowchart_eap_tls.png}{EAP: method = TLS}
+\mocFlowchartPicture{flowchart_eap_md5.png}{EAP: method = MD5}
+\mocFlowchartPicture{flowchart_eap_peap_tls_0.png}{EAP: method = PEAP, tls state = 0}
+\mocFlowchartPicture{flowchart_eap_peap_tls_1.png}{EAP: method = PEAP, tls state = 1}
+\mocFlowchartPicture{flowchart_eap_peap_tls_2_p1of3.png}{EAP: method = PEAP, tls state = 2 (1 of 3)}
+\mocFlowchartPicture{flowchart_eap_peap_tls_2_p2of3.png}{EAP: method = PEAP, tls state = 2 (2 of 3)}
+\mocFlowchartPicture{flowchart_eap_peap_tls_2_p3of3.png}{EAP: method = PEAP, tls state = 2 (3 of 3)}
+\mocFlowchartPicture{flowchart_eap_mschap.png}{EAP: method = MSCHAP}
+@endlatexonly
+
+*/

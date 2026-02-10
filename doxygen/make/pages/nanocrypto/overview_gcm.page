@@ -1,0 +1,228 @@
+/**
+@page       overview_gcm     GCM Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+@section    section_about_gcm    About the NanoCrypto GCM API
+
+<!-- -------------------------------------------------------------------- -->
+
+The NanoCrypto GCM API consists of three sets of functions that differ only in 
+the size of the table that is allocated internally, which results in different
+speeds of GCM operations.
+
+To choose which set of GCM functions to use, define one or more of the following
+flags in moptions.h:
++ \c \__ENABLE_DIGICERT_GCM_64K__
++ \c \__ENABLE_DIGICERT_GCM_4K__
++ \c \__ENABLE_DIGICERT_GCM_256B__
+
+The 64K version's table is the largest, and results in the fastest operation.
+The 256 byte table is the smallest, and the GCM operations under this API are 
+the slowest, but the reduced memory usage might be what you application 
+requires.
+
+In addition, to use the FIPS-certified versions of the functions, define the
+following flag in moptions.h:
++ \c \__ENABLE_DIGICERT_FIPS_MODULE__
+
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_gcm     Usage Caveats for GCM
+
+Because GCM uses a CTR-based encryption method, it is subject to the same nonce
+restrictions that apply to all CTR-based encryption: you must not use the
+nonce more than once under the same key. If you reuse a nonce under the same 
+key, you compromise confidentiality.
+
+For advice about generating unique initialization vectors, see NIST Special 
+Publication 800-38D, <em>Recommendation for Block Cipher Modes of Operation: 
+Galois/Counter Mode (GCM) and GMAC</em>, which is available at:
++ http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_using_gcm       Using the NanoCrypto GCM API
+
+The typical function call sequence for the NanoCrypto GCM encryption API is:
+-# <tt>GCM_createCtx_<em>\<size></em>( )</tt>
+-# <tt>GCM_init_<em>\<size></em>( )</tt>
+-# <tt>GCM_update_encrypt_<em>\<size></em>( )</tt>
+-# <tt>GCM_final_<em>\<size></em>( )</tt>
+-# <tt>GCM_deleteCtx_<em>\<size></em>( )</tt>
+
+Where\n
+&nbsp;&nbsp;&nbsp;&nbsp;<em>\<size></em> is any of the following:
++ \c 256b
++ \c 4k
++ \c 64k
+
+For decryption, the call sequence is the same except for replacing the <tt>GCM_update_encrypt_<em>\<size></em>( )</tt> by <tt>GCM_update_decrypt_<em>\<size></em>( )</tt>.
+
+The <em>\<size></em> values refer to the size of the internal table used to
+increase the speed of internal GCM operations. The 256&nbsp;Byte API uses 
+the smallest table, the 4&nbsp;KB byte API uses the next biggest table, and 
+the 64&nbsp;KB API use the largest internal table. The 64&nbsp;KB API is the 
+fastest API, with the typical tradeoff that it requires more memory.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_gcm_auth_encrypt    Authentication Encryption
+
+The first GCM API call that your application should make is 
+<tt>GCM_createCtx_<em>\<size></em>( )</tt>, to create a GCM context. This 
+context is required for all subsequent calls to the NanoCrypto GCM API. As 
+input to <tt>GCM_createCtx_<em>\<size></em>( )</tt>, you must provide the 
+AES key material, the length of the submitted key material, and a flag-value 
+specifying whether to encrypt or decrypt data.
+
+If the <tt>GCM_createCtx_<em>\<size></em>( )</tt> call is successful, you 
+can call <tt>GCM_init_<em>\<size></em>( )</tt> to supply the nonce 
+(initialization vector) and the data for which you need authentication only. 
+Do not omit this call; it is required to provide the nonce. If there is no 
+authentication-only data, pass in an empty buffer and specify a length of 
+zero (0).
+
+To pass in data for encryption, call 
+<tt>GCM_update_encrypt_<em>\<size></em>( )</tt>. You can omit this optional 
+call to obtain only a GMAC for the data submitted in 
+<tt>GCM_init_<em>\<size></em>( )</tt>. After this function returns 
+successfully, the buffer used to pass in plaintext will contain the 
+resultant ciphertext. To get the GMAC value, call 
+<tt>GCM_final_<em>\<size></em>( )</tt>, which includes an argument for the 
+length of GMAC you require.
+
+To encrypt additional buffers under the same key, you can make additional 
+calls to <tt>GCM_init_<em>\<size></em>( )</tt>, 
+<tt>GCM_update_encrypt_<em>\<size></em>( )</tt>, and 
+<tt>GCM_final_<em>\<size></em>( )</tt>. In the 
+<tt>GCM_init_<em>\<size></em>( )</tt> call, you must pass in a unique nonce 
+value for each call made under the same key. If you resue the nonce, you 
+compromise confidentiality.
+
+After you are finished with all the encryption work under the key submitted 
+to the <tt>GCM_createCtx_<em>\<size></em>( )</tt> call, call 
+<tt>GCM_deleteCtx_<em>\<size></em>( )</tt> to free all resources associated 
+with the GCM context.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_gcm_auth_decrypt    Authentication Decryption
+
+To use the GCM decryption API, use the same 
+<tt>GCM_createCtx_<em>\<size></em>( )</tt> call as for encryption, but 
+specify \c FALSE (instead of \c TRUE) for the \c encrypt argument. Then 
+submit authentication-only data (if any) in a call to GCM_final_encrypt( ). 
+This call is required in order to supply the nonce. If there is no 
+authentication-only data for the GCM_final_encrypt( ) call, pass in an empty 
+buffer and specify a length of zero (0). If there is data to decrypt, call 
+GCM_update_decrypt_encrypt( ).
+
+To check whether the data was authenticated, call GCM_final_encrypt( ), and 
+compare the returned GMAC value with the received GMAC value. If the two 
+values match, the data is considered to be authenticated. If the values do 
+not match, you must assume that the data has been manipulated, either 
+intentionally or accidentally (corrupted in transit).
+
+After you are finished with all the decryption work under the key submitted 
+to the GCM_createCtx_encrypt( ) call, call 
+<tt>GCM_deleteCtx_<em>\<size></em>( )</tt> to free all resources associated 
+with the GCM context.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_gcm_ctr     GCM Mode Combines CTR Mode and GMAC
+
+GCM can provide both confidentiality and authentication for input data.
++ To provide confidentiality, GCM uses AES in CTR mode.
++ To provide authentication, GCM produces a Galois message authentication
+    code&mdash;a GMAC. This code is generated using a hashing function that is
+    defined over a binary Galois field. In the NIST publications, this hashing
+    function is referred to as the GHASH function.
+
+Among the inputs, GCM lets you distinguish between two categories of data:
++ Data for both encryption and authentication.
++ Data for authentication-only. For authentication-only data, omit the data
+    for encryption argument, and submit only the data you want authenticated.
+    This usage is referred to simply as GMAC.
+
+For AES GCM, the counter is a value that is 16 octets long (128 bits), 
+although only the four right-most octets (the 32 right-most bits) serve as 
+the actual counter.
++ If you pass in an initialization vector that is 12 octets long, the initial
+    GCM counter value is formed by concatenating the initialization vector
+    with a 32-bit value, of which all bits are set to zero except for the
+    right-most bit (the least significant bit), which is set to one.
++ If you pass in an initialization vector that is longer or shorter than 12
+    octets, GCM uses the GHASH function to generate a 128-bit value to use as
+    the initial counter value.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_gcm_ghash   GHASH Function
+
+The GHASH function is defined as:
+
+<!-- -------------------------------------------------------------------- -->
+<!-- Doxygen seems to require that there be no linefeeds in a markdown table
+     cell. So do NOT join/indent the lines in the table below.            -->
+<!-- -------------------------------------------------------------------- -->
+
+Step| Description
+----|------------
+| 1 | Let X<sub>\e 1</sub>, X<sub>}2}</sub>, &hellip; , X<sub>}m-1}</sub>, X<sub>\e m</sub> be the sequence of blocks generated when you parse X (the text for which you want a GMAC) into 128-bit blocks. |
+| 2 | Let Y<sub>\e 0</sub> be a 128-bit block in which all bits are set to zero. |
+| 3 | Let H be the AES-encrypted value of Y<sub>\e 0</sub>. |
+| 4 | For i=1 to i=m, let Y<sub>\e i</sub> = (Y<sub><em>i-1</em></sub> &oplus;  X<sub>\e i</sub>) * H |
+| 5 | Let GHASH( X ) = Y<sub>\e m</sub> |
+
+GCM sometimes uses its GHASH function to adjust a passed-in initialization 
+vector to conform to the needs of the mode. GCM also uses this function to 
+create a GMAC for the data you pass in. However, because one input to that 
+function is a ciphertext, it is best to discuss the production of the GCM 
+ciphertext before discussing how the mode produces the GMAC.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_gcm_ciphertext  Producing a Ciphertext
+
+To produce a GCM ciphertext:
+
+<!-- -------------------------------------------------------------------- -->
+<!-- Doxygen seems to require that there be no linefeeds in a markdown table
+     cell. So do NOT join/indent the lines in the table below.            -->
+<!-- -------------------------------------------------------------------- -->
+
+Step| Description
+----|------------
+| 1 | Let P<sub>\e 1</sub>, P<sub>}2}</sub>, &hellip; , P<sub>}n-1}</sub>, P<sub>\e n</sub> be the sequence of blocks generated when you parse the plaintext, P, into 128-bit blocks. |
+| 2 | Let u be the number of bits in P<sub>\e n</sub>, the final block of plaintext. |
+| 3 | For i=1 to i=n, let the value of E<sub>\e i</sub> be the value of Counter<sub><em>i-1</em></sub> incremented by one and then AES-encrypted.\n\n The value of Counter<sub>\e 0</sub> is the 128-bit initialization vector. |
+| 4 | For all blocks of plaintext except the last&mdash;that is for i=1 to i=n-1&mdash;calculate C<sub>\e i</sub>, the ciphertext for P<sub>\e i</sub>, as: \n\n C<sub>\e i</sub> = P<sub>\e i</sub> &oplus; E<sub>\e i</sub> |
+| 5 | For the last block, C<sub>\e n</sub>, which is u bits long, the calculation of the ciphertext is the same as the preceding blocks, except that you must XOR the E value bit-by-bit up to the length of the plaintext. That is:\n\n Let E<sub>\e n</sub> be the u most-significant bits of the AES-encrypted value of Counter<sub>\e n</sub>.\n\n C<sub>\e n</sub> = P<sub>\e n</sub> &oplus; E<sub>\e n</sub> |
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_gcm_GMAC    Producing a GMAC
+
+To create a GMAC that covers both the ciphertext (if any) and the authentication-only data, GCM creates the GHASH input, X, as:
+
+<!-- -------------------------------------------------------------------- -->
+<!-- Doxygen seems to require that there be no linefeeds in a markdown table
+     cell. So do NOT join/indent the lines in the table below.            -->
+<!-- -------------------------------------------------------------------- -->
+
+Step| Description
+----|------------
+| 1 | Let C<sub>\e 1</sub>, C<sub>}2}</sub>, &hellip; , C<sub>}n-1}</sub>, C<sub>\e n</sub> be the sequence of blocks generated if you were to parse the ciphertext, C, into 128-bit blocks. |
+| 2 | Let A<sub>\e 1</sub>, A<sub>}2}</sub>, &hellip; , A<sub>}m-1}</sub>, A<sub>\e m</sub> be the sequence of blocks generated if you were to parse A, the <em>additional data for authentication</em>, into 128-bit blocks. |
+| 3 | Let X be the concatenation of A, C, the length of A, and the length of C.\n\n When concatenating C onto the end of A, if the last block of A (that is, A<sub>\e m</sub>) is not a full 128 bits long, the mode pads that last block with zeros to a reach full 128-bit value. Similarly, if there is a ciphertext, the mode pads the last block of C (that is, C<sub>\e n</sub>) with zeros until the length is 128 bits, and then concatenates the length of A and the length of C onto the end. This last block of X is not necessarily 128 bits. |
+| 4 | Let GMAC = GHASH(X). |
+
+The GHASH function is described previosly; see @ref section_gcm_ghash.
+*/

@@ -1,0 +1,87 @@
+/**
+@page       overview_three_des      3DES Overview
+@details
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_about_three_des   About the 3DES Cipher
+
+The 3DES (Triple DES) cipher was developed in response to the vulnerability
+of simple DES to brute-force attacks. (When DES was first deployed, 64-bit
+key was considered sufficient to protect the cipher's 64-bit block. However,
+today's computing power has left left simple DES vulnerable.) 3DES uses the
+same underlying algorithm as DES, but applies it three times to each block.
+
+The NanoCrypto Create3DESCtx() function provides access to a 3DES
+implementation that uses three keys. Under this keying option, each
+application of the DES cipher uses its own key. The NanoCrypto
+Create2Key3DESCtx() function provides access to a 3DES implementation that
+uses two keys. Under this keying option, key #1 is applied during the
+first and third applications of the cipher. Key #2 is applied during the
+second application of the cipher.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_three_des_modal_usage     3DES Modal Usage
+
+The NanoCrypto 3DES API implements the DES cipher in CBC mode. No other modes
+are directly supported.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_three_des     Usage Caveats for 3DES in CBC Mode
+
+3DES in CBC mode requires that all buffers input for encryption or decryption
+have a size that is an even multiple of the DES block size, 64 bits. If the
+buffer is smaller than an even multiple of 64 bits, you must pad the buffer
+before submitting it to the Do3DES() function. To prevent leakage of
+information from the first block, CBC mode requires that you never reuse an
+initialization vector under the same key. Therefore, to encrypt a series of
+messages under the same DES key in CBC mode, you must base the
+initialization vector on a counter that is guaranteed not to repeat for as
+many \e messages (not \e blocks) as are to be encrypted under that key.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_three_des_cbc_padding     3DES-CBC Mode Data Padding
+
+For CBC mode, the input for encryption or decryption must be an even
+multiple of the block size. In the NanoCrypto implementation of this mode,
+if the input data does not meet this requirement, processing stops and the
+function returns an error. Therefore, you should check the size of data
+buffers before submitting them data to Nanocrypto functions that
+implement CBC mode. If the data is not an even multiple of the block
+size, you must pad it. You can pad the data however you want, and there are
+a number of schemes from which you can choose. Step 3.1 in RFC&nbsp;1321
+describes a common bit-oriented scheme. If you would prefer a byte-oriented
+padding scheme, section 6.3 of RFC 5652 provides one. You might also want to
+consider the byte-oriented scheme provided in ANSI X.923.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_three_des_IVs     Generating Initialization Vectors (IVs)
+
+As input, CBC mode requires an <em>initialization
+vector (IV)</em>, sometimes referred to as a \e nonce&mdash;a value used
+"not more than once". The generation of this IV is external from the
+NanoCrypto API functions; that is, you must handle it within your
+application. Further, the message recipient must know the IV in order to
+decrypt the message. For the CBC mode, the IV need not be secret, which
+simplifies the problem of getting the IV to the recipient. However, to save
+bandwidth, you might prefer a method in which the recipient independently
+generates the IV, although such a method might not be suitable for the CBC
+mode, for which the IV must be unpredictable for any given plaintext.
+
+@warning    Appropriately managing initialization vectors is critical to the
+            confidentiality of the modes that depend on IVs. Mismanaging IVs
+            can destroy confidentiality.
+
+As a source of unique nonce values, you can use a counter (as described in
+Appendix B of NIST Special Publication 800-38A, 2001 Edition) or a message
+number. Another commonly used method is to generate a random data block
+using a FIPS-approved (and therefore cryptographically strong) random number
+generator to use for the nonce. In addition, IVs for CFB mode should be
+unique for all messages encrypted under the same key. Reusing an IV leaks
+information on the first block of plaintext, and on any prefix shared by the
+two messages.
+*/

@@ -1,0 +1,219 @@
+% Latex header for doxygen 1.8.10
+\documentclass[twoside]{book}
+
+% Packages required by doxygen
+\usepackage{fixltx2e}
+\usepackage{calc}
+\usepackage{doxygen}
+\usepackage[export]{adjustbox} % also loads graphicx
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{makeidx}
+\usepackage{multicol}
+\usepackage{multirow}
+\PassOptionsToPackage{warn}{textcomp}
+\usepackage{textcomp}
+\usepackage[nointegrals]{wasysym}
+\usepackage[table]{xcolor}
+
+% Font selection
+\usepackage[T1]{fontenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage{amssymb}
+\usepackage{sectsty}
+\usepackage{helvet}% trying to change MOC font for urlstyle
+\renewcommand{\familydefault}{\sfdefault}
+\allsectionsfont{%
+  \fontseries{bc}\selectfont%
+  \color{darkgray}%
+}
+\renewcommand{\DoxyLabelFont}{%
+  \fontseries{bc}\selectfont%
+  \color{darkgray}%
+}
+\newcommand{\+}{\discretionary{\mbox{\scriptsize$\hookleftarrow$}}{}{}}
+
+%Mocana Blue RGB=0,118,169; converted to 0..1, it's 0,118/255,169/255,
+%which equals 0,0.46,0.66
+\definecolor{mocBlue}{rgb}{0,0.46,0.66}
+
+% For precise positioning of figures and text boxes
+\usepackage[absolute]{textpos}
+\usepackage{float}
+
+% Page & text layout
+\usepackage[document]{ragged2e}% For left-justified (not full-justified)
+\usepackage{geometry}
+\geometry{%
+  letterpaper,%
+  top=1.0in,%
+  bottom=1.15in,%
+  left=1.125in,%
+  right=1.125in%
+}
+\tolerance=750
+\hfuzz=15pt
+\hbadness=750
+\setlength{\emergencystretch}{15pt}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.2cm}
+\makeatletter
+\renewcommand{\paragraph}{%
+  \@startsection{paragraph}{4}{0ex}{-1.0ex}{1.0ex}{%
+    \normalfont\normalsize\bfseries\SS@parafont%
+  }%
+}
+\renewcommand{\subparagraph}{%
+  \@startsection{subparagraph}{5}{0ex}{-1.0ex}{1.0ex}{%
+    \normalfont\normalsize\bfseries\SS@subparafont%
+  }%
+}
+\makeatother
+\usepackage{layout}
+%\usepackage{showframe}% Display the guidelines on the PDF
+
+% Headers & footers
+\usepackage{textcomp}% For copyright symbol
+\usepackage{fancyhdr}
+\pagestyle{fancyplain}
+\fancyhead[LE]{\fancyplain{}{}}
+\fancyhead[CE]{\fancyplain{}{\textit {\color{gray}{Proprietary and Confidential Digicert Inc \textcopyright { 2016} }}}}
+\fancyhead[RE]{\fancyplain{}{}}
+\fancyhead[LO]{\fancyplain{}{}}
+\fancyhead[CO]{\fancyplain{}{\textit {\color{gray}{Proprietary and Confidential Digicert Inc \textcopyright { 2016} }}}}
+\fancyhead[RO]{\fancyplain{}{}}
+\fancyfoot[LE]{\fancyplain{}{\thepage { | } \nouppercase{\leftmark}}}
+\fancyfoot[CE]{\fancyplain{}{}}
+\fancyfoot[RE]{\fancyplain{}{}}
+\fancyfoot[LO]{\fancyplain{}{}}
+\fancyfoot[CO]{\fancyplain{}{}}
+\fancyfoot[RO]{\fancyplain{}{\nouppercase{\rightmark} { | } \thepage}}
+\renewcommand{\headrulewidth}{0pt}%Line at the header invisible
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}%
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\ #1}%
+}
+
+% Redefining plain page style for chapter opener pages
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[CO]{\fancyplain{}{\textit {\color{gray}{Proprietary and Confidential Digicert Inc \textcopyright { 2016} }}}}
+  \fancyfoot[RO]{\fancyplain{}{\color{black}{{ | } \thepage}}}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \renewcommand{\headrulewidth}{0pt}%Line at the header invisible
+}
+
+% Indices & bibliography
+\usepackage{natbib}
+\usepackage[titles]{tocloft}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{5}
+\makeindex
+
+% Hyperlinks (required, but should be loaded last)
+\usepackage{ifpdf}
+\ifpdf
+  \usepackage[pdftex,pagebackref=true]{hyperref}
+\else
+  \usepackage[ps2pdf,pagebackref=true]{hyperref}
+\fi
+\hypersetup{%
+  colorlinks=true,%
+  linkcolor=blue,%
+  citecolor=blue,%
+  unicode,%
+  urlcolor=blue,% From here on, customize for normal, blue, underlined links
+  filecolor=blue,%
+  linkbordercolor=blue,%
+  citebordercolor=blue,%
+  urlbordercolor=blue,%
+  filebordercolor=blue,%
+  pdftitle={Mocana NanoTAP™: API Reference, Release 2.0, Revision 0},%
+  pdfauthor=Digicert Inc,%
+  pdfstartview=Fit,%
+  pdfpagemode=UseOutlines,%
+  pdfdisplaydoctitle=true,%
+}
+\urlstyle{same}% Mocana note: not working for URLs, mailto links
+\pdfcatalog{/PageLayout /SinglePage}
+
+\makeatletter
+\Hy@AtBeginDocument{%
+  \def\@pdfborder{0 0 1}% Overrides border definition set with colorlinks=true
+  \def\@pdfborderstyle{/S/U/W 1}% Overrides border style set with colorlinks=true
+                                % Hyperlink border style will be underline of width 1pt
+}
+\makeatother
+
+% Custom commands
+\newcommand{\clearemptydoublepage}{%
+  \newpage{\pagestyle{empty}\cleardoublepage}%
+}
+
+\AtBeginDocument{%
+  \urlstyle{same}% redefine because it seems to be being stepped on by something
+}
+
+%===== C O N T E N T S =====
+
+\begin{document}
+
+% Titlepage
+\hypersetup{pageanchor=false,
+             bookmarks=true,
+             bookmarksnumbered=true,
+             pdfencoding=unicode
+            }
+\pagenumbering{roman}
+\begin{titlepage}
+
+\begin{textblock*}{2.625in}(5.25in,0.5in)
+\includegraphics[width=2.625in]{$projectlogo}% Mocana logo
+\end{textblock*}
+
+\begin{textblock*}{8.5in}(0in,2.75in)
+\includegraphics[width=8.5in]{mocana_tech_pub_banner_CS6.png}% Mocana banner
+\end{textblock*}
+
+\begin{textblock*}{3.25in}(2.25in,3in)
+{\Huge\color{white} $projectname}\\% Doc Title
+\end{textblock*}
+
+\begin{textblock*}{3.5in}(2.25in,4.375in)
+{\huge\textcolor{mocBlue}{FIPS-Certified Cryptographic Algorithms}}
+\end{textblock*}
+
+\vspace*{4.00in}
+\hspace{1.125in}\textcolor{mocBlue}{\hrulefill}% graphic line
+
+\begin{textblock*}{5in}(2.25in,5.375in)
+{\Large\color{darkgray} {$projectnumber}}\\% Release Info
+\end{textblock*}
+
+\begin{textblock*}{5in}(2.25in,5.75in)
+{\Large\textcolor{darkgray} }\\% moc-part-num
+\end{textblock*}
+
+%\hspace{1.125in}
+\vfill
+\center{\large\textcolor{darkgray} {Generated by TeXworks 0.45 r1280 (MiKTeX 2.9 64-bit) from {\mbox{\LaTeX}} output from Doxygen 1.8.10}}
+
+\end{titlepage}
+\clearemptydoublepage
+
+
+% ToC
+\renewcommand{\contentsname}{Table of Contents}
+\pdfbookmark{\contentsname}{toc}
+\tableofcontents
+\clearemptydoublepage
+
+% Set up for generated content
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+
+%--- Begin generated contents ---

@@ -1,0 +1,24 @@
+/**
+@page       ssl_tls_standards_support SSL/TLS Standards Support
+@ingroup    ssl_pages
+@brief      SSL/TLS standards support.
+
+DigiCert NanoSSL %client and server support the following standards:
++ Federal Information Processing Standard (FIPS) 140+2 certified cryptographic 
+libraries. (For more information about FIPS, refer to the following website: 
+http://csrc.nist.gov/publications/fips/.)
++ RFC 2246&mdash;TLS Protocol Version 1.0
++ RFC 3268&mdash;Advanced Encryption Standard (AES) Ciphersuites for TLS
++ RFC 4279&mdash;Pre+shared Key Ciphersuites for TLS
++ SSLv3 Specification
++ ITU (International Telecommunications Union) certificate specification x.509v3
++ PKCS 1, RSA Cryptography Standard (refer to RFC 3447)
++ PKCS 5, Password+based Encryption Standard (refer to RFC 2898)
++ PKCS 7, Cryptographic Message Syntax Standard (refer to RFC 2315)
++ PKCS 8, Private+Key Information Syntax Standard
++ PKCS 10, Certification Request Syntax Standard (refer to RFC 2986)
++ PKCS 12, Personal Information Exchange Syntax Standard
++ DER/PEM Keys
++ DER/PEM Certificates
+
+*/

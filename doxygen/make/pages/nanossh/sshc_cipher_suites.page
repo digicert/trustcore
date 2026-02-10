@@ -1,0 +1,21 @@
+/**
+@page       sshc_cipher_suites @moc_product Cipher Suites
+@ingroup    sshc_pages
+@brief      @moc_product Client cipher suites
+
+When negotiating connections, NanoSSH %client can use the strongest cipher 
+suite available or you can specify the desired cipher settings. The 
+following table lists the available ciphers along with their key size, 
+initialization vector size, and the @moc_platform compilation flag 
+definition required to enable the cipher.
+ 
+cipherName|Key Size|IV Size|SoT Platform Flags
+----------|--------|-------|------------------|
+|<tt>aes256-cbc \n rijndael256-cbc</tt>|32|16|The following must be undefined: \n &bull;\c \__DISABLE_AES_CIPHERS__ \n\n &bull; \c \__DISABLE_AES256_CIPHER__|
+|<tt>aes192-cbc \n rijndael192-cbc</tt>|24|16|The following must be undefined: \n &bull; \c \__DISABLE_AES_CIPHERS__ \n\n &bull; \c \__DISABLE_AES192_CIPHER__|
+|<tt>aes128-cbc \n rijndael128-cbc</tt>|16|16|The following must be undefined:  \n &bull; \c \__DISABLE_AES_CIPHERS__ \n\n &bull; \c \__DISABLE_AES128_CIPHER__|
+|<tt>blowfish-cbc</tt>|16|8|Define \c \__ENABLE_BLOWFISH_CIPHERS__|
+|<tt>3des-cbc</tt>|24|8|Undefine \c \__DISABLE_3DES_CIPHERS__|
+|<tt>arcfour</tt>|16|8|undefine \c \__DISABLE_ARC4_CIPHERS__|
+
+*/

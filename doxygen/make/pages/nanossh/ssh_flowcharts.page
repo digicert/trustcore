@@ -1,0 +1,26 @@
+/**
+@page       ssh_flowcharts  @moc_product Flowcharts
+@ingroup    sshs_pages
+@brief      @moc_product flowcharts.
+
+To view a full-size version of any of the following NanoSSH flowcharts, click the thumbnail image.
+
+@htmlonly
+  <table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>NanoSSH Flowcharts</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/flowchart_ssh_client.jpg">SSH Client<br/><br/><image src="images/flowchart_ssh_client_thumbnail.jpg"></a></td>
+          <td><a href="images/flowchart_ssh_server_sync.jpg">SSH Sync Server<br/><br/><image src="images/flowchart_ssh_server_sync_thumbnail.jpg"></a></td>
+          <td><a href="images/flowchart_sftp_client.jpg">SSH SFTP Client<br/><br/><image src="images/flowchart_sftp_client_thumbnail.jpg"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ssh_client.png}{NanoSSH Client}
+\mocFlowchartPicture{flowchart_ssh_server_sync.png}{NanoSSH Sync Server}
+\mocFlowchartPicture{flowchart_ssh_sftp_client.png}{NanoSSH SFTP Client}
+@endlatexonly
+
+*/

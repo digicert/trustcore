@@ -1,0 +1,58 @@
+/**
+@page       overview_aes_ecb    AES-ECB Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_overview_aes_ecb    AES in ECB Mode Overview
+
+AES in ECB mode provides rudimentary confidentiality. However, this mode is
+particularly "leaky" of large-scale information in the input plaintext. For
+some applications, such leakage is unacceptably compromising. Therefore, if
+the need for confidentiality is high, consider using one another cipher,
+such as AES in CBC mode.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_aes_ecb     Usage Caveats for AES in ECB Mode
+
+As input, the DoAESECB() function requires that all buffers input for
+encryption or decryption have a size that is an even multiple of the AES
+block size, 128 bits. If the buffer is smaller than an even multiple of 128
+bits, you must pad the buffer before submitting it to the DoAESECB() function.
+
+Additionally, there are confidentiality issues that are inherent in AES in
+ECB mode. In ECB mode, identical plaintext blocks result in identical
+ciphertext blocks. As a result, any pattern in the plaintext that is bigger
+than a block is detectable in the pattern of the output ciphertexts.
+
+For example, if you use AES in ECB mode to encrypt a piece of black and
+white line art, all blocks from white areas in the image will encrypt to the
+same value. Likewise, all blocks from black areas will encrypt to the same
+value (although different from the value created from the white blocks). If
+you construct an image from the ciphertext blocks, you can often see that
+the ciphertext for the image contains a pattern of outlines (somewhat
+blurred) that conveys the general composition of the plaintext image. If
+this is unacceptable, consider using a different modes.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_aes_ecb_padding     AES-ECB Mode Data Padding
+
+For ECB mode, the input for encryption or decryption must be an even
+multiple of the block size. In the NanoCrypto implementation of this mode,
+if the input data does not meet this requirement, processing stops and the
+function returns an error. Therefore, you should check the size of data
+buffers before submitting them to NanoCrypto functions that implement ECB
+modes. If the data is not an even multiple of the block size, you must pad
+it. You can pad the data however you want, and there are a number of well
+documented padding schemes from which you can choose. Step 3.1 in RFC&nbsp;1321
+describes a common bit-oriented scheme. If you would prefer a byte-oriented
+padding scheme, section 6.3 of RFC 5652 provides one. You might also want to
+consider the byte-oriented scheme provided in ANSI X.923.
+*/

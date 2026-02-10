@@ -1,0 +1,22 @@
+/**
+@page       ike_flowchart @moc_product NanoSec IKE FLowchart
+@ingroup    ike_pages
+@brief      @moc_product IKE Flowchart
+
+To view a full-size version of the @moc_name IKE flowchart, click the thumbnail image.
+
+@htmlonly
+  <table class="moc_flowchart">
+      <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>NanoSec IKE Flowchart</b><br/><br/></td>
+      </tr>
+      <tr>
+          <td><a href="images/nanosec/flowchart_ike.jpg">NanoSec IKE<br/><br/><image src="images/nanosec/flowchart_ike_thumbnail.jpg"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ike.png}{NanoSec IKE}
+@endlatexonly
+
+*/

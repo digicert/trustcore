@@ -1,0 +1,71 @@
+/**
+@page       legal_notices Legal Notices
+@brief
+
+<b>@moc_product, @moc_project_number \n
+Copyright &copy; 2026 Digicert Inc</b> \n
+
+<p>
+
+<b>All Rights Reserved</b> \n
+
+<p>
+
+PLEASE READ THESE TERMS AND CONDITIONS CAREFULLY BEFORE USING THIS DOCUMENT (THE “DOCUMENTATION”) OFFERED BY DIGICERT, INC.
+(“DIGICERT”). BY MAKING USE OF THIS DOCUMENT IN ANY MANNER, YOU (“YOU”) AGREE TO BE BOUND BY THESE TERMS TO THE EXCLUSION OF ALL
+OTHER TERMS. YOU REPRESENT AND WARRANT THAT YOU HAVE THE AUTHORITY TO ENTER INTO THIS AGREEMENT; IF YOU ARE ENTERING INTO THIS
+AGREEMENT ON BEHALF OF AN ORGANIZATION OR ENTITY, REFERENCES TO “YOU” IN THIS AGREEMENT REFERS TO THAT ORGANIZATION OR ENTITY.
+IF YOU DO NOT AGREE TO ALL OF THE FOLLOWING, YOU MAY NOT USE THIS DOCUMENT IN ANY MANNER.
+
+<p>
+
+1. License to Documentation.
+    Subject to the terms and conditions of this Agreement, DigiCert hereby grants You, and You hereby accepts from DigiCert,
+    a limited, revocable, non-exclusive, non-transferable, non-assignable and non-sublicenseable license to use the Documentation,
+    solely as necessary for You to use the associated DigiCert software (the “Software”) in a manner consistent with this Agreement.
+    DigiCert may terminate this license at any time and for any reason by providing you notice of termination.
+2. Restrictions on Licenses.
+    In addition to the restrictions set forth above, You agree that, except as otherwise expressly provided by this Agreement,
+    You shall not: (a) exceed the scope of the licenses granted in this Section 1; (b) make copies of the Documentation;
+    (c) sublicense, assign, delegate, rent, lease, sell, time-share or otherwise transfer the benefits of, use under, or rights to,
+    the license granted in Section 1, and any attempt to make any such sublicense, assignment, delegation or other transfer by You shall be void and of no effect;
+    (d) use the Documentation to reverse engineer, decompile, disassemble or otherwise attempt to learn the source code, structure or
+    algorithms underlying the Software, except to the extent required to be permitted under applicable law;
+    (e) modify, translate or create Derivative Works of the Documentation without the prior written consent of DigiCert; or
+    (f) remove any copyright, trademark, patent or other proprietary notice that appears on the Documentation or copies thereof.
+    The licenses provided by this Agreement are limited licenses, and You acknowledge that this Agreement does not grant You,
+    and DigiCert expressly disclaims the grant of, any license, immunity, or other right to or under any patent or other intellectual property right of DigiCert,
+    whether directly or by implication, legal or equitable estoppel, exhaustion or otherwise, except for the limited licenses expressly set forth in Section 1.
+3. Disclaimer of Warranty.
+    YOU ACKNOWLEDGE THAT AND AGREE THAT DIGICERT MAKES NO EXPRESS OR IMPLIED REPRESENTATIONS OR WARRANTIES OF ANY KIND WITH RESPECT TO THE DOCUMENTATION,
+    ITS CONTENT OR ITS CONDITION. DIGICERT HEREBY EXPRESSLY EXCLUDES, ANY AND ALL EXPRESS OR IMPLIED REPRESENTATIONS OR WARRANTIES, WHETHER UNDER COMMON LAW,
+    STATUTE OR OTHERWISE, INCLUDING WITHOUT LIMITATION ANY AND ALL WARRANTIES AS TO MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+    SATISFACTORY QUALITY OR NON-INFRINGEMENT OF THIRD-PARTY RIGHTS.
+4. Confidential Information.
+    You hereby acknowledge and agree that the Documentation includes valuable DigiCert propriety information,
+    and You will not disclose or otherwise share the Documentation with any third party without DigiCert’s express written authorization.
+5. Export.
+    The Documentation may be subject to export controls; Your re-export or transfer of the Documentation may require authorization from the U.S. government;
+    incorporation of any information in this Documentation into foreign made items may cause those foreign made items to be subject
+    to the U.S. Export Administration Regulations; and You are responsible for obtaining any required USG authorization for the re-export or
+    transfer of such information in Your control and/or foreign made items that are subject to the EAR as a result of incorporating such information.
+    You shall indemnify DigiCert from and against any liabilities, costs, fines, penalties and other expenses, including reasonable attorney fees,
+    incurred by DigiCert as a result of Your breach of the obligations herein.
+6. US Government Restricted Rights Legend.
+    The Documentation is provided with restricted rights. Use, duplication, or disclosure by the Government is subject to restrictions as set forth in
+    subparagraph (c)(1)(ii) of The Rights in Technical Data and Computer Software clause at DFARS 252.227-7013 or in subparagraphs (c)(1) and
+    (2) of the Commercial Computer Software-Restricted Rights clause at 48 C.F.R. 52, 227-19, as applicable.
+    The Contractor/Manufacturer is: DigiCert, Inc., 2801 North Thanksgiving Way, Suite 500, Lehi, UT 84043.
+    Your use of the Documentation signifies acceptance in full of the terms above and any other agreements previously executed between You and DigiCert.
+7. Trademarks.
+    The DigiCert logo, DigiCert TrustCenter, DigiCert TrustEdge, DigiCert TrustCore, and NanoCrypto
+    are all trademarks or registered trademarks of DigiCert, Inc. All rights reserved. Any other marks within the Documentation are property of their respective owners.
+
+<p>
+
+DigiCert, Inc.\n
+2801 North Thanksgiving Way, Suite 500\n
+Lehi, UT 84043\n
+https://www.digicert.com/\n
+
+*/

@@ -1,0 +1,71 @@
+/**
+@dir    common
+@brief  Mocana common code base API functions.
+*/
+
+
+/**
+@defgroup    common_nanotap_tree     Common
+
+Lists Mocana's common functions and definitions used by NanoTAP.
+*/
+
+/**
+@defgroup    common_nanotap_functions  Functions
+@ingroup     common_nanotap_tree
+
+Provides common Mocana functions used by NanoTAP components.
+*/
+
+
+/**
+@defgroup    common_nanotap_definitions  Definitions
+@ingroup     common_nanotap_tree
+
+Provides common Mocana definitions used by NanoTAP components.
+*/
+
+
+<!-- -------------------------------------------------------------------- -->
+
+
+/**
+@dir    tap
+@brief  NanoTAP API functions
+*/
+
+/**
+@defgroup   nanotap_tree     TAP
+
+This API provides TAP API functions and definitions.
+*/
+
+/**
+@defgroup   tap_definitions      Definitions
+@ingroup    nanotap_tree
+
+TAP definitions.
+*/
+
+/**
+@defgroup   tap_api_functions        APIs
+@ingroup    nanotap_tree
+
+TAP API functions.
+*/
+
+/**
+@defgroup   tap_functions        Functions
+@ingroup    nanotap_tree
+
+TAP utility functions.
+*/
+
+
+/**
+@defgroup   tap_callback_functions        Callback Functions
+@ingroup    nanotap_tree
+
+TAP callback functions.
+*/
+

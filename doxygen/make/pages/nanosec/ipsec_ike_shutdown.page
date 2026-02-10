@@ -1,0 +1,23 @@
+/**
+
+@page       ipsec_ike_shutdown IPsec/IKE shutdown sequence
+@ingroup    ike_pages
+@brief      @moc_product IPsec/IKE functions for shutdown.
+
+To properly stop IPsec and IKE, the following calls should be made in the order given:
++ Stop IPsec:
+ + IPSEC_flush()&mdash;To release rules from the SPD (Security Policy Database) 
+    and keys from the SADB (Security Association Database) within the IPsec stack.
+ + <tt>RTOS_sleepMS(5000);   // wait for IKE to notify peers of dead IPsec SAs </tt>
+ + Stop the IKE server&mdash;In the sample code (ike_example.c) this is done 
+   by setting the while loop variable, \c isBreakSignalRequest, to \c TRUE.
+
++ Stop IKE:
+ + IKE_shutdown()&mdash;To shutdown the IKE stack; call after exiting the 
+   <tt> while (!isBreakSignalRequest)</tt> loop.
+ + <tt>RTOS_sleepMS(2000);   // wait for IKE sockets to finish transmit of data</tt>
+ + A function to close any open sockets.
+
++ Any additional clean up, such as DIGICERT_freeDigicert().
+
+*/

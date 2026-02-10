@@ -1,0 +1,9 @@
+/**
+@page       CAP_Arch @moc_product Code Architecture
+@brief      The following diagram describes the @moc_product code architecture:
+
+@htmlonly
+<a href="images/nanocap/cap_arch.png"><image src="images/nanocap/cap_arch.png"></a>
+@endhtmlonly
+
+*/

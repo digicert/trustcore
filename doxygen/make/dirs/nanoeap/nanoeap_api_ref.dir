@@ -1,0 +1,184 @@
+/**
+@dir    src/eap
+@brief  NanoEAP API functions.
+*/
+        
+/**
+@defgroup    eap_tree     NanoEAP
+
+Mocana NanoEAP offers a flexible framework and transport mechanism 
+for AAA (Authentication, Authorization, and Accounting) protocols. With NanoEAP,
+you can prevent unauthorized access to your network devices, easily 
+update your security handling, and independently manage multiple users who 
+require unique security configuration.
+
+Additionally, NanoEAP communication can use any communication 
+protocol, including custom and future implementations.
+
+The %common NanoEAP API contains functions applicable to any EAP communication, 
+regardless of the methods (authentication mechanism) being negotiated or 
+ultimately chosen.
+
+For detailed information about EAP, including the state machine logic 
+implemented within Mocana NanoEAP, refer to the following RFCs:
+
+- 3748, "Extensible Authentication Protocol (EAP)", available in PDF format: 
+http://www.rfc-editor.org/cgi-bin/rfcdoctype.pl?loc=RFC&letsgo=3748&type=ftp&file_format=pdf 
+
+- 4137, "State Machines for Extensible Authentication Protocol (EAP) Peer and Authenticator", available in PDF format: http://www.rfc-editor.org/cgi-bin/rfcdoctype.pl?loc=RFC&letsgo=4137&type=ftp&file_format=pdf 
+
+For detailed NanoEAP feature information and integration procedures, refer to the @moc_doc_NanoEAP_xref.
+
+<table class="table">
+    <tr>
+        <td>@image html alert_important.png ""</td>
+        <td>To view a full-size version of any of the following NanoEAP flowcharts, click the thumbnail image.</td>
+    </tr>
+</table>
+
+@htmlonly
+<!++ NanoEAP Flowcharts ++>
+<table class="moc_flowchart">
+    <tr>
+        <td class="flowchart_table_heading_row" colspan="3"><br/><b>NanoEAP Flowcharts</b><br/><br/></td>
+    </tr>
+    <tr>
+        <td><a href="images/nanoeap/flowchart_eap_common_loop.png">EAP Common Loop       <br><br><image src="images/nanoeap/flowchart_eap_common_loop_thumbnail.png"></a></td>
+        <td><a href="images/nanoeap/flowchart_eap_recv_send.png">EAP Common Events: Receive Packet and Send Alert<br><br><image src="images/nanoeap/flowchart_eap_recv_send_thumbnail.png"></a></td>
+        <td><a href="images/nanoeap/flowchart_eap_process_methd.png">EAP Common Events: Process Method<br><br><image src="images/nanoeap/flowchart_eap_process_methd_thumbnail.png"></a></td>
+    </tr>
+    <tr>
+        <td><a href="images/nanoeap/flowchart_eap_md5.png">        EAP MD5        <br><br><image src="images/nanoeap/flowchart_eap_md5_thumbnail.png">   </a></td>
+        <td><a href="images/nanoeap/flowchart_eap_mschap.png">     EAP MSCHAPv2   <br><br><image src="images/nanoeap/flowchart_eap_mschap_thumbnail.png"></a></td>
+        <td><a href="images/nanoeap/flowchart_eap_tls.png">        EAP TLS        <br><br><image src="images/nanoeap/flowchart_eap_tls_thumbnail.png">   </a></td>
+    </tr>
+    <tr>
+        <td><a href="images/nanoeap/flowchart_eap_peap_tls_0.png"> EAP PEAP, tls state 0<br><br><image src="images/nanoeap/flowchart_eap_peap_tls_0_thumbnail.png"> </a></td>
+        <td><a href="images/nanoeap/flowchart_eap_peap_tls_1.png"> EAP PEAP, tls state 1<br><br><image src="images/nanoeap/flowchart_eap_peap_tls_1_thumbnail.png"> </a></td>
+    </tr>
+    <tr>
+        <td><a href="images/nanoeap/flowchart_eap_peap_tls_2_p1of3.png"> EAP PEAP, tls state 2 (1 0f 3)<br><br><image src="images/nanoeap/flowchart_eap_peap_tls_2_p1of3_thumbnail.png"> </a></td>
+        <td><a href="images/nanoeap/flowchart_eap_peap_tls_2_p2of3.png"> EAP PEAP, tls state 2 (2 of 3)<br><br><image src="images/nanoeap/flowchart_eap_peap_tls_2_p2of3_thumbnail.png"> </a></td>
+        <td><a href="images/nanoeap/flowchart_eap_peap_tls_2_p3of3.png"> EAP PEAP, tls state 2 (3 of 3)<br><br><image src="images/nanoeap/flowchart_eap_peap_tls_2_p3of3_thumbnail.png"> </a></td>
+    </tr>
+</table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_eap_common_loop_thumbnail.png}{EAP Common Loop}
+\mocFlowchartPicture{flowchart_eap_recv_send_thumbnail.png}{EAP Common Events: Receive Packet and Send Alert}
+\mocFlowchartPicture{flowchart_eap_process_methd_thumbnail.png}{EAP Common Events: Process Method}
+\mocFlowchartPicture{flowchart_eap_md5_thumbnail.png}{EAP MD5}
+\mocFlowchartPicture{flowchart_eap_mschap_thumbnail.png}{EAP MSCHAPv2}
+\mocFlowchartPicture{flowchart_eap_tls_thumbnail.png}{EAP TLS}
+\mocFlowchartPicture{flowchart_eap_peap_tls_0_thumbnail.png}{EAP PEAP, tls state 0}
+\mocFlowchartPicture{flowchart_eap_peap_tls_1_thumbnail.png}{EAP PEAP, tls state 1}
+\mocFlowchartPicture{flowchart_eap_peap_tls_2_p1of3_thumbnail.png}{EAP PEAP, tls state 2 (1 0f 3)}
+\mocFlowchartPicture{flowchart_eap_peap_tls_2_p2of3_thumbnail.png}{EAP PEAP, tls state 2 (2 0f 3)}
+\mocFlowchartPicture{flowchart_eap_peap_tls_2_p3of3_thumbnail.png}{EAP PEAP, tls state 2 (3 0f 3)}
+@endlatexonly
+
+@SuiteB_disclaimer
+*/
+ 
+/**
+@defgroup    eap_functions Core Functions
+@ingroup     eap_tree
+*/
+
+/**
+@defgroup    eap_callback_functions Callback Functions
+@ingroup     eap_tree
+
+Customizable EAP callbacks.
+*/
+
+/**
+@defgroup    eap_fast_functions EAP-FAST Functions
+@ingroup     eap_tree
+
+Provides EAP-FAST (EAP-flexible authentication via secure tunnelling) authentication.
+*/
+
+/**
+@defgroup    eap_gtc_functions EAP-GTC Functions
+@ingroup     eap_tree
+
+Provides EAP-GTC (EAP-generic token card) authentication.
+*/
+
+/**
+@defgroup    eap_leap_functions EAP-LEAP Functions
+@ingroup     eap_tree
+
+Provides EAP-LEAP (EAP-lightweight EAP) authentication.
+*/
+
+/**
+@defgroup    eap_md5_functions EAP-MD5 Functions
+@ingroup     eap_tree
+
+Provides EAP-MD5 (EAP-message digest&nbsp;5) authentication.
+*/
+
+/**
+@defgroup    eap_mschap_functions EAP-MSCHAPv2 Functions
+@ingroup     eap_tree
+
+Provides EAP-MSCHAPv2 (EAP-Microsoft Challenge-handshake Authentication Protocol, version 2) authentication.
+*/
+
+/**
+@defgroup    eap_peap_functions EAP-PEAP Functions
+@ingroup     eap_tree
+
+Provides EAP-PEAP (EAP-protected EAP) authentication.
+*/
+
+/**
+@defgroup    eap_psk_functions EAP-PSK Functions
+@ingroup     eap_tree
+
+Provides EAP-PSK (EAP-Pre-Shared Key) authentication.
+*/
+
+/**
+@defgroup    eap_radius_functions EAP-RADIUS Functions
+@ingroup     eap_tree
+
+Provides EAP-RADIUS (EAP-remote authentication dial in user service) authentication in passthrough or server mode.
+*/
+
+/**
+@defgroup    eap_sim_functions EAP-SIM & EAP-AKA Functions
+@ingroup     eap_tree
+
+Provides EAP-SIM (EAP-subscriber identity module) and EAP-AKA (EAP-authentication and key agreement) authentication.
+*/
+
+/**
+@defgroup    eap_srp_functions EAP-SRP Functions
+@ingroup     eap_tree
+
+Provides EAP-SRP (EAP-secure remote password) authentication.
+*/
+
+/**
+@defgroup    eap_tls_functions EAP-TLS Functions
+@ingroup     eap_tree
+
+Provides EAP-TLS (EAP-transport layer security) authentication.
+*/
+
+/**
+@defgroup    eap_ttls_functions EAP-TTLS Functions
+@ingroup     eap_tree
+
+Provides EAP-TTLS (EAP-tunneled transport layer security) authentication.
+*/
+
+/**
+@defgroup    eap1x_functions EAP1X Functions
+@ingroup     eap_tree
+
+Provides all EAP1X functions.
+*/

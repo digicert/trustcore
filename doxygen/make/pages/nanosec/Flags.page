@@ -1,0 +1,314 @@
+/**
+@page       compilation_flags Compilation Flags
+@brief      Compilation flags (compiler directives) to customize NanoSec for @moc_platform.
+
+@details    The Mocana code can be easily customized by defining compilation
+            flags. For example, the memory footprint can be reduced by defining
+            compilation flags to disable products or features that are not
+            running, which removes those products' code from the resultant
+            executable. Similarly, debug flags can be undefined, which also
+            serves to increase execution speed.
+
+These compilation flags also enable easy porting of the Mocana code to any
+operating system. For additional guidance on defining flags for %common tasks, refer to documentation for @moc_product.
+
+@note   In addition to the documented flags, Mocana reserves the right to use
+        undocumented compile-time flags (named with a prefix of \c
+        \__DISABLE_DIGICERT_ or \c \__ENABLE_DIGICERT_) for internal development
+        and testing. Do not define such flags in your implementation because
+        the results may be unexpected.
+
+The following table describes the set of NanoSec-specific compilation flags, presented in
+alphabetical order:
+
+Flag | Description
+-----|------------
+|\c \__DISABLE_IPSEC_TUNNEL_MODE__	| Disables IPsec tunnel mode, which is typically only used for VPN support.|
+|\c \__DISABLE_DIGICERT_IKE_EAP__		| Disables IKEv2 EAP methods; used when EAP is enabled in SoTP but not needed in NanoSec.|
+|\c \__ENABLE_IKE_AGGRESSIVE_MODE__	| Enables IKEv1 aggressive mode for key exchanges.|
+|\c \__ENABLE_IKE_CP__			| Enables IKEv2 Configuration Payload; typically used for VPN support.|
+|\c \__ENABLE_IKE_EAP_ONLY__		| Enables IKEv2 EAP-only authentication.|
+|\c \__ENABLE_IKE_FRAGMENTATION__	| Enables IKE fragmentation.|
+|\c \__ENABLE_IKE_HYBRID_RSA__		| Enables IKEv1 Hybrid RSA Authentication.|
+|\c \__ENABLE_IKE_MODE_CFG__		| Enables IKEv1 Configuration Method; typically used for VPN support.|
+|\c \__ENABLE_IKE_OCSP_EXT__		| Enables IKEv2 OCSP (online certificate status protocol) extensions.|
+|\c \__ENABLE_IKE_REDIRECT__		| Enables IKEv2 redirect mechanism to redirect the VPN client to another gateway.|
+|\c \__ENABLE_IKE_SIG_AUTH_RFC7427__	| Enables IKEv2 Signature Authentication (RFC 7427).|
+|\c \__ENABLE_IKE_XAUTH__		| Enables IKEv1 XAUTH; typically used for VPN support.|
+|\c \__ENABLE_IPSEC_COOKIE__		| Enables IPSec Cookie support, which allows customized filtering, such as VLAN ID, for IPsec security policies.|
+|\c \__ENABLE_IPSEC_ESN__		| Enables ESN (extended sequence number).|
+|\c \__ENABLE_IPSEC_FLOW__		| Enables cache of most recently used SA’s (security associations) for better IPsec performance.|
+|\c \__ENABLE_IPSEC_FRAGMENTATION__	| Enables Mocana IPv4 fragmentation/reassembly code; standalone API’s provided.|
+|\c \__ENABLE_IPSEC_INTERFACE_ID__	| Enables interface ID.|
+|\c \__ENABLE_IPSEC_NAT_T__		| Enables IPsec NAT-Traversal.|
+|\c \__ENABLE_IPSEC_NULL_TUNNEL__	| Enables IPsec tunnels with NULL encryption and no authentication.|
+|\c \__ENABLE_IPSEC_PORT_RANGE__	| Enables specification of a range of ports in the SPD (security policy database). Without this flag, you can specify only a single port value (which does include specifying 0 for all ports).|
+|\c \__ENABLE_MOBIKE__			| Enables IKEv2 MOBIKE (mobility and multihoming protocol).|
+|\c \__ENABLE_DIGICERT_IKE_SERVER__	| Enables Mocana IKE server/peer code.|
+|\c \__ENABLE_DIGICERT_IKE_UNSECURE_HASH__| Enables SHA1 and MD5 in IKE phase 1 negotiation.|
+|\c \__ENABLE_DIGICERT_IPSEC_SERVICE__	| Enables Mocana IPsec stack code.|
+|\c \__ENABLE_DIGICERT_PFKEY__		| Enables IKE PF_KEY functionality.|
+|\c \__IKE_MULTI_HOMING__		| Enables IKE multihoming applications.|
+|\c \__IKE_MULTI_THREADED__		| Enables IKE multi-threaded integration; see sample code and API Reference for more details.|
+|\c CUSTOM_IKE_CHECK_ID		| Customizes verification of IKE Identification Payload; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_DPD_TIMEOUT	| Customizes the maximum number of seconds for DPD (dead peer detection); see ike.h for more details.|
+|\c CUSTOM_IKE_GET_EAP_PROTO	| Customizes IKEv2 EAP method; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_ENCR_ALGO	| Customizes IKE preferred phase 1 encryption algorithms; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_HASH_ALGO	| Customizes IKE preferred phase 1 hash/prf algorithms; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_ID		| Customizes IKE Identification Payload; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_INTEG_ALGO	| Customizes IKEv2 preferred phase 1 integrity algorithms; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_P1_DHGRP	| Customizes IKE preferred phase 1 Diffie-Hellman groups; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_P1_LIFEKBYTES| Customizes preferred IKE_SA lifetime in kilobytes; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_P1_LIFESECS	| Customizes preferred IKE_SA lifetime in seconds; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_P2_PFS	| Customizes IKE preferred phase 2 Diffie-Hellman group; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_PSK    	| Customizes IKE pre-shared key; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_VENDOR_ID	| Customizes IKE host vendor ID; see ike.h for more details.|
+|\c CUSTOM_IKE_GET_VERSION	| Customizes IKE preferred version; see ike.h for more details.|
+|\c CUSTOM_IKE_USE_CERT		| Customizes IKE certificate authentication; see ike.h for more details.|
+|\c IKE_CERT_CACHE_MAX		| Overrides the default maximum number of entries in the cache table of peer certificates.|
+|\c IKE_CERT_CHAIN_MAX		| Overrides the default maximum number of certificates (including the root and all leaves) allowed in a single certificate chain.|
+|\c IKE_EVENT_MAX		| Overrides the default maximum number of concurrent pending phase 2 exchanges allowed.|
+|\c IKE_IPSECSA_MAX		| Overrides the default maximum number of concurrent phase 2 quick mode negotiations allowed per established phase 1 channel.|
+|\c IKE_NONCE_SIZE		| Overrides the default IKE nonce size (in bytes). Value should be between 8 (16 for IKEv2) and 256, inclusive.|
+|\c IKE_P2_SA_MAX		| Overrides the default maximum number of SA payloads allowed per phase 2 quick mode negotiation.|
+|\c IKE_SA_MAX			| Overrides the default maximum number of concurrent phase 1 negotiations (both established and pending) allowed.|
+|\c IPSEC_DGRAM_MAX		| Overrides the default maximum number of pending IP datagrams allowed for IP reassembly.|
+|\c IPSEC_DGRAM_SIZE_MAX	| Overrides the default maximum IP payload size (in bytes) for IP fragmentation.|
+|\c IPSEC_NEST_MAX		| Overrides the default maximum SA bundle size&mdash;how many nested IPsec headers can protect the payload; e.g. if a payload can be protected by combination of AH and ESP, define \c IPSEC_NEXT_MAX as 2.|
+|\c IPSEC_PACKETS_MAX		| Overrides the default maximum number of packets per IP datagram (reassembly only).|
+|\c IPSEC_REPLAY_SIZE		| Enables IPsec Anti-Replay and defines replay window size in packets/bits. Values must be multiples of 8; and >= 32 is recommended.|
+|\c IPSEC_SADB_MAX		| Overrides the default maximum number of IPsec SAs to %include in the SADB.|
+|\c IPSEC_SPD_MAX		| Overrides the default maximum number of IPsec policies per direction.|
+|\c TIMEOUT_IPSEC_REASSEMBLY	| Overrides the default number of milliseconds allowed for IPv4 reassembly operation before a timeout error is generated; applicable only if \c \__ENABLE_IPSEC_FRAGMENTATION__ is also defined.|
+
+The following table describes the set of common Mocana SoTP compilation flags, presented in
+alphabetical order:
+
+Flag | Description
+-----|------------
+|\c \__DEBUG_*| (Recommended to leave undefined) Enables debug information for Mocana support.|
+|\c \__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__|Disables Mocana ANSI file system helper functions, such as DIGICERT_readFile and DIGICERT_writeFile.|
+|\c \__DISABLE_DIGICERT_INIT__|Disables Mocana %common initialization and de-initialization code (in common/mocana.c).|
+|\c \__DISABLE_DIGICERT_MAIN_FUNC_ENTRY__|Disables the main function in the Mocana example code, allowing operation on embedded systems (as opposed to Linux-based desktop systems).
+|\c \__DISABLE_DIGICERT_STARTUP_GUARD__|Disables Mocana initialization code guard, which ignores subsequent calls to DIGICERT_initDigicert().|
+|\c \__ENABLE_ALL_DEBUGGING__|Displays extensive debug information from all Mocana modules to the debug console.|
+|\c \__ENABLE_LOOKUP_TABLE__|Enables retrieval of C-string error messages corresponding to error codes.|
+|\c \__ENABLE_DIGICERT_64_BIT__| (Products using Mocana cryptography) Enables support for 64-bit processors (x86_64: Intel, AMD, and PowerPC), thereby improving performance for 64-bit executables.|
+|\c \__ENABLE_DIGICERT_BASIC_TYPES_OVERRIDE__|Disables Mocana default typedefs, allowing custom typedefs to be defined in moptions.h.|
+|\c \__ENABLE_DIGICERT_DEBUG_CONSOLE__|Enables the Mocana debug console, which logs debugging information to \c stdout or (if \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__ is not defined) to a telnet port.|
+|\c \__ENABLE_DIGICERT_DEBUG_MEMORY__|Enables the Mocana memory leak debugger, which detects memory leaks, double frees, and other memory issues. File and line numbers for every call to \c malloc and \c free are recorded.|
+|\c \__ENABLE_DIGICERT_EXAMPLES__|Enables Mocana example code.|
+|\c \__ENABLE_DIGICERT_IPV6__|Enables Mocana IPv6 support.|
+|\c \__ENABLE_DIGICERT_MEM_PART__|Enables Mocana memory partition code.|
+|\c \__ENABLE_DIGICERT_MEM_PART_MUTEX__|Enables race condition prevention in synchronous applications; not necessary for asynchronous applications.|
+|\c \__ENABLE_DIGICERT_NETWORK_TYPES_OVERRIDE__|Enables redefinition of the IP address data type (by default, an unsigned long).|
+|\c \__ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__|Disables Mocana standard library functions and enables your native \c stdlib() functions, such as \c memcpy() and \c memcmp().|
+|\c \__ERROR_LOOKUP_TABLE__|For Mocana internal use for displaying error messages; do not define.|
+|\c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__|Sends enabled debug messages to \c stdout. (When this flag is defined, the \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__ setting is ignored).|
+|\c \__DIGICERT_ENABLE_LONG_LONG__|Enables optimization of big integer math code. (Whether this results in faster code execution depends on your CPU.)|
+|\c \__DIGICERT_FORCE_ENTROPY__|If enabled, calls the function DIGICERT_addExternalEntropy from the function DIGICERT_initDigicert to add entropy from an external source (/dev/random on Linux). In addition,\c \ __DISABLE_DIGICERT_ADD_ENTROPY__ must not be defined.|
+|\c \__PLATFORM_HAS_GETOPT__|Facilitates parsing command-line tokens. Define for operating systems that provide a \c getopt function (such as Linux); otherwise leave undefined (in which case the Nano code will perform rudimentary command-line parsing to attempt to extract the arguments).|
+|\c _AFX_NO_AFXCMN_SUPPORT|Enables MFC support for Windows %common controls in IPsec/IKE example code.|
+|\c _MSC_VER|Enables strict compilation of example code for Microsoft compiler support.|
+|\c COUNTOF|Constant used throughout Mocana code.|
+|\c FALSE|Constant used throughout Mocana code. Can be redefined, but results are unpredictable. (Internal structures are initialized to 0, so redefining NULL and FALSE can be problematic within the code.)|
+|\c FREE|Enables redefinition of the \c FREE function to something other than the default (free()).|
+|\c MALLOC|Enables redefinition of the MALLOC function to something than the default (malloc()).|
+|\c MOC_BIG_ENDIAN| (EAP and Suite-B only) Specifies that the CPU is big endian. If you define this flag, \c MOC_LITTLE_ENDIAN must be undefined.|
+|\c MOC_LITTLE_ENDIAN| (EAP and Suite-B only) Specifies that the CPU is little endian. If you define this flag, \c MOC_BIG_ENDIAN must be undefined.|
+|\c MOC_MIN_PARTITION_SIZE| (Do not change) Minimum number of bytes required for the Mocana memory partition code.|
+|\c MOC_UNUSED|Prevents the compiler from issuing unused argument warnings. For most compilers, add the following to moptions.h: <tt>\#define MOC_UNUSED(X)   X=X</tt>|
+|\c MOCANA_DEBUG_CONSOLE_PORT|Port number to which enabled debug messages are sent(if \c \__DIGICERT_DUMP_CONSOLE_TO_STDOUT__ is not defined).|
+|\c MOCANA_THREAD_PRIO|Priority assigned to all threads spawned by Mocana code.|
+|\c NULL|Constant used throughout Mocana code. Can be redefined, but results are unpredictable. (Internal structures are initialized to 0, so redefining NULL and FALSE can be problematic within the code.)|
+|\c OFFSETOF|Constant used throughout Mocana code. Can be redefined, but results are unpredictable.|
+|\c PATCH_CONST|Defines static data as a constant, as required by some environments' compiler/patch management code.|
+|\c TRUE|Constant used throughout Mocana code. Can be redefined, but results are unpredictable.|
+|\c ULONG_PTR| (IKE example code) Data type definition for an unsigned long pointer.|
+|\c VC_EXTRALEAN| (IPsec examples for Visual C compiler) Reduces the size of Windows header files.|
+
+The following table describes the set of compilation flags for other related Mocana SoTP products, presented in
+alphabetical order:
+
+Flag | Description
+-----|------------
+|\c \__3DES_HARDWARE_CIPHER__|Turns on hardware 3DES support (and disables corresponding software).|
+|\c \__AES_HARDWARE_CIPHER__|Turns on hardware AES support (and disables corresponding software).|
+|\c \__ASM_386__|Turns on assembly language optimizations for Intel x86 processors using Microsoft compilers.|
+|\c \__ASM_386_GCC__|Turns on assembly language optimizations for Intel x86 processors using GCC compilers.|
+|\c \__ASM_ARM__|Turns on assembly language optimizations for ARM processors. (This flag replaces the older \c \__ASM_ARM7__ flag.)|
+|\c \__ASM_COLDFIRE_DIABDATA__|Turns on assembly language optimizations for Freescale Coldfire processors using the DiabData compiler.|
+|\c \__ASM_H8S__|Turns on assembly language optimizations for Hitachi/Renasas H8S processors.|
+|\c \__ASM_M68K_CROSSCODE__|Turns on assembly language optimizations for Motorola/Freescale 68K series processors.|
+|\c \__ASM_MIPS__|Turns on assembly language optimizations for MIPS processors.|
+|\c \__ASM_PPC__|Turns on assembly language optimizations for PowerPC processors. If your PowerPC has an Altivec unit, be sure to use the correct flags for the compiler to enable using the Altivec unit; for example, \c -maltivec for the GCC compiler.|
+|\c \__DES_HARDWARE_CIPHER__|Turns on hardware DES support (and disables corresponding software).|
+|\c \__DISABLE_3DES_CIPHERS__|Disables 3DES cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES_CIPHERS__|Disables AES cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES128_CIPHER__|Disables AES 128-bit keys cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES192_CIPHER__|Disables AES 192-bit keys cipher suite support (both hardware and software).|
+|\c \__DISABLE_AES256_CIPHER__|Disables AES 256-bit keys cipher suite support (both hardware and software).|
+|\c \__DISABLE_DIGICERT_ADD_ENTROPY__|Disables Mocana functions that allow system entropy (random data) to update the random number generator. If you're using your own random number generator, you can define this flag.|
+|\c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__|Disables Mocana certificate generation code. If you define this flag, you should also define the \c \__DISABLE_DIGICERT_RSA_SIGN__ flag.|
+|\c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__|Disables Mocana certificate parsing code. If you're using IKE, this flag should not be defined. If you define this flag, you should also define the \c \__DISABLE_DIGICERT_RSA_SIGN__ flag.|
+|\c \__DISABLE_DIGICERT_ECC__|Disables elliptical curve cryptography&mdash;a very fast asymmetrical %crypto algorithm for key exchanges and authentication.|
+|\c \__DISABLE_DIGICERT_ECC_P256__|Disables ECC P-256 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P384__|Disables ECC P-384 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P521__|Disables ECC P-521 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P192__|Disables ECC P-192 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_ECC_P224__|Disables ECC P-224 primes. Define for Suite&nbsp;B cipher support.|
+|\c \__DISABLE_DIGICERT_KEY_GENERATION__|Disables Mocana key generation code.|
+|\c \__DISABLE_DIGICERT_MODEXP_SLIDING_WINDOW__|Disables memory-intensive (but faster executing) algorithm for calculating MOD exponents. The result is less memory use and slower calculations.|
+|\c \__DISABLE_DIGICERT_PRIME_TEST__|Disables Mocana prime test code used to verify whether a number is prime. (If it's left enabled, and hardware prime test support is enabled, then the hardware can use the Mocana prime test code.)|
+|\c \__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__|Disables Mocana entropy threads; initialization of the random number seed is still performed.|
+|\c \__DISABLE_DIGICERT_RAND_SEED__|Disables Mocana entropy threads and initialization of random number seed.|
+|\c \__DISABLE_DIGICERT_RNG__|Disables Mocana default random number generator (in random.c). If you define this flag, you must provide your own random number generator factory that is API compatible with Mocana's random number generator.|
+|\c \__DISABLE_DIGICERT_RSA_DECRYPTION__|Disables RSA decryption support.|
+|\c \__DISABLE_DIGICERT_RSA_SIGN__|Disables Mocana certificate signing code. If you've disabled Mocana certificate code (by defining the \c \__DISABLE_DIGICERT_CERTIFICATE_GENERATION__ or \c \__DISABLE_DIGICERT_CERTIFICATE_PARSING__ flags), it's safe to define this flag.|
+|\c \__DISABLE_DIGICERT_SHA256__|Disables SHA256 cipher support (both hardware and software).|
+|\c \__DISABLE_DIGICERT_SHA512__|Disables SHA512 cipher support (both hardware and software).|
+|\c \__ENABLE_2KEY_3DES_CIPHER__|Enables 3DES with 2 keys cipher suite support.|
+|\c \__ENABLE_BCM582x_HARDWARE_ACCEL__|Enables hardware accelerator support for the Broadcomm 582x chipset.|
+|\c \__ENABLE_BLOWFISH_CIPHERS__| (Default = undefined/disabled) Enables Blowfish cipher suite support.|
+|\c \__ENABLE_DES_CIPHER__| (Default = undefined/disabled) Enables DES cipher suite support. This is disabled by default because it's a weak cipher; however, 3DES is enabled by default.|
+|\c \__ENABLE_FREESCALE_8248_HARDWARE_ACCEL__|Enables hardware accelerator support for the Freescale 8248 chipset.|
+|\c \__ENABLE_FREESCALE_875_HARDWARE_ACCEL__|Enables hardware accelerator support for the Freescale 875 chipset.|
+|\c \__ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__|Enables asynchronous hardware accelerator support.|
+|\c \__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__|Enables synchronous hardware accelerator support.|
+|\c \__ENABLE_DIGICERT_AEAD_CIPHER__|Enables AEAD (Authenticated Encryption with Associated Data) cipher mode.|
+|\c \__ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__|Enables search support for certificate attributes such as serial number and CRL.|
+|\c \__ENABLE_DIGICERT_DER_CONVERSION__|Enables Mocana's DER file support. Allows reading public and private key data from an OpenSSL DER file.|
+|\c \__ENABLE_DIGICERT_EAP_AUTH__|Enables the EAP-AUTH method.|
+|\c \__ENABLE_DIGICERT_EAP_GTC__|Enables the EAP-GTC method.|
+|\c \__ENABLE_DIGICERT_EAP_LEAP__|Enables the EAP-LEAP method.|
+|\c \__ENABLE_DIGICERT_EAP_MD5__|Enables the EAP-MD5 method.|
+|\c \__ENABLE_DIGICERT_EAP_MSCHAPv2__|Enables the EAP-MS-CHAP-V2 method.|
+|\c \__ENABLE_DIGICERT_EAP_PEER__|Enables Mocana EAP %client (which functions  as the peer/supplicant).|
+|\c \__ENABLE_DIGICERT_EAP_PSK__|Enables the EAP-PSK method.|
+|\c \__ENABLE_DIGICERT_EAP_RADIUS__|Enables the EAP-RADIUS method.|
+|\c \__ENABLE_DIGICERT_EAP_SIM__|Enables the EAP-SIM method.|
+|\c \__ENABLE_DIGICERT_EAP_SRP__|Enables the EAP-SRP method.|
+|\c \__ENABLE_DIGICERT_EAP_TLS__|Enables the EAP-TLS method. If you enable EAP-TLS, you must also define the \c \__ENABLE_DIGICERT_SSL_ASYNC_API_EXTENSIONS__ flag.|
+|\c \__ENABLE_DIGICERT_ECC__|Enables elliptical curve cryptography&mdash;a very fast asymmetrical %crypto algorithm for key exchanges and authentication. Define for Suite&nbsp;B cipher support.|
+|\c \__ENABLE_DIGICERT_EXTRACT_CERT_BLOB__|Enables bit (raw data) access to a certificate's subject or issuer data.|
+|\c \__ENABLE_DIGICERT_GCM__|Enables GCM (Galois/Counter Mode) symmetric key ciphers. Define  for Suite&nbsp;B cipher support.|
+|\c \__ENABLE_DIGICERT_GCM_64K__|Enables GCM 64&nbsp;KB table size cipher.|
+|\c \__ENABLE_DIGICERT_GCM_4K__|Enables GCM 4&nbsp;KB table size cipher.|
+|\c \__ENABLE_DIGICERT_GCM_256B__|Enables GCM 256&nbsp;KB table size cipher.|
+|\c \__ENABLE_DIGICERT_HARNESS__|Enables Mocana acceleration harness for hardware offload, improving performance.|
+|\c \__ENABLE_DIGICERT_HARNESS_MEMORY_DEBUG__| (For development use only) Enables the Mocana harness memory tracker, which confirms that memory allocation takes place on the hardware offload target.|
+|\c \__ENABLE_DIGICERT_HTTP_CLIENT__|Enables Mocana HTTP %client.|
+|\c \__ENABLE_DIGICERT_MULTIPLE_COMMON_NAMES__|Enables accessing all a certificate's %common names. If disabled, only the certificate's first %common name is accessible.|
+|\c \__ENABLE_DIGICERT_OCSP_CLIENT__|Enables Mocana OCSP %client. If you define this flag, you should also define the \c \__ENABLE_DIGICERT_HTTP_CLIENT__ flag.|
+|\c \__ENABLE_DIGICERT_PEM_CONVERSION__|Enables code that allows OpenSSH and OpenSSL PEM files to be used.|
+|\c \__ENABLE_DIGICERT_PKCS5__|Enables code to support PKCS&nbsp;\#5&mdash;key strengthened key derivation functions using an input password or passphrase and a salt value.|
+|\c \__ENABLE_DIGICERT_PKCS7__|Enables code to support PKCS&nbsp;\#7&mdash;a standard for signing and encrypting messages, as well as certificate dissemination.|
+|\c \__ENABLE_DIGICERT_PKCS8__|Enables code to support PKCS&nbsp;\#8&mdash;a syntax for private-key information.|
+|\c \__ENABLE_DIGICERT_PKCS10__|Enables code to support PKCS&nbsp;\#10&mdash;a standard for a certificate authority to upgrade a self-signed certificate to one signed by a certificate authority.|
+|\c \__ENABLE_DIGICERT_PKCS12__|Enables code to support PKCS&nbsp;\#12&mdash;a file format for password-based symmetric key certificate protection.|
+|\c \__ENABLE_DIGICERT_RADIUS_CLIENT__|Enables Mocana RADIUS %client.|
+|\c \__ENABLE_DIGICERT_RNG_DRBG_CTR__|Enables the CTR based NIST Randon Number Generator (RNG).|
+|\c \__ENABLE_DIGICERT_RNG_DRBG_ECC__|Enables the ECC based NIST Randon Number Generator (RNG).|
+|\c \__ENABLE_DIGICERT_SMALL_CODE_FOOTPRINT__|Reduces the size of the executable, at the expense of execution speed. Depending on which products are included and which options are enabled, defining this flag may reduce heap and stack requirements.|
+|\c \__ENABLE_DIGICERT_URI__| Enables code to support parsing and constructing URIs.|
+|\c \__ENABLE_DIGICERT_VERIFY_RSA_SIGNATURE__|Enables a self-test (internal to the Mocana certificate code) to ensure that the signature can be verified via CRT (Chinese remainder theorem); if the self-test shows that the signature can't be verified via CRT, then the long algorithm will be used.|
+|\c \__ENABLE_RFC3576__|Enables RADIUS %extensions for CoA (change of authorization) support.|
+|\c \__HMAC_MD5_HARDWARE_HASH__|Enables hardware support for HMAC MD5.|
+|\c \__HMAC_SHA1_HARDWARE_HASH__|Enables hardware support for HMAC SHA1.|
+|\c \__MD5_HARDWARE_HASH__|Enables hardware support for MD5.|
+|\c \__MD5_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step MD5 operations.|
+|\c \__PRIME_GEN_HARDWARE__|Enables hardware acceleration chip support for prime number generation.|
+|\c \__RSA_HARDWARE_ACCELERATOR__|Enables hardware support for RSA.|
+|\c \__SHA1_HARDWARE_HASH__|Enables hardware support for SHA1.|
+|\c \__SHA1_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA1.|
+|\c \__SHA224_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-224.|
+|\c \__SHA256_HARDWARE_HASH__|Enables hardware support for SHA-256.|
+|\c \__SHA256_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-256.|
+|\c \__SHA384_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-384.|
+|\c \__SHA512_HARDWARE_HASH__|Enables hardware support for SHA-512.|
+|\c \__SHA512_ONE_STEP_HARDWARE_HASH__|Enables hardware support for one-step SHA-256.|
+|\c \__VLONG_MOD_OPERATOR_HARDWARE_ACCELERATOR__|Disables Mocana very long integer \c mod() function (in vlong.c), and uses the equivalent code in the chip's hardware accelerator.|
+|\c \__VLONG_MODEXP_OPERATOR_HARDWARE_ACCELERATOR__|Disables Mocana very long integer \c modexp() function (in vlong.c), and uses the equivalent code in the chip's hardware accelerator.|
+|\c \__VLONG_MODINV_OPERATOR_HARDWARE_ACCELERATOR__|Disables Mocana very long integer \c modinv() function (in vlong.c), and uses the equivalent code in the chip's hardware accelerator.|
+|\c ASM_SHIFT_LEFT_DEFINED|Enables assembly language implementation of big integer shift left operations, which is faster than the corresponding C function.|
+|\c ASM_SHIFT_RIGHT_DEFINED| Enables assembly language implementation of big integer shift right operations, which is faster than the corresponding C function.|
+|\c CSR_LINE_LENGTH|Maximum Base 64 encoded output length of PKS10 certificate request.|
+|\c FSL_SEC_SYNC_TIMEOUT_MS| (Default = 1000) Timeout in milliseconds for Freescale %crypto operations.|
+|\c IMMR_ADDRESS| (Freescale processors only) Internal Memory Map Register address necessary to enable hardware offload.|
+|\c kMaxAsnParseStackDepth| (Default = 40) Recursive call depth for a certificate.|
+|\c MACRO_MULTIPLICATION_LOOP|Enables custom assembly language code to handle big integer multiplication.|
+|\c MACRO_SHIFT_LEFT|Optimizes the shift-left functions of shlVlong() (in vlong.c) to assembly code.|
+|\c MACRO_SHIFT_RIGHT|Optimizes the shift-right functions of shrVlong() (in vlong.c) to assembly code.|
+|\c MACRO_SQR_LOOP|Enables custom assembly language code to handle big integer squares.|
+|\c MAX_DNE_STRING_LENGTH|Maximum number of bytes (excluding the terminating NULL) of the string containing a distinguished name element.|
+|\c DIGICERT_RNG_GET_PERSONALIZATION_STRING|Points to an arbitrary function that will return a personalization string. By default, this flag points to a function that returns a NULL personalization string.|
+|\c MULT_ADDCX|Optimizes big integer math operations; redefine based on your compiler.|
+
+The following table describes the set of platform-specific Mocana SoTP compilation flags, presented in
+alphabetical order:
+
+Flag | Description
+-----|------------
+|\c \__ATMOS_RTOS__|Enables ATM operating system support.|
+|\c \__ATMOS_TCP__|Abstraction layer flag that enables ATM operating system support.|
+|\c \__CYGWIN_RTOS__|Enables Cygwin operating system support.|
+|\c \__CYGWIN_TCP__|Abstraction layer flag that enables Cygwin operating system support.|
+|\c \__CYGWIN_UDP__|Abstraction layer flag that enables Cygwin operating system support.|
+|\c \__FUSION_TCP__|Abstraction layer flag enabling Fusion operating system support.|
+|\c \__FUSION_TCP_API_7_DOT_1__|Abstraction layer flag that enables Fusion 7.1 operating system support.|
+|\c \__LINUX_RTOS__|Enables Linux operating system support.|
+|\c \__LINUX_TCP__|Abstraction layer flag that enables Linux operating system support.|
+|\c \__LINUX_UDP__|Abstraction layer flag that enables Linux operating system support.|
+|\c \__MQX_RTOS__|Enables MQX operating system support.|
+|\c \__NETBURNER_RTOS__|Enables NetBurner operating system support.|
+|\c \__NETBURNER_TCP__|Abstraction layer flag that enables NetBurner operating system support.|
+|\c \__NETBURNER_UDP__|Abstraction layer flag that enables NetBurner operating system support.|
+|\c \__NNOS_RTOS__|Enables NNOS operating system support.|
+|\c \__NNOS_TCP__|Abstraction layer flag that enables NNOS operating system support.|
+|\c \__NNOS_UDP__|Abstraction layer flag that enables NNOS operating system support.|
+|\c \__NUCLEUS_RTOS__|Enables Nucleus operating system support.|
+|\c \__NUCLEUS_TCP__|Abstraction layer flag that enables Nucleus operating system support.|
+|\c \__NUCLEUS_UDP__|Abstraction layer flag that enables Nucleus operating system support.|
+|\c \__OSE_RTOS__|Enables OSE operating system support.|
+|\c \__OSE_TCP__|Abstraction layer flag that enables OSE operating system support.|
+|\c \__OSE_UDP__|Abstraction layer flag that enables OSE operating system support.|
+|\c \__OSX_RTOS__|Enables OS X operating system support.|
+|\c \__OSX_TCP__|Abstraction layer flag that enables OS X operating system support.|
+|\c \__OSX_UDP__|Abstraction layer flag that enables OS X operating system support.|
+|\c \__PSOS_RTOS__|Enables pSOS operating system support.|
+|\c \__PSOS_TCP__|Abstraction layer flag that enables pSOS operating system support.|
+|\c \__PSOS_UDP__|Abstraction layer flag that enables pSOS operating system support.|
+|\c \__QNX_RTOS__|Enables QNX operating system support.|
+|\c \__QNX_TCP__|Abstraction layer flag that enables QNX operating system support.|
+|\c \__QNX_UDP__|Abstraction layer flag that enables QNX operating system support.|
+|\c \__RTCS_TCP__|Abstraction layer flag that enables ARC operating system support.|
+|\c \__RTCS_UDP__|Abstraction layer flag that enables ARC operating system support.|
+|\c \__RTOS_ARC__|Defines the \c \__MQX_* and \c \__RTCS_* flags for ARC operating system support.|
+|\c \__RTOS_CYGWIN__|Defines the \c \__CYGWIN_* flags for Cygwin operating system support.|
+|\c \__RTOS_LINUX__|Defines the \c \__LINUX_* flags for Linux operating system support.|
+|\c \__RTOS_NETBURNER__|Defines the \c \__NETBURNER_* flags for NetBurner operating system support.|
+|\c \__RTOS_NNOS__|Defines the \c \__NNOS_* flags for NNOS operating system support.|
+|\c \__RTOS_NUCLEUS__|Defines the \c \__NUCLEUS_* flags for Nucleus operating system support.|
+|\c \__RTOS_OSE__|Defines the \c \__OSE_* flags for OSE operating system support.|
+|\c \__RTOS_OSX__|Defines the \c \__OSX_* flags for OS X operating system support.|
+|\c \__RTOS_PSOS__|Defines the \c \__PSOS_* flags for pSOS operating system support.|
+|\c \__RTOS_QNX__|Defines the \c \__QNX_* flags for QNX operating system support.|
+|\c \__RTOS_SOLARIS__|Defines the \c \__SOLARIS_* flags for Solaris operating system support.|
+|\c \__RTOS_THREADX__|Defines the \c \__THREADX_* flags for ThreadX operating system support.|
+|\c \__RTOS_VXWORKS__|Defines the \c \__VXWORKS_* flags for VxWorks operating system support.|
+|\c \__RTOS_WIN32__|Defines the \c \__WIN32_* flags for 32-bit Windows operating system support.|
+|\c \__SOLARIS_RTOS__|Enables Solaris operating system support.|
+|\c \__SOLARIS_TCP__|Abstraction layer flag that enables Solaris operating system support.|
+|\c \__SOLARIS_UDP__|Abstraction layer flag that enables Solaris operating system support.|
+|\c \__THREADX_RTOS__|Enables ThreadX operating system support.|
+|\c \__THREADX_TCP__|Abstraction layer flag that enables ThreadX operating system support.|
+|\c \__THREADX_UDP__|Abstraction layer flag that enables ThreadX operating system support.|
+|\c \__TRECK_TCP__|Abstraction layer flag that enables Treck operating system support.|
+|\c \__VXWORKS_RTOS__|Enables VxWorks operating system support.|
+|\c \__VXWORKS_TCP__|Abstraction layer flag that enables VxWorks operating system support.|
+|\c \__VXWORKS_UDP__|Abstraction layer flag that enables VxWorks operating system support.|
+|\c \__WIN32_RTOS__|Enables 32-bit Windows operating system support.|
+|\c \__WIN32_TCP__|Abstraction layer flag that enables 32-bit Windows operating system support.|
+|\c \__WIN32_UDP__|Abstraction layer flag that enables 32-bit Windows operating system support.|
+
+*/

@@ -1,0 +1,15 @@
+/** Information for DoxyS documentation generation.
+
+\page "HTTP Files"
+
+!!! HTTP Files
+
+The following file contains the externally accessible HTTP API 
+functions:
+\n
+- http.h
+- http.c
+- http_request.c
+- httpcc.c
+
+*/

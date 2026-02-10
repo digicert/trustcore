@@ -1,0 +1,60 @@
+/**
+@page       ipsec_provisioning Provisioning
+@ingroup    ipsec_pages
+@brief      Setting up security policies and (optionally) adding manual keying
+            between a device and peer.
+
+# Provisioning
+
+%Provisioning entails setting up security policies and (optionally) adding 
+manual keying between a device and peer.
+
+## Security Policies
+
+@moc_product IPsec uses security policies to implement packet filtering, 
+which determines whether to forward or discard a packet. By defining multiple 
+security policies, you can specify different levels of security for traffic 
+between different sources and destinations. For example, you could specify AES 
+encryption for traffic between peers A and B, and Blowfish between peers A and 
+C. IPsec policies are stored in the Security Policy Database (SPD) and SADB 
+(Security Association Database), both of which are maintained in memory as part 
+of the IPsec engine. Each policy (SPD entry) defines the traffic to be 
+protected, how to protect it, and with whom the protection is shared. Your 
+application should set up mirrored inbound and outbound policies for all 
+peer-to-peer communication paths.
+
+### Manually Adding Policies
+
+To manually add policies from within your application code, place the following 
+call after the call to IPSEC_init():
++ IPSEC_confAdd()&mdash;To add rules for the security policy database (SPD).
+
+### Scripting Policies
+
+An easier alternative to manually adding policies is to use the Mocana policy 
+scripting feature. Simply create a text file containing the desired policies, 
+and add the following call after the call IPSEC_init():
++ IPSEC_ParseScript()&mdash;To read a security policy configuration script and 
+configure corresponding IPsec policies.
+
+### Changing Policies
+
+Whenever a user changes a configuration, the following calls should be 
+made:
++ IPSEC_confDelete()&mdash;To delete a rule from the SPD.
++ IPSEC_confFlush()&mdash;To flush all rules from the SPD.
+
+## Manual Keys
+
+If you are using manual keys for provisioning, then your application should make 
+appropriate calls to IPsec key functions.
+
+The following call should typically be placed after the call IPSEC_init():
++ IPSEC_keyAdd()&mdash;To add manual keying (SA) between device and a peer.
+
+In addition, the following calls should be made whenever a user makes a 
+configuration change:
++ IPSEC_keyDelete()&mdash;To delete a specified manual key.
++ IPSEC_keyFlush()&mdash;To flush all manual keys from the system.
+
+*/

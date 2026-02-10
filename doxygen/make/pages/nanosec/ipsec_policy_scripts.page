@@ -1,0 +1,409 @@
+/**
+@page       ipsec_policy_scripts IPsec Policy Scripts
+@ingroup    ipsec_pages
+@brief      Use @moc_product IPsec policy scripts to configure IPsec policies.
+
+Mocana IPsec policy scripts are text files you create to configure IPsec 
+policies. Using these scripts is an easier alternative to manually building the 
+required structures within your application and making calls to add the policies 
+to the SPD.
+
+# Comments
+
+Scripts can be commented by using the \# character. All characters from the \# 
+to  the end of the line are ignored. You can include multiple comments in a
+script.
+
+# Constants
+
+Constants can be defined to make policy entries easier to maintain and read.
+
+To define constants, place them inside square brackets blocks in your script. 
+Each constant definition consists of a case-sensitive name and an optional 
+numeric value. If the value is not present, the name will be associated with the 
+value 0. For example: \n\n
+
+<tt>[ZERO] \# this declares a constant 'ZERO' with the value 0</tt> \n\n
+
+Values can be specified as single numbers or as IP addresses in dotted decimal 
+notation. For example, the following entry declares two constants: HOST1 (value 
+= 172.0.0.1) and https (value = 8080). \n\n
+
+<tt>[HOST1 172.0.0.1 https 8080]</tt> \n\n
+
+The following constants are predefined, but can be overridden by defining 
+constants with the same name: \n\n
+
+Name|Value
+----|-----|
+|telnet|23|
+|%http|80|
+|localhost|127.0.0.1|
+
+You can include multiple definition declarations for any constant in a script 
+but the value must be identical in every declaration. For example: \n\n
+
+<tt>
+&nbsp;&nbsp;&nbsp;&nbsp;[ https 8080 ] \n
+&nbsp;&nbsp;&nbsp;&nbsp;[ https 8080 ] \# OK \n
+&nbsp;&nbsp;&nbsp;&nbsp;[ https 8081 ] \# ERROR \n
+</tt>
+
+# Commands
+
+Each NanoSec entry in a script contains a single command, specified as follows: \n\n
+
+<tt>\<command>;</tt>
+
+## Syntax
+
+The NanoSec command syntax is closely based on the Linux \c setkey command. The
+complete syntax of a NanoSec command script entry is: \n\n
+
+<tt>
+{command} ::= {\<add> | flush | spdflush} \n
+
+&nbsp;&nbsp;&nbsp;&nbsp;add ::= add \<src> \<dst> \<protocol> \<spi> [\<extensions>] \<algorithm> \n
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;src ::= \<address> \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dst ::= \<address> \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address 
+::= \<IPv4 dot notation> | \<IPv6 colon notation> | 
+\<String of recognized host names, customizable by integration> \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;protocol ::= esp | ah \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spi ::= 
+\<security parameter index number; a decimal number, or a hexadecimal number with a 0x prefix> \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extensions ::= -m \<mode> \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mode 
+::= transport | tunnel | any \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;algorithm 
+::= -A \<auth_algname> \<key> [-E \<encr_algname> \<key>] \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auth_algname ::= hmac-md5 | 
+hmac-sha1 | aes-xcbc-mac | hmac-sha256 | hmac-sha384 | hmac-sha512 \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encr_algname ::= aes-cbc | 
+des-cbc | 3des-cbc | blowfish-cbc | aes-ctr \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key ::= \<double-quoted character string> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\<"0x" followed by a series of hexadecimal digits> \n
+</tt>
+
+## Examples
+
+Use the following examples (from the Linux \c setkey man page) as models for your
+entries: \n\n
+
+<tt>
+\# Clear all SADB entries (IPsec keys). \n
+flush ; \n\n
+
+\# Clear all SPD entries (IPsec policies). \n
+spdflush ; \n\n
+
+\# Add an SADB entry (IPsec key). \n
+add 10.0.11.41 10.0.11.33 esp 0x10001 transport \n
+&nbsp;&nbsp;&nbsp;&nbsp;-E des-cbc 0x3ffe05014819ffff \n
+&nbsp;&nbsp;&nbsp;&nbsp;-A hmac-md5 "authentication!!" ; \n\n
+
+add 3ffe:501:4819::1 3ffe:501:481d::1 esp 123457 \n
+&nbsp;&nbsp;&nbsp;&nbsp;-E des-cbc 0x3ffe05014819ffff ; \n\n
+</tt>
+
+
+# Policies
+
+Each IPsec policy entry in a script contains three parts specified as follows: \n\n
+
+<tt>{pattern} \<action> {properties};</tt> \n\n
+
+The \c pattern and \c properties parts are name-value pairs where name and value
+are separated by a space, tab, or newline character. Multiple name-value pairs
+are separated by a space, tab, or newline character. The beginning and end of
+the \c pattern and \c properties identifiers are marked by { and } respectively.
+An unspecified name-value pair in the pattern is treated as a wildcard. Wildcard
+entries match any corresponding entry in the datagram.
+
+## Syntax
+
+The Mocana SoT Platform policy entry syntax is closely based on the \c ipsecconf
+command-line  tool from the Solaris 8 IPsec implementation. The complete syntax
+of a Mocana SoT Platform policy entry is: \n\n
+
+<tt>
+policy ::= { \<pattern> } \<action> { \<properties> } \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;pattern ::=  \<pattern_name_value_pair>* \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;action ::= apply | permit | bypass | drop \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;properties ::= {\<prop_name_value_pair>} \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;pattern_name_value_pair ::= \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;saddr \<address>[\<prefix>] | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sport \<port> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daddr \<address>[\<prefix>] |\n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dport \<port> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ulp \<protocol> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dir \<dir_val> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;raddr \<address>[\<prefix>] | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rport \<port> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;laddr \<address>[\<prefix>] | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lport \<port> \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;address ::=  \<IPv4 dot notation> | \<IPv6 colon notation> | 
+\<String of recognized host names, customizable by integration> \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;prefix ::= \<number> \n\n
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;port ::= \<number> | \<String of recognized services, 
+such as telnet, %http> \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;protocol ::= \<number> | \<String of recognized 
+protocols, such as tcp, udp, icmp> \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;dir_val ::= out | in | out_mirrored | in_mirrored | mirrored \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;prop_name_value_pair ::= \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auth_algs \<auth_alg> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encr_algs \<encr_alg> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encr_auth_algs \<auth_alg> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tsrc \<number> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tdst \<number> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keylength \<number> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;traddr \<number> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tladdr \<number> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lifetime_secs \<number> | \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lifetime_bytes \<number> \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;auth_alg ::=  \<auth_algname>\n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auth_algname ::= any | md5 | 
+sha1 | sha256 | sha384 | sha512 | aes \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;encr_alg ::= \<encr_algname> \n
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encr_algname ::= any | aes | des
+ | 3des | blowfish | gcm | gmac \n\n
+
+&nbsp;&nbsp;&nbsp;&nbsp;number ::= \< 0 | 1 | 2 ... 9> \<number> \n
+</tt>
+
+## Pattern Name-Value Description
+
+Policy entries may contain the following pairs in the \c pattern_name_value_pair 
+field. Each pair may appear only once in given policy entry. For the 
+corresponding structure fields, refer to the $struct \c ipsecConf definition in 
+ipsecconf.h.
+
+### saddr/plen
+The value that follows is the source  address of the datagram with the prefix 
+length. Only \c plen leading bits of the source address of the packet will be 
+matched. The \c plen value is optional; if not specified, 32 will be used. The 
+value pair is assigned to the $dwSrcIP$ and \c dwSrcIPEnd fields in the 
+\c ipsecConf structure.
+
+### daddr/plen
+The value that follows is the destination address of the datagram with the 
+prefix length. Only \c plen leading bits of the destination address of the packet 
+will be matched. The \c plen value is optional; if not specified, 32 will be 
+used. 
+The value pair is assigned to the \c dwDestIP and \c dwDestIPEnd fields in the 
+\c ipsecConf structure.
+
+### raddr/plen
+The value that follows is either the source or destination address of the 
+datagram with the prefix length. This value is on the right side of a mirrored 
+pattern name entry. Only \c plen leading bits of the source address of the packet 
+will be matched. The \c plen value is optional; if not specified, 32 will be 
+used. 
+The value pair is assigned to the \c dwSrcIP and \c dwSrcIPEnd fields in the 
+\c ipsecConf structure.
+
+### laddr/plen
+The value that follows is either the source or destination address of the 
+datagram with the prefix length. This value is on the left side of a mirrored 
+pattern name entry. Only \c plen leading bits of the source address of the packet 
+will be matched. The \c plen value is optional; if not specified, 32 will be 
+used. 
+The value pair is assigned to the \c dwSrcIP and \c dwSrcIPEnd fields in the 
+\c ipsecConf structure.
+
+### sport
+The value that follows is the source port of the datagram. The value is assigned 
+to the \c wSrc field in the \c ipsecConf structure.
+
+### dport
+The value that follows is the destination port of  the datagram. The value is 
+assigned to the \c wDestPort field in the \c ipsecConf structure.
+
+### rport
+The value that follows is either the source or destination port of the datagram. 
+This value is on the right side of a mirrored pattern name entry. The value is 
+assigned to the \c wSrc field in the \c ipsecConf structure.
+
+### lport
+The value that follows is either the source or destination port of the datagram. 
+This value is on the left side of a mirrored pattern name entry. The value is 
+assigned to the $wSrc$ field in the \c ipsecConf structure.
+
+### ulp
+The value that follows is the Upper Layer Protocol that this entry should be 
+matched against. The value is assigned to the $oProto$ field in the \c ipsecConf 
+structure. Refer to ipsec_protos.h for possible values.
+
+### dir
+Values following this specify whether this entry is for outbound or inbound 
+datagram. The value is assigned to the $oDir$ field in the \c ipsecConf 
+structure.
+
+@note       This entry is not needed when the action is "apply" or "permit".
+
+Valid values are the following strings from ipsec_defs.h:
+- <b>out</b>&mdash;Designates the policy entry for outbound datagrams only.
+- <b>in</b>&mdash;Designates the policy entry for inbound datagrams only.
+- <b>out_mirrored</b>&mdash;Same as \c out, except a <em>mirrored policy entry</em>
+  is also created that matches datagrams in the opposite direction with the same
+  addresses and ports.
+- <b>in_mirrored</b>&mdash;Same as \c in, except a <em>mirrored policy entry</em> is
+  also  created.
+- <b>mirrored</b>&mdash;Same as \c out_mirrored and \c in_mirrored. Should be
+  used only when the action field value is \c apply or \c permit (not \c bypass
+  or \c drop).
+
+## Action Description
+The action field is mandatory and comes between the pattern and properties. Its 
+value is matched to \c oAction in <tt>struct ipsecConf</tt>. Valid values are: \n\n
+
+- <b>ipsec</b>&mdash;Mirrored apply and permit policies for datagrams described by 
+  the  properties. Defining a mirrored policy is equivalent to defining separate
+  apply and permit policies. \n\n
+
+@note   The use of the mirrored "ipsec" definition is highly recommend 
+over using separate "apply" and "permit" definitions.
+
+As an example, if the following policy is defined: \n\n
+<tt>
+&nbsp;&nbsp;&nbsp;&nbsp;{laddr HOST1 raddr HOST2 ulp icmp} ipsec {encr_algs any encr_auth_algs 
+any}</tt> \n\n
+
+Equivalent separate policies would be: \n\n
+<tt>
+&nbsp;&nbsp;&nbsp;&nbsp;{saddr HOST1 daddr HOST2 ulp icmp} apply {encr_algs any encr_auth_algs 
+any} \n
+&nbsp;&nbsp;&nbsp;&nbsp;{saddr HOST2 daddr HOST1 ulp icmp} permit {encr_algs any encr_auth_algs 
+any}
+</tt> \n\n
+
++ <b>apply</b>&mdash;Apply IPsec to the datagram as described by the properties, if 
+the pattern matches the datagram. If apply is given, the pattern is matched only 
+on the  outbound datagram. \n\n
+
++ <b>permit</b>&mdash;Permit the datagram if the pattern matches the incoming 
+datagram  
+and satisfies the constraints described by the properties. If it does not 
+satisfy the properties, discard the datagram. If permit is given, the pattern 
+is matched only for inbound datagrams. \n\n
+
++ <b>bypass</b>&mdash;Bypass any policy checks if the pattern matches the datagram. 
+The pattern's dir value determines whether the check is done on outbound or 
+inbound datagrams. \n\n
+
++ <b>drop</b>&mdash;Drop any packets that match the pattern. The pattern's dir
+  value determines whether the check for matches is performed on outbound or
+  inbound datagrams.
+
+## Properties Name-Value Description
+Policy entries may contain the following pairs in the \c prop_name_value_pair 
+field. Each pair may appear only once in given policy entry. For the 
+corresponding structure fields, refer to the <tt>struct sainfo</tt> definition in 
+ipsecconf.h.
+
+The following rules are applied in the order given to determine what value is 
+assigned to the \c oSecuProto field in the \c sainfo structure:
+
++ If the policy entry contains \c encr_algs but not \c encr_auth_algs, the IPsec 
+SPD will use an ESP SA, regardless of whether the SA has an authentication 
+algorithm.
++ If the policy entry contains \c encr_auth_algs but not \c encr_algs, \c null 
+encryption will be provided, which is equivalent to \c encr_algs with \c NULL for
+outbound and  inbound datagrams.
++ If the policy entry contains both \c encr_algs and \c encr_auth_algs, ESP header 
+with integrity checksum will be present on outbound datagrams and the same will 
+be verified for inbound datagrams.
++ If the policy entry contains \c auth_algs, the system will use an AH SA. If any 
+of the above rules apply (that is, if either or both \c encr_algs and 
+\c encr_auth_algs is 
+present), ESP SA is also used. Then an SA bundle will be used (that is, the 
+\c oSaLen field in the \c ipsecConf structure is set to 2 - ESP followed by AH).
+
+### auth_algs
+An acceptable value following this implies that IPsec AH header will be present. 
+Values following this describe the authentication algorithms that will be used. 
+Valid values are:
++ md5
++ aes
++ sha1
++ sha256
++ sha384
++ sha512
++ any
+
+### encr_algs
+An acceptable value following this implies that IPsec ESP header will be 
+present. The value following this describes the encryption algorithms that will 
+be used. Valid values are:
++ des
++ 3des
++ aes
++ blowfish
++ gcm (must not specify \c encr_auth_algs in the same policy entry)
++ gmac (must not specify \c encr_auth_algs in the same policy entry)
++ any
+
+### encr_auth_algs
+An acceptable value following \c encr_auth_algs implies that the IPsec ESP header 
+will be present. The values following \c encr_auth_algs describe the authentication 
+algorithms that will be used. Valid values are the following (identical to those 
+for \c auth_algs):
++ md5
++ aes
++ sha1
++ sha256
++ sha384
++ sha512
++ any
+
+### tdst
+This entry specifies the destination IP address for tunneling mode and sets the 
+\c oMode field in the \c ipsecConf structure.
+
+### tsrc
+This entry specifies the source IP address for tunneling mode and sets the 
+\c oMode field in the \c ipsecConf structure.
+
+### keylength
+An acceptable value following keylength implies that the encryption algorithm 
+identified by the \c encr_algs will use the specified key length (in bytes).
+
+### tladdr
+This entry specifies the IP address on the left side of a mirrored policy 
+specification for tunneling mode and sets the \c oMode field in the \c ipsecConf
+structure.
+
+### traddr
+This entry specifies the IP address on the right side of a mirrored policy 
+specification for tunneling mode and sets the \c oMode field in the \c ipsecConf
+structure.
+
+### lifetime_secs
+Values following this specify the life time duration of the child SA, in
+seconds.
+
+### lifetime_bytes
+Values following this specify the life time duration of the child SA, in
+bytes transported.
+
+\n\n
+
+*/

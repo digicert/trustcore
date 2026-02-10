@@ -1,0 +1,49 @@
+/**
+@page 	nas_port_types NAS (Network Access Server) Port Types
+@brief	When you build a RADIUS packet, it must contain a value for the port type 
+attribute as defined in RFC&nbsp;2685. You can use the numbers explicitly or create 
+your own definitions corresponding to the appropriate values. Mocana sample code 
+includes two user definitions, both set to port type 19: 
+\c TTLS_NAS_PORT_TYPE_IEEE_802_11 and \c EXAMPLE_NAS_PORT_TYPE_IEEE_802_11.
+
+The following table lists the NAS port type values to use for RADIUS attribute \c
+61 . For full reference citation, refer to http://www.iana.org/assignments/radius-types.
+
+
+|Number|Port Type|Reference
+|------|---------|---------
+|0|Async|&nbsp;
+|1|Sync|&nbsp;
+|2|ISDN Sync|&nbsp;
+|3|ISDN Async V.120|&nbsp;
+|4|ISDN Async V.110|&nbsp;
+|5|Virtual|&nbsp;
+|6|PIAFS|&nbsp;
+|7|HDLC Clear Channel|&nbsp;
+|8|X.25|&nbsp;
+|9|X.75|&nbsp;
+|10|G.3 Fax|&nbsp;
+|11|SDSL - Symmetric DSL|&nbsp;
+|12|ADSL-CAP - Asymmetric DSL, Carrierless Amplitude Phase Modulation|&nbsp;
+|13|ADSL-DMT - Asymmetric DSL, Discrete Multi-Tone|&nbsp;
+|14|IDSL - ISDN Digital Subscriber Line|&nbsp;
+|15|Ethernet|&nbsp;
+|16|xDSL - Digital Subscriber Line of unknown type|&nbsp;
+|17|Cable|&nbsp;
+|18|Wireless - Other|&nbsp;
+|19|Wireless - IEEE 802.11|&nbsp;
+|20|Token-Ring|[RFC&nbsp;3580]
+|21|FDDI|[RFC&nbsp;3580]
+|22|Wireless - CDMA2000|[McCann]
+|23|Wireless - UMTS|[McCann]
+|24|Wireless - 1X-EV|[McCann]
+|25|IAPP|[IEEE 802.11f][Kerry]
+|26|FTTP - Fiber to the Premises|[Nyce]
+|27&ndash;29|Unassigned|&nbsp;
+|30|PPPoA - PPP over ATM|[RFC-zorn-radius-port-type-04.txt]
+|31|PPPoEoA - PPP over Ethernet over ATM|[RFC-zorn-radius-port-type-04.txt]
+|32|PPPoEoE - PPP over Ethernet over Ethernet|[RFC-zorn-radius-port-type-04.txt]
+|33|PPPoEoVLAN - PPP over Ethernet over VLAN|[RFC-zorn-radius-port-type-04.txt]
+|34|PPPoEoQinQ - PPP over Ethernet over IEEE 802.1QinQ|[RFC-zorn-radius-port-type-04.txt]
+
+*/

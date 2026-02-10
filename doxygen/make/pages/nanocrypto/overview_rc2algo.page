@@ -1,0 +1,108 @@
+/**
+@page       overview_rc2algo    RC2 Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_about_rc2algpo   About the RC2 Cipher
+
+The RC2 cipher is a block cipher that uses a 64-bit block and a key with a
+length from 8 to 128 bits. For details about the RC2 algorithm, refer to
+RFC&nbsp;2268, <em>A Description of the RC2(r) Encryption Algorithm</em>.
+
+@warning    The RC2 cipher is vulnerable to a related-key attack using 234
+            chosen plaintexts. For more information about this vulnerability,
+            refer to the following documentation:\n
+            + John Kelsey, Bruce
+            Schneier, David Wagner: Related-key cryptanalysis of 3-WAY,
+            Biham-DES, CAST, DES-X, NewDES, RC2, and TEA. ICICS 1997: 233–246.
+            This paper is available at:
+            http://www.schneier.com/paper-relatedkey.html.
+
+The NanoCrypto RC2 API requires that the key length be specified using a count
+of bytes. That is, valid key lengths are from 1 to 16, with 16 (128 bits)
+being the expected value.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_rc2algo_usage     RC2 Modal Usage
+
+The NanoCrypto RC2 API implements the RC2 cipher in CBC mode. No other modes
+are directly supported.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_rc2algo_encrypt_decrypt    RC2-CBC Encryption and Decryption
+
+To apply the RC2 cipher in CBC mode, the NanoCrypto DoRC2() function first
+checks that the input buffer is a multiple of the RC2 block size, 64 bits.
+If the check fails, the function returns an error. If the check succeeds,
+DoRC2() breaks the input plaintext into a series of 64-bit blocks. For the
+first block in the plaintext, DoRC2() XORs the block with an initialization
+vector, and then encrypts the result. For all subsequent blocks in the
+plaintext, DoRC2() XORs the current plaintext block with the ciphertext
+produced from the encryption of the previous block, and then it encrypts the
+block.
+
+The process of XORing each plaintext block with a different value (either
+the initialization vector or the ciphertext of the previous block)
+transforms plaintext blocks before encryption, which ensures different
+ciphertext results from identical plaintext. That is, the RC2 mode is good
+at hiding larger patterns in the ciphertext.
+
+To decrypt a ciphertext block in CBC mode, the DoRC2() function first checks
+that the input buffer is a multiple of the RC2 block size, 64 bits. If the
+check fails, the function returns an error. If the check succeeds, DoRC2()
+reverses the encryption process. For the first block in the ciphertext,
+DoRC2() decrypts the cipher text, then it XORs the result with the
+initialization vector. For all subsequent blocks, DoRC2() decrypts the
+block, then XORs it with the ciphertext of the previous block.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_rc2algo     Usage Caveats for RC2 CBC Mode
+
+RC2 in CBC mode requires that all buffers input for encryption or
+decryption have a size that is an even multiple of the RC2 block size,
+64 bits. If the buffer is smaller than an even multiple of 64 bits, you must
+pad the buffer before submitting it to the DoRC2() function. To
+prevent leakage of information from the first block, CBC mode requires that
+you never reuse an initialization vector under the same key. Therefore, to
+encrypt a series of messages under the same Blowfish key in CBC mode, you
+must base the initialization vector on a counter that is guaranteed not to
+repeat for as many \e messages (not \e blocks) as are to be encrypted under
+that key.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_rc2algo_IVs     Generating Initialization Vectors (IVs)
+
+As input, CBC mode requires an <em>initialization
+vector (IV)</em>, sometimes referred to as a \e nonce&mdash;a value used
+"not more than once". The generation of this IV is external from the
+NanoCrypto API functions; that is, you must handle it within your
+application. Further, the message recipient must know the IV in order to
+decrypt the message. For the CBC mode, the IV need not be secret, which
+simplifies the problem of getting the IV to the recipient. However, to save
+bandwidth, you might prefer a method in which the recipient independently
+generates the IV, although such a method might not be suitable for the CBC
+mode, for which the IV must be unpredictable for any given plaintext.
+
+@warning    Appropriately managing initialization vectors is critical to the
+            confidentiality of the modes that depend on IVs. Mismanaging IVs
+            can destroy confidentiality.
+
+As a source of unique nonce values, you can use a counter (as described in
+Appendix B of NIST Special Publication 800-38A, 2001 Edition) or a message
+number. Another commonly used method is to generate a random data block
+using a FIPS-approved (and therefore cryptographically strong) random number
+generator to use for the nonce. In addition, IVs for CFB mode should be
+unique for all messages encrypted under the same key. Reusing an IV leaks
+information on the first block of plaintext, and on any prefix shared by the
+two messages.
+*/

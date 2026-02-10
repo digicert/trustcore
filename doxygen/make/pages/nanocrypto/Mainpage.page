@@ -1,0 +1,31 @@
+/**
+@mainpage   Home
+
+This set of Web pages make up the <i>@moc_doc_name</i> and is available only to licensed @moc_name users. It contains background information such as lists of files and functions, as well as details for every externally-accessible @moc_name API function.
+
+All corresponding product documents are available in the DigiCert Developer Portal at https://dev.digicert.com. If you cannot log in to this site, contact DigiCert support at https://www.digicert.com/support.
+
+## Browser Support
+This <em>API Reference</em> can be viewed using recent versions (within the
+ last several years) of the following major browsers:
+
+- Firefox&reg;
+- Microsoft&reg; Internet Explorer&reg;
+- Safari&reg;
+- Google Chrome&trade; browser
+
+Other browsers and older versions might work but have not been tested, and might
+not correctly display dynamic content such as the navigation tree and
+client-side searching.
+
+(Doxygen outputs XHTML 1.0 transitional (or HTML 4.01) compatible output.)
+
+## See also
++ @subpage  overview &mdash;Background information about each @moc_platform component.
++ @subpage  interoperability &mdash;Lists of supported operating systems, protocols, standards, and export certifications.
++ @subpage  sotp_flowcharts &mdash;Workflows for @moc_product.
++ @subpage  compilation_flags &mdash;List of flags to customize @moc_platform.
++ @subpage  legal_notices &mdash;Copyright information and legal notices.
++ @subpage  export &mdash;CCATS numbers for @moc_platform components.
+
+*/

@@ -1,0 +1,213 @@
+/**
+@page       overview_pkcs7    PKCS&nbsp;\#7 Overview
+@ingroup    crypto_pages
+@details
+
+<!-- -------------------------------------------------------------------- -->
+
+@note       RFC&nbsp;2315 has been superceded by more recent RFCs. As of this
+            document's writing (for SoT Platform 6.4), the most recent RFC
+            is RFC&nbsp;5652. The objects defined in RFC&nbsp;5652 are
+            different from the objects defined in RFC&nbsp;2315. If you are
+            working with RFC&nbsp;5632 objects, use the functions that are
+            documented in cms.dxd (for functions declared and defined in in
+            cms.h and cms.inc). The cms.{h,inc} API is included in pkcs7.c
+            if the \c \__ENABLE_DIGICERT_CMS__ and \c \__ENABLE_DIGICERT_PKCS7__
+            flags are defined in moptions.h.
+
+Using \c ContentInfo objects in PKCS&nbsp;\#7 messages, the participants in a
+conversation can exchange simple data objects, signed data objects, enveloped
+data objects, and so on. This file's API lets you create, parse, and otherwise
+manage these \c ContentInfo objects.
+
+@note       This API does \b not include functions for managing simple data
+            objects, which RFC&nbsp;2315 defines as simple \c OCTET STRING
+            objects.
+
+### About RFC&nbsp;2315 Objects
+
+<b>ContentInfo Object</b>\n
+RFC&nbsp;2315 defines a \c ContentInfo object as:
+<pre>
+    ContentInfo ::= SEQUENCE {
+        contentType ContentType,
+        content
+            [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
+
+    ContentType ::= OBJECT IDENTIFIER
+</pre>
+The \c ContentType \c OBJECT_IDENTIFIER is defined in Section 14 of
+RFC&nbsp;2315 as:
+<pre>
+    data OBJECT IDENTIFIER ::= { pkcs-7 1 }
+        signedData OBJECT IDENTIFIER ::= { pkcs-7 2 }
+        envelopedData OBJECT IDENTIFIER ::= { pkcs-7 3 }
+        signedAndEnvelopedData OBJECT IDENTIFIER ::= { pkcs-7 4 }
+        digestedData OBJECT IDENTIFIER ::= { pkcs-7 5 }
+        encryptedData OBJECT IDENTIFIER ::= { pkcs-7 6 }
+</pre>
+
+<b>EnvelopedData Ojbect</b>\n
+RFC&nbsp;2315 defines the \c EnvelopedData object as follows:
+<pre>
+    EnvelopedData ::= SEQUENCE {
+        version Version,
+        recipientInfos RecipientInfos,
+        encryptedContentInfo EncryptedContentInfo }
+
+    RecipientInfos ::= SET OF RecipientInfo
+
+    EncryptedContentInfo ::= SEQUENCE {
+        contentType ContentType,
+        contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
+        encryptedContent[0] IMPLICIT EncryptedContent OPTIONAL }
+
+    EncryptedContent ::= OCTET STRING
+
+    RecipientInfo ::= SEQUENCE {
+        version Version,
+        issuerAndSerialNumber IssuerAndSerialNumber,
+        keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+        encryptedKey EncryptedKey }
+
+    EncryptedKey ::= OCTET STRING
+</pre>
+To populate a \c ContentType object with an \c EnvelopedData object, use code
+similar to the following:
+@code
+DER_ITEMPTR pContentInfo=NULL, pEnvelopedData;
+DER_AddSequence(NULL, &pContentInfo);
+DER_AddOID(pContentInfo, pkcs7_envelopedData_OID, NULL);
+DER_AddTag(pContentInfo, 0, &pEnvelopedData);
+@endcode
+
+<b>SignedData Object</b>\n
+RFC&nbsp;2315 defines the \c SignedData object as follows:
+<pre>
+    SignedData ::= SEQUENCE {
+        version Version,
+        digestAlgorithms DigestAlgorithmIdentifiers,
+        contentInfo ContentInfo,
+        certificates [0] IMPLICIT ExtendedCertificatesAndCertificates OPTIONAL,
+        crls [1] IMPLICIT CertificateRevocationLists OPTIONAL,
+        signerInfos SignerInfos }
+
+    DigestAlgorithmIdentifiers ::=
+
+        SET OF DigestAlgorithmIdentifier
+
+        SignerInfos ::= SET OF SignerInfo
+
+        SignerInfo ::= SEQUENCE {
+            version Version,
+            issuerAndSerialNumber IssuerAndSerialNumber,
+            digestAlgorithm DigestAlgorithmIdentifier,
+            authenticatedAttributes [0] IMPLICIT Attributes OPTIONAL,
+            digestEncryptionAlgorithm DigestEncryptionAlgorithmIdentifier,
+            encryptedDigest EncryptedDigest,
+            unauthenticatedAttributes [1] IMPLICIT Attributes OPTIONAL }
+
+    EncryptedDigest ::= OCTET STRING
+</pre>
+To populate a \c ContentType object with a \c SignedData object, use code
+similar to the following:
+@code
+DER_ITEMPTR pContentInfo=NULL, pSignedData;
+DER_AddSequence(NULL, &pContentInfo);
+DER_AddOID(pContentInfo, pkcs7_signedData_OID, NULL);
+DER_AddTag(pContentInfo, 0, &pSignedData);
+@endcode
+
+<b>DigestedData Object</b>\n
+RFC&nbsp;2315 defines the \c DigestedData object as follows:
+<pre>
+    DigestedData ::= SEQUENCE {
+        version Version,
+        digestAlgorithm DigestAlgorithmIdentifier,
+        contentInfo ContentInfo,
+        digest Digest }
+
+        Digest ::= OCTET STRING
+
+        ContentInfo ::= SEQUENCE {
+            contentType ContentType,
+            content
+                [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
+</pre>
+To populate a \c ContentType object with a \c DigestedData object, use code similar to the following:
+@code
+DER_ITEMPTR pDigestedInfo=NULL, pDigestedData;
+DER_AddSequence(NULL, &pDigestedInfo);
+DER_AddOID(pDigestedInfo, pkcs7_digestedData_OID, NULL);
+DER_AddTag(pDigestedInfo, 0, &pDigestedData);
+@endcode
+
+<b>SignerInfo Object</b>\n
+RFC&nbsp;2315 defines the \c SignerInfo object as follows:
+<pre>
+    SignerInfo ::= SEQUENCE {
+        version Version,
+        issuerAndSerialNumber IssuerAndSerialNumber,
+        digestAlgorithm DigestAlgorithmIdentifier,
+        authenticatedAttributes
+            [0] IMPLICIT Attributes OPTIONAL,
+        digestEncryptionAlgorithm DigestEncryptionAlgorithmIdentifier,
+        encryptedDigest EncryptedDigest,
+        unauthenticatedAttributes
+           [1] IMPLICIT Attributes OPTIONAL }
+
+    EncryptedDigest ::= OCTET STRING
+</pre>
+
+### Structures
+The PKCS&nbsp;\#7 API defines the following structures and structure pointer:
++ \c Attribute, a structure that stores attribute information for a \c
+    SignedData object.
++ \c signerInfo, a structure that stores information  for a \c SignedData object.
++ \c signerInfoPtr, a pointer to a \c signerInfo structure.
++ \c PKCS7_Callbacks, stores the PKCS&nbsp;\#7 callbacks required by the SoT Platform PKCS&nbsp;\#12 convenience API.
+
+### Setting up a CStream and Getting the ASN1_ITEM for the Root ASN.1 Object
+A \c CStream contains a memory-resident DER-encoded ASN.1 object, which is
+an inconvenient object from which to extract data or to which to add data.
+However, you can call ASN1_Parse() for a CStream to parse the CStream and
+create a tree of ASN1_ITEM structures that maps out the content of the
+CStream. ASN1_Parse() also provides a pointer to the address of the root
+ASN1_ITEM structure in this tree.
+
+@note       The ASN1_ITEM structures returned from ASN1_Parse() do not store
+            data extracted from the CStream. Instead, the structures store
+            offsets and data lengths that you can use to find specific content in
+            the \c CStream.
+
+To set up a \c CStream and parse it, use code modeled on the following:
+
+@code
+ubyte* signedDataFile = FILE_PATH("myDerEncodedSignedDataFile.der");
+ubyte  *pSignedDataFile=NULL;
+ubyte4 signedDataFileLen;
+CStream s;
+MemFile memFile;
+ASN1_ITEMPTR pRootItem=NULL;
+
+if (OK > (status = DIGICERT_readFile(signedDataFile, &pSignedDataFile,
+                                    &signedDataFileLen)))
+    { handle error }
+MF_attach(&memFile, signedDataFileLen, (ubyte*) pSignedDataFile);
+CS_AttachMemFile(&s, &memFile );
+if (OK > (status = ASN1_Parse(s, &pRootItem)))
+    { handle error }
+@endcode
+
+This code snippet creates a \c CStream for a \c SignedData object. However, this
+code is not specific to any given object type. Depending on the content of the
+file that is read, the code could create a \c CStream containing an
+enveloped data object (\c EnvelopedData), a signed and enveloped data object
+(\c SignedObject), a digested data object, or an encrypted data object.
+Therefore, you must change the code snippet's variable names to accurately
+indicate their content.
+
+@warning    The preceding code snippet contains memory leaks. In your code, be
+            sure to call DIGICERT_freeReadFile() to free the allocated memory.
+
+*/

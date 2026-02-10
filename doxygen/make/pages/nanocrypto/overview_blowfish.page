@@ -1,0 +1,101 @@
+/**
+@page       overview_blowfish   Blowfish Overview
+
+@details
+
+@todo_eng_review    All the explanatory write-up was added after the 5.3.1
+                    release, and should be eng-reviewed for accuracy and
+                    appropriateness.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_about_blowfish   About the Blowfish Cipher
+
+The Blowfish cipher is a symmetric block cipher with a fixed block size of 
+64 bits, which is the size of both the input block and the output block. It 
+takes a variable-length key, from 32 bits to 448 bits. The variable key length
+lets you use the Blowfish cipher as a drop-in replacement for DES or IDEA.
+
+@todo_eng_review    Does "size of both" mean the "sum of the two" or that "the input block is 64 bits, and the output block is 64 bits"?
+
+The Blowfish cipher consists of two phases:
+-# <b>Key-expansion phase.</b> The cipher expands the input key into multiple
+    subkey arrays that total 4,168 bytes.
+-# <b>Data-encryption phase.</b> The cipher applies a 16-round Feistel network
+    transformation on the input data.
+
+For detailed information about the Blowfish cipher, refer to the following paper:
++ <em>Description of a New Variable-Length Key, 64-Bit Block Cipher 
+    (Blowfish)</em>,  Bruce Schneier. Fast Software Encryption, Cambridge 
+    Security Workshop Proceedings (December 1993), Springer-Verlag, 1994, pp. 
+    191-204.
+This paper is available at: http://www.schneier.com/paper-blowfish-fse.html.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_blowfish_usage     Blowfish Modal Usage
+
+The NanoCrypto Blowfish API implements the cipher in CBC mode. No other modes are directly supported.
+
+@note   Blowfish in CBC mode can provide confidentiality but not
+        authentication; therefore it is unsuitable for stream data.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_caveats_blowfish     Usage Caveats for Blowfish CBC Mode
+
+Blowfish in CBC mode requires that all buffers input for encryption or 
+decryption have a size that is an even multiple of the Blowfish block size, 
+64 bits. If the buffer is smaller than an even multiple of 64 bits, you must 
+pad the buffer before submitting it to the DoBlowfish() function. To 
+prevent leakage of information from the first block, CBC mode requires that 
+you never reuse an initialization vector under the same key. Therefore, to 
+encrypt a series of messages under the same Blowfish key in CBC mode, you 
+must base the initialization vector on a counter that is guaranteed not to 
+repeat for as many \e messages (not \e blocks) as are to be encrypted under 
+that key.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_blowfish_cbc_padding     Blowfish-CBC Mode Data Padding
+
+For CBC mode, the input for encryption or decryption must be an even 
+multiple of the block size. In the NanoCrypto implementation of this mode, 
+if the input data does not meet this requirement, processing stops and the 
+function returns an error. Therefore, you should check the size of data 
+buffers before submitting them data to Nanocrypto functions that  
+implement CBC mode. If the data is not an even multiple of the block 
+size, you must pad it. You can pad the data however you want, and there are 
+a number of schemes from which you can choose. Step 3.1 in RFC&nbsp;1321 
+describes a common bit-oriented scheme. If you would prefer a byte-oriented 
+padding scheme, section 6.3 of RFC 5652 provides one. You might also want to 
+consider the byte-oriented scheme provided in ANSI X.923.
+
+<!-- -------------------------------------------------------------------- -->
+
+@section    section_blowfish_IVs     Generating Initialization Vectors (IVs)
+
+As input, CBC mode requires an <em>initialization
+vector (IV)</em>, sometimes referred to as a \e nonce&mdash;a value used
+"not more than once". The generation of this IV is external from the
+NanoCrypto API functions; that is, you must handle it within your
+application. Further, the message recipient must know the IV in order to
+decrypt the message. For the CBC mode, the IV need not be secret, which
+simplifies the problem of getting the IV to the recipient. However, to save
+bandwidth, you might prefer a method in which the recipient independently
+generates the IV, although such a method might not be suitable for the CBC
+mode, for which the IV must be unpredictable for any given plaintext.
+ 
+@warning    Appropriately managing initialization vectors is critical to the
+            confidentiality of the modes that depend on IVs. Mismanaging IVs
+            can destroy confidentiality.
+
+As a source of unique nonce values, you can use a counter (as described in
+Appendix B of NIST Special Publication 800-38A, 2001 Edition) or a message
+number. Another commonly used method is to generate a random data block
+using a FIPS-approved (and therefore cryptographically strong) random number
+generator to use for the nonce. In addition, IVs for CFB mode should be
+unique for all messages encrypted under the same key. Reusing an IV leaks
+information on the first block of plaintext, and on any prefix shared by the
+two messages.
+*/

@@ -1,0 +1,326 @@
+/** 
+@dir    ssh
+@brief  NanoSSH server (ssh) functions.
+*/
+
+/* main tree */
+
+/**
+@defgroup   sshs_tree     NanoSSH Server
+
+This API contains functions that enable devices and servers to securely connect
+to each other.
+
+Mocana NanoSSH server is a secure, lightweight SSH %server for 
+embedded devices. With NanoSSH server, you can securely control a device 
+through a remote connection to its command-line interface (CLI).
+Additionally, NanoSSH server offers SFTP server services, allowing you to 
+securely transfer files and manage directories on a remote device.
+
+For detailed NanoSSH server feature information and integration procedures, 
+see the @moc_doc_NanoSSH_Server_xref.
+
+To see full-size version of any of the following NanoSSH flowcharts, click the thumbnail image.
+
+@htmlonly
+  <table cellspacing=0 cellpadding=2 border=0 class="moc_flowchart">
+      <tr>
+          <td><a href="images/flowchart_ssh_client.jpg">SSH Client<br/><br/><image src="images/flowchart_ssh_client_thumbnail.jpg"></a></td>
+          <td><a href="images/flowchart_ssh_server_sync.jpg">SSH Sync Server<br/><br/><image src="images/flowchart_ssh_server_thumbnail_sync.jpg"></a></td>
+          <td><a href="images/flowchart_sftp_client.jpg">SSH SFTP Client<br/><br/><image src="images/flowchart_sftp_client_thumbnail.jpg"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ssh_client.png}{NanoSSH Client}
+\mocFlowchartPicture{flowchart_ssh_server_sync.png}{NanoSSH Sync Server}
+\mocFlowchartPicture{flowchart_ssh_sftp_client.png}{NanoSSH SFTP Client}
+@endlatexonly
+
+@todo_techpubs (add \@brief descriptions for all groups; they'll appear on the
+            Function Groups by Product tab's display)
+*/
+
+/**
+@defgroup   sshs_pages                   Pages
+@ingroup    sshs_tree
+*/
+
+/**
+@defgroup   sshs_callback_functions      Callback Functions
+@ingroup    sshs_tree
+*/
+
+/**
+@defgroup    sshs_function_groups        Functions
+@ingroup     sshs_tree
+*/
+ 
+/* Callback groups */
+
+/**
+@defgroup   cb_sshs_general_purpose      General Purpose Callbacks
+@ingroup    sshs_callback_functions
+*/
+
+/**
+@defgroup   cb_sshs_protocol_specific    Protocol-Specific Callbacks
+@ingroup    sshs_callback_functions
+*/
+
+/**
+@defgroup   cb_sshs_port_forwarding      Port Forwarding Callbacks
+@ingroup    sshs_callback_functions
+*/
+
+/**
+@defgroup   cb_sshs_async_server         Async Server Callbacks
+@ingroup    sshs_callback_functions
+*/
+
+/**
+@defgroup   cb_sshs_sync_server          Sync Server Callbacks
+@ingroup    sshs_callback_functions
+*/
+
+/**
+@defgroup   cb_sshs_sftp_server          SFTP Server Callbacks
+@ingroup    sshs_callback_functions
+*/
+/**
+@defgroup   cb_sshs_sftp_file_io         File I/O Callbacks
+@ingroup    cb_sshs_sftp_server
+*/
+/**
+@defgroup   cb_sshs_sftp_dir_mgmt    Directory Management and Traversal Callbacks
+@ingroup    cb_sshs_sftp_server
+*/
+/**
+@defgroup   cb_sshs_sftp_file_mgmt       File Management Callbacks
+@ingroup    cb_sshs_sftp_server
+*/
+
+/* Function groups */
+
+/**
+@defgroup   func_ssh_server_known_hosts     Known-Hosts Management
+@ingroup    sshs_function_groups
+*/
+
+/**
+@defgroup   func_ssh_core_server    Core (Async and Sync) Server Functions
+@ingroup    sshs_function_groups
+
+Core functions required by both asynchronous and synchronous NanoSSL servers.
+
+@sa @ref    cb_sshs_protocol_specific
+@sa @ref    cb_sshs_general_purpose
+*/
+/**
+@defgroup   func_ssh_core_server_mgmt   Core Server Management Functions
+@ingroup    func_ssh_core_server
+*/
+/**
+@defgroup   func_ssh_core_server_connection_mgmt   Core Server Connection Management Functions
+@ingroup    func_ssh_core_server
+*/
+/**
+@defgroup   func_ssh_core_server_security       Core Server Security Functions
+@ingroup    func_ssh_core_server
+*/
+
+/**
+@defgroup   func_ssh_async_server           Asynchronous Server Functions
+@ingroup    sshs_function_groups
+
+Asynchronous NanoSSH %server functions.
+
+@sa @ref    cb_sshs_async_server
+*/
+/**
+@defgroup   func_ssh_async_server_connection_mgmt   Async Server Connection Management Functions
+@ingroup    func_ssh_async_server
+*/
+/**
+@defgroup   func_ssh_async_server_msg       Async Server Messaging Functions
+@ingroup    func_ssh_async_server
+*/
+
+/**
+@defgroup   func_ssh_sync_server            Synchronous Server Functions
+@ingroup    sshs_function_groups
+
+Synchronous NanoSSH %server functions.
+
+@sa @ref    cb_sshs_sync_server
+*/
+/**
+@defgroup   func_ssh_sync_server_mgmt       Sync Server Management Functions
+@ingroup    func_ssh_sync_server
+*/
+/**
+@defgroup   func_ssh_sync_server_connection_mgmt    Sync Server Connection Management Functions
+@ingroup    func_ssh_sync_server
+*/
+/**
+@defgroup   func_ssh_sync_server_msg        Sync Server Messaging Functions
+@ingroup    func_ssh_sync_server
+*/
+
+/**
+@defgroup   func_ssh_sftp_server            SFTP Server Functions
+@ingroup    sshs_function_groups
+
+@sa @ref    cb_sshs_sftp_server
+*/
+/**
+@defgroup   func_ssh_sftp_server_mgmt       SFTP Server Management Functions
+@ingroup    func_ssh_sftp_server
+*/
+/**
+@defgroup   func_ssh_sftp_server_security_context_init   SFTP Server Security Context Initialization Functions
+@ingroup    func_ssh_sftp_server
+*/
+/**
+@defgroup   func_ssh_sftp_server_msg        SFTP Server Messaging Functions
+@ingroup    func_ssh_sftp_server
+*/
+/**
+@defgroup   func_ssh_sftp_server_context_state  SFTP Server Context State Management Functions
+@ingroup    func_ssh_sftp_server
+*/
+/**
+@defgroup   func_ssh_server_ungrouped   Ungrouped Functions
+@ingroup    sshs_function_groups
+*/
+
+/**
+@dir    ssh/client
+@brief  NanoSSH Client (ssh/client).
+*/
+
+/* main tree */
+
+/**
+@defgroup   sshc_tree   NanoSSH Client
+
+Mocana NanoSSH %client is a secure, lightweight SSH %client for 
+embedded devices. With NanoSSH %client, you can securely connect to any SSH 
+server to initiate file transfers and perform automated tasks.
+For detailed NanoSSH %client feature information and integration procedures, 
+refer to the @moc_doc_NanoSSH_Client_xref.
+
+@htmlonly
+  <table cellspacing=0 cellpadding=2 border=0 class="moc_flowchart">
+      <tr>
+          <td><a href="images/flowchart_ssh_client.jpg">SSH Client<br/><br/><image src="images/flowchart_ssh_client_thumbnail.jpg"></a></td>
+          <td><a href="images/flowchart_ssh_server_sync.jpg">SSH Sync Server<br/><br/><image src="images/flowchart_ssh_server_sync_thumbnail.jpg"></a></td>
+          <td><a href="images/flowchart_sftp_client.jpg">SSH SFTP Client<br/><br/><image src="images/flowchart_sftp_client_thumbnail.jpg"></a></td>
+      </tr>
+  </table>
+@endhtmlonly
+@latexonly
+\mocFlowchartPicture{flowchart_ssh_client.png}{NanoSSH Client}
+\mocFlowchartPicture{flowchart_ssh_server_sync.png}{NanoSSH Sync Server}
+\mocFlowchartPicture{flowchart_ssh_sftp_client.png}{NanoSSH SFTP Client}
+@endlatexonly
+
+@todo_techpubs (add \@brief descriptions for all groups; they'll appear on the
+            Function Groups by Product tab's display)
+*/
+
+/**
+@defgroup   sshc_pages                   Pages
+@ingroup    sshc_tree
+*/
+
+/**
+@defgroup   sshc_callback_functions      Callback Functions
+@ingroup    sshc_tree
+*/
+
+/**
+@defgroup    sshc_function_groups        Functions
+@ingroup     sshc_tree
+*/
+ 
+/* Callback groups */
+
+/**
+
+@defgroup   cb_sshc_general_purpose      General Purpose Callbacks
+@ingroup    sshc_callback_functions
+*/
+/**
+@defgroup   cb_sshc_protocol_specific   Protocol-Specific Callbacks
+@ingroup    sshc_callback_functions
+
+@sa @ref    cb_sshc_general_purpose
+*/
+/**
+@defgroup   cb_sshc_port_forwarding      Port Forwarding Callbacks
+@ingroup    sshc_callback_functions
+*/
+/**
+@defgroup   cb_sshc_cert_mgmt       Certificate Management Callbacks
+@ingroup    sshc_callback_functions
+*/
+/**
+@defgroup   cb_sshc_sftp_server          SFTP Client Callbacks
+@ingroup    sshc_callback_functions
+*/
+
+/**
+@defgroup   func_ssh_core_client        Core (Async and Sync) Client Functions
+@ingroup    sshc_function_groups
+*/
+
+/**
+@defgroup   func_sshc_cli_shell_command     CLI Shell Command Functions
+@ingroup    sshc_function_groups
+*/
+
+/**
+@defgroup   func_sshc_port_forwarding       Port Forwarding Functions
+@ingroup    sshc_function_groups
+*/
+/*!
+@defgroup   func_ssh_sftp_client            SFTP Client Functions
+@ingroup    sshc_function_groups
+*/
+/**
+@defgroup   func_ssh_sftp_client_auth_key   SFTP Client Authentication Key Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_sftp_client_general    SFTP Client General Purpose Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_sftp_client_memory_mgmt    SFTP Client Memory Management Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_sftp_get       SFTP Client get Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_sftp_put       SFTP Client put Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_sftp_io        SFTP Client I/O Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_sftp_file_dir_mgmt     SFTP Client File and Directory Management Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_sftp_dir_listing       SFTP Client Directory Listing Functions
+@ingroup    func_ssh_sftp_client
+*/
+/**
+@defgroup   func_ssh_client_ungrouped   Ungrouped Functions
+@ingroup    sshc_function_groups
+*/

@@ -1,0 +1,19 @@
+/**
+@page       manual_keys Manual Keys
+@ingroup    ipsec_pages
+@brief      Using manual provisioning keys in @moc_product IPsec.
+
+## Manual Keys
+
+If you are using manual keys for provisioning, then your application should make 
+appropriate calls to IPsec key functions.
+
+The following call should typically be placed after the call IPSEC_init():
++ IPSEC_keyAdd()&mdash;To add manual keying (SA) between device and a peer.
+
+In addition, the following calls should be made whenever a user makes a 
+configuration change:
++ IPSEC_keyDelete()&mdash;To delete a specified manual key.
++ IPSEC_keyFlush()&mdash;To flush all manual keys from the system.
+
+*/
