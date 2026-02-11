@@ -1,0 +1,49 @@
+name: "Unit Test CryptoInterface Extended"
+
+on:
+  workflow_dispatch: {}
+
+  push:
+    branches: [ "DTM-7533-create-github-action-for-unit-tests" ]
+
+  schedule:
+    - cron: '30 7 * * 1'   # Monday 1:00 PM IST
+    - cron: '30 7 * * 3'   # Wednesday 1:00 PM IST
+
+jobs:
+  unittest-cryptointerface-extended:
+    runs-on: ubuntu-latest
+
+    env:
+      GIT_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+
+    steps:
+    - name: Checkout current repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cproto
+        sudo apt install -y ruby
+        sudo apt install -y build-essential
+        sudo apt install -y cmake
+        sudo apt install -y python3 python3-pip
+
+    # ------------------------------------------------------------------
+    # Clone & prepare mocn-qa-m-products
+    # ------------------------------------------------------------------
+    - name: Clone mocn-qa-m-products
+      run: |
+        git clone https://${GIT_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+
+    # ------------------------------------------------------------------
+    # Copy script and run check
+    # ------------------------------------------------------------------
+    - name: Copy Jenkins check script
+      run: |
+        cp mocn-qa-m-products/qa_utils/check_jenkins_build_script_result/run_check_script.py .
+
+    - name: Running Unittest CryptoInterface Extended
+      run: |
+        PYTHONUNBUFFERED=1 python run_check_script.py "projects/cryptointerface_unittest" "build_and_run_all.sh"
