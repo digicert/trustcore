@@ -3,9 +3,6 @@ name: "Unit Test ASN1 Extended"
 on:
   workflow_dispatch: {}
 
-  push:
-    branches: [ "DTM-7533-create-github-action-for-unit-tests" ]
-
   schedule:
     - cron: '30 6 * * 1'   # Monday 12:00 PM IST
     - cron: '30 6 * * 3'   # Wednesday 12:00 PM IST

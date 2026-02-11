@@ -3,9 +3,6 @@ name: "Unit Test CryptoInterface Extended"
 on:
   workflow_dispatch: {}
 
-  push:
-    branches: [ "DTM-7533-create-github-action-for-unit-tests" ]
-
   schedule:
     - cron: '30 7 * * 1'   # Monday 1:00 PM IST
     - cron: '30 7 * * 3'   # Wednesday 1:00 PM IST
