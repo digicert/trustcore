@@ -11,9 +11,6 @@ jobs:
   unittest-cryptointerface-extended:
     runs-on: ubuntu-latest
 
-    env:
-      GIT_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
-
     steps:
     - name: Checkout current repository
       uses: actions/checkout@v4
@@ -30,9 +27,12 @@ jobs:
     # ------------------------------------------------------------------
     # Clone & prepare mocn-qa-m-products
     # ------------------------------------------------------------------
-    - name: Clone mocn-qa-m-products
-      run: |
-        git clone https://${GIT_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+    - name: Checkout mocn-qa-m-products
+      uses: actions/checkout@v4
+      with:
+        repository: digicert/mocn-qa-m-products
+        token: ${{ secrets.MY_SECRET_TOKEN }}
+        path: mocn-qa-m-products
 
     # ------------------------------------------------------------------
     # Copy script and run check
