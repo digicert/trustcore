@@ -15,7 +15,7 @@ jobs:
     runs-on: [ubuntu-22.04]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           path: trustcore-test
 
@@ -46,4 +46,4 @@ jobs:
       - name: Print Coverage Summary
         run: |
           echo "Coverage Summary:"
-          lcov --list /tmp/common_total.info
+        lcov --list /tmp/common_total.info
