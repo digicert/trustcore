@@ -1,0 +1,31 @@
+name: "Unit Test NanoCrypto Extended"
+
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 9 * * 1'   # Monday 3:00 PM IST
+    - cron: '30 9 * * 3'   # Wednesday 3:00 PM IST
+
+jobs:
+  unittest-nanocrypto-extended:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout current repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cproto
+        sudo apt install -y ruby
+        sudo apt install -y build-essential
+        sudo apt install -y cmake
+        sudo apt install -y python3 python3-pip
+
+    - name: Running Unittest NanoCrypto Extended
+      run: |
+        cd projects/crypto_unittest
+        ./build.sh
+        ./run.sh
