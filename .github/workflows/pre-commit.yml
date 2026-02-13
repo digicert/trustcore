@@ -44,4 +44,4 @@ jobs:
             done
           else
             echo "No files changed"
-        fi
+          fi

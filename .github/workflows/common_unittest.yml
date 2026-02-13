@@ -46,4 +46,4 @@ jobs:
       - name: Print Coverage Summary
         run: |
           echo "Coverage Summary:"
-        lcov --list /tmp/common_total.info
+          lcov --list /tmp/common_total.info
