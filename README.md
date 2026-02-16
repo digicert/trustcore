@@ -15,7 +15,7 @@ TrustCore SDK is a powerful suite of security tools hardend over 15 years of usa
 - **PKI Integration** – Seamless interaction with public key infrastructure for secure identity verification.  
 - **Broad Cryptographic Algorithm Support** – From message digests to symmetric and asymmetric algorithms, TrustCore [NanoCrypto](https://dev.digicert.com/en/trustcore-sdk/nanocrypto.html) has you covered.  
 - **Trusted Platform Integration** – Enables integration with TPMs and hardware security modules (HSMs).  
-- **EST & CMP Protocol Support** – Implements industry-standard protocols for certificate provisioning and management.
+- **EST & SCEP Protocol Support** – Implements industry-standard protocols for certificate provisioning and management.
 - **Secure Device Communications** - Delivers MQTT (MQTTs) over TLS 1.3 for securing device communications.
 - **PQC-ready** - Utilize the latest post-quantum cryptographic algorithms including: ML-KEM, ML-DSA and SLH-DSA, ensuring your devices are quantum-safe.
 - **Modular and compact** - Each module is implemented in lightweight C code. Build only the required modules to minimize the device footprint.
