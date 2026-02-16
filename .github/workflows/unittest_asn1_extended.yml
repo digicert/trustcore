@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Checkout current repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
     - name: Install Dependencies
       run: |
@@ -28,7 +28,7 @@ jobs:
     # Clone & prepare mocn-qa-m-products
     # ------------------------------------------------------------------
     - name: Checkout mocn-qa-m-products
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       with:
         repository: digicert/mocn-qa-m-products
         token: ${{ secrets.MY_SECRET_TOKEN }}
