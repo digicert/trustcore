@@ -1,0 +1,16 @@
+333a334,336
+> unsigned long FIPS_module_version(void);
+> const char *FIPS_module_version_text(void);
+> 
+375a379
+> # define OPENSSL_INIT_ENGINE_MOCANA          0x80000000L
+383c387
+<     OPENSSL_INIT_ENGINE_PADLOCK)
+---
+>     OPENSSL_INIT_ENGINE_PADLOCK | OPENSSL_INIT_ENGINE_MOCANA)
+390a395,399
+> 
+> #if (defined(__ENABLE_DIGICERT_SSL_PEM_READ_BIO_REDEFINE__))
+> typedef int pem_password_cb (char *buf, int size, int rwflag, void *userdata);
+> int OPENSSL_register_pem_bio_handler(EVP_PKEY *(*handler)(BIO *, EVP_PKEY**, pem_password_cb *, void *));
+> #endif

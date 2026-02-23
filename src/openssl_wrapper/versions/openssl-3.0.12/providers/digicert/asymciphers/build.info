@@ -1,0 +1,6 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+
+$RSA_GOAL=../../libdigiprov.a
+
+SOURCE[$RSA_GOAL]=digi_rsa_enc.c

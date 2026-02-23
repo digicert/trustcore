@@ -1,0 +1,40 @@
+16a17,19
+> #if defined(__ENABLE_DIGICERT_SSL_PEM_READ_BIO_REDEFINE__)
+> #include <openssl/pem.h>
+> #endif
+32a36,39
+> #if defined(__ENABLE_DIGICERT_SSL_PEM_READ_BIO_REDEFINE__)
+> EVP_PKEY *(*PEM_read_bio_PrivateKey_handler)(BIO *, EVP_PKEY**, pem_password_cb *, void *);
+> #endif
+> 
+403a411,422
+> #  if !defined(OPENSSL_NO_MOCANA)
+> static CRYPTO_ONCE engine_mocana = CRYPTO_ONCE_STATIC_INIT;
+> DEFINE_RUN_ONCE_STATIC(ossl_init_engine_mocana)
+> {
+> #   ifdef OPENSSL_INIT_DEBUG
+>     fprintf(stderr, "OPENSSL_INIT: ossl_init_engine_mocana: "
+>                     "engine_load_mocana_int()\n");
+> #   endif
+>     engine_load_mocana_int();
+>     return 1;
+> }
+> #  endif
+744a764,768
+> #  if !defined(OPENSSL_NO_MOCANA)
+>     if ((opts & OPENSSL_INIT_ENGINE_MOCANA)
+>             && !RUN_ONCE(&engine_mocana, ossl_init_engine_mocana))
+>         return 0;
+> #  endif
+760a785,795
+> 
+> #if defined(__ENABLE_DIGICERT_SSL_PEM_READ_BIO_REDEFINE__)
+> int OPENSSL_register_pem_bio_handler(EVP_PKEY *(*handler)(BIO *, EVP_PKEY**, pem_password_cb *, void *))
+> {
+>     if (handler == NULL)
+>         return 0;
+> 
+>     PEM_read_bio_PrivateKey_handler = handler;
+>     return 1;
+> }
+> #endif

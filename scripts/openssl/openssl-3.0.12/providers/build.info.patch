@@ -1,0 +1,43 @@
+14a15,16
+> # libdigiprov.a         Contains algorithm implementations for DigiCrypto Provider.
+> #
+34c36
+< SUBDIRS=common implementations
+---
+> SUBDIRS=common implementations digicert
+43c45,47
+< LIBS{noinst}=$LIBDEFAULT $LIBCOMMON
+---
+> $LIBDIGI=libdigiprov.a
+> $LIBNANOCRYPTO=../../../bin/libnanocrypto
+> LIBS{noinst}=$LIBDEFAULT $LIBDIGI $LIBCOMMON
+49c53
+< $COMMON_INCLUDES=../crypto ../include implementations/include common/include
+---
+> $COMMON_INCLUDES=../crypto ../include implementations/include common/include digicert/include digicert/common
+54a59
+> INCLUDE[$LIBDIGI]=.. $COMMON_INCLUDES
+67a73
+> DEPEND[$LIBDIGI]=$LIBCOMMON
+81a88,99
+> # DigiCert provider stuff
+> #
+> # Because the DigiCert provider is built in, it means that libcrypto must
+> # include all the object files that are needed (we do that indirectly,
+> # by using the appropriate libraries as source).  Note that for shared
+> # libraries, SOURCEd libraries are considered as if they were specified
+> # with DEPEND.
+> $DIGIGOAL=../libcrypto
+> SOURCE[$DIGIGOAL]=$LIBDIGI digiprov.c
+> INCLUDE[$DIGIGOAL]=digicert/include digicert/common
+> 
+> #
+177a196,202
+> 
+> #
+> # Create libnanocrypto as a target in the Makefile
+> #
+> IF[{- $disabled{"mocana-cryptointerface"} -}]
+>   DEPEND[../libcrypto]=$LIBNANOCRYPTO
+> ENDIF
+\ No newline at end of file

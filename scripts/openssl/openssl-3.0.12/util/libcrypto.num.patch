@@ -1,0 +1,9 @@
+5430,5431c5430,5434
+< OSSL_CMP_CTX_reset_geninfo_ITAVs        5558	3_0_8	EXIST::FUNCTION:CMP
+< OSSL_CMP_MSG_update_recipNonce          5559	3_0_9	EXIST::FUNCTION:CMP
+---
+> OSSL_CMP_CTX_reset_geninfo_ITAVs        5558    3_0_8   EXIST::FUNCTION:CMP
+> OSSL_CMP_MSG_update_recipNonce          5559    3_0_9   EXIST::FUNCTION:CMP
+> moc_get_rsa_ex_app_data                 5560	3_0_0	EXIST::FUNCTION:
+> moc_get_ecc_ex_app_data                 5561	3_0_0	EXIST::FUNCTION:
+> DIGI_EVP_maskCred                        5562	3_0_0	EXIST::FUNCTION:

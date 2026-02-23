@@ -1,0 +1,15 @@
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/digiprov_test_main.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_rand.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_rsa_enc_dec.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_rsa_sign.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_kdf.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_ecdsa_sign.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_eddsa_sign.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_dsa_sign.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_dh.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_digest.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_cipher.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_mac.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_pqc_sign.c
+MSS_SRC_DIR/../thirdparty/CM_OPENSSL_LIB_DIR/providers/digicert/test/test_pqc_kem.c
+MSS_SRC_DIR/crypto_interface/example/crypto_interface_tap_example.c

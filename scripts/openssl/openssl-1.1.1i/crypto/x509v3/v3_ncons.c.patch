@@ -1,0 +1,112 @@
+65a66,87
+> 
+> #define IA5_OFFSET_LEN(ia5base, offset) \
+>     ((ia5base)->length - ((unsigned char *)(offset) - (ia5base)->data))
+> 
+> /* Like memchr but for ASN1_IA5STRING. Additionally you can specify the
+>  * starting point to search from
+>  */
+> # define ia5memchr(str, start, c) memchr(start, c, IA5_OFFSET_LEN(str, start))
+> 
+> /* Like memrrchr but for ASN1_IA5STRING */
+> static char *ia5memrchr(ASN1_IA5STRING *str, int c)
+> {
+>     int i;
+> 
+>     for (i = str->length; i > 0 && str->data[i - 1] != c; i--);
+> 
+>     if (i == 0)
+>         return NULL;
+> 
+>     return (char *)&str->data[i - 1];
+> }
+> 
+67c89,90
+<  * We cannot use strncasecmp here because that applies locale specific rules.
+---
+>  * We cannot use strncasecmp here because that applies locale specific rules. It
+>  * also doesn't work with ASN1_STRINGs that may have embedded NUL characters.
+92,94d114
+<         } else if (*s1 == 0) {
+<             /* If we get here we know that *s2 == 0 too */
+<             return 0;
+101,105d120
+< static int ia5casecmp(const char *s1, const char *s2)
+< {
+<     return ia5ncasecmp(s1, s2, SIZE_MAX);
+< }
+< 
+340c355
+<     if ((size_t)utf8_length != strlen((char *)utf8_value)) {
+---
+>     if (memchr(utf8_value, 0, utf8_length) != NULL) {
+538a554
+> 
+540c556
+<     if (!*baseptr)
+---
+>     if (base->length == 0)
+541a558,561
+> 
+>     if (dns->length < base->length)
+>         return X509_V_ERR_PERMITTED_VIOLATION;
+> 
+552c572
+<     if (ia5casecmp(baseptr, dnsptr))
+---
+>     if (ia5ncasecmp(baseptr, dnsptr, base->length))
+562a583,585
+>     const char *baseat = ia5memrchr(base, '@');
+>     const char *emlat = ia5memrchr(eml, '@');
+>     size_t basehostlen, emlhostlen;
+564,565d586
+<     const char *baseat = strchr(baseptr, '@');
+<     const char *emlat = strchr(emlptr, '@');
+569c590
+<     if (!baseat && (*baseptr == '.')) {
+---
+>     if (!baseat && base->length > 0 && (*baseptr == '.')) {
+572c593
+<             if (ia5casecmp(baseptr, emlptr) == 0)
+---
+>             if (ia5ncasecmp(baseptr, emlptr, base->length) == 0)
+591a613,614
+>     basehostlen = IA5_OFFSET_LEN(base, baseptr);
+>     emlhostlen = IA5_OFFSET_LEN(eml, emlptr);
+593c616
+<     if (ia5casecmp(baseptr, emlptr))
+---
+>     if (basehostlen != emlhostlen || ia5ncasecmp(baseptr, emlptr, emlhostlen))
+604c627
+<     const char *p = strchr(hostptr, ':');
+---
+>     const char *p = ia5memchr(uri, (char *)uri->data, ':');
+605a629
+> 
+607c631,634
+<     if (!p || (p[1] != '/') || (p[2] != '/'))
+---
+>     if (p == NULL
+>             || IA5_OFFSET_LEN(uri, p) < 3
+>             || p[1] != '/'
+>             || p[2] != '/')
+615c642
+<     p = strchr(hostptr, ':');
+---
+>     p = ia5memchr(uri, hostptr, ':');
+617,618c644,645
+<     if (!p)
+<         p = strchr(hostptr, '/');
+---
+>     if (p == NULL)
+>         p = ia5memchr(uri, hostptr, '/');
+620,621c647,648
+<     if (!p)
+<         hostlen = strlen(hostptr);
+---
+>     if (p == NULL)
+>         hostlen = IA5_OFFSET_LEN(uri, hostptr);
+629c656
+<     if (*baseptr == '.') {
+---
+>     if (base->length > 0 && *baseptr == '.') {

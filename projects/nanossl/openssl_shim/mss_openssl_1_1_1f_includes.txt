@@ -1,0 +1,10 @@
+MSS_SRC_DIR/common
+MSS_SRC_DIR/crypto
+MSS_SRC_DIR/ssl
+MSS_SRC_DIR/ocsp
+MSS_SRC_DIR/ocsp/client
+MSS_SRC_DIR/platform
+MSS_SRC_DIR/openssl_wrapper
+MSS_SRC_DIR/../thirdparty/openssl-1.1.1f
+MSS_SRC_DIR/../thirdparty/openssl-1.1.1f/include
+MSS_SRC_DIR/../thirdparty/openssl-1.1.1f/crypto/include

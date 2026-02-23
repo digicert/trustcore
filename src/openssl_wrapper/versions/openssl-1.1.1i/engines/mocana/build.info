@@ -1,0 +1,427 @@
+# Define Mocana flags
+#
+{-
+
+    if ($disabled{shared})
+    {
+        our @mocana_platform_flags= (
+            "-D__RTOS_WIN32__",
+            "-DWIN_STATIC"
+        );
+    }
+    else
+    {
+        our @mocana_platform_flags= (
+            "-D__RTOS_WIN32__",
+            "-D_USRDLL"
+        );
+    }
+
+    our $mocana_host_os_name = "";
+    if (index($config{target}, vxworks) != -1)
+    {
+        $mocana_host_os_name = "HOST_OS_NAME=VXWORKS";
+    }
+    if (index($config{target}, "android-arm") != -1)
+    {
+        $mocana_host_os_name = "HOST_OS_NAME=ANDROID";
+    }
+
+    if (!$disabled{"mocana-debug"})
+    {
+        our @mocana_debug_flags =
+        (
+            "-D__ENABLE_DIGICERT_DEBUG_CONSOLE__",
+            "-D__DIGICERT_DUMP_CONSOLE_TO_STDOUT__",
+            "-D__ENABLE_ALL_DEBUGGING__"
+        );
+    }
+
+    if (!$disabled{"mocana-debug"} && !$disabled{"mocana-debug-dump"})
+    {
+        our @mocana_debug_dump_flags =
+        (
+            "-D__ENABLE_DIGICERT_DEBUG_MEMORY__"
+        );
+    }
+
+    if (!$disabled{"mocana-suiteb"})
+    {
+        our @mocana_suiteb_flags =
+        (
+            "-D__ENABLE_DIGICERT_ECC__",
+            "-D__ENABLE_DIGICERT_ECC_P192__",
+            "-D__ENABLE_DIGICERT_ECC_EDDH_25519__",
+            "-D__ENABLE_DIGICERT_ECC_EDDSA_25519__",
+            "-D__ENABLE_DIGICERT_ECC_EDDH_448__",
+            "-D__ENABLE_DIGICERT_ECC_EDDSA_448__",
+            "-D__ENABLE_DIGICERT_GCM_64K__"
+        );
+    }
+    else
+    {
+        our @mocana_suiteb_flags =
+        (
+            "-D__DISABLE_DIGICERT_SUITE_B__"
+        );
+    }
+
+    if ($disabled{"mocana-export"})
+    {
+        our @mocana_build_type_flags =
+        (
+            "-D__ENABLE_ARC2_CIPHERS__",
+            "-DOPENSSL_ENGINE",
+            "-DMOC_LITTLE_ENDIAN",
+            "-D__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__",
+            "-D__DISABLE_DIGICERT_TCP_INTERFACE__",
+            "-D__ENABLE_DIGICERT_MD2__",
+            "-D__ENABLE_DIGICERT_MD4__",
+            "-D__ENABLE_DIGICERT_PKCS1__",
+            "-D__ENABLE_DIGICERT_PKCS5__",
+            "-D__ENABLE_DIGICERT_PKCS7__",
+            "-D__ENABLE_DIGICERT_PKCS12__",
+            "-D__ENABLE_DIGICERT_DSA__",
+            "-D__ENABLE_DES_CIPHER__",
+            "-D__ENABLE_DIGICERT_SERIALIZE__",
+            "-D__ENABLE_DIGICERT_DSA__",
+            "-D__ENABLE_DIGICERT_DER_CONVERSION__",
+            "-D__ENABLE_DIGICERT_PEM_CONVERSION__",
+            "-D__ENABLE_UNICODE__",
+            "-D__ENABLE_DIGICERT_64_BIT__",
+            "-D__ENABLE_MOCANA_ASYM__",
+            "-D__ENABLE_DIGICERT_RSA_ALL_KEYSIZE__"
+        );
+
+        our @mocana_test_target = (
+            "moctestnonexport"
+        );
+
+        if($disabled{"mocana-no-rc5"})
+        {
+            push @mocana_build_type_flags, "-D__ENABLE_DIGICERT_RC5__";
+            push @mocana_build_type_flags, "-D__ENABLE_DIGICERT_WEAK_RC5__"
+        }
+    }
+    else
+    {
+        our @mocana_build_type_flags = (
+            "-DOPENSSL_ENGINE",
+            "-DMOC_LITTLE_ENDIAN",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__",
+            "-D__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__",
+            "-D__DISABLE_DIGICERT_TCP_INTERFACE__",
+            "-D__ENABLE_DIGICERT_PKCS1__",
+            "-D__ENABLE_DIGICERT_PKCS5__",
+            "-D__ENABLE_DIGICERT_PKCS7__",
+            "-D__ENABLE_DIGICERT_PKCS12__",
+            "-D__ENABLE_DIGICERT_SERIALIZE__",
+            "-D__ENABLE_DIGICERT_DER_CONVERSION__",
+            "-D__ENABLE_DIGICERT_PEM_CONVERSION__",
+            "-D__ENABLE_UNICODE__",
+            "-D__ENABLE_DIGICERT_64_BIT__",
+            "-D__ENABLE_MOCANA_ASYM__",
+            "-D__ENABLE_DIGICERT_RSA_ALL_KEYSIZE__",
+            "-D__DISABLE_ARC4_CIPHERS__",
+            "-D__DISABLE_AES_CMAC__",
+            "-D__DISABLE_AES_CCM__",
+            "-D__DISABLE_AES_XTS__",
+            "-D__ENABLE_DIGICERT_DSA__"
+        );
+
+        our @mocana_test_target = (
+            "moctestexport"
+        );
+
+        our @mocana_test_link = (
+            "../../bin_win32/initialize.lib",
+            "../../bin_win32/common.lib",
+            "../../bin_win32/nanotap2.lib",
+            "../../bin_win32/cryptointerface.lib",
+            "../../bin_win32/nanotap2_common.lib"
+        );
+        if(!$disabled{"mocana-fips"})
+        {
+          push @mocana_test_link, "../../bin_win32/libmss.lib"
+        }
+    }
+
+    if(!$disabled{"mocana-fips"})
+    {
+      push @mocana_build_type_flags, "-D__ENABLE_DIGICERT_FIPS_MODULE__";
+
+      if(!$disabled{"mocana-strict-dh"})
+      {
+          push @mocana_build_type_flags, "-D__ENABLE_DIGICERT_STRICT_DH_GROUP__"
+      }
+    }
+
+    our @mocana_non_fips_flags =
+    (
+        "-D__ENABLE_DIGICERT_CHACHA20__",
+        "-D__ENABLE_DIGICERT_POLY1305__"
+    );
+
+    if (!$disabled{"mocana-custom-entropy"})
+    {
+        our @mocana_custom_entropy_flags =
+        (
+            "-D__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__"
+        );
+    }
+
+    if (!$disabled{"mocana-strict-ca-check"})
+    {
+        our @mocana_strict_ca_check_flags =
+        (
+            "-D__DISABLE_DIGICERT_STRICT_CERT_BASIC_CONSTRAINTS__ ",
+            "-D__DISABLE_DIGICERT_STRICT_CERT_KEY_USAGE__"
+        );
+    }
+
+    if (!$disabled{"mocana-cert-ext-check"})
+    {
+        our @mocana_cert_ext_check_flags =
+        (
+            "-D__DISABLE_DIGICERT_CERTIFICATE_EXTENSIONS_CHECK__"
+        );
+    }
+
+    if (!$disabled{"mocana-cryptointerface"})
+    {
+        our @mocana_cryptointerface_flags =
+        (
+            "-D__ENABLE_DIGICERT_ASYM_KEY__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_GCM__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_GCM_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_ARC4__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_ARC4_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_TDES__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_TDES_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_PKCS1__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_PKCS1_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD4__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD4_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD5__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD5_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA1__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA1_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA224__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA224_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA256__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA256_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA384__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA384_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA512__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA512_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_MAPPING__",
+            "-D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_CCM__"
+        );
+    }
+
+    if (!$disabled{"mocana-cryptointerface"} && !$disabled{"mocana-tap"})
+    {
+        our @mocana_tap_flags =
+        (
+            "-D__ENABLE_DIGICERT_TAP__"
+        );
+    }
+
+    our @mocana_1_1_1c_flags =
+    (
+        "-D__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__"
+    );
+
+"" -}
+
+# define list of include dirs (relative to root path of ossl)
+{-
+    my @mocana_includes =
+    (
+        ".",
+        "crypto/include",
+        "include",
+        "../../src"
+    );
+
+    my $include_flag = "-I";
+    if ($config{target} =~ /^VC-/) {
+        $include_flag = "/I";
+    } else {
+        $include_flag = "-I";
+    }
+
+    our $mocana_include_str = "";
+    foreach $flag_var (@mocana_includes) {
+        $mocana_include_str .= " " . $include_flag . " " . $flag_var;
+    }
+"" -}
+
+IF[{- !$disabled{"engine"} -}]
+  IF[{- !$disabled{mocanaeng} -}]
+    IF[{- $disabled{"dynamic-engine"} -}]
+      LIBS=../../libcrypto
+      SOURCE[../../libcrypto]=e_moc_EVP_ciphers.o mocana_glue.o e_moc_evp_err.o compat_funcs.o
+    ELSE
+      ENGINES=mocana
+      SOURCE[mocana]=e_moc_EVP_ciphers.o mocana_glue.o e_moc_evp_err.o compat_funcs.o
+    ENDIF
+
+# This portion is for windows nmake. This portion may contain additional
+# processing which is not in the unix portion of this build.info file. This is
+# because the unix portion is likely located in the unix template configuration.
+# The reason windows does not place the same options in the windows template
+# file is because the unix build was designed to enable/disable features during
+# the build process (when make is called) but this was not possible for windows
+# so it has to occur during the setup that generates the makefile.
+BEGINRAW[makefile(windows)]
+
+# Populate the build flags for just the Mocana EVP source
+MOCANA_PLATFORM_FLAGS={- join(" ", @mocana_platform_flags) -}
+MOCANA_DEBUG_FLAGS={- join(" ", @mocana_debug_flags) -}
+MOCANA_DEBUG_DUMP_FLAGS={- join(" ", @mocana_debug_dump_flags) -}
+MOCANA_SUITEB_FLAGS={- join(" ", @mocana_suiteb_flags) -}
+MOCANA_BUILD_TYPE_FLAGS={- join(" ", @mocana_build_type_flags) -}
+MOCANA_NON_FIPS_FLAGS={- join(" ", @mocana_non_fips_flags) -}
+MOCANA_CUSTOM_ENTROPY_FLAGS={- join(" ", @mocana_custom_entropy_flags) -}
+MOCANA_STRICT_CA_CHECK_FLAGS={- join(" ", @mocana_strict_ca_check_flags) -}
+MOCANA_CERT_EXT_CHECK_FLAGS={- join(" ", @mocana_cert_ext_check_flags) -}
+MOCANA_CRYPTOINTERFACE_FLAGS={- join(" ", @mocana_cryptointerface_flags) -}
+MOCANA_TAP_FLAGS={- join(" ", @mocana_tap_flags) -}
+MOCANA_OPENSSL_1_1_1C_FLAGS={- join(" ", @mocana_1_1_1c_flags) -}
+
+# Set the flags for the Mocana EVP sources
+MOCANA_FLAGS = $(MOCANA_PLATFORM_FLAGS) $(MOCANA_DEBUG_FLAGS) $(MOCANA_DEBUG_DUMP_FLAGS) $(MOCANA_SUITEB_FLAGS) $(MOCANA_BUILD_TYPE_FLAGS) $(MOCANA_NON_FIPS_FLAGS) $(MOCANA_CUSTOM_ENTROPY_FLAGS) $(MOCANA_STRICT_CA_CHECK_FLAGS) $(MOCANA_CERT_EXT_CHECK_FLAGS) $(MOCANA_CRYPTOINTERFACE_FLAGS) $(MOCANA_TAP_FLAGS) $(MOCANA_OPENSSL_1_1_1C_FLAGS)
+MOCANA_LIB_FLAGS = $(LIB_CFLAGS) $(MOCANA_FLAGS)
+
+# Targets to compile the Mocana EVP engine
+{- $builddir -}/e_moc_EVP_ciphers.obj: {- $sourcedir -}\e_moc_EVP_ciphers.c
+	$(CC)  {- $mocana_include_str -} $(MOCANA_LIB_FLAGS) -c $(COUTFLAG)$@ "{- $sourcedir -}/e_moc_EVP_ciphers.c"
+{- $builddir -}/mocana_glue.obj: {- $sourcedir -}\mocana_glue.c
+	$(CC)  {- $mocana_include_str -} $(MOCANA_LIB_FLAGS) -c $(COUTFLAG)$@ "{- $sourcedir -}/mocana_glue.c"
+{- $builddir -}/e_moc_evp_err.obj: {- $sourcedir -}\e_moc_evp_err.c
+	$(CC)  {- $mocana_include_str -} $(MOCANA_LIB_FLAGS) -c $(COUTFLAG)$@ "{- $sourcedir -}/e_moc_evp_err.c"
+{- $builddir -}/compat_funcs.obj: {- $sourcedir -}\compat_funcs.c
+	$(CC)  {- $mocana_include_str -} $(MOCANA_LIB_FLAGS) -c $(COUTFLAG)$@ "{- $sourcedir -}/compat_funcs.c"
+
+
+# Test flags for Mocana
+MOCANA_BIN_FLAGS = $(BIN_CFLAGS) $(MOCANA_FLAGS) -D_CRT_SECURE_NO_WARNINGS -DWIN32_LEAN_AND_MEAN
+
+moctestbuild:
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_3des_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_3des_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_aes_128_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_aes_128_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_aes_192_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_aes_192_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_aes_aead_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_aes_aead_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_aes_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_aes_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_chacha20_poly1305_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_chacha20_poly1305_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_chacha20_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_chacha20_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_ciphers_digest.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_ciphers_digest.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_copy_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_copy_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_des_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_des_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_dh_derive_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_dh_derive_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_dh_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_dh_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_dsa_keypair_gen.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_dsa_keypair_gen.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_dsa_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_dsa_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_ecdh_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_ecdh_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_ecdsa_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_ecdsa_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_ec_keypair_gen.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_ec_keypair_gen.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_hmac_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_hmac_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_md2_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_md2_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_md4_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_md4_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_md5test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_md5test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_rc2_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_rc2_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_rc4_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_rc4_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_rc5_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_rc5_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_rsa_dsa_ecdsa_test.c" /link libcrypto.lib {- join(" ", @mocana_test_link) -} /out:engines\mocana\test\moc_evp_rsa_dsa_ecdsa_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_rsa_keypair_gen_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_rsa_keypair_gen_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_rsa_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_rsa_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_sha1_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_sha1_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_sha224_256_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_sha224_256_test.exe
+	$(CC) {- $mocana_include_str -} $(MOCANA_BIN_FLAGS) "engines\mocana\test\moc_evp_sha384_512_test.c" /link libcrypto.lib  /out:engines\mocana\test\moc_evp_sha384_512_test.exe
+
+moctestnonexport: moctestbuild
+	engines\mocana\test\moc_evp_3des_test.exe
+	engines\mocana\test\moc_evp_aes_128_test.exe
+	engines\mocana\test\moc_evp_aes_192_test.exe
+	engines\mocana\test\moc_evp_aes_aead_test.exe
+	engines\mocana\test\moc_evp_aes_test.exe
+	engines\mocana\test\moc_evp_chacha20_test.exe
+	engines\mocana\test\moc_evp_chacha20_poly1305_test.exe
+	engines\mocana\test\moc_evp_ciphers_digest.exe engines\mocana\test\evptests.txt
+	engines\mocana\test\moc_evp_des_test.exe
+	engines\mocana\test\moc_evp_dh_derive_test.exe
+	engines\mocana\test\moc_evp_dh_test.exe
+	engines\mocana\test\moc_evp_dsa_keypair_gen.exe
+	engines\mocana\test\moc_evp_dsa_test.exe
+	engines\mocana\test\moc_evp_ecdh_test.exe
+	engines\mocana\test\moc_evp_ecdsa_test.exe
+	engines\mocana\test\moc_evp_ec_keypair_gen.exe
+	engines\mocana\test\moc_evp_md2_test.exe
+	engines\mocana\test\moc_evp_md4_test.exe
+	engines\mocana\test\moc_evp_md5test.exe
+	engines\mocana\test\moc_evp_rc2_test.exe
+	engines\mocana\test\moc_evp_rc4_test.exe
+	engines\mocana\test\moc_evp_rc5_test.exe
+	engines\mocana\test\moc_evp_rsa_dsa_ecdsa_test.exe -p engines\mocana\test\private.pem
+	engines\mocana\test\moc_evp_rsa_dsa_ecdsa_test.exe -p engines\mocana\test\private.pem -s
+	engines\mocana\test\moc_evp_rsa_dsa_ecdsa_test.exe -p engines\mocana\test\ec_key.pem -s
+	engines\mocana\test\moc_evp_rsa_keypair_gen_test.exe
+	engines\mocana\test\moc_evp_rsa_keypair_gen_test.exe -s
+	engines\mocana\test\moc_evp_rsa_test.exe
+	engines\mocana\test\moc_evp_sha1_test.exe
+	engines\mocana\test\moc_evp_sha224_256_test.exe
+	engines\mocana\test\moc_evp_sha384_512_test.exe
+	engines\mocana\test\moc_evp_hmac_test.exe
+	engines\mocana\test\moc_evp_copy_test.exe
+
+moctestexport: moctestbuild
+	engines\mocana\test\moc_evp_3des_test.exe
+	engines\mocana\test\moc_evp_aes_128_test.exe
+	engines\mocana\test\moc_evp_aes_192_test.exe
+	engines\mocana\test\moc_evp_aes_aead_test.exe
+	engines\mocana\test\moc_evp_aes_test.exe
+	engines\mocana\test\moc_evp_chacha20_test.exe
+	engines\mocana\test\moc_evp_chacha20_poly1305_test.exe
+	engines\mocana\test\moc_evp_ciphers_digest.exe engines\mocana\test\evptests_export.txt
+	engines\mocana\test\moc_evp_dh_derive_test.exe
+	engines\mocana\test\moc_evp_dh_test.exe
+	engines\mocana\test\moc_evp_ecdh_test.exe
+	engines\mocana\test\moc_evp_ecdsa_test.exe
+	engines\mocana\test\moc_evp_ec_keypair_gen.exe
+	engines\mocana\test\moc_evp_md5test.exe
+	engines\mocana\test\moc_evp_rsa_dsa_ecdsa_test.exe -p engines\mocana\test\private.pem
+	engines\mocana\test\moc_evp_rsa_dsa_ecdsa_test.exe -p engines\mocana\test\private.pem -s
+	engines\mocana\test\moc_evp_rsa_keypair_gen_test.exe
+	engines\mocana\test\moc_evp_rsa_test.exe
+	engines\mocana\test\moc_evp_sha1_test.exe
+	engines\mocana\test\moc_evp_sha224_256_test.exe
+	engines\mocana\test\moc_evp_sha384_512_test.exe
+	engines\mocana\test\moc_evp_copy_test.exe
+
+moctest: {- join(" ", @mocana_test_target) -}
+	@echo "Done."
+
+ENDRAW[makefile(windows)]
+
+BEGINRAW[Makefile(unix)]
+
+BUILDENV= SHLIB_EXT=.so.1.1 MOCANA_OSSL_NAME=openssl-${VERSION} {- $mocana_host_os_name -}
+
+{- $builddir -}/%.o: mocanaforcebuild
+	:
+
+cmake_build_libs:
+	CC="$(CC)" $(MAKE) -C ../../ -f make/Makefile.ssl openssl_1_1_1=true cmake_build_libs
+
+mocanaforcebuild:
+	CROSS_COMPILE="$(CROSS_COMPILE)" CC="$(CC)" $(MAKE) -C {- $sourcedir -} openssl_1_1_1=true PLATFORM='$(PLATFORM)' CFLAG='$(CFLAGS)' -e $(BUILDENV) clean all
+
+mocanatestbuild:
+	$(MAKE) -C {- $builddir -}/test openssl_1_1_1=true cryptointerface=true CFLAGS='$(CFLAGS)' clean all
+ENDRAW[Makefile(unix)]
+
+  ENDIF
+ENDIF

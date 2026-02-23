@@ -1,0 +1,3 @@
+41a42,43
+>     if (f == NULL)
+>         goto err;

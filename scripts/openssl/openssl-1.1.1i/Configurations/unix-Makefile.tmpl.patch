@@ -1,0 +1,23 @@
+309a310,327
+> ifeq ($(export),true)
+> EX_LIBS= {- join(' ', @{$config{LDLIBS}}) -} -L../../bin -L../../lib -lcryptointerface -lnanocert -lcryptomw -lasn1 -linitialize -lcommon
+> else
+> ifeq ($(cryptointerface),true)
+> EX_LIBS= {- join(' ', @{$config{LDLIBS}}) -} -L../../bin -L../../lib -lcryptointerface -lnanocert -lnanocrypto -lasn1 -linitialize -lcommon
+> else
+> EX_LIBS= {- join(' ', @{$config{LDLIBS}}) -} -L../../bin -L../../lib -lnanocrypto
+> endif
+> endif
+> 
+> ifeq ($(redefine),true)
+>     CFLAGS+=-D__ENABLE_DIGICERT_SSL_PEM_READ_BIO_REDEFINE__
+> endif
+> 
+> ifeq ($(fips),true)
+>     CFLAGS+=-D__EVP_NAMESPACE_CONFLICT__
+> endif
+> 
+525c543
+< 	-$(RM) `find . -type l \! -name '.*' -print`
+---
+> 	# -$(RM) `find . -type l \! -name '.*' -print`

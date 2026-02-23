@@ -1,0 +1,10 @@
+23a24,30
+> 
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+> #include "../../test/digitest_cnf.h"
+> #include <stdio.h>
+> #include <stdlib.h>
+> #endif
+> 
+372a380
+> 

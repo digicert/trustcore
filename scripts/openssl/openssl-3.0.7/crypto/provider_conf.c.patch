@@ -1,0 +1,21 @@
+145a146
+>     OSSL_PROVIDER *digiprov = NULL;
+246a248,265
+> 
+>             /*
+>             * If "default" or "legacy" provider is loaded, we also want
+>             * to load DigiCert provider.
+>             */
+>             if (ok && ((0 == strcmp(name, "default")) || (0 == strcmp(name, "legacy")))) {
+>                 if (!prov_already_activated("digi", pcgbl->activated_providers)) {
+>                     digiprov = OSSL_PROVIDER_try_load(libctx, "digi", 0);
+>                     if (!digiprov) {
+>                         if (pcgbl->activated_providers == NULL
+>                             || !sk_OSSL_PROVIDER_push(pcgbl->activated_providers,
+>                                                     digiprov)) {
+>                             ossl_provider_deactivate(digiprov, 1);
+>                             ossl_provider_free(digiprov);
+>                         }
+>                     }
+>                 }
+>             }

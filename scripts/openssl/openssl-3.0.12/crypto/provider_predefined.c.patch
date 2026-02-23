@@ -1,0 +1,11 @@
+13a14
+> OSSL_provider_init_fn ossl_digi_provider_init;
+24c25,26
+<     { "default", NULL, ossl_default_provider_init, NULL, 1 },
+---
+>     { "default", NULL, ossl_default_provider_init, NULL, 0 },
+>     { "digi", NULL, ossl_digi_provider_init, NULL, 1 },
+28c30
+<     { "base", NULL, ossl_base_provider_init, NULL, 0 },
+---
+>     { "base", NULL, ossl_base_provider_init, NULL, 1 },

@@ -1,0 +1,188 @@
+30a31,33
+> my $test_moc_ossl = !disabled("moc-ossl-v3-test");
+> my $export = ($ENV{EXPORT} // 0);
+> my $fips = ($ENV{FIPS} // 0);
+33a37,40
+> if ($test_moc_ossl)
+> {
+>     $defaultcnf = $no_legacy ? 'digi-and-default.cnf' : 'digi-and-default-and-legacy.cnf';
+> }
+41,45d47
+<                 evpciph_aes_ccm_cavs.txt
+<                 evpciph_aes_common.txt
+<                 evpciph_aes_cts.txt
+<                 evpciph_aes_wrap.txt
+<                 evpciph_aes_stitched.txt
+48,49d49
+<                 evpkdf_pbkdf1.txt
+<                 evpkdf_pbkdf2.txt
+55,58d54
+<                 evpkdf_x963.txt
+<                 evpmac_common.txt
+<                 evpmd_sha.txt
+<                 evppbe_pbkdf2.txt
+60,61d55
+<                 evppkey_rsa_common.txt
+<                 evprand.txt
+62a57,122
+> 
+> # Files different between export, fips, and normal
+> if ($export)
+> {
+>     push @files, qw(
+>                     evpciph_aes_common_export.txt
+>                 );
+> }
+> elsif ($fips)
+> {
+>     push @files, qw(
+>                     evpciph_aes_common_fips.txt
+>                 );
+> }
+> else
+> {
+>     push @files, qw(
+>                     evpciph_aes_common.txt
+>                 );
+> }
+> 
+> # Files different only in FIPS
+> if ($fips)
+> {
+>     push @files, qw(
+>                     evppbe_pbkdf2_fips.txt
+>                     evpkdf_pbkdf2_fips.txt
+>                 );
+>     push @files, qw(
+>                 evppkey_dh_fips.txt
+>                ) unless $no_dh;
+> }
+> else
+> {
+>     push @files, qw(
+>                     evppbe_pbkdf2.txt
+>                     evpkdf_pbkdf2.txt
+>                 );
+>     push @files, qw(
+>                 evppkey_dh.txt
+>                ) unless $no_dh;
+> }
+> 
+> # Files different only in export
+> if ($export)
+> {
+>     push @files, qw(
+>                     evpmac_common_export.txt
+>                     evpmd_sha_export.txt
+>                     evppkey_rsa_common_export.txt
+>                     evprand_export.txt
+>                 );
+> }
+> else
+> {
+>     push @files, qw(
+>                     evpmac_common.txt
+>                     evpmd_sha.txt
+>                     evppkey_rsa_common.txt
+>                     evpciph_aes_wrap.txt
+>                     evpkdf_x963.txt
+>                     evpkdf_pbkdf1.txt
+>                     evprand.txt
+>                 );
+>     push @files, qw(evppkey_dsa.txt) unless $no_dsa;
+> }
+65d124
+<                 evppkey_dh.txt
+69d127
+<                 evpmac_cmac_des.txt
+71,79c129,150
+< push @files, qw(evppkey_dsa.txt) unless $no_dsa;
+< push @files, qw(evppkey_ecx.txt) unless $no_ec;
+< push @files, qw(
+<                 evppkey_ecc.txt
+<                 evppkey_ecdh.txt
+<                 evppkey_ecdsa.txt
+<                 evppkey_kas.txt
+<                 evppkey_mismatch.txt
+<                ) unless $no_ec || $no_gost;
+---
+> 
+> if ($export)
+> {
+>     push @files, qw(
+>                     evppkey_ecc.txt
+>                     evppkey_ecdh.txt
+>                     evppkey_ecdsa_export.txt
+>                     evppkey_kas.txt
+>                     evppkey_mismatch.txt
+>                 ) unless $no_ec || $no_gost;
+> }
+> else
+> {
+>     push @files, qw(evppkey_ecx.txt) unless $no_ec;
+>     push @files, qw(
+>                     evppkey_ecc.txt
+>                     evppkey_ecdh.txt
+>                     evppkey_ecdsa.txt
+>                     evppkey_kas.txt
+>                     evppkey_mismatch.txt
+>                 ) unless $no_ec || $no_gost;
+> }
+85d155
+<                      evpciph_aes_siv.txt
+97d166
+<                      evpciph_rc5.txt
+102d170
+<                      evpkdf_scrypt.txt
+104d171
+<                      evpmac_blake.txt
+107,108d173
+<                      evpmac_sm3.txt
+<                      evpmd_blake.txt
+112d176
+<                      evpmd_sm3.txt
+114d177
+<                      evppbe_scrypt.txt
+116d178
+<                      evppkey_kdf_scrypt.txt
+118d179
+<                      evppkey_rsa.txt
+120,121c181,215
+< push @defltfiles, qw(evppkey_brainpool.txt) unless $no_ec;
+< push @defltfiles, qw(evppkey_sm2.txt) unless $no_sm2;
+---
+> 
+> if ($fips)
+> {
+>     push @defltfiles, qw(
+>                     evppkey_kdf_scrypt_fips.txt
+>                     evppbe_scrypt_fips.txt
+>                     evpkdf_scrypt_fips.txt
+>                 );
+> }
+> else
+> {
+>     push @defltfiles, qw(
+>                     evppkey_kdf_scrypt.txt
+>                     evppbe_scrypt.txt
+>                     evpkdf_scrypt.txt
+>                 );
+> }
+> 
+> if ($export)
+> {
+>     push @defltfiles, qw(
+>                     evppkey_rsa_export.txt
+>                     evpmd_sm3_export.txt
+>                 );
+> }
+> else
+> {
+>     push @defltfiles, qw(
+>                     evpmac_blake.txt
+>                     evpmd_blake.txt
+>                     evppkey_rsa.txt
+>                     evpciph_rc5.txt
+>                     evpmd_sm3.txt
+>                 );
+> }

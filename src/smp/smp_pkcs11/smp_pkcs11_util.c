@@ -852,6 +852,7 @@ void PKCS11_fetchTokenLabel(
     if (gModList)
     {
         strncpy((char *)tokLabelStr, (const char *)gModList->labelStr[tokenId-1], MAX_LABEL_DESC_SZ - 1);
+        tokLabelStr[MAX_LABEL_DESC_SZ - 1] = 0;
     }
 }
 

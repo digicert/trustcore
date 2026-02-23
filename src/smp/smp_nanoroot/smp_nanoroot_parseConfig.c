@@ -439,6 +439,14 @@ static MSTATUS NanoROOT_agentParseAttributes(ubyte *pAttributeFile, AttributeLis
             DB_PRINT("%s.%d Attribute name : %s type :program path : %s arg : %s arg_len:%d\n",
             __func__, __LINE__, pAttrList->pItems[i].pAttr[0].pName,
             pAttrList->pItems[i].pPath, pAttrList->pItems[i].pArg, len);
+
+            if (FALSE == FMGMT_pathExists((const sbyte *)pAttrList->pItems[i].pPath, NULL))
+            {
+                DB_PRINT("%s.%d: Error credfile %s does not exist.\n",__FUNCTION__, __LINE__, pAttrList->pItems[i].pPath);
+                status = ERR_FILE_BAD_DATA;
+                goto exit;
+            }
+
         }
 
         /* Move to next object */

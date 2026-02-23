@@ -1,0 +1,123 @@
+457a458,465
+>     "mocana-cryptointerface",
+>     "mocana-export",
+>     "mocana-strict-dh",
+>     "mocana-override-digiprov-status",
+>     "mocana-fips",
+>     "mocana-tap",
+>     "mocana-tap-password",
+>     "mocana-pqc",
+506a515
+>     "moc-ossl-v3-test"
+559a569,575
+>                   "moc-ossl-v3-test"    => "default",
+>                   "mocana-cryptointerface" => "default",
+>                   "mocana-fips"         => "default",
+>                   "mocana-tap"          => "default",
+>                   "mocana-pqc"          => "default",
+>                   "mocana-export"       => "default",
+>                   "mocana-strict-dh"    => "default",
+757a774
+> my $os_version="";
+769a787,790
+>         if ($_ eq "VC-WIN64A" || $_ eq "VC-WIN32")
+>                 {
+>                     $os_version="win";
+>                 }
+1006a1028
+> 
+1076a1099,1192
+> 
+> my $digi_rtos_flag="";
+> my $digi_link_path="";
+> my $digi_link_lib_prefix="";
+> my $digi_link_lib_suffix="";
+> my $digi_lib_mss="";
+> 
+> if ("$os_version" eq "win") {
+>     $digi_rtos_flag="__RTOS_WIN32__";
+>     $digi_link_path="/LIBPATH:..\\..\\bin_win32";
+>     $digi_link_lib_prefix="";
+>     $digi_link_lib_suffix=".lib";
+>     $digi_lib_mss="libmss";
+> } else {
+>     $digi_rtos_flag="__RTOS_LINUX__";
+>     $digi_link_path="-L../../lib";
+>     $digi_link_lib_prefix="-l";
+>     $digi_link_lib_suffix="";
+>     $digi_lib_mss="mss";
+> }
+> 
+> # Add build options required for digi provider
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_OPENSSL_LIB_3_0__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_MD4__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_DSA__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_ECC__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_ASYM_KEY__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_EXTRACT_CERT_BLOB__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_PKCS7__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_CRYPTO_INTERFACE__";
+> push @{$useradd{CPPDEFINES}}, "OPENSSL_ENGINE";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_SHA3__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_BLAKE_2S__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_BLAKE_2B__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_GCM__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DES_CIPHER__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_BLOWFISH_CIPHERS__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_RC5__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_CHACHA20__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_POLY1305__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_PKCS5__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_USE_GP_RAND_ENTROPY__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_64_BIT__";
+> push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__";
+> push @{$useradd{CPPDEFINES}}, "MOC_LITTLE_ENDIAN";
+> 
+> push @{$useradd{CPPDEFINES}}, $digi_rtos_flag;
+> push @{$useradd{LDFLAGS}}, $digi_link_path;
+> 
+> # Determine link libraries based on cryptointerface option. If cryptointerface
+> # option is specified then link against each individual library, otherwise link
+> # against composite library
+> if ($disabled{"mocana-cryptointerface"}) {
+>     push @{$useradd{LDLIBS}},  "${digi_link_lib_prefix}nanocrypto${digi_link_lib_suffix}";
+> } else {
+>     push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}asn1${digi_link_lib_suffix}";
+>     push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}common${digi_link_lib_suffix}";
+>     push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}cryptointerface${digi_link_lib_suffix}";
+>     push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}initialize${digi_link_lib_suffix}";
+>     push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}nanocert${digi_link_lib_suffix}";
+>     if (!$disabled{"mocana-export"}) {
+>         push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}cryptomw${digi_link_lib_suffix}";
+>         push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}nanocap${digi_link_lib_suffix}";
+>         push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}nanocap_mbed${digi_link_lib_suffix}";
+>     } else {
+>         push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}nanocrypto${digi_link_lib_suffix}";
+>     }
+> }
+> 
+> if (!$disabled{"mocana-fips"}) {
+>     push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_FIPS_MODULE__";
+>     push @{$useradd{LDLIBS}}, "${digi_link_lib_prefix}${digi_lib_mss}${digi_link_lib_suffix}";
+> }
+> 
+> if (!$disabled{"mocana-tap"}) {
+>     push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_TAP__";
+> 
+>     if (!$disabled{"mocana-tap-password"}) {
+>         push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_OSSL_TAP_PASSWORD__";
+>     }
+> }
+> 
+> if (!$disabled{"mocana-strict-dh"}) {
+>     push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_STRICT_DH_GROUP__";
+> }
+> 
+> if ($disabled{"mocana-override-digiprov-status"}) {
+>     push @{$useradd{CPPDEFINES}}, "DIGIPROV_NO_AUTO_INIT";
+> }
+> 
+> if (!$disabled{"mocana-pqc"}) {
+>     push @{$useradd{CPPDEFINES}}, "__ENABLE_DIGICERT_PQC__";
+> }
