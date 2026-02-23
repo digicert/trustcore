@@ -1,0 +1,4 @@
+45a46,48
+> /* Legacy for Mocana FIPS */
+> # define CRYPTO_R_FIPS_MODE_NOT_SUPPORTED                 101
+> 

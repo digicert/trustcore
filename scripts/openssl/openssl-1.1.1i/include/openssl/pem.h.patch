@@ -1,0 +1,2 @@
+277a278
+> int pem_check_suffix(const char *pem_str, const char *suffix);

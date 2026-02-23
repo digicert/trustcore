@@ -1,0 +1,8 @@
+MSS_SRC_DIR/openssl_wrapper/openssl_shim.c
+MSS_SRC_DIR/openssl_wrapper/openssl_compat.c
+MSS_SRC_DIR/openssl_wrapper/ossl_bio_ssl.c
+MSS_SRC_DIR/openssl_wrapper/ossl_rsa.c
+MSS_SRC_DIR/openssl_wrapper/ossl_ciph.c
+MSS_SRC_DIR/openssl_wrapper/ossl_ssl.c
+MSS_SRC_DIR/openssl_wrapper/ossl_cert_convert.c
+MSS_SRC_DIR/openssl_wrapper/moc_profiling.c

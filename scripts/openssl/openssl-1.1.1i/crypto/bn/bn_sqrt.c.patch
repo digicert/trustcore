@@ -1,0 +1,36 @@
+17c17,18
+<  * Theory", algorithm 1.5.1). 'p' must be prime!
+---
+>  * Theory", algorithm 1.5.1). 'p' must be prime, otherwise an error or
+>  * an incorrect "result" will be returned.
+304,312c305,313
+<         /* find smallest  i  such that  b^(2^i) = 1 */
+<         i = 1;
+<         if (!BN_mod_sqr(t, b, p, ctx))
+<             goto end;
+<         while (!BN_is_one(t)) {
+<             i++;
+<             if (i == e) {
+<                 BNerr(BN_F_BN_MOD_SQRT, BN_R_NOT_A_SQUARE);
+<                 goto end;
+---
+>         /* Find the smallest i, 0 < i < e, such that b^(2^i) = 1. */
+>         for (i = 1; i < e; i++) {
+>             if (i == 1) {
+>                 if (!BN_mod_sqr(t, b, p, ctx))
+>                     goto end;
+> 
+>             } else {
+>                 if (!BN_mod_mul(t, t, t, p, ctx))
+>                     goto end;
+314,315c315,321
+<             if (!BN_mod_mul(t, t, t, p, ctx))
+<                 goto end;
+---
+>             if (BN_is_one(t))
+>                 break;
+>         }
+>         /* If not found, a is not a square or p is not prime. */
+>         if (i >= e) {
+>             BNerr(BN_F_BN_MOD_SQRT, BN_R_NOT_A_SQUARE);
+>             goto end;

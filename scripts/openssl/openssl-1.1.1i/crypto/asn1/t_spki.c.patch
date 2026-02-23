@@ -1,0 +1,4 @@
+41c41
+<         BIO_printf(out, "  Challenge String: %s\n", chal->data);
+---
+>         BIO_printf(out, "  Challenge String: %.*s\n", chal->length, chal->data);

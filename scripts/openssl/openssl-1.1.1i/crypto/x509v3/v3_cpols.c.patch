@@ -1,0 +1,15 @@
+425c425,426
+<             BIO_printf(out, "%*sCPS: %s\n", indent, "",
+---
+>             BIO_printf(out, "%*sCPS: %.*s\n", indent, "",
+>                        qualinfo->d.cpsuri->length,
+450c451,452
+<         BIO_printf(out, "%*sOrganization: %s\n", indent, "",
+---
+>         BIO_printf(out, "%*sOrganization: %.*s\n", indent, "",
+>                    ref->organization->length,
+473c475,476
+<         BIO_printf(out, "%*sExplicit Text: %s\n", indent, "",
+---
+>         BIO_printf(out, "%*sExplicit Text: %.*s\n", indent, "",
+>                    notice->exptext->length,

@@ -251,7 +251,6 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_destroyThread          LINUX_destroyThread
 #define RTOS_exitThread             LINUX_exitThread
 #define RTOS_joinThread             LINUX_joinThread
-#define RTOS_killThread             LINUX_killThread
 #define RTOS_currentThreadId        LINUX_currentThreadId
 #define RTOS_sameThreadId           LINUX_sameThreadId
 #define RTOS_timeGMT                LINUX_timeGMT
@@ -998,7 +997,7 @@ MOC_EXTERN MSTATUS      RTOS_lockFileFree           (RTOS_LOCK *ppLock);
 
 MOC_EXTERN MSTATUS      RTOS_condCreate             (RTOS_COND* pcond, enum mutexTypes mutexType, int mutexCount);
 MOC_EXTERN MSTATUS      RTOS_condWait               (RTOS_COND  cond,RTOS_MUTEX mutex);
-MOC_EXTERN MSTATUS      RTOS_condTimedWait          (RTOS_COND  cond,RTOS_MUTEX mutex, ubyte8 timeoutMS, byteBoolean *pTimeout, ubyte8 *remainingTimeMS);
+MOC_EXTERN MSTATUS      RTOS_condTimedWait          (RTOS_COND  cond,RTOS_MUTEX mutex, ubyte4 timeoutMS, byteBoolean *pTimeout);
 MOC_EXTERN MSTATUS      RTOS_condSignal             (RTOS_COND mutex);
 MOC_EXTERN MSTATUS      RTOS_condFree               (RTOS_MUTEX* pCond);
 MOC_EXTERN ubyte4       RTOS_getUpTimeInMS          (void);
@@ -1012,7 +1011,6 @@ MOC_EXTERN MSTATUS      RTOS_createThread           (void(*threadEntry)(void*), 
 MOC_EXTERN void         RTOS_destroyThread          (RTOS_THREAD tid);
 MOC_EXTERN void         RTOS_exitThread             (void *pRetVal);
 MOC_EXTERN MSTATUS      RTOS_joinThread             (RTOS_THREAD tid, void **ppRetVal);
-MOC_EXTERN MSTATUS      RTOS_killThread             (RTOS_THREAD tid, sbyte4 signum);
 MOC_EXTERN MSTATUS      RTOS_timeGMT                (TimeDate* td);
 MOC_EXTERN void         RTOS_setTimeGMT(TimeDate* td);
 

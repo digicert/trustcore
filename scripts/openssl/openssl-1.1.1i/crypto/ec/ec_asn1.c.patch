@@ -1,0 +1,7 @@
+764c764,767
+<     if (!params->order || !params->base || !params->base->data) {
+---
+>     if (params->order == NULL
+>             || params->base == NULL
+>             || params->base->data == NULL
+>             || params->base->length == 0) {

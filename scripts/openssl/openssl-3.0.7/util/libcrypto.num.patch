@@ -1,0 +1,4 @@
+5429a5430,5432
+> moc_get_rsa_ex_app_data                 5558	3_0_0	EXIST::FUNCTION:
+> moc_get_ecc_ex_app_data                 5559	3_0_0	EXIST::FUNCTION:
+> DIGI_EVP_maskCred                        5560	3_0_0	EXIST::FUNCTION:

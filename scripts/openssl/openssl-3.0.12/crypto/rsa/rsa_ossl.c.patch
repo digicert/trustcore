@@ -1,0 +1,10 @@
+58a59,65
+> #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
+> const RSA_METHOD *MOC_RSA_get_default_method(void);
+> const RSA_METHOD *RSA_get_default_method(void)
+> {
+>     return MOC_RSA_get_default_method();
+> }
+> #else
+62a70
+> #endif

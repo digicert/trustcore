@@ -1,0 +1,17 @@
+11a12
+> #include "crypto/x509.h"
+102c103,104
+<         if (!X509V3_add_value_uchar("email", gen->d.ia5->data, &ret))
+---
+>         if (!x509v3_add_len_value_uchar("email", gen->d.ia5->data,
+>                                         gen->d.ia5->length, &ret))
+107c109,110
+<         if (!X509V3_add_value_uchar("DNS", gen->d.ia5->data, &ret))
+---
+>         if (!x509v3_add_len_value_uchar("DNS", gen->d.ia5->data,
+>                                         gen->d.ia5->length, &ret))
+112c115,116
+<         if (!X509V3_add_value_uchar("URI", gen->d.ia5->data, &ret))
+---
+>         if (!x509v3_add_len_value_uchar("URI", gen->d.ia5->data,
+>                                         gen->d.ia5->length, &ret))

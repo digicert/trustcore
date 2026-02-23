@@ -1,0 +1,6 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+
+$DECODER_GOAL=../../libdigiprov.a
+
+SOURCE[$DECODER_GOAL]=digi_decode_der2tap.c

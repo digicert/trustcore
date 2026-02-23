@@ -1,0 +1,177 @@
+TOP=../../..
+MSS=$(TOP)/../..
+MSS_BIN=$(MSS)/bin
+
+CC=gcc
+CFLAGS= -D__RTOS_LINUX__ -DOPENSSL_ENGINE -O0 -Wall -I$(TOP) -I$(TOP)/include -I$(TOP)/crypto/include
+LDFLAGS= -L$(MSS_BIN) -lcrypto -lpthread -ldl -Wl,-rpath-link=$(MSS_BIN)
+
+TESTUTILS_SRC=testutil/tests.c testutil/format_output.c testutil/output_helpers.c testutil/basic_output.c testutil/tap_bio.c testutil/driver.c testutil/cb.c testutil/stanza.c testutil/test_cleanup.c testutil/init.c testutil/main.c
+
+ifeq (true,$(cryptointerface))
+    $(info "Building with Crypto Interface")
+    CFLAGS += -D__ENABLE_DIGICERT_CRYPTO_INTERFACE__
+endif
+
+ifeq (true,$(tap))
+    $(info "Building with TAP")
+    CFLAGS += -D__ENABLE_DIGICERT_TAP__ -D__ENABLE_DIGICERT_SMP__ -I$(TOP) -I$(MSS)/src
+    LDFLAGS += -lcryptointerface -linitialize -lcommon -lnanotap2 -lnanotap2_common
+ifeq (true,$(fips))
+    LDFLAGS += -lmss
+endif
+endif
+
+ifeq (true,$(tap_remote))
+    $(info "Building with TAP remote")
+    CFLAGS += -D__ENABLE_TAP_REMOTE__
+endif
+
+ifeq (true,$(export))
+    $(info "Building with export")
+    CFLAGS += -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__ -D__DISABLE_AES_CCM__ -D__DISABLE_AES_XTS__
+endif
+
+ifeq (true,$(emulator))
+    $(info "Building with emulator")
+    CFLAGS += -D__ENABLE_DIGICERT_TPM_EMULATOR__
+endif
+
+ifeq (false,$(suiteb))
+    $(info "Building without Suite B")
+    CFLAGS += -D__DISABLE_DIGICERT_SUITE_B__
+endif
+
+ifeq (true,$(fips))
+    $(info "Building with FIPS")
+    CFLAGS += -D__EVP_NAMESPACE_CONFLICT__
+endif
+
+ifeq (true,$(gdb))
+    $(info "Building with debug symbols")
+    CFLAGS += -g
+endif
+
+TEST_3DES= moc_evp_3des_test
+TEST_AES_128= moc_evp_aes_128_test
+TEST_AES_192= moc_evp_aes_192_test
+TEST_AES_AEAD= moc_evp_aes_aead_test
+TEST_AES= moc_evp_aes_test
+TEST_CHACHA20= moc_evp_chacha20_test
+TEST_CHACHAPOLY= moc_evp_chacha20_poly1305_test
+TEST_CIPHER_DIGEST= moc_evp_ciphers_digest
+TEST_DES= moc_evp_des_test
+TEST_DH_DERIVE= moc_evp_dh_derive_test
+TEST_DH= moc_evp_dh_test
+TEST_DSA_KEYPAIR_GEN= moc_evp_dsa_keypair_gen
+TEST_DSA= moc_evp_dsa_test
+TEST_ECDH= moc_evp_ecdh_test
+TEST_ECDSA= moc_evp_ecdsa_test
+TEST_EC_KEYPAIR_GEN= moc_evp_ec_keypair_gen
+TEST_MD2= moc_evp_md2_test
+TEST_MD4= moc_evp_md4_test
+TEST_MD5= moc_evp_md5test
+TEST_RC2= moc_evp_rc2_test
+TEST_RC4= moc_evp_rc4_test
+TEST_RC5= moc_evp_rc5_test
+TEST_TPM_PEM= moc_evp_rsa_dsa_ecdsa_test
+TEST_RSA_KEYPAIR_GEN= moc_evp_rsa_keypair_gen_test
+TEST_RSA= moc_evp_rsa_test
+TEST_SHA1= moc_evp_sha1_test
+TEST_SHA224_256= moc_evp_sha224_256_test
+TEST_SHA384_512= moc_evp_sha384_512_test
+TEST_HMAC= moc_evp_hmac_test
+TEST_EVP= moc_evp_test
+TEST_COPY= moc_evp_copy_test
+TEST_FIPS_VERSION= moc_evp_fips_version_test
+all: clean build_all exe
+build_all: \
+    moc_3des_test moc_aes_128_test moc_aes_192_test moc_aes_aead_test aes_test moc_chacha20_test moc_chacha20_poly1305_test ciphers_digest \
+    moc_des_test dh_derive_test dh_test dsa_keypair_gen_test dsa_test ecdh_test ecdsa_test ec_keypair_gen_test \
+    md2_test md4_test md5_test moc_rc2_test moc_rc4_test moc_rc5_test rsa_dsa_ecdsa_test rsa_keypair_gen_test rsa_test \
+    sha1_test sha224_256_test sha384_512_test hmac_test evp_test copy_test fips_version_test
+moc_3des_test:
+	$(CC) $(TEST_3DES).c -o $(TEST_3DES) $(CFLAGS) $(LDFLAGS)
+moc_aes_128_test:
+	$(CC) $(TEST_AES_128).c -o $(TEST_AES_128) $(CFLAGS) $(LDFLAGS)
+moc_aes_192_test:
+	$(CC) $(TEST_AES_192).c -o $(TEST_AES_192) $(CFLAGS) $(LDFLAGS)
+moc_aes_aead_test:
+	$(CC) $(TEST_AES_AEAD).c -o $(TEST_AES_AEAD) $(CFLAGS) $(LDFLAGS)
+aes_test:
+	$(CC) $(TEST_AES).c -o $(TEST_AES) $(CFLAGS) $(LDFLAGS)
+moc_chacha20_test:
+	$(CC) $(TEST_CHACHA20).c -o $(TEST_CHACHA20) $(CFLAGS) $(LDFLAGS)
+moc_chacha20_poly1305_test:
+	$(CC) $(TEST_CHACHAPOLY).c -o $(TEST_CHACHAPOLY) $(CFLAGS) $(LDFLAGS)
+ciphers_digest:
+	$(CC) $(TEST_CIPHER_DIGEST).c -o $(TEST_CIPHER_DIGEST) $(CFLAGS) $(LDFLAGS)
+moc_des_test:
+	$(CC) $(TEST_DES).c -o $(TEST_DES) $(CFLAGS) $(LDFLAGS)
+dh_derive_test:
+	$(CC) $(TEST_DH_DERIVE).c -o $(TEST_DH_DERIVE) $(CFLAGS) $(LDFLAGS)
+dh_test:
+	$(CC) $(TEST_DH).c -o $(TEST_DH) $(CFLAGS) $(LDFLAGS)
+dsa_keypair_gen_test:
+	$(CC) $(TEST_DSA_KEYPAIR_GEN).c -o $(TEST_DSA_KEYPAIR_GEN) $(CFLAGS) $(LDFLAGS)
+dsa_test:
+	$(CC) $(TEST_DSA).c -o $(TEST_DSA) $(CFLAGS) $(LDFLAGS)
+ecdh_test:
+	$(CC) $(TEST_ECDH).c -o $(TEST_ECDH) $(CFLAGS) $(LDFLAGS)
+ecdsa_test:
+	$(CC) $(TEST_ECDSA).c -o $(TEST_ECDSA) $(CFLAGS) $(LDFLAGS)
+ec_keypair_gen_test:
+	$(CC) $(TEST_EC_KEYPAIR_GEN).c -o $(TEST_EC_KEYPAIR_GEN) $(CFLAGS) $(LDFLAGS)
+md2_test:
+	$(CC) $(TEST_MD2).c -o $(TEST_MD2) $(CFLAGS) $(LDFLAGS)
+md4_test:
+	$(CC) $(TEST_MD4).c -o $(TEST_MD4) $(CFLAGS) $(LDFLAGS)
+md5_test:
+	$(CC) $(TEST_MD5).c -o $(TEST_MD5) $(CFLAGS) $(LDFLAGS)
+moc_rc2_test:
+	$(CC) $(TEST_RC2).c -o $(TEST_RC2) $(CFLAGS) $(LDFLAGS)
+moc_rc4_test:
+	$(CC) $(TEST_RC4).c -o $(TEST_RC4) $(CFLAGS) $(LDFLAGS)
+moc_rc5_test:
+	$(CC) $(TEST_RC5).c -o $(TEST_RC5) $(CFLAGS) $(LDFLAGS)
+rsa_dsa_ecdsa_test:
+	$(CC) $(TEST_TPM_PEM).c -o $(TEST_TPM_PEM) $(CFLAGS) $(LDFLAGS)
+rsa_keypair_gen_test:
+	$(CC) $(TEST_RSA_KEYPAIR_GEN).c -o $(TEST_RSA_KEYPAIR_GEN) $(CFLAGS) $(LDFLAGS)
+rsa_test:
+	$(CC) $(TEST_RSA).c -o $(TEST_RSA) $(CFLAGS) $(LDFLAGS)
+sha1_test:
+	$(CC) $(TEST_SHA1).c -o $(TEST_SHA1) $(CFLAGS) $(LDFLAGS)
+evp_test:
+	$(CC) $(TEST_EVP).c $(TESTUTILS_SRC) -o $(TEST_EVP) $(CFLAGS) $(LDFLAGS)
+copy_test:
+	$(CC) $(TEST_COPY).c -o $(TEST_COPY) $(CFLAGS) $(LDFLAGS)
+sha224_256_test:
+	$(CC) $(TEST_SHA224_256).c -o $(TEST_SHA224_256) $(CFLAGS) $(LDFLAGS)
+sha384_512_test:
+	$(CC) $(TEST_SHA384_512).c -o $(TEST_SHA384_512) $(CFLAGS) $(LDFLAGS)
+hmac_test:
+	$(CC) $(TEST_HMAC).c -o $(TEST_HMAC) $(CFLAGS) $(LDFLAGS)
+fips_version_test:
+	$(CC) $(TEST_FIPS_VERSION).c -o $(TEST_FIPS_VERSION) $(CFLAGS) $(LDFLAGS)
+
+exe:
+ifeq ($(fips),true)
+	./moc_evp_testall_fips.sh
+else
+ifeq ($(export),true)
+	./moc_evp_testall_export.sh
+else
+	./moc_evp_testall.sh
+endif
+endif
+
+clean:
+	rm -rf $(TEST_CIPHER_DIGEST) $(TEST_AES) $(TEST_AES_128) $(TEST_AES_192) $(TEST_AES_AEAD) \
+			$(TEST_CHACHA20) $(TEST_CHACHAPOLY) $(TEST_DES) $(TEST_3DES) $(TEST_RC2) $(TEST_RC4) $(TEST_RC5) $(TEST_MD2) \
+			$(TEST_MD4) $(TEST_MD5) $(TEST_SHA1) $(TEST_SHA224_256) $(TEST_SHA384_512) $(TEST_HMAC) \
+			$(TEST_RSA) $(TEST_DSA) $(TEST_ECDSA) $(TEST_DH) $(TEST_ECDH) $(TEST_TPM_PEM) \
+            $(TEST_DH_DERIVE) $(TEST_DSA_KEYPAIR_GEN) $(TEST_EC_KEYPAIR_GEN) $(TEST_RSA_KEYPAIR_GEN) \
+			$(TEST_EVP) $(TEST_COPY) $(TEST_FIPS_VERSION)
+
+.PHONY: all clean

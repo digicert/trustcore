@@ -1,0 +1,18 @@
+348a349
+> /* This function was patched with the changes from 1.1.1k to fix rsaPss verification */
+351c352
+<     int pkey_nid;
+---
+>     int pkey_sig_nid, subj_sig_nid;
+354a356,358
+>     if (OBJ_find_sigid_algs(EVP_PKEY_base_id(pkey),
+>                             NULL, &pkey_sig_nid) == 0)
+>         pkey_sig_nid = EVP_PKEY_base_id(pkey);
+356c360
+<                             NULL, &pkey_nid) == 0)
+---
+>                             NULL, &subj_sig_nid) == 0)
+358c362
+<     if (EVP_PKEY_type(pkey_nid) != EVP_PKEY_base_id(pkey))
+---
+>     if (pkey_sig_nid != EVP_PKEY_type(subj_sig_nid))

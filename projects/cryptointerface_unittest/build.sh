@@ -84,6 +84,7 @@ X64=" --x64"
 TARGET_PLATFORM=
 XC_BIN_PATH=
 TOOLCHAIN=
+BUILD_FOR_OSI=0
 
 source ../shared_cmake/get_toolchain.sh
 
@@ -228,6 +229,11 @@ do
         --no-lib-rebuild)
           REBUILD_LIBS=0
           ;;
+        --build-for-osi)
+            echo "Enabling BUILD_FOR_OSI...";
+            BUILD_OPTIONS+=" -DBUILD_FOR_OSI=ON"
+            BUILD_FOR_OSI=1
+            ;;
         --help)
           INV_OPT=1
           ;;
@@ -243,6 +249,12 @@ do
     esac
     shift
 done
+
+# Check if building for OSI
+source $SCRIPT_DIR/../../scripts/check_for_osi.sh
+if [ ${OSI_BUILD} -eq 1 ]; then
+    BUILD_OPTIONS+=" -DBUILD_FOR_OSI=ON"
+fi
 
 if [ ${INV_OPT} -eq 1 ]; then
     show_usage

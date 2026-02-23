@@ -6518,9 +6518,10 @@ findCertificate(SSLSocket *pSSLSock, void *pCertStore, ubyte4 *pAlgoIds, ubyte4 
     {
         for (j = 0; j < algoIdsLen; j++)
         {
-            if (gAllCertStoreHashAlgorithms[j] == CERT_STORE_ALGO_ID_GET_HASH(pFullAlgoList[i]))
+            if (gAllCertStoreHashAlgorithms[i] == CERT_STORE_ALGO_ID_GET_HASH(pFullAlgoList[j]))
             {
-                CERT_STORE_ALGO_ID_SET_HASH(pFullAlgoList[algoIdsLen + j], gAllCertStoreHashAlgorithms[j]);
+                CERT_STORE_ALGO_ID_SET_HASH(pFullAlgoList[algoIdsLen + i], gAllCertStoreHashAlgorithms[i]);
+                break;
             }
         }
     }

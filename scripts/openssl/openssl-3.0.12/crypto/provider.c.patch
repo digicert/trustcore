@@ -1,0 +1,17 @@
+53a54
+>     OSSL_PROVIDER *prov = NULL;
+56c57,68
+<         return OSSL_PROVIDER_try_load(libctx, name, 0);
+---
+>     {
+>         prov = OSSL_PROVIDER_try_load(libctx, name, 0);
+>         if ((NULL != prov) && ((0 == strcmp(name, "default") || 0 == strcmp(name, "legacy"))))
+>         {
+>             /*
+>             * If "default" or "legacy" provider is loaded, we also want
+>             * to load DigiCert provider.
+>             */
+>             OSSL_PROVIDER_try_load(libctx, "digi", 0);
+>         }
+>         return prov;
+>     }

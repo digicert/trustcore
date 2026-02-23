@@ -1,0 +1,28 @@
+11a12,26
+> int DIGI_EVP_getFipsMode();
+> int DIGI_EVP_setFipsMode(int fipsMode);
+> unsigned long DIGI_EVP_FIPS_module_version(void);
+> const char *DIGI_EVP_FIPS_module_version_text(void);
+> 
+> unsigned long FIPS_module_version(void)
+> {
+>     return DIGI_EVP_FIPS_module_version();
+> }
+> 
+> const char *FIPS_module_version_text(void)
+> {
+>     return DIGI_EVP_FIPS_module_version_text();
+> }
+> 
+13a29,31
+>     /* Mocana - Get the FIPS mode from the EVP engine */
+>     return DIGI_EVP_getFipsMode();
+> #if 0
+15a34
+> #endif
+19a39,41
+>     /* Mocana - Set FIPS mode in the EVP engine */
+>     return DIGI_EVP_setFipsMode(r);
+> #if 0
+23a46
+> #endif

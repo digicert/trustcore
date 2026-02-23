@@ -1,0 +1,72 @@
+14a15
+> #include <string.h>
+37,38c38,39
+< int X509V3_add_value(const char *name, const char *value,
+<                      STACK_OF(CONF_VALUE) **extlist)
+---
+> static int x509v3_add_len_value(const char *name, const char *value,
+>                                 size_t vallen, STACK_OF(CONF_VALUE) **extlist)
+44,46c45
+<     if (name && (tname = OPENSSL_strdup(name)) == NULL)
+<         goto err;
+<     if (value && (tvalue = OPENSSL_strdup(value)) == NULL)
+---
+>     if (name != NULL && (tname = OPENSSL_strdup(name)) == NULL)
+47a47,57
+>     if (value != NULL && vallen > 0) {
+>         /*
+>          * We tolerate a single trailing NUL character, but otherwise no
+>          * embedded NULs
+>          */
+>         if (memchr(value, 0, vallen - 1) != NULL)
+>             goto err;
+>         tvalue = OPENSSL_strndup(value, vallen);
+>         if (tvalue == NULL)
+>             goto err;
+>     }
+69a80,87
+> int X509V3_add_value(const char *name, const char *value,
+>                      STACK_OF(CONF_VALUE) **extlist)
+> {
+>     return x509v3_add_len_value(name, value,
+>                                 value != NULL ? strlen((const char *)value) : 0,
+>                                 extlist);
+> }
+> 
+73c91,99
+<     return X509V3_add_value(name, (const char *)value, extlist);
+---
+>     return x509v3_add_len_value(name, (const char *)value,
+>                                 value != NULL ? strlen((const char *)value) : 0,
+>                                 extlist);
+> }
+> 
+> int x509v3_add_len_value_uchar(const char *name, const unsigned char *value,
+>                                size_t vallen, STACK_OF(CONF_VALUE) **extlist)
+> {
+>     return x509v3_add_len_value(name, (const char *)value, vallen, extlist);
+505c531,533
+<     if (!email->data || !email->length)
+---
+>     if (email->data == NULL || email->length == 0)
+>         return 1;
+>     if (memchr(email->data, 0, email->length) != NULL)
+510a539,543
+> 
+>     emtmp = OPENSSL_strndup((char *)email->data, email->length);
+>     if (emtmp == NULL)
+>         return 0;
+> 
+512c545,546
+<     if (sk_OPENSSL_STRING_find(*sk, (char *)email->data) != -1)
+---
+>     if (sk_OPENSSL_STRING_find(*sk, emtmp) != -1) {
+>         OPENSSL_free(emtmp);
+514,516c548,550
+<     emtmp = OPENSSL_strdup((char *)email->data);
+<     if (emtmp == NULL || !sk_OPENSSL_STRING_push(*sk, emtmp)) {
+<         OPENSSL_free(emtmp);    /* free on push failure */
+---
+>     }
+>     if (!sk_OPENSSL_STRING_push(*sk, emtmp)) {
+>         OPENSSL_free(emtmp); /* free on push failure */

@@ -1,0 +1,13 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+#
+#$COMMON_GOAL=../../libcommon.a
+
+$RNG_GOAL=../../libdigiprov.a
+
+# This source is common building blocks for all rngs in all our providers.
+
+SOURCE[$RNG_GOAL]=\
+        digi_drbg_common.c digi_drbg_ctr.c digi_drbg_hash.c
+
+# Extra code to satisfy the FIPS and non-FIPS separation.

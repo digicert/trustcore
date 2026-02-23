@@ -1,0 +1,15 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+
+$DH_GOAL=../../libdigiprov.a
+$ECDH_GOAL=../../libdigiprov.a
+$ECX_GOAL=../../libdigiprov.a
+
+IF[{- !$disabled{dh} -}]
+  SOURCE[$DH_GOAL]=digi_dh_exch.c
+ENDIF
+
+IF[{- !$disabled{ec} -}]
+  SOURCE[$ECX_GOAL]=digi_ecx_exch.c
+  SOURCE[$ECDH_GOAL]=digi_ecdh_exch.c
+ENDIF

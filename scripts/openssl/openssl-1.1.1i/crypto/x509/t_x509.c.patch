@@ -1,0 +1,8 @@
+368c368
+<     alias = X509_alias_get0(x, NULL);
+---
+>     alias = X509_alias_get0(x, &i);
+370c370
+<         BIO_printf(out, "%*sAlias: %s\n", indent, "", alias);
+---
+>         BIO_printf(out, "%*sAlias: %.*s\n", indent, "", i, alias);

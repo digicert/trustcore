@@ -1,0 +1,176 @@
+This is OpenSSL Testharness V.01
+================================
+
+Build Instructions
+------------------
+
+Follow below instructions
+ a) Create all build
+    $ make all
+ b) Create Build for OpenSSL Testharness
+    $ make openssl_testharness
+ c) Create Build for NanoSSL Testharness
+	$ make nanossl_testharness
+ d) Clean the repository
+    $ make clean
+
+
+
+Configuration File Instructions
+-------------------------------
+There are three configuration files present inside the mss/testopensslshim/conf directory for 
+the execution, 
+Please find below instructions defined how to use them,
+
+1. test_case.conf :
+This file consist test case group ids for Client or Server, Please look at the following 
+example, 
+default configuration file has minimal group id for testing, if More initialization functions 
+needs to be testing. 
+GroupId would be increased for client_init as suppose 101 for a new Group
+(Refer GROUP ID section below).
+See below example
+
+	   |----------------------|				    |----------------------|
+       | client_init=100      |				    | client_init=100, 101 |
+       | client_handshake=200 |		into 	    | client_handshake=200 |
+       | client_data_exch=300 |				    | client_data_exch=300 |
+       | client_cleanup=400   |    				| client_cleanup=400   |
+	   | server_init=100      |                 | server_init=100      |
+	   | server_handshake=200 |                 | server_handshake=200 |
+	   | server_data_exch=300 |				    | server_data_exch=300 |
+	   | server_cleanup=400   |				    | server_cleanup=400   |
+       |----------------------|				    |----------------------|
+
+2. client_details.conf:
+This file consist details for a URL and port which will be used by test harness to act as a 
+client to connect to a defined URL server. 
+Please find below example,
+
+	|------------------------------------|	
+	| dest_url=https://www.someURL.com   |
+	| port=443                           |
+	|------------------------------------|
+
+3. server_details.conf:
+This file contains details for server port, server certificate file lcoation and server private 
+file location which are being used by server test harness. 
+Please fine below as example,
+
+	|-----------------------------------------------|	
+	| port=443			     						|
+	| certificate_file=/opt/httpd/conf/server.crt	|
+	| privateKey_file=/opt/httpd/conf/server.key	|
+	|-----------------------------------------------|
+
+
+Execution Instructions
+----------------------
+To execute test harness either in server mode or client mode, Please follow below instructions,
+below instructions will use default configuration file from conf/ directory.
+1. To execute as a server mode
+	$ sudo ./openssl_testharness server
+2. To execute as a client mode
+	$ ./openssl_testharness client
+
+If we want to execute test harness with other custom group ids other than default we need to pass
+new configuration file with full path as an argument, please follow below instructions,
+
+usage:
+    $ ./openssl_testharness -f <mode:(server/client)> <filename> 
+example:
+    $ ./openssl_testharness -f client /tmp/config.sessionreuse
+
+
+GROUP IDs and APIs
+------------------
+
+1. Client Group APIs
+--------------------
+ ___________________________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API             |   GroupID   | REMARK
+ -------------------------------------------------------------------------------------------
+  |CLIENT_INIT      |       -        |SSL_library_init         |100          |            |
+  |CLIENT_INIT      |       -        |SSL_load_error_strings   |100          |            |
+  |CLIENT_INIT      |       -        |SSL_CTX_new              |100          |            |
+  |CLIENT_INIT      |       -        |SSL_new                  |100          |            |
+  |CLIENT_INIT      |SSL Methods     |SSLv23_client_method     |100          |            |
+  |CLIENT_INIT      |SSL Methods     |SSLv3_client_method      |1011         |            |
+  |CLIENT_INIT      |SSL Methods     |TLSv1_client_method      |1012         |            |
+  |CLIENT_INIT      |SSL Methods     |TLSv1_1_client_method    |1013         |            |
+  |CLIENT_INIT      |SSL Methods     |TLSv1_2_client_method    |1014         |            |
+  |CLIENT_INIT      |SSL CTX OPTIONS |SSL_CTX_set_options      |1021         |            |
+  |CLIENT_INIT      |SSL CTX OPTIONS |SSL_CTX_clear_options    |1022         |            |
+  |CLIENT_INIT      |SSL CTX OPTIONS |SSL_CTX_get_options      |1023         |            |
+  |CLIENT_INIT      |SSL CTX Callback|SSL_CTX_set_info_callback|1031         |            |
+  |CLIENT_INIT      |SSL CTX Callback|SSL_CTX_get_info_callback|1032         |            |
+  |                 |                |                         |             |            |
+  |                 |                |                         |             |            |
+
+ _____________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API             |   GroupID   |
+ ------------------------------------------------------------------------------ 
+  |CLIENT_HANDSHAKE |Socket-         |SSL_set_fd               |200          |
+  |                 |Descriptor      |                         |             |
+  |CLIENT_HANDSHAKE |SSL Connection  |SSL_connect              |200          |
+  |                 |                |                         |             |
+  |                 |                |                         |             |
+
+ ______________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API             |   GroupID   |
+ ------------------------------------------------------------------------------ 
+  |CLIENT_DATA_EXCH |                |SSL_get_peer_certificate |300          |
+  |CLIENT_DATA_EXCH |                |SSL_write                |3011         |
+  |CLIENT_DATA_EXCH |                |SSL_read                 |3012         |
+
+ ______________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API             |   GroupID   |
+ ------------------------------------------------------------------------------ 
+  |CLIENT_CLEANUP   |                |SSL_free                 |400          |
+  |                 |                |                         |             |
+
+
+2. Server Group APIs
+--------------------
+ _______________________________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API                 |   GroupID   |Remarks     |
+ -----------------------------------------------------------------------------------------------
+  |SERVER_INIT      |       -        |SSL_library_init             |100          |            |
+  |SERVER_INIT      |       -        |SSL_load_error_strings       |100          |            |
+  |SERVER_INIT      |       -        |SSL_CTX_new                  |100          |            |
+  |SERVER_INIT      |SSL Methods     |SSLv23_server_method         |100          |            |
+  |SERVER_INIT      |SSL Certificate |SSL_CTX_use_certificate_file |100          |            |
+  |SERVER_INIT      |SSL Certificate |SSL_CTX_use_PrivateKey_file  |100          |            |
+  |SERVER_INIT      |SSL Methods     |SSLv3_server_method          |1011         |            |
+  |SERVER_INIT      |SSL Methods     |TLSv1_server_method          |1012         |            |
+  |SERVER_INIT      |SSL Methods     |TLSv1_1_server_method        |1013         |            |
+  |SERVER_INIT      |SSL Methods     |TLSv1_2_server_method        |1014         |            |
+  |SERVER_INIT      |SSL CTX OPTIONS |SSL_CTX_set_options          |1021         |            |
+  |SERVER_INIT      |SSL CTX OPTIONS |SSL_CTX_clear_options        |1022         |            |
+  |SERVER_INIT      |SSL CTX OPTIONS |SSL_CTX_get_options          |1023         |            |
+  |SERVER_INIT      |SSL CTX Callback|SSL_CTX_set_info_callback    |1031         |            |
+  |SERVER_INIT      |SSL CTX Callback|SSL_CTX_get_info_callback    |1032         |            |
+  |                 |                |                             |             |            |
+  |                 |                |                             |             |            |
+  |                 |                |                             |             |            |
+
+ __________________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API                 |   GroupID   |
+ ---------------------------------------------------------------------------------- 
+  |SERVER_HANDSHAKE |                |SSL_new                      |200          |
+  |SERVER_HANDSHAKE |                |SSL_set_fd                   |200          |
+  |                 |                |                             |             |
+  |                 |                |                             |             |
+
+ __________________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API                 |   GroupID   |
+ ---------------------------------------------------------------------------------- 
+  |SERVER_DATA_EXCH |                |SSL_write                    |3011         |
+  |SERVER_DATA_EXCH |                |SSL_read                     |3012         |
+  |                 |                |                             |             |
+
+ __________________________________________________________________________________
+  |    CATEGORY     |  SUB-CATEGORY  |         API                 |   GroupID   |
+ ---------------------------------------------------------------------------------- 
+  |SERVER_CLEANUP   |                |SSL_free                     |400          |
+  |                 |                |                             |             |

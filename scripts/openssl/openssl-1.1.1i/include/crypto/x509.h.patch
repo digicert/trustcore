@@ -1,0 +1,7 @@
+10a11,12
+> #include <openssl/x509.h>
+> #include <openssl/conf.h>
+286a289,291
+> 
+> int x509v3_add_len_value_uchar(const char *name, const unsigned char *value,
+>                                size_t vallen, STACK_OF(CONF_VALUE) **extlist);

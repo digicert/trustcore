@@ -1,0 +1,9 @@
+33a34,35
+>         /* Mocana - Fix for assigning to NULL */
+>         ctx->md_data = NULL;
+129a132,133
+>             /* Mocana - Fix for memory Initialization */
+>             if(ctx->md_data) memset(ctx->md_data, 0, type->ctx_size);
+249a254,255
+>             /* Mocana - Fix for memory Initialization */
+>             if(out->md_data) memset(out->md_data, 0, out->digest->ctx_size);

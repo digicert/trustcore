@@ -14,9 +14,11 @@
 | **SSH Unit Test** | Unit tests for NanoSSH | **[→ Build & Run](projects/nanossh_testunit/BUILD_RUN.md)** |
 
 ### 📡 NanoMQTT
-| Component       | Description           | Guide                                                 |
-|---------------- |-----------------------|-------------------------------------------------------|
-| **MQTT Client** | MQTT client           | **[→ Build & Run](samples/mqtt_client/BUILD_RUN.md)** |
+| Component                 | Description                   | Guide                                                    |
+|---------------------------|-------------------------------|----------------------------------------------------------|
+| **MQTT Client**           | MQTT client                   | **[→ Build & Run](samples/mqtt_client/BUILD_RUN.md)**    |
+| **MQTT Functional Test**  | Functional tests for NanoMQTT | **[→ Build & Run](src/mqtt/test/BUILD_RUN.md)**          |
+| **MQTT Unit Test**        | Unit tests for NanoMQTT       | **[→ Build & Run](projects/mqtt_testunit/BUILD_RUN.md)** |
 
 ### ⚙️ NanoROOT
 | Component       | Description           | Guide                                                 |
@@ -48,6 +50,11 @@
 | Component      | Description                                  | Guide                                                   |
 |----------------|----------------------------------------------|---------------------------------------------------------|
 | **EST Sample** | EST certificate enrollment sample            | **[→ Build & Run](samples/nanocert_est/BUILD_RUN.md)**  |
+
+### 🔗 OpenSSL Connector
+| Component            | Description                           | Guide                                                       |
+|----------------------|---------------------------------------|-------------------------------------------------------------|
+| **OpenSSL Connector** | Demonstrates OpenSSL Connector Usage | **[→ Build & Run](samples/openssl_connector/BUILD_RUN.md)** |
 
 
 ## ⚙️ Commonly Used CMake Options

@@ -5616,6 +5616,18 @@
 #define DIGI_removeDuplicateSlashes MOC_removeDuplicateSlashes
 #define DIGI_floorPower2 MOC_floorPower2
 #define DIGI_STRCBCPY MOC_STRCBCPY
+#define DIGI_malloc MOC_malloc
+#define DIGI_ffree MOC_ffree
+#define DIGI_rtosInit MOC_rtosInit
+#define DIGI_rtosShutdown MOC_rtosShutdown
+#define DIGI_mutexCreate2 MOC_mutexCreate2
+#define DIGI_mutexWait MOC_mutexWait
+#define DIGI_mutexRelease MOC_mutexRelease
+#define DIGI_mutexFree MOC_mutexFree
+#define DIGI_getUpTimeInMS MOC_getUpTimeInMS
+#define DIGI_sleepMS MOC_sleepMS
+#define DIGI_deltaMS MOC_deltaMS
+#define DIGI_timeGMT MOC_timeGMT
 #endif /* __ENABLE_DIGICERT_FIPS_LEGACY_LIB__ */
 
 #if ((defined (__ENABLE_DIGICERT_TPM__) || defined(__ENABLE_DIGICERT_TPM2__)) && !defined(__DISABLE_DIGICERT_TPM_MUTEX__))

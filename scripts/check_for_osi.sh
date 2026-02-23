@@ -4,10 +4,10 @@
 # Can be sourced by other scripts to set OSI_BUILD variable.
 
 # Get script directory
-SCRIPT_DIR=$( cd $(dirname "${BASH_SOURCE[0]}") ; pwd -P )
+OSI_SCRIPT_DIR=$( cd $(dirname "${BASH_SOURCE[0]}") ; pwd -P )
 
 # Check if digicert_example.c exists and is not a symlink
-CHECK_FILE="$SCRIPT_DIR/../samples/common/digicert_example.c"
+CHECK_FILE="$OSI_SCRIPT_DIR/../samples/common/digicert_example.c"
 
 if [ -f "$CHECK_FILE" ] && [ ! -L "$CHECK_FILE" ]; then
     OSI_BUILD=1

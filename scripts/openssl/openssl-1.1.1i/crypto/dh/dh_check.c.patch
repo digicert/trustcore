@@ -1,0 +1,22 @@
+100c100
+<     int ok = 0, r;
+---
+>     int ok = 0, r, q_good = 0;
+103a104,109
+>     /* Don't do any checks at all with an excessively large modulus */
+>     if (BN_num_bits(dh->p) > OPENSSL_DH_CHECK_MAX_MODULUS_BITS) {
+>         DHerr(DH_F_DH_CHECK, DH_R_MODULUS_TOO_LARGE);
+>         return 0;
+>     }
+> 
+116c122,129
+<     if (dh->q) {
+---
+>     if (dh->q != NULL) {
+>         if (BN_ucmp(dh->p, dh->q) > 0)
+>             q_good = 1;
+>         else
+>             *ret |= DH_CHECK_INVALID_Q_VALUE;
+>     }
+> 
+>     if (q_good) {

@@ -1,0 +1,10 @@
+59a60,66
+> #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
+> const DSA_METHOD *MOC_DSA_get_default_method(void);
+> const DSA_METHOD *DSA_get_default_method(void)
+> {
+>     return MOC_DSA_get_default_method();
+> }
+> #else
+63a71
+> #endif

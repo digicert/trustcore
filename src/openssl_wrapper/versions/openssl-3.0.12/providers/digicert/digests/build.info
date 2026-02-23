@@ -1,0 +1,5 @@
+
+$DIGEST_GOAL=../../libdigiprov.a
+
+SOURCE[$DIGEST_GOAL]=\
+        digi_digest_prov.c

@@ -1,0 +1,425 @@
+name: "Build_NanoSSH"
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 3 * * *'   # Every day at 8:30 AM IST (3:00 AM UTC)
+
+jobs:
+  build-nanossh-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake
+          cmake --version
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      # ---------------- SSH BUILDS Non-TAP ----------------
+
+      - name: CMAKE Build with NanoCrypto for Server RSA Host Key with Client PW without SUITE B
+        id: ssh_1
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DDISABLE_SUITEB=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Certificate and Client Certificate without SUITE B
+        id: ssh_2
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DDISABLE_SUITEB=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server ECDSA Host Key with Client PW with SUITE B
+        id: ssh_3
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Host Key with Client Certificate with SUITE B
+        id: ssh_4
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Certificate with Client PW with SUITE B
+        id: ssh_5
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with SUITE B
+        id: ssh_6
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with SUITE B and no public key name in public keyblob
+        id: ssh_7
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_MOCANA_NO_PUBKEY_NAME=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Host Key with Client Keyboard-Interactive Password with SUITE B
+        id: ssh_8
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_KEYBOARD_INTERACTIVE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto with ChaChaPoly enable
+        id: ssh_9
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_CHACHAPOLY=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto with Blowfish enable
+        id: ssh_10
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_BLOWFISH=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto with DSA enable
+        id: ssh_11
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_DSA_SUPPORT=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto with PQC disable
+        id: ssh_12
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DDISABLE_PQC=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto with PQC disable and RFC6187 support
+        id: ssh_13
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DDISABLE_PQC=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      # ---------------- SSH BUILDS TAP-LOCAL ----------------
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server RSA Host Key with Client PW
+        id: ssh_14
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Host Key with Client Certificate
+        id: ssh_15
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW
+        id: ssh_16
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate
+        id: ssh_17
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate, no public key name in public keyblob
+        id: ssh_18
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_MOCANA_NO_PUBKEY_NAME=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable
+        id: ssh_19
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DDISABLE_PQC=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON  -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable and RFC6187
+        id: ssh_20
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DDISABLE_PQC=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      # ---------------- SSH BUILDS TAP-REMOTE ----------------
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server RSA Host Key with Client PW
+        id: ssh_21
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Host Key with Client Certificate
+        id: ssh_22
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW
+        id: ssh_23
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate
+        id: ssh_24
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate, no public key name in public keyblob
+        id: ssh_25
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_MOCANA_NO_PUBKEY_NAME=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable
+        id: ssh_26
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DDISABLE_PQC=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON  -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable and RFC6187
+        id: ssh_27
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DDISABLE_PQC=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      # ---------------- FINAL FAILURE CHECK ----------------
+      - name: Fail job if any build failed
+        if: always()
+        run: |
+          FAILED=0
+
+          # SSH builds
+          if [[ "${{ steps.ssh_1.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server RSA Host Key with Client PW without SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_2.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate and Client Certificate without SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_3.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server ECDSA Host Key with Client PW with SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_4.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Host Key with Client Certificate with SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_5.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate with Client PW with SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_6.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_7.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with SUITE B and no public key name FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_8.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Host Key with Client Keyboard-Interactive Password with SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_9.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with ChaChaPoly enable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_10.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with Blowfish enable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_11.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with DSA enable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_12.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with PQC disable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_13.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with PQC disable and RFC6187 support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_14.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server RSA Host Key with Client PW"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_15.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Host Key with Client Certificate" 
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_16.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_17.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_18.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate, no public key name in public keyblob"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_19.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_20.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable and RFC6187"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_21.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server RSA Host Key with Client PW"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_22.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Host Key with Client Certificate"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_23.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_24.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_25.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate, no public key name in public keyblob"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_26.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_27.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable and RFC6187"
+            FAILED=1
+          fi
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "One or more builds failed."
+            exit 1
+          else
+            echo ""
+            echo "All builds passed."
+          fi
+
+

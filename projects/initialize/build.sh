@@ -60,6 +60,7 @@ BUILD_OPTIONS=
 BUILD_TYPE=Release
 INV_OPT=0
 TARGET_PLATFORM=
+BUILD_FOR_OSI=0
 
 source $CURR_DIR/../shared_cmake/get_toolchain.sh
 
@@ -181,6 +182,7 @@ do
         --build-for-osi)
             echo "Enabling BUILD_FOR_OSI...";
             BUILD_OPTIONS+=" -DBUILD_FOR_OSI=ON"
+            BUILD_FOR_OSI=1
             ;;
         --*)
             echo "Invalid option: $1";
@@ -232,9 +234,12 @@ cmake ${TARGET_PLATFORM} \
 echo "Calling: make"
 make
 
-echo "Copying library to bin..."
-if [ $is_static_lib -eq 0 ]; then
-    cp libs/${SHARED_LIB_NAME} ../../../bin/
-else
-    cp libinitialize.a ../../../bin_static/
+if [ ${OSI_BUILD} -eq 0 ] && [ ${BUILD_FOR_OSI} -eq 0 ]; then
+    echo "Copying library to bin..."
+    if [ $is_static_lib -eq 0 ]; then
+        cp libs/${SHARED_LIB_NAME} ../../../bin/
+    else
+        cp libinitialize.a ../../../bin_static/
+    fi
 fi
+

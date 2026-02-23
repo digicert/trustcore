@@ -1,0 +1,342 @@
+298,303d297
+< #ifndef OPENSSL_NO_CHACHA
+<     ALG(PROV_NAMES_ChaCha20, ossl_chacha20_functions),
+< # ifndef OPENSSL_NO_POLY1305
+<     ALG(PROV_NAMES_ChaCha20_Poly1305, ossl_chacha20_ossl_poly1305_functions),
+< # endif /* OPENSSL_NO_POLY1305 */
+< #endif /* OPENSSL_NO_CHACHA */
+323,325d316
+< #ifndef OPENSSL_NO_POLY1305
+<     { PROV_NAMES_POLY1305, "provider=default", ossl_poly1305_functions },
+< #endif
+486a478,726
+> /* -------------------------------------------------------------------------------- */
+> 
+> #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+> 
+> static const OSSL_ALGORITHM deflt_digests_stripped[] = {
+>     /* Our primary name:NIST name[:our older names] */
+>     { PROV_NAMES_SHA2_512_224, "provider=default", ossl_sha512_224_functions },
+>     { PROV_NAMES_SHA2_512_256, "provider=default", ossl_sha512_256_functions },
+> 
+>     /*
+>      * KECCAK-KMAC-128 and KECCAK-KMAC-256 as hashes are mostly useful for
+>      * the KMAC-128 and KMAC-256.
+>      */
+>     { PROV_NAMES_KECCAK_KMAC_128, "provider=default",
+>       ossl_keccak_kmac_128_functions },
+>     { PROV_NAMES_KECCAK_KMAC_256, "provider=default",
+>       ossl_keccak_kmac_256_functions },
+> 
+> #ifndef OPENSSL_NO_SM3
+>     { PROV_NAMES_SM3, "provider=default", ossl_sm3_functions },
+> #endif /* OPENSSL_NO_SM3 */
+> 
+> #ifndef OPENSSL_NO_MD5
+>     { PROV_NAMES_MD5_SHA1, "provider=default", ossl_md5_sha1_functions },
+> #endif /* OPENSSL_NO_MD5 */
+> 
+> #ifndef OPENSSL_NO_RMD160
+>     { PROV_NAMES_RIPEMD_160, "provider=default", ossl_ripemd160_functions },
+> #endif /* OPENSSL_NO_RMD160 */
+> 
+>     { PROV_NAMES_NULL, "provider=default", ossl_nullmd_functions },
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM_CAPABLE deflt_ciphers_stripped[] = {
+>     ALG(PROV_NAMES_NULL, ossl_null_functions),
+>     ALG(PROV_NAMES_AES_128_CBC_CTS, ossl_aes128cbc_cts_functions),
+>     ALG(PROV_NAMES_AES_192_CBC_CTS, ossl_aes192cbc_cts_functions),
+>     ALG(PROV_NAMES_AES_256_CBC_CTS, ossl_aes256cbc_cts_functions),
+>     ALG(PROV_NAMES_AES_256_CFB1, ossl_aes256cfb1_functions),
+>     ALG(PROV_NAMES_AES_192_CFB1, ossl_aes192cfb1_functions),
+>     ALG(PROV_NAMES_AES_128_CFB1, ossl_aes128cfb1_functions),
+>     ALG(PROV_NAMES_AES_256_CFB8, ossl_aes256cfb8_functions),
+>     ALG(PROV_NAMES_AES_192_CFB8, ossl_aes192cfb8_functions),
+>     ALG(PROV_NAMES_AES_128_CFB8, ossl_aes128cfb8_functions),
+> #ifndef OPENSSL_NO_OCB
+>     ALG(PROV_NAMES_AES_256_OCB, ossl_aes256ocb_functions),
+>     ALG(PROV_NAMES_AES_192_OCB, ossl_aes192ocb_functions),
+>     ALG(PROV_NAMES_AES_128_OCB, ossl_aes128ocb_functions),
+> #endif /* OPENSSL_NO_OCB */
+> #ifndef OPENSSL_NO_SIV
+>     ALG(PROV_NAMES_AES_128_SIV, ossl_aes128siv_functions),
+>     ALG(PROV_NAMES_AES_192_SIV, ossl_aes192siv_functions),
+>     ALG(PROV_NAMES_AES_256_SIV, ossl_aes256siv_functions),
+> #endif /* OPENSSL_NO_SIV */
+>     ALG(PROV_NAMES_AES_192_CCM, ossl_aes192ccm_functions),
+>     ALG(PROV_NAMES_AES_128_CCM, ossl_aes128ccm_functions),
+>     ALGC(PROV_NAMES_AES_128_CBC_HMAC_SHA1, ossl_aes128cbc_hmac_sha1_functions,
+>          ossl_cipher_capable_aes_cbc_hmac_sha1),
+>     ALGC(PROV_NAMES_AES_256_CBC_HMAC_SHA1, ossl_aes256cbc_hmac_sha1_functions,
+>          ossl_cipher_capable_aes_cbc_hmac_sha1),
+>     ALGC(PROV_NAMES_AES_128_CBC_HMAC_SHA256, ossl_aes128cbc_hmac_sha256_functions,
+>         ossl_cipher_capable_aes_cbc_hmac_sha256),
+>     ALGC(PROV_NAMES_AES_256_CBC_HMAC_SHA256, ossl_aes256cbc_hmac_sha256_functions,
+>          ossl_cipher_capable_aes_cbc_hmac_sha256),
+> #ifndef OPENSSL_NO_ARIA
+>     ALG(PROV_NAMES_ARIA_256_GCM, ossl_aria256gcm_functions),
+>     ALG(PROV_NAMES_ARIA_192_GCM, ossl_aria192gcm_functions),
+>     ALG(PROV_NAMES_ARIA_128_GCM, ossl_aria128gcm_functions),
+>     ALG(PROV_NAMES_ARIA_256_CCM, ossl_aria256ccm_functions),
+>     ALG(PROV_NAMES_ARIA_192_CCM, ossl_aria192ccm_functions),
+>     ALG(PROV_NAMES_ARIA_128_CCM, ossl_aria128ccm_functions),
+>     ALG(PROV_NAMES_ARIA_256_ECB, ossl_aria256ecb_functions),
+>     ALG(PROV_NAMES_ARIA_192_ECB, ossl_aria192ecb_functions),
+>     ALG(PROV_NAMES_ARIA_128_ECB, ossl_aria128ecb_functions),
+>     ALG(PROV_NAMES_ARIA_256_CBC, ossl_aria256cbc_functions),
+>     ALG(PROV_NAMES_ARIA_192_CBC, ossl_aria192cbc_functions),
+>     ALG(PROV_NAMES_ARIA_128_CBC, ossl_aria128cbc_functions),
+>     ALG(PROV_NAMES_ARIA_256_OFB, ossl_aria256ofb_functions),
+>     ALG(PROV_NAMES_ARIA_192_OFB, ossl_aria192ofb_functions),
+>     ALG(PROV_NAMES_ARIA_128_OFB, ossl_aria128ofb_functions),
+>     ALG(PROV_NAMES_ARIA_256_CFB, ossl_aria256cfb_functions),
+>     ALG(PROV_NAMES_ARIA_192_CFB, ossl_aria192cfb_functions),
+>     ALG(PROV_NAMES_ARIA_128_CFB, ossl_aria128cfb_functions),
+>     ALG(PROV_NAMES_ARIA_256_CFB1, ossl_aria256cfb1_functions),
+>     ALG(PROV_NAMES_ARIA_192_CFB1, ossl_aria192cfb1_functions),
+>     ALG(PROV_NAMES_ARIA_128_CFB1, ossl_aria128cfb1_functions),
+>     ALG(PROV_NAMES_ARIA_256_CFB8, ossl_aria256cfb8_functions),
+>     ALG(PROV_NAMES_ARIA_192_CFB8, ossl_aria192cfb8_functions),
+>     ALG(PROV_NAMES_ARIA_128_CFB8, ossl_aria128cfb8_functions),
+>     ALG(PROV_NAMES_ARIA_256_CTR, ossl_aria256ctr_functions),
+>     ALG(PROV_NAMES_ARIA_192_CTR, ossl_aria192ctr_functions),
+>     ALG(PROV_NAMES_ARIA_128_CTR, ossl_aria128ctr_functions),
+> #endif /* OPENSSL_NO_ARIA */
+> #ifndef OPENSSL_NO_CAMELLIA
+>     ALG(PROV_NAMES_CAMELLIA_256_ECB, ossl_camellia256ecb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_ECB, ossl_camellia192ecb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_ECB, ossl_camellia128ecb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_256_CBC, ossl_camellia256cbc_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_CBC, ossl_camellia192cbc_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_CBC, ossl_camellia128cbc_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_CBC_CTS, ossl_camellia128cbc_cts_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_CBC_CTS, ossl_camellia192cbc_cts_functions),
+>     ALG(PROV_NAMES_CAMELLIA_256_CBC_CTS, ossl_camellia256cbc_cts_functions),
+>     ALG(PROV_NAMES_CAMELLIA_256_OFB, ossl_camellia256ofb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_OFB, ossl_camellia192ofb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_OFB, ossl_camellia128ofb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_256_CFB, ossl_camellia256cfb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_CFB, ossl_camellia192cfb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_CFB, ossl_camellia128cfb_functions),
+>     ALG(PROV_NAMES_CAMELLIA_256_CFB1, ossl_camellia256cfb1_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_CFB1, ossl_camellia192cfb1_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_CFB1, ossl_camellia128cfb1_functions),
+>     ALG(PROV_NAMES_CAMELLIA_256_CFB8, ossl_camellia256cfb8_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_CFB8, ossl_camellia192cfb8_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_CFB8, ossl_camellia128cfb8_functions),
+>     ALG(PROV_NAMES_CAMELLIA_256_CTR, ossl_camellia256ctr_functions),
+>     ALG(PROV_NAMES_CAMELLIA_192_CTR, ossl_camellia192ctr_functions),
+>     ALG(PROV_NAMES_CAMELLIA_128_CTR, ossl_camellia128ctr_functions),
+> #endif /* OPENSSL_NO_CAMELLIA */
+> #ifndef OPENSSL_NO_DES
+>     ALG(PROV_NAMES_DES_EDE3_OFB, ossl_tdes_ede3_ofb_functions),
+>     ALG(PROV_NAMES_DES_EDE3_CFB, ossl_tdes_ede3_cfb_functions),
+>     ALG(PROV_NAMES_DES_EDE3_CFB8, ossl_tdes_ede3_cfb8_functions),
+>     ALG(PROV_NAMES_DES_EDE3_CFB1, ossl_tdes_ede3_cfb1_functions),
+>     ALG(PROV_NAMES_DES3_WRAP, ossl_tdes_wrap_cbc_functions),
+>     ALG(PROV_NAMES_DES_EDE_OFB, ossl_tdes_ede2_ofb_functions),
+>     ALG(PROV_NAMES_DES_EDE_CFB, ossl_tdes_ede2_cfb_functions),
+> #endif /* OPENSSL_NO_DES */
+> #ifndef OPENSSL_NO_SM4
+>     ALG(PROV_NAMES_SM4_ECB, ossl_sm4128ecb_functions),
+>     ALG(PROV_NAMES_SM4_CBC, ossl_sm4128cbc_functions),
+>     ALG(PROV_NAMES_SM4_CTR, ossl_sm4128ctr_functions),
+>     ALG(PROV_NAMES_SM4_OFB, ossl_sm4128ofb128_functions),
+>     ALG(PROV_NAMES_SM4_CFB, ossl_sm4128cfb128_functions),
+> #endif /* OPENSSL_NO_SM4 */
+>     { { NULL, NULL, NULL }, NULL }
+> };
+> static OSSL_ALGORITHM exported_ciphers_stripped[OSSL_NELEM(deflt_ciphers_stripped)];
+> 
+> static const OSSL_ALGORITHM deflt_macs_stripped[] = {
+>     { PROV_NAMES_GMAC, "provider=default", ossl_gmac_functions },
+>     { PROV_NAMES_KMAC_128, "provider=default", ossl_kmac128_functions },
+>     { PROV_NAMES_KMAC_256, "provider=default", ossl_kmac256_functions },
+> #ifndef OPENSSL_NO_SIPHASH
+>     { PROV_NAMES_SIPHASH, "provider=default", ossl_siphash_functions },
+> #endif
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_kdfs_stripped[] = {
+>     { PROV_NAMES_TLS1_3_KDF, "provider=default",
+>       ossl_kdf_tls1_3_kdf_functions },
+>     { PROV_NAMES_SSKDF, "provider=default", ossl_kdf_sskdf_functions },
+>     { PROV_NAMES_PKCS12KDF, "provider=default", ossl_kdf_pkcs12_functions },
+>     { PROV_NAMES_SSHKDF, "provider=default", ossl_kdf_sshkdf_functions },
+>     { PROV_NAMES_TLS1_PRF, "provider=default", ossl_kdf_tls1_prf_functions },
+>     { PROV_NAMES_X942KDF_ASN1, "provider=default", ossl_kdf_x942_kdf_functions },
+> #ifndef OPENSSL_NO_SCRYPT
+>     { PROV_NAMES_SCRYPT, "provider=default", ossl_kdf_scrypt_functions },
+> #endif
+>     { PROV_NAMES_KRB5KDF, "provider=default", ossl_kdf_krb5kdf_functions },
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_keyexch_stripped[] = {
+>     { PROV_NAMES_TLS1_PRF, "provider=default", ossl_kdf_tls1_prf_keyexch_functions },
+>     { PROV_NAMES_HKDF, "provider=default", ossl_kdf_hkdf_keyexch_functions },
+>     { PROV_NAMES_SCRYPT, "provider=default",
+>       ossl_kdf_scrypt_keyexch_functions },
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_rands_stripped[] = {
+>     { PROV_NAMES_HMAC_DRBG, "provider=default", ossl_drbg_ossl_hmac_functions },
+>     { PROV_NAMES_SEED_SRC, "provider=default", ossl_seed_src_functions },
+>     { PROV_NAMES_TEST_RAND, "provider=default", ossl_test_rng_functions },
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_signature_stripped[] = {
+> # ifndef OPENSSL_NO_SM2
+>     { PROV_NAMES_SM2, "provider=default", ossl_sm2_signature_functions },
+> # endif
+>     { PROV_NAMES_HMAC, "provider=default", ossl_mac_legacy_hmac_signature_functions },
+>     { PROV_NAMES_SIPHASH, "provider=default",
+>       ossl_mac_legacy_siphash_signature_functions },
+> #ifndef OPENSSL_NO_POLY1305
+>     { PROV_NAMES_POLY1305, "provider=default",
+>       ossl_mac_legacy_poly1305_signature_functions },
+> #endif
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_asym_cipher_stripped[] = {
+> #ifndef OPENSSL_NO_SM2
+>     { PROV_NAMES_SM2, "provider=default", ossl_sm2_asym_cipher_functions },
+> #endif
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_asym_kem_stripped[] = {
+>     { PROV_NAMES_RSA, "provider=default", ossl_rsa_asym_kem_functions },
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_keymgmt_stripped[] = {
+> #ifndef OPENSSL_NO_DH
+>     { PROV_NAMES_DHX, "provider=default", ossl_dhx_keymgmt_functions,
+>       PROV_DESCS_DHX },
+> #endif
+>     { PROV_NAMES_TLS1_PRF, "provider=default", ossl_kdf_keymgmt_functions,
+>       PROV_DESCS_TLS1_PRF_SIGN },
+>     { PROV_NAMES_HKDF, "provider=default", ossl_kdf_keymgmt_functions,
+>       PROV_DESCS_HKDF_SIGN },
+>     { PROV_NAMES_SCRYPT, "provider=default", ossl_kdf_keymgmt_functions,
+>       PROV_DESCS_SCRYPT_SIGN },
+>     { PROV_NAMES_SIPHASH, "provider=default", ossl_mac_legacy_keymgmt_functions,
+>       PROV_DESCS_SIPHASH_SIGN },
+> #ifndef OPENSSL_NO_SM2
+>     { PROV_NAMES_SM2, "provider=default", ossl_sm2_keymgmt_functions,
+>       PROV_DESCS_SM2 },
+> #endif
+>     { NULL, NULL, NULL }
+> };
+> 
+> static const OSSL_ALGORITHM deflt_encoder_stripped[] = {
+> #define ENCODER_PROVIDER "default"
+> #include "encoders.inc"
+>     { NULL, NULL, NULL }
+> #undef ENCODER_PROVIDER
+> };
+> 
+> static const OSSL_ALGORITHM deflt_decoder_stripped[] = {
+> #define DECODER_PROVIDER "default"
+> #include "decoders.inc"
+>     { NULL, NULL, NULL }
+> #undef DECODER_PROVIDER
+> };
+> 
+> static const OSSL_ALGORITHM deflt_store_stripped[] = {
+> #define STORE(name, _fips, func_table)                           \
+>     { name, "provider=default,fips=" _fips, (func_table) },
+> 
+> #include "stores.inc"
+>     { NULL, NULL, NULL }
+> #undef STORE
+> };
+> 
+492a733,767
+>         return deflt_digests_stripped;
+>     case OSSL_OP_CIPHER:
+>         return exported_ciphers_stripped;
+>     case OSSL_OP_MAC:
+>         return deflt_macs_stripped;
+>     case OSSL_OP_KDF:
+>         return deflt_kdfs_stripped;
+>     case OSSL_OP_RAND:
+>         return deflt_rands_stripped;
+>     case OSSL_OP_KEYMGMT:
+>         return deflt_keymgmt_stripped;
+>     case OSSL_OP_KEYEXCH:
+>         return deflt_keyexch_stripped;
+>     case OSSL_OP_SIGNATURE:
+>         return deflt_signature_stripped;
+>     case OSSL_OP_ASYM_CIPHER:
+>         return deflt_asym_cipher_stripped;
+>     case OSSL_OP_KEM:
+>         return deflt_asym_kem_stripped;
+>     case OSSL_OP_ENCODER:
+>         return deflt_encoder_stripped;
+>     case OSSL_OP_DECODER:
+>         return deflt_decoder_stripped;
+>     case OSSL_OP_STORE:
+>         return deflt_store_stripped;
+>     }
+>     return NULL;
+> }
+> 
+> const OSSL_ALGORITHM *deflt_query_orig(void *provctx, int operation_id,
+>                                          int *no_cache)
+> {
+>     *no_cache = 0;
+>     switch (operation_id) {
+>     case OSSL_OP_DIGEST:
+521a797,834
+> #else
+> 
+> static const OSSL_ALGORITHM *deflt_query(void *provctx, int operation_id,
+>                                          int *no_cache)
+> {
+>     *no_cache = 0;
+>     switch (operation_id) {
+>     case OSSL_OP_DIGEST:
+>         return deflt_digests;
+>     case OSSL_OP_CIPHER:
+>         return exported_ciphers;
+>     case OSSL_OP_MAC:
+>         return deflt_macs;
+>     case OSSL_OP_KDF:
+>         return deflt_kdfs;
+>     case OSSL_OP_RAND:
+>         return deflt_rands;
+>     case OSSL_OP_KEYMGMT:
+>         return deflt_keymgmt;
+>     case OSSL_OP_KEYEXCH:
+>         return deflt_keyexch;
+>     case OSSL_OP_SIGNATURE:
+>         return deflt_signature;
+>     case OSSL_OP_ASYM_CIPHER:
+>         return deflt_asym_cipher;
+>     case OSSL_OP_KEM:
+>         return deflt_asym_kem;
+>     case OSSL_OP_ENCODER:
+>         return deflt_encoder;
+>     case OSSL_OP_DECODER:
+>         return deflt_decoder;
+>     case OSSL_OP_STORE:
+>         return deflt_store;
+>     }
+>     return NULL;
+> }
+> 
+> #endif /* if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) */
+592a906,908
+> #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+>     ossl_prov_cache_exported_algorithms(deflt_ciphers_stripped, exported_ciphers_stripped);
+> #else
+593a910
+> #endif

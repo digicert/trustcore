@@ -31,7 +31,6 @@
 
 #if defined(__LINUX_RTOS__)
 #include <sys/types.h>
-#include <signal.h>
 #if defined(__RTOS_ZEPHYR__)
 #include <zephyr/net/socket.h>
 #include <zephyr/sys/fdtable.h>
@@ -559,17 +558,6 @@ LINUX_joinThread(RTOS_THREAD tid, void **ppRetVal)
 
 /*------------------------------------------------------------------*/
 
-extern MSTATUS
-LINUX_killThread(RTOS_THREAD tid, sbyte4 signum)
-{
-    if (0 == pthread_kill((pthread_t)((uintptr) tid), signum))
-        return OK;
-    else
-        return ERR_RTOS_THREAD_KILL;
-}
-
-/*------------------------------------------------------------------*/
-
 extern RTOS_THREAD
 LINUX_currentThreadId(void)
 {
@@ -656,55 +644,31 @@ LINUX_condWait(RTOS_COND cond, RTOS_MUTEX mutex)
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-LINUX_condTimedWait(RTOS_COND cond, RTOS_MUTEX mutex, ubyte8 timeoutMS, byteBoolean *pTimeout, ubyte8 *pRemainingMS)
+LINUX_condTimedWait(RTOS_COND cond, RTOS_MUTEX mutex, ubyte4 timeoutMS, byteBoolean *pTimeout)
 {
     pthread_mutex_t* pPthreadMutex = (pthread_mutex_t *)mutex;
     pthread_cond_t*  pPthreadCond  = (pthread_cond_t *)cond;
     MSTATUS          status = ERR_RTOS_MUTEX_WAIT;
     struct timespec timeToWait = { 0 };
-    struct timespec now = { 0 };
     int ret;
+    struct timespec now = { 0 };
 
     if (NULL == pTimeout || NULL == pPthreadMutex || NULL == pPthreadCond)
         return ERR_NULL_POINTER;
 
     *pTimeout = FALSE;
-    if (pRemainingMS)
-        *pRemainingMS = 0;
 
     clock_gettime(CLOCK_REALTIME, &now);
     timeToWait.tv_sec = now.tv_sec + (timeoutMS / 1000);
-    timeToWait.tv_nsec = now.tv_nsec + ((timeoutMS % 1000) * 1000000);
-    if (timeToWait.tv_nsec >= NANOS)
+    if (timeoutMS % 1000)
     {
-        timeToWait.tv_sec += 1;
-        timeToWait.tv_nsec -= NANOS;
+        timeToWait.tv_sec++;
     }
 
-    ret = pthread_cond_timedwait(pPthreadCond, pPthreadMutex, &timeToWait);
+    ret = pthread_cond_timedwait(pPthreadCond,pPthreadMutex,&timeToWait);
     if (0 == ret)
     {
         status = OK;
-        /* Calculate remaining time on successful wakeup (potential spurious wakeup) */
-        if (pRemainingMS)
-        {
-            struct timespec current = { 0 };
-            clock_gettime(CLOCK_REALTIME, &current);
-            
-            sbyte8 remainingSec = timeToWait.tv_sec - current.tv_sec;
-            sbyte8 remainingNsec = timeToWait.tv_nsec - current.tv_nsec;
-            
-            if (remainingNsec < 0)
-            {
-                remainingSec--;
-                remainingNsec += NANOS;
-            }
-            
-            if (remainingSec > 0 || (remainingSec == 0 && remainingNsec > 0))
-            {
-                *pRemainingMS = remainingSec * 1000 + remainingNsec / 1000000;
-            }
-        }
     }
     else if (ETIMEDOUT == ret)
     {

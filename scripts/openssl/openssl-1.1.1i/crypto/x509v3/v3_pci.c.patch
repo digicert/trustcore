@@ -1,0 +1,5 @@
+80c80,81
+<         BIO_printf(out, "%*sPolicy Text: %s\n", indent, "",
+---
+>         BIO_printf(out, "%*sPolicy Text: %.*s\n", indent, "",
+>                    pci->proxyPolicy->policy->length,

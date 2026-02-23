@@ -1,0 +1,73 @@
+name: OpenSSL Connector Unit Tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/openssl/**"
+      - "src/openssl_wrapper/**"
+      - "src/ssl/**"
+      - "projects/nanossl/**"
+
+permissions:
+  contents: read
+
+jobs:
+  OpenSSLConnectorUnitTest:
+    runs-on: [ubuntu-latest]
+    strategy:
+      matrix:
+        openssl_version: ["3.0.7", "3.0.12"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential wget tar make gcc patch
+
+      - name: Patch OpenSSL ${{ matrix.openssl_version }}
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/openssl-${{ matrix.openssl_version }}/openssl-${{ matrix.openssl_version }}.tar.gz
+          mkdir -p thirdparty
+          tar -xzf openssl-${{ matrix.openssl_version }}.tar.gz -C thirdparty/
+          cd scripts/openssl
+          ./apply-patch.sh openssl-${{ matrix.openssl_version }}
+
+      - name: Build OpenSSL ${{ matrix.openssl_version }} with DigiCert provider
+        run: |
+          if [ "${{ matrix.openssl_version }}" = "3.0.7" ]; then
+            ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_0_7 --ossl-digi-test
+          else
+            ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_0_12 --ossl-digi-test
+          fi
+
+      - name: Run digiprov_test
+        run: |
+          LD_LIBRARY_PATH=$PWD/lib ./lib/digiprov_test || (echo "digiprov_test failed" && exit 1)
+
+      - name: Run OpenSSL CMS tests
+        run: |
+          cd thirdparty/openssl-${{ matrix.openssl_version }}
+          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib make TESTS=test_cms test
+
+      - name: Build OpenSSL Connector for testing
+        run: |
+          if [ "${{ matrix.openssl_version }}" = "3.0.7" ]; then
+            ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_7
+          else
+            ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_12
+          fi
+
+      - name: Run OpenSSL Crypto Tests
+        run: |
+          cd thirdparty/openssl-${{ matrix.openssl_version }}
+          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib make TESTS=test_evp test
+
+      - name: Run OpenSSL SSL Tests
+        run: |
+          cd thirdparty/openssl-${{ matrix.openssl_version }}/sample
+          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib make openssl_server openssl_client_local
+          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_server --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_server_cert certs/rsa_cert.pem --ssl_server_keyblob keys/rsa_key.pem &
+          sleep 2
+          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_client_local --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_ca_cert ca/rsa_ca.pem --ssl_servername rsa-test

@@ -1,0 +1,4 @@
+166a167,169
+>   IF[{- !$disabled{moc-ossl-v3-test} -}]
+>     SOURCE[evp_test]=digitest_cnf.c
+>   ENDIF

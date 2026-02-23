@@ -2,12 +2,12 @@
  * crypto_keygen.c
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  */
 
@@ -98,8 +98,8 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <signal.h>
-#include <termios.h>
 #if !defined(__RTOS_ZEPHYR__)
+#include <termios.h>
 #include <dirent.h>
 #include <unistd.h>
 #endif /* __RTOS_ZEPHYR__ */
@@ -533,7 +533,8 @@ exit:
 #endif /* __RTOS_WIN32__ */
 
 #if defined(__RTOS_LINUX__) || defined(__RTOS_OSX__)
-static MSTATUS KEYGEN_getEnteredPassword(char *pBuffer, ubyte4 bufferLen) 
+#if !defined(__RTOS_ZEPHYR__)
+static MSTATUS KEYGEN_getEnteredPassword(char *pBuffer, ubyte4 bufferLen)
 {
     MSTATUS status = OK;
     int c;
@@ -547,14 +548,14 @@ static MSTATUS KEYGEN_getEnteredPassword(char *pBuffer, ubyte4 bufferLen)
 	term.c_lflag &= ~ECHO;
 	tcsetattr(1, TCSANOW, &term);
 
-	while ((c=fgetc(stdin)) != '\n') 
+	while ((c=fgetc(stdin)) != '\n')
     {
 		pBuffer[pos++] = (char) c;
 		if (pos >= bufferLen)
         {
             status = ERR_INVALID_INPUT;
             goto exit;
-        }		
+        }
 	}
 	pBuffer[pos] = '\0';
 
@@ -563,6 +564,7 @@ exit:
 	tcsetattr(1, TCSANOW, &term);
     return status;
 }
+#endif
 
 MOC_EXTERN MSTATUS KEYGEN_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswordLen, char *pPwName, char *pFileName)
 {
@@ -579,7 +581,7 @@ MOC_EXTERN MSTATUS KEYGEN_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswor
 #ifndef __RTOS_ZEPHYR__
     status = KEYGEN_getEnteredPassword(pTempPassword, MAX_PASSWORD_LEN);
 #else
-    status = DIGI_MEMCMP(pTempPassword, "abcde", 6); /* copy the '\0' at the end too */
+    status = DIGI_MEMCPY(pTempPassword, "abcde", 6); /* copy the '\0' at the end too */
 #endif
     if (OK != status) /* only error is too long */
     {
@@ -597,7 +599,7 @@ MOC_EXTERN MSTATUS KEYGEN_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswor
 #ifndef __RTOS_ZEPHYR__
         status = KEYGEN_getEnteredPassword(pTempPassword, MAX_PASSWORD_LEN);
 #else
-        status = DIGI_MEMCMP(pTempPassword, "abcde", 6); /* copy the '\0' at the end too */
+        status = DIGI_MEMCPY(pTempPassword, "abcde", 6); /* copy the '\0' at the end too */
 #endif
         if (OK != status)
             goto exit;
@@ -3972,7 +3974,7 @@ static MSTATUS KEYGEN_getArgs(KeyGenArgs *pArgs, int argc, char *argv[])
             }
             continue;
         }
-#endif            
+#endif
         else if (0 == DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-u") || 0 == DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"--output-pub-file"))
         {
             if (++i < argc)
@@ -5045,7 +5047,7 @@ MOC_EXTERN MSTATUS KEYGEN_keyCertGen(
     if (OK != status)
         goto exit;
 
-#ifdef __EMABLE_DIGICERT_TAP__
+#ifdef __ENABLE_DIGICERT_TAP__
     status = KEYGEN_generateKey(&gKeyGenArgs, (void *) &gTapArgs, &key, pRand);
 #else
     status = KEYGEN_generateKey(&gKeyGenArgs, NULL, &key, pRand);

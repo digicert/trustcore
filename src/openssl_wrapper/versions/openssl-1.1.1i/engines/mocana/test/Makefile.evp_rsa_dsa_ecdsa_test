@@ -1,0 +1,9 @@
+MY_SRC=evp_rsa_dsa_ecdsa_test.c
+MY_OBJ=$(MY_SRC:.c=.o)
+PROG=evp_rsa_dsa_ecdsa_test
+CFLAGS += -D__RTOS_LINUX__ -g -O0 -I../../../include -I../mss/src
+LDFLAGS += -L../../.. -lcrypto -lpthread -ldl
+$(PROG): $(MY_OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS)
+clean:
+	rm -rf $(MY_OBJ) $(PROG)

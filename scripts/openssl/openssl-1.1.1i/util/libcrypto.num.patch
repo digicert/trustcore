@@ -1,0 +1,7 @@
+4593a4594,4599
+> pem_check_suffix                        4548	1_1_1i	EXIST::FUNCTION:
+> evp_pkey_set_cb_translate               4549	1_1_1i	EXIST::FUNCTION:
+> conf_add_ssl_module                     4550	1_1_1i	EXIST::FUNCTION:
+> OPENSSL_register_pem_bio_handler        4551	1_1_1i	EXIST::FUNCTION:
+> FIPS_module_version                     4552	1_1_1i	EXIST::FUNCTION:
+> FIPS_module_version_text                4553	1_1_1i	EXIST::FUNCTION:

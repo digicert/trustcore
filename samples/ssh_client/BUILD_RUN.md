@@ -6,7 +6,7 @@
 
 | Option                            | Description                                  | Default |
 |-----------------------------------|----------------------------------------------|---------|
-| `ENABLE_SSH_CLIENT`               | Build SSH Client library and sample binaries | `OFF`   |
+| `ENABLE_SSH_CLIENT`               | Build SSH Client library                     | `OFF`   |
 | `ENABLE_SSH_CLIENT_CERT_AUTH`     | Enable SSH Client certificate authentication | `OFF`   |
 | `ENABLE_SSH_CLIENT_AUTH`          | Enable SSH Client public key authentication  | `OFF`   |
 | `ENABLE_SSH_CLIENT_SHELL_EXAMPLE` | Build SSH client shell example               | `OFF`   |

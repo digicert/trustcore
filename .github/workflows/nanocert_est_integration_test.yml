@@ -1,0 +1,79 @@
+name: "NanoCert EST Integration Tests"
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 8 * * 3'   # Wednesday 2:00 PM IST
+    - cron: '30 8 * * 5'   # Friday 2:00 PM IST
+jobs:
+  nanocert-est-integration-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Clone mocn-qa-m-products
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+        run: |
+          git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake python3-pip valgrind expect
+          cmake --version
+          pip3 install --upgrade pip
+          pip3 install psutil
+          pip3 install tls-client
+          pip3 install typing_extensions
+          pip3 install pexpect
+          sudo apt-get install -y lcov
+          lcov --version
+          valgrind --version
+          expect -v
+
+      - name: Prepare thirdparty_app directory
+        run: |
+          mkdir -p ~/thirdparty_app
+
+      - name: Install OpenSSL 3.0.7
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
+          tar -xf openssl-3.0.7.tar.gz
+          cd openssl-3.0.7
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Copy EST Test Files
+        run: |
+          cp -r ~/mocn-qa-m-products/estc_test/test_opensource/* .
+
+      - name: Run NanoCert EST + TLS Integration Test
+        env:
+          CM_ENV_CODE_COVERAGE: 1
+          DEVICETRUST_DEMO_CRED: ${{ secrets.DEVICETRUST_DEMO_CRED }}
+        run: |
+          PYTHONUNBUFFERED=1 python3 est_sample.py build_client_cap_no_tap.json
+
+      - name: Baseline Coverage
+        run: |
+          lcov --no-external --capture --initial --directory . --output-file /tmp/est_base.info
+
+      - name: Capture Coverage
+        run: |
+          lcov --no-external --capture --directory . --output-file /tmp/est_test.info
+          lcov --ignore-errors inconsistent --add-tracefile /tmp/est_base.info --add-tracefile /tmp/est_test.info --output-file /tmp/est_total.info
+
+      - name: Print Coverage Summary
+        run: |
+          echo "Coverage Summary:"
+          lcov --list /tmp/est_total.info
+
+      - name: Cleanup mocn-qa-m-products
+        run: |
+          rm -rf ~/mocn-qa-m-products

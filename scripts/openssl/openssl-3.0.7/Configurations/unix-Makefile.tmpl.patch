@@ -1,0 +1,4 @@
+1390a1391,1393
+> ../../bin/libnanocrypto.so:
+> 	CROSS_COMPILE="$(CROSS_COMPILE)" CC="$(CC)" $(MAKE) -C providers/digicert PLATFORM='$(PLATFORM)' CFLAG='$(CFLAGS)' -e $(BUILDENV) ../../../../bin/libnanocrypto.so
+> 

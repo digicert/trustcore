@@ -1,0 +1,17 @@
+24a25,29
+>  if ($disabled{shared}) {
+>    our $output_directory="bin_win32_static";
+>  } else {
+>    our $output_directory="bin_win32";
+>  }
+108d112
+< 
+173c177
+< CFLAGS={- join(' ', @{$config{CFLAGS}}) -}
+---
+> CFLAGS={- join(' ', @{$config{CFLAGS}}) -} {- if (!$disabled{"mocana-redefine"}) { "-D__ENABLE_DIGICERT_SSL_PEM_READ_BIO_REDEFINE__" } -} {- if (!$disabled{"mocana-test"}) { "-DMOC_EVP_TEST" } -}
+176c180,181
+< EX_LIBS={- join(' ', @{$config{LDLIBS}}) -}
+---
+> EX_LIBS={- join(' ', @{$config{LDLIBS}}) -} {- if ($disabled{"mocana-export"}) { "../../$output_directory/cryptointerface.lib ../../$output_directory/nanocert.lib ../../$output_directory/nanocap.lib ../../$output_directory/nanocrypto.lib ../../$output_directory/asn1.lib ../../$output_directory/initialize.lib ../../$output_directory/common.lib ../../$output_directory/platform.lib" } else { "../../$output_directory/cryptointerface.lib ../../$output_directory/nanocert.lib ../../$output_directory/cryptomw.lib ../../$output_directory/asn1.lib ../../$output_directory/initialize.lib ../../$output_directory/common.lib ../../$output_directory/platform.lib" } -}{- if (!$disabled{"mocana-fips"}) { " ../../$output_directory/libmss.lib" } -}
+> 

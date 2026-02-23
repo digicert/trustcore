@@ -1,0 +1,73 @@
+name: "CodeQL OpenSSL Connector"
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "main" ]
+    paths:
+      - "scripts/openssl/**"
+      - "src/openssl_wrapper/**"
+      - "src/ssl/**"
+      - "projects/nanossl/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "scripts/openssl/**"
+      - "src/openssl_wrapper/**"
+      - "src/ssl/**"
+      - "projects/nanossl/**"
+
+jobs:
+  analyze:
+    name: Analyze OpenSSL Connector (${{ matrix.openssl_version_display }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - openssl_version: "1_1_1i"
+            full_url: "https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1i/openssl-1.1.1i.tar.gz"
+            openssl_version_display: "1.1.1i"
+          - openssl_version: "3_0_7"
+            full_url: "https://github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz"
+            openssl_version_display: "3.0.7"
+          - openssl_version: "3_0_12"
+            full_url: "https://github.com/openssl/openssl/releases/download/openssl-3.0.12/openssl-3.0.12.tar.gz"
+            openssl_version_display: "3.0.12"
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+    - name: Download OpenSSL ${{ matrix.openssl_version_display }}
+      run: |
+        wget ${{ matrix.full_url }}
+    - name: Create thirdparty directory and extract OpenSSL
+      run: |
+        mkdir -p thirdparty
+        tar -xzf openssl-${{ matrix.openssl_version_display }}.tar.gz -C thirdparty/
+
+    - name: Apply OpenSSL patches
+      run: |
+        cd scripts/openssl
+        ./apply-patch.sh openssl-${{ matrix.openssl_version_display }}
+        cd ../..
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2
+      with:
+        languages: c-cpp
+        queries: security-extended,security-and-quality
+
+    - name: Build OpenSSL Connector with TAP
+      run: |
+        ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --openssl_${{ matrix.openssl_version }}
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2
+      with:
+        category: "/language:c-cpp/openssl_connector_${{ matrix.openssl_version }}"

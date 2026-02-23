@@ -46,6 +46,7 @@ set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
 if(BUILD_FOR_OSI)
   set(LIB_DIR "${MSS_DIR}/lib")
+  set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
 set(CMAKE_INSTALL_RPATH "${MSS_BIN_DIR}")
 
