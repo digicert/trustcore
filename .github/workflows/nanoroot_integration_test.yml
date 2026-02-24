@@ -1,0 +1,97 @@
+name: "NanoRoot Integration Tests"
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 10 * * 1'   # Monday 4:00 PM IST
+    - cron: '30 10 * * 5'   # Friday 4:00 PM IST
+
+jobs:
+  nanoroot-integration-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Clone mocn-qa-m-products
+      env:
+        MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+      run: |
+        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake python3-pip valgrind expect cpuid zip
+        cmake --version
+        pip3 install --upgrade pip
+        pip3 install psutil
+        pip3 install tls-client
+        pip3 install typing_extensions
+        sudo apt-get install -y lcov
+        lcov --version
+        valgrind --version
+        expect -v
+
+    - name: Prepare thirdparty_app directory
+      run: |
+        mkdir -p ~/thirdparty_app
+
+    - name: Install OpenSSL 3.5.0
+      run: |
+        cd ~/thirdparty_app
+        wget https://www.openssl.org/source/openssl-3.5.0.tar.gz
+        tar -xf openssl-3.5.0.tar.gz
+        cd openssl-3.5.0
+        ./config
+        make -j$(nproc)
+        sudo make install
+        cd ..
+
+    - name: Checkout repository
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+    
+    - name: Setup /etc/digicert folder
+      run: |
+        sudo mkdir -p /etc/digicert/
+        sudo chown -R $USER:$USER /etc/digicert/
+        sudo chmod 777 /etc/digicert/
+
+    - name: Copy NanoRoot Test Files
+      run: |
+        cp -r ~/mocn-qa-m-products/nanoroot_test/test_opensource/* .
+        cp -r ~/mocn-qa-m-products/qa_utils/check_jenkins_build_script_result/run_valgrind_check_dir.py .
+        cp -r ~/mocn-qa-m-products/nanoroot_test/etc_digicert_folder/* /etc/digicert/
+    
+    - name: NanoRoot Build Command
+      run: |
+        cmake -DENABLE_NANOROOT=ON -DBUILD_SAMPLES=ON -DCM_ENABLE_RSA_8K=ON -B build -S .
+        cmake --build build
+    
+    - name: NanoRoot Integration Test
+      run: |
+        # Set required environment variables for NanoRoot tests
+        source samples/nanoroot/config/setFingerPrintValues.sh
+        export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+        ./nanoroot_test.sh --valgrind 2>&1 | tee report_valgrind_nanoroot.txt
+        ./nanoroot_config_test.sh --valgrind 2>&1 | tee report_valgrind_nanoroot_config.txt
+        mkdir report_valgrind
+        mv report_valgrind_nanoroot.txt report_valgrind
+        mv report_valgrind_nanoroot_config.txt report_valgrind
+        python3 run_valgrind_check_dir.py
+
+    - name: Zip Valgrind Report
+      if: always()
+      run: |
+        zip -r report_valgrind_tap_smp_nanoroot_cap.zip report_valgrind/
+
+    - name: Upload Valgrind Report Artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: report_valgrind_tap_smp_nanoroot_cap
+        path: report_valgrind_tap_smp_nanoroot_cap.zip
+        retention-days: 5
+
+    - name: Cleanup mocn-qa-m-products repository
+      if: always()
+      run: |
+        rm -rf ~/mocn-qa-m-products

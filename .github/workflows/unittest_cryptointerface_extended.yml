@@ -33,6 +33,8 @@ jobs:
         repository: digicert/mocn-qa-m-products
         token: ${{ secrets.MY_SECRET_TOKEN }}
         path: mocn-qa-m-products
+        persist-credentials: false
+        fetch-depth: 1
 
     # ------------------------------------------------------------------
     # Copy script and run check

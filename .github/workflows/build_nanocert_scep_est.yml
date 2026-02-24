@@ -1,0 +1,155 @@
+name: "Build_NanoCert_SCEP_EST"
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 2 * * *'
+
+jobs:
+  build-nanocert-scep-est:
+    runs-on: ubuntu-22.04
+
+    steps:
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake
+          cmake --version
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------- EST BUILDS ----------------
+
+      - name: EST CMAKE Build with NanoCrypto
+        id: est_1
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_EST=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/est_sample
+
+      - name: EST CMAKE Build with NanoCrypto with Debug
+        id: est_2
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_EST=ON -DWITH_LOGGING=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/est_sample
+
+      - name: EST CMAKE Build with static library
+        id: est_3
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_EST=ON -DLIB_TYPE=STATIC -B build -S .
+          cmake --build build
+          test -f samples/bin/est_sample
+
+      - name: EST CMAKE Build with static library and Debug
+        id: est_4
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_EST=ON -DWITH_LOGGING=ON -DLIB_TYPE=STATIC -B build -S .
+          cmake --build build
+          test -f samples/bin/est_sample
+
+      - name: EST CMAKE Build with NanoCAP and NanoTAP Local
+        id: est_5
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_EST=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/est_sample
+
+      # ---------------- SCEP BUILDS ----------------
+
+      - name: SCEP CMAKE Build with NanoCAP
+        id: scep_1
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SCEP=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/scep_sample
+
+      - name: SCEP CMAKE Build with NanoCAP and NanoTAP Local
+        id: scep_2
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SCEP=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/scep_sample
+
+      - name: SCEP CMAKE Build with NanoCAP and NanoTAP Remote
+        id: scep_3
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SCEP=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/scep_sample
+
+      # ---------------- FINAL FAILURE CHECK ----------------
+
+      - name: Fail job if any build failed
+        if: always()
+        run: |
+          FAILED=0
+
+          if [[ "${{ steps.est_1.outcome }}" == "failure" ]]; then
+            echo "❌ EST CMAKE Build with NanoCrypto FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.est_2.outcome }}" == "failure" ]]; then
+            echo "❌ EST CMAKE Build with NanoCrypto with Debug FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.est_3.outcome }}" == "failure" ]]; then
+            echo "❌ EST CMAKE Build with Static Library FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.est_4.outcome }}" == "failure" ]]; then
+            echo "❌ EST CMAKE Build with Static Library and Debug FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.est_5.outcome }}" == "failure" ]]; then
+            echo "❌ EST CMAKE Build with NanoTAP Local FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.scep_1.outcome }}" == "failure" ]]; then
+            echo "❌ SCEP CMAKE Build with NanoCAP FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.scep_2.outcome }}" == "failure" ]]; then
+            echo "❌ SCEP CMAKE Build with NanoTAP Local FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.scep_3.outcome }}" == "failure" ]]; then
+            echo "❌ SCEP CMAKE Build with NanoTAP Remote FAILED"
+            FAILED=1
+          fi
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "One or more builds failed."
+            exit 1
+          else
+            echo ""
+            echo "All builds passed."
+          fi
+
+
