@@ -2,6 +2,8 @@ name: "NanoCert EST Integration Tests"
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [ "fix-nanocert-est-integration-test" ]
   schedule:
     - cron: '30 8 * * 3'   # Wednesday 2:00 PM IST
     - cron: '30 8 * * 5'   # Friday 2:00 PM IST
@@ -15,6 +17,8 @@ jobs:
           MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
         run: |
           git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+          cd ~/mocn-qa-m-products
+          git checkout fix-nanocert-est-integration-test
 
       - name: Install Dependencies
         run: |
