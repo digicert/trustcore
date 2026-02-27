@@ -436,7 +436,7 @@ jobs:
             FAILED=1
           fi
           if [[ "${{ steps.ssl_8.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto with TLSv1.2 zero padding DH key exchage for Microsoft TLS stack FAILED"
+            echo "❌ CMAKE Build with NanoCrypto with TLSv1.2 zero padding DH key exchange for Microsoft TLS stack FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssl_9.outcome }}" == "failure" ]]; then
