@@ -1,0 +1,564 @@
+name: "Build_NanoSSL"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '45 3 * * *'  # Every day at 9:15 AM IST (3:45 AM UTC)
+
+jobs:
+  build-nanossl-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake
+          cmake --version
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      # ---------------- SSL BUILDS Non-TAP ----------------
+
+      - name: CMAKE Build with NanoCrypto
+        id: ssl_1
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with Mutual Authentication
+        id: ssl_2
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_MAUTH_SUPPORT=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with OCSP support
+        id: ssl_3
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_OCSP=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto without PQC
+        id: ssl_4
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_DISABLE_PQC=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto without TLSv1.3
+        id: ssl_5
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13=OFF -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto without TLSv1.3 PSK
+        id: ssl_6
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13_PSK=OFF -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto without TLSv1.3 PSK 0RTT
+        id: ssl_7
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13_0RTT=OFF -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with TLSv1.2 zero padding DH key exchange for Microsoft TLS stack
+        id: ssl_8
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_DH_PUB_PAD=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with TLSv1.2 Session Ticket Support RFC 5077
+        id: ssl_9
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SESSION_TICKET_RFC_5077=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with CVC support
+        id: ssl_10
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_CVC=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with disable servername validation
+        id: ssl_11
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_DISABLE_SSL_SERVER_NAME=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with disable client CommonName validation
+        id: ssl_12
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_DISABLE_SSL_CLIENT_COMMON_NAME_VALIDATION=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with Rehandshaking support
+        id: ssl_13
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_REHANDSHAKE=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with SRP ciphersuites
+        id: ssl_14
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_SRP=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with RSA disable
+        id: ssl_15
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_DISABLE_RSA_SUPPORT=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with Triple-DES enable
+        id: ssl_16
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_DISABLE_3DES_SUPPORT=OFF -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with CBC ciphers disable
+        id: ssl_17
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_DISABLE_CBC_SUPPORT=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with enable self-signed certificate
+        id: ssl_18
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_SELF_SIGNED_CERT=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with enable non-trusted certificate
+        id: ssl_19
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_NONTRUSTED_CERT=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto with SSLKEYLOGFILE enable
+        id: ssl_20
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_KEYLOG_FILE=ON -B build -S .
+          cmake --build build
+          test -f lib/libnanossl.so
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      # ---------------- SSL BUILDS TAP-LOCAL ----------------
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local
+        id: ssl_21
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local with Mutual Authentication
+        id: ssl_22
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_MAUTH_SUPPORT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local with enabling TAP Hybrid signature
+        id: ssl_23
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TAP_HYBRID_SIGN=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local without TLSv1.3
+        id: ssl_24
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13=OFF -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local without TLSv1.3 PSK
+        id: ssl_25
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13_PSK=OFF -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local without TLSv1.3 PSK 0RTT
+        id: ssl_26
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13_0RTT=OFF -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE NanoCrypto and NanoTAP Local to generate/verify a RSA-PSS signature with variable salt length for TLSv1.3
+        id: ssl_27
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_PSS_AUTO_RECOVER=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local deferred TAP Key Upload
+        id: ssl_28
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TAP_DEFER_UNLOADKEY=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      # ---------------- SSL BUILDS TAP-REMOTE ----------------
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote
+        id: ssl_29
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote with Mutual Authentication
+        id: ssl_30
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_SSL_MAUTH_SUPPORT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote with enabling TAP Hybrid signature
+        id: ssl_31
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TAP_HYBRID_SIGN=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote with TCP connection
+        id: ssl_32
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE_TCP=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote without TLSv1.3
+        id: ssl_33
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13=OFF -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote without TLSv1.3 PSK
+        id: ssl_34
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13_PSK=OFF -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote without TLSv1.3 PSK 0RTT
+        id: ssl_35
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_TLS13_0RTT=OFF -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote to generate/verify a RSA-PSS signature with variable salt length for TLSv1.3
+        id: ssl_36
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DCM_ENABLE_PSS_AUTO_RECOVER=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssl_server
+          test -f samples/bin/ssl_client
+
+      # ---------------- FINAL FAILURE CHECK ----------------
+
+      - name: Fail job if any build failed
+        if: always()
+        run: |
+          FAILED=0
+
+          # SSL builds
+          if [[ "${{ steps.ssl_1.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_2.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with Mutual Authentication FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_3.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with OCSP support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_4.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto without PQC FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_5.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto without TLSv1.3 FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_6.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto without TLSv1.3 PSK FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_7.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto without TLSv1.3 PSK 0RTT FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_8.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with TLSv1.2 zero padding DH key exchange for Microsoft TLS stack FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_9.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with TLSv1.2 Session Ticket Support RFC 5077 FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_10.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with CVC support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_11.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with disable servername validation FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_12.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with disable client CommonName validation FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_13.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with Rehandshaking support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_14.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with SRP ciphersuites FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_15.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with RSA disable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_16.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with Triple-DES enable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_17.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with CBC ciphers disable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_18.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with enable self-signed certificate FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_19.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with enable non-trusted certificate FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_20.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto with SSLKEYLOGFILE enable FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_21.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_22.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with Mutual Authentication FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_23.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with enabling TAP Hybrid signature FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_24.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local without TLSv1.3 FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_25.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local without TLSv1.3 PSK FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_26.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local without TLSv1.3 PSK 0RTT FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_27.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE NanoCrypto and NanoTAP Local to generate/verify a RSA-PSS signature with variable salt length for TLSv1.3 FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_28.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local deferred TAP Key Upload FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_29.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_30.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with Mutual Authentication FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_31.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with enabling TAP Hybrid signature FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_32.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with TCP connection FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_33.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote without TLSv1.3 FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_34.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote without TLSv1.3 PSK FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_35.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote without TLSv1.3 PSK 0RTT FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssl_36.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote to generate/verify a RSA-PSS signature with variable salt length for TLSv1.3 FAILED"
+            FAILED=1
+          fi
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "One or more builds failed."
+            exit 1
+          else
+            echo ""
+            echo "All builds passed."
+          fi
+
+
