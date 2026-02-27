@@ -18,7 +18,7 @@ jobs:
         run: |
           git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
           cd ~/mocn-qa-m-products
-          git checkout fix-nanocert-est-integration-test
+          git checkout DTM-7950-fix-nano-cert-est-integration-test-for-timings-issue-in-testing-ssl-server-and-ssl-client-using-est-certificate
 
       - name: Install Dependencies
         run: |
