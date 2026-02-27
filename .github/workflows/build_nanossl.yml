@@ -95,7 +95,7 @@ jobs:
           test -f samples/bin/ssl_server
           test -f samples/bin/ssl_client
 
-      - name: CMAKE Build with NanoCrypto with TLSv1.2 zero padding DH key exchage for Microsoft TLS stack
+      - name: CMAKE Build with NanoCrypto with TLSv1.2 zero padding DH key exchange for Microsoft TLS stack
         id: ssl_8
         continue-on-error: true
         run: |
