@@ -1,4 +1,5 @@
 name: "NanoCert EST Integration Tests"
+
 on:
   workflow_dispatch: {}
   push:
