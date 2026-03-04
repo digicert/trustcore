@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-nanossh-test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04 
 
     steps:
       - name: Install Dependencies
@@ -297,6 +297,133 @@ jobs:
           test -f samples/bin/ssh_server
           test -f samples/bin/ssh_client
 
+      # ---------------- BUILD WITH OCSP SUPPORT ------------
+      - name: CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with OCSP support without SUITE B
+        id: ssh_28
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DDISABLE_SUITEB=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON  -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Certificate with Client PW with OCSP support without SUITE B and setting timeout for OCSP
+        id: ssh_29
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DDISABLE_SUITEB=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_OCSP_TIMEOUT_CONFIG=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+
+      - name: CMAKE Build with NanoCrypto for Server Host Key with Client Certificate with OCSP with SUITE B
+        id: ssh_30
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with OCSP support with SUITE B
+        id: ssh_31
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto for Server Certificate with Client PW with OCSP support with SUITE B and setting timeout for OCSP
+        id: ssh_32
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_OCSP_TIMEOUT_CONFIG=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Host Key with Client Certificate with OCSP support
+        id: ssh_33
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW with OCSP support
+        id: ssh_34
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate with OCSP support
+        id: ssh_35
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW with OCSP support and setting timeout for OCSP
+        id: ssh_36
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_OCSP_TIMEOUT_CONFIG=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Host Key with Client Certificate with OCSP support
+        id: ssh_37
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW with OCSP support
+        id: ssh_38
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate with OCSP support
+        id: ssh_39
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DENABLE_SSH_CLIENT_CERT_AUTH=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+          test -f samples/bin/ssh_client
+
+      - name: CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW with OCSP support and setting timeout for OCSP
+        id: ssh_40
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_SSH_SERVER=ON -DENABLE_SSH_SERVER_CERT_AUTH=ON -DCM_ENABLE_OCSP_TIMEOUT_CONFIG=ON -DCM_ENABLE_OCSP=ON -DCM_ENABLE_OCSP_CERT=ON -DCM_ENABLE_TAP=ON -DCM_ENABLE_TAP_REMOTE=ON -DDISABLE_SSL_CLIENT=ON -DDISABLE_SSL_SERVER=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ssh_server
+
       # ---------------- FINAL FAILURE CHECK ----------------
       - name: Fail job if any build failed
         if: always()
@@ -357,59 +484,111 @@ jobs:
             FAILED=1
           fi
           if [[ "${{ steps.ssh_14.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server RSA Host Key with Client PW"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server RSA Host Key with Client PW FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_15.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Host Key with Client Certificate" 
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Host Key with Client Certificate FAILED" 
             FAILED=1
           fi
           if [[ "${{ steps.ssh_16.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_17.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_18.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate, no public key name in public keyblob"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate, no public key name in public keyblob FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_19.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_20.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable and RFC6187"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local with PQC disable and RFC6187 FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_21.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server RSA Host Key with Client PW"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server RSA Host Key with Client PW FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_22.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Host Key with Client Certificate"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Host Key with Client Certificate FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_23.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_24.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_25.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate, no public key name in public keyblob"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate, no public key name in public keyblob FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_26.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable FAILED"
             FAILED=1
           fi
           if [[ "${{ steps.ssh_27.outcome }}" == "failure" ]]; then
-            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable and RFC6187"
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote with PQC disable and RFC6187 FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_28.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with OCSP support without SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_29.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate with Client PW with OCSP support without SUITE B and setting timeout for OCSP FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_30.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Host Key with Client Certificate with OCSP with SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_31.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate and Client Certificate with OCSP support with SUITE B FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_32.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto for Server Certificate with Client PW with OCSP support with SUITE B and setting timeout for OCSP FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_33.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Host Key with Client Certificate with OCSP support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_34.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW with OCSP support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_35.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate and Client Certificate with OCSP support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_36.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Local for Server Certificate with Client PW with OCSP support and setting timeout for OCSP FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_37.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Host Key with Client Certificate with OCSP support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_38.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW with OCSP support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_39.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate and Client Certificate with OCSP support FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_40.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCrypto and NanoTAP Remote for Server Certificate with Client PW with OCSP support and setting timeout for OCSP FAILED"
             FAILED=1
           fi
 
