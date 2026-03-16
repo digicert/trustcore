@@ -2,8 +2,6 @@ name: "Build_NanoRoot"
 
 on:
   workflow_dispatch: {}
-  push:
-    branches: [ "DTM-7738-create-github-action-for-nano-root-build-testing" ]
   schedule:
     - cron: '15 4 * * *'
 
