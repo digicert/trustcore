@@ -760,7 +760,17 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
 else()
     add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
-
+    if(BUILD_FOR_OSI)
+        # Copy static library to lib directory
+        add_custom_command(
+          TARGET ${PROJECT_NAME}
+          POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy
+              $<TARGET_FILE:${PROJECT_NAME}>
+              "${LIB_DIR}"
+          COMMENT "Copied libnanocert.a to ${LIB_DIR}"
+        )
+    endif()
     if(CM_ENABLE_COMPOUND_LIB)
         set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
     endif()

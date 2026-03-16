@@ -249,6 +249,17 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
 else()
   add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
+  # Copy static library to lib directory
+  if(BUILD_FOR_OSI)
+      add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:${PROJECT_NAME}>
+            "${LIB_DIR}"
+        COMMENT "Copied libasn1.a to ${LIB_DIR}"
+      )
+  endif()
 endif()
 
 # Add a static library with the appropriate OID defs for Windows.
@@ -258,7 +269,7 @@ if(("SHARED" STREQUAL "${LIB_TYPE}") AND WIN32 AND CM_BUILD_DATALIB)
   string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MSS_WIN_DATA_SOURCES "${MSS_WIN_DATA_SOURCES}")
 
   add_library(${PROJECT_NAME}data STATIC ${MSS_WIN_DATA_SOURCES})
-
+  
   add_custom_command(
     TARGET ${PROJECT_NAME}data
     POST_BUILD

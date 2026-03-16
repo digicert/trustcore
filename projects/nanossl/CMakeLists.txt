@@ -360,6 +360,63 @@ if(CM_ENABLE_FIPS)
 endif()
 locate_lib(DATA_PROTECT_LIB dataprotect)
 
+# Override library paths for static builds
+if("STATIC" STREQUAL "${LIB_TYPE}" AND BUILD_FOR_OSI)
+  if(WIN32)
+    link_directories(${MSS_DIR}/bin_win32_static ${LIB_DIR})
+    
+    # Override with static library paths
+    set(ASN1_LIB "${LIB_DIR}/asn1.lib")
+    set(COMMON_LIB "${LIB_DIR}/common.lib")
+    set(INITIALIZE_LIB "${LIB_DIR}/initialize.lib")
+    set(PLATFORM_LIB "${LIB_DIR}/platform.lib")
+    set(CRYPTOINTERFACE_LIB "${LIB_DIR}/cryptointerface.lib")
+    set(NANOCERT_LIB "${LIB_DIR}/nanocert.lib")
+    set(NANOSSL_LIB "${LIB_DIR}/nanossl.lib")
+    
+    if(CM_ENABLE_EXPORT_ED)
+      set(CRYPTO_MW_LIB "${LIB_DIR}/cryptomw.lib")
+    else()
+      set(NANOCRYPTO_LIB "${LIB_DIR}/nanocrypto.lib")
+    endif()
+    
+    if(NOT CM_DISABLE_CI)
+      set(NANOCAP_LIB "${LIB_DIR}/nanocap.lib")
+    endif()
+    
+    if(NOT CM_ENABLE_COMMON_LINK)
+      set(NANODTLS_CLIENT_LIB "${LIB_DIR}/nanodtls_client.lib")
+      set(NANODTLS_SERVER_LIB "${LIB_DIR}/nanodtls_server.lib")
+    endif()
+  else()
+    link_directories(${MSS_DIR}/bin_static ${LIB_DIR})
+    
+    # Override with static library paths for Linux/Unix
+    set(ASN1_LIB "${LIB_DIR}/libasn1.a")
+    set(COMMON_LIB "${LIB_DIR}/libcommon.a")
+    set(INITIALIZE_LIB "${LIB_DIR}/libinitialize.a")
+    set(PLATFORM_LIB "${LIB_DIR}/libplatform.a")
+    set(CRYPTOINTERFACE_LIB "${LIB_DIR}/libcryptointerface.a")
+    set(NANOCERT_LIB "${LIB_DIR}/libnanocert.a")
+    set(NANOSSL_LIB "${LIB_DIR}/libnanossl.a")
+    
+    if(CM_ENABLE_EXPORT_ED)
+      set(CRYPTO_MW_LIB "${LIB_DIR}/libcryptomw.a")
+    else()
+      set(NANOCRYPTO_LIB "${LIB_DIR}/libnanocrypto.a")
+    endif()
+    
+    if(NOT CM_DISABLE_CI)
+      set(NANOCAP_LIB "${LIB_DIR}/libnanocap.a")
+    endif()
+    
+    if(NOT CM_ENABLE_COMMON_LINK)
+      set(NANODTLS_CLIENT_LIB "${LIB_DIR}/libnanodtls_client.a")
+      set(NANODTLS_SERVER_LIB "${LIB_DIR}/libnanodtls_server.a")
+    endif()
+  endif()
+endif()
+
 # Macro to move any target's artifacts to either:
 # - mss/bin for Unix
 # - mss/bin_win32 for Windows
@@ -450,6 +507,20 @@ if(CM_BUILD_NANOSSL_LIB)
         add_definitions("${MOCANA_FLAGS}")
     else()
         target_compile_definitions(${TARGET_NAME}   PRIVATE "${MOCANA_FLAGS}")
+    endif()
+    
+    # Copy static library to lib directory if building static
+    if("STATIC" STREQUAL "${LIB_TYPE}")
+        if(BUILD_FOR_OSI)
+            add_custom_command(
+                TARGET ${TARGET_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                    $<TARGET_FILE:${TARGET_NAME}>
+                    "${LIB_DIR}"
+                COMMENT "Copied libnanossl.a to ${LIB_DIR}"
+            )
+        endif()
     endif()
 
     move_to_bin(${TARGET_NAME})

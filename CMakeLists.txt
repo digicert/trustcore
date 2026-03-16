@@ -247,9 +247,14 @@ set(CI_EXAMPLE_HEADER "")
 set(CI_EXAMPLE_FILE ${CMAKE_BINARY_DIR}/ci_example_macros.h)
 if(ENABLE_CI_EXAMPLE)
   set(CI_EXAMPLE_HEADER ${CI_EXAMPLE_FILE})
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    set(CRYPTOINTERFACE_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libcryptointerface.a)
+  else()
+    set(CRYPTOINTERFACE_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libcryptointerface.so)
+  endif()
   add_custom_target(overwrite_for_ci_example
     COMMAND ${CMAKE_COMMAND} -E copy ${CI_EXAMPLE_HEADER} ${MOPTIONS_CUSTOM_CI_EXAMPLE_FILE}
-    DEPENDS ${CI_EXAMPLE_HEADER} ${CMAKE_SOURCE_DIR}/lib/libcryptointerface.so
+    DEPENDS ${CI_EXAMPLE_HEADER} ${CRYPTOINTERFACE_DEPENDENCY}
   )
 endif()
 
@@ -290,10 +295,17 @@ set(SSL_CLIENT_HEADER "")
 set(SSL_CLIENT_FILE ${CMAKE_BINARY_DIR}/ssl_client_macros.h)
 if(NOT DISABLE_SSL_CLIENT)
   set(SSL_CLIENT_HEADER ${SSL_CLIENT_FILE})
-
+  
+  # Determine library dependency based on build type
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    set(NANOSSL_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanossl.a)
+  else()
+    set(NANOSSL_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanossl.so)
+  endif()
+  
   add_custom_target(overwrite_for_ssl_client
     COMMAND ${CMAKE_COMMAND} -E copy ${SSL_CLIENT_HEADER} ${MOPTIONS_CUSTOM_SSL_CLIENT_FILE}
-    DEPENDS ${SSL_CLIENT_HEADER} ${CMAKE_SOURCE_DIR}/lib/libnanossl.so
+    DEPENDS ${SSL_CLIENT_HEADER} ${NANOSSL_DEPENDENCY}
   )
 endif()
 
@@ -303,10 +315,17 @@ set(SSL_SERVER_FILE ${CMAKE_BINARY_DIR}/ssl_server_macros.h)
 if(NOT DISABLE_SSL_SERVER)
   set(SSL_SERVER_HEADER ${SSL_SERVER_FILE})
 
+  # Determine library dependency based on build type
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    set(NANOSSL_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanossl.a)
+  else()
+    set(NANOSSL_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanossl.so)
+  endif()
+
   # first header is server
   add_custom_target(overwrite_for_ssl_server
     COMMAND ${CMAKE_COMMAND} -E copy ${SSL_SERVER_HEADER} ${MOPTIONS_CUSTOM_SSL_SERVER_FILE}
-    DEPENDS ${SSL_SERVER_HEADER} ${CMAKE_SOURCE_DIR}/lib/libnanossl.so
+    DEPENDS ${SSL_SERVER_HEADER} ${NANOSSL_DEPENDENCY}
   )
 endif()
 
@@ -315,10 +334,17 @@ set(MQTT_CLIENT_HEADER "")
 set(MQTT_CLIENT_FILE ${CMAKE_BINARY_DIR}/mqtt_client_macros.h)
 if(ENABLE_MQTT_CLIENT)
   set(MQTT_CLIENT_HEADER ${MQTT_CLIENT_FILE})
+  
+  # Determine library dependency based on build type
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    set(NANOMQTT_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanomqtt.a)
+  else()
+    set(NANOMQTT_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanomqtt.so)
+  endif()
 
   add_custom_target(overwrite_for_mqtt_client
     COMMAND ${CMAKE_COMMAND} -E copy ${MQTT_CLIENT_HEADER} ${MOPTIONS_CUSTOM_MQTT_CLIENT_FILE}
-    DEPENDS ${MQTT_CLIENT_HEADER} ${CMAKE_SOURCE_DIR}/lib/libnanomqtt.so
+    DEPENDS ${MQTT_CLIENT_HEADER} ${NANOMQTT_DEPENDENCY}
   )
   set(CM_BUILD_NANOMQTT ON  CACHE BOOL "Build MQTT Client" FORCE)
   add_subdirectory(projects/mqtt_client)

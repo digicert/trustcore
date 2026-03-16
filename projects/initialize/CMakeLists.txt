@@ -312,6 +312,17 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
 else()
   add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
+  if(BUILD_FOR_OSI)
+      # Copy static library to lib directory
+      add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:${PROJECT_NAME}>
+            "${LIB_DIR}"
+        COMMENT "Copied libinitialize.a to ${LIB_DIR}"
+      )
+  endif()
   message ("${PROJECT_NAME} ${LIB_LINK_ORDER}")
   target_link_libraries(${PROJECT_NAME} ${LIB_LINK_ORDER})
 endif()
