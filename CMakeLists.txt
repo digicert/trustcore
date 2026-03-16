@@ -233,9 +233,10 @@ if(ENABLE_TAP)
   if(ENABLE_TPM2)
     set(CM_ENABLE_TPM2 ON CACHE BOOL "Enable TPM2 support" FORCE)
   endif()
-  add_subdirectory(projects/nanotap2)
-  add_subdirectory(projects/nanotap2_configparser)
   add_subdirectory(projects/nanotap2_common)
+  add_subdirectory(projects/nanotap2_configparser)
+  add_subdirectory(projects/nanotap2)
+  
 endif()
 
 if(CM_ENABLE_SERVER_CERT_AUTH OR CM_ENABLE_CLIENT_CERT_AUTH)
