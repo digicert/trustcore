@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.16)
 
 option(CM_ENABLE_TAP                                "Enable TAP"                          ON)
@@ -7,7 +6,6 @@ project(ESTClient LANGUAGES C CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-
 
 if (DEFINED SECURE_PATH)
   message("\nSECURE_PATH = ${SECURE_PATH}")
@@ -71,62 +69,142 @@ target_compile_definitions(est_sample PRIVATE
   $<$<BOOL:${CM_ENABLE_TAP}>:__ENABLE_DIGICERT_CRYPTO_INTERFACE__>
 )
 
-set(ASN1_LIB             "${LIB_DIR}/libasn1.so")
-set(COMMON_LIB           "${LIB_DIR}/libcommon.so")
-set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.so")
-set(PLATFORM_LIB         "${LIB_DIR}/libplatform.so")
-set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.so")
-set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.so")
-set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
-set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.so")
-set(CERT_ENROLL_LIB      "${LIB_DIR}/libcert_enroll.so")
-set(NANOSSL_LIB          "${LIB_DIR}/libnanossl.so")
-
-if(CM_ENABLE_TAP)
-  set(NANOTAP2_COMMON_LIB "${LIB_DIR}/libnanotap2_common.so")
-  set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.so")
-  set(NANOTAP2_LIB "${LIB_DIR}/libnanotap2.so")
-  if(ENABLE_PKCS11_SOFTHSM OR ENABLE_PKCS11_TEE)
-    set(SMP_LIB "${LIB_DIR}/libsmppkcs11.so")
-    set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
-  elseif(ENABLE_TPM2)
-    set(SMP_LIB "${LIB_DIR}/libsmptpm2.so")
-    set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
+# Set library paths based on build type
+if("STATIC" STREQUAL "${LIB_TYPE}")
+  message("Building est_sample with STATIC libraries")
+  
+  set(ASN1_LIB             "${LIB_DIR}/libasn1.a")
+  set(COMMON_LIB           "${LIB_DIR}/libcommon.a")
+  set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.a")
+  set(PLATFORM_LIB         "${LIB_DIR}/libplatform.a")
+  set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.a")
+  set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.a")
+  set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.a")
+  set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.a")
+  set(CERT_ENROLL_LIB      "${LIB_DIR}/libcert_enroll.a")
+  set(NANOSSL_LIB          "${LIB_DIR}/libnanossl.a")
+  
+  if(CM_ENABLE_TAP)
+    set(NANOTAP2_COMMON_LIB "${LIB_DIR}/libnanotap2_common.a")
+    set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.a")
+    set(NANOTAP2_LIB "${LIB_DIR}/libnanotap2.a")
+    if(ENABLE_PKCS11_SOFTHSM OR ENABLE_PKCS11_TEE)
+      set(SMP_LIB "${LIB_DIR}/libsmppkcs11.a")
+      set(TPM2_LIB "${LIB_DIR}/libtpm2.a")
+    elseif(ENABLE_TPM2)
+      set(SMP_LIB "${LIB_DIR}/libsmptpm2.a")
+      set(TPM2_LIB "${LIB_DIR}/libtpm2.a")
+    endif()
   endif()
-
-  target_link_libraries(est_sample PRIVATE
-      ${PLATFORM_LIB}
-      ${ASN1_LIB}
-      ${COMMON_LIB}
-      ${INITIALIZE_LIB}
-      ${NANOSSL_LIB}
-      ${NANOCERT_LIB}
-      ${CERT_ENROLL_LIB}
-      ${NANOCRYPTO_LIB}
-      ${NANOCAP_LIB}
-      ${CRYPTO_INTERFACE_LIB}
-      ${NANOTAP2_COMMON_LIB}
-      ${NANOTAP2_CONFIGPARSER_LIB}
-      ${NANOTAP2_LIB}
-      ${SMP_LIB}
-      ${TPM2_LIB}
-      )
-
+  
 else()
+  message("Building est_sample with SHARED libraries")
+  
+  set(ASN1_LIB             "${LIB_DIR}/libasn1.so")
+  set(COMMON_LIB           "${LIB_DIR}/libcommon.so")
+  set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.so")
+  set(PLATFORM_LIB         "${LIB_DIR}/libplatform.so")
+  set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.so")
+  set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.so")
+  set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
+  set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.so")
+  set(CERT_ENROLL_LIB      "${LIB_DIR}/libcert_enroll.so")
+  set(NANOSSL_LIB          "${LIB_DIR}/libnanossl.so")
+  
+  if(CM_ENABLE_TAP)
+    set(NANOTAP2_COMMON_LIB "${LIB_DIR}/libnanotap2_common.so")
+    set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.so")
+    set(NANOTAP2_LIB "${LIB_DIR}/libnanotap2.so")
+    if(ENABLE_PKCS11_SOFTHSM OR ENABLE_PKCS11_TEE)
+      set(SMP_LIB "${LIB_DIR}/libsmppkcs11.so")
+      set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
+    elseif(ENABLE_TPM2)
+      set(SMP_LIB "${LIB_DIR}/libsmptpm2.so")
+      set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
+    endif()
+  endif()
+  
+endif()
 
-  target_link_libraries(est_sample PRIVATE
-      ${PLATFORM_LIB}
-      ${ASN1_LIB}
-      ${COMMON_LIB}
-      ${INITIALIZE_LIB}
-      ${NANOSSL_LIB}
-      ${NANOCERT_LIB}
-      ${CERT_ENROLL_LIB}
-      ${NANOCRYPTO_LIB}
-      ${NANOCAP_LIB}
-      ${CRYPTO_INTERFACE_LIB}
-      )
-
+# Link libraries with proper order for static builds
+if(CM_ENABLE_TAP)
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    # Static libraries with circular dependencies - use --start-group/--end-group
+    target_link_libraries(est_sample PRIVATE
+        ${NANOSSL_LIB}
+        ${NANOCERT_LIB}
+        ${CERT_ENROLL_LIB}
+        ${NANOTAP2_LIB}
+        ${NANOTAP2_CONFIGPARSER_LIB}
+        ${NANOTAP2_COMMON_LIB}
+        ${SMP_LIB}
+        ${TPM2_LIB}
+        -Wl,--start-group
+        ${INITIALIZE_LIB}
+        ${NANOCRYPTO_LIB}
+        ${CRYPTO_INTERFACE_LIB}
+        ${NANOCAP_LIB}
+        -Wl,--end-group
+        ${ASN1_LIB}
+        ${COMMON_LIB}
+        ${PLATFORM_LIB}
+        pthread
+        dl
+    )
+  else()
+    # Shared libraries - order doesn't matter much
+    target_link_libraries(est_sample PRIVATE
+        ${PLATFORM_LIB}
+        ${ASN1_LIB}
+        ${COMMON_LIB}
+        ${INITIALIZE_LIB}
+        ${NANOSSL_LIB}
+        ${NANOCERT_LIB}
+        ${CERT_ENROLL_LIB}
+        ${NANOCRYPTO_LIB}
+        ${NANOCAP_LIB}
+        ${CRYPTO_INTERFACE_LIB}
+        ${NANOTAP2_COMMON_LIB}
+        ${NANOTAP2_CONFIGPARSER_LIB}
+        ${NANOTAP2_LIB}
+        ${SMP_LIB}
+        ${TPM2_LIB}
+    )
+  endif()
+else()
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    # Static libraries with circular dependencies - use --start-group/--end-group
+    target_link_libraries(est_sample PRIVATE
+        ${NANOSSL_LIB}
+        ${NANOCERT_LIB}
+        ${CERT_ENROLL_LIB}
+        -Wl,--start-group
+        ${INITIALIZE_LIB}
+        ${NANOCRYPTO_LIB}
+        ${CRYPTO_INTERFACE_LIB}
+        ${NANOCAP_LIB}
+        -Wl,--end-group
+        ${ASN1_LIB}
+        ${COMMON_LIB}
+        ${PLATFORM_LIB}
+        pthread
+        dl
+    )
+  else()
+    # Shared libraries - order doesn't matter much
+    target_link_libraries(est_sample PRIVATE
+        ${PLATFORM_LIB}
+        ${ASN1_LIB}
+        ${COMMON_LIB}
+        ${INITIALIZE_LIB}
+        ${NANOSSL_LIB}
+        ${NANOCERT_LIB}
+        ${CERT_ENROLL_LIB}
+        ${NANOCRYPTO_LIB}
+        ${NANOCAP_LIB}
+        ${CRYPTO_INTERFACE_LIB}
+    )
+  endif()
 endif()
 
 add_custom_command(

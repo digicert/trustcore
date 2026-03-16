@@ -176,6 +176,17 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
     target_link_libraries(${PROJECT_NAME} ${LIBS_TO_LINK})
 else()
     add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
+    if(BUILD_FOR_OSI)
+        # Copy static library to lib directory
+        add_custom_command(
+          TARGET ${PROJECT_NAME}
+          POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy
+              $<TARGET_FILE:${PROJECT_NAME}>
+              "${LIB_DIR}"
+          COMMENT "Copied libcryptointerface.a to ${LIB_DIR}"
+        )
+    endif()
 endif()
 
 if(WIN32 AND CM_WIN_FORCE_LINKAGE)

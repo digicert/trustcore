@@ -243,6 +243,16 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
 else()
   add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
+  if(BUILD_FOR_OSI)
+      add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:${PROJECT_NAME}>
+            "${LIB_DIR}"
+        COMMENT "Copied libplatform.a to ${LIB_DIR}"
+      )
+  endif()
 endif()
 
 if(UNIX AND NOT ANDROID)
