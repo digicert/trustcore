@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  build-openssl_connector:
+  build-openssl-connector:
     runs-on: ubuntu-22.04
 
     steps:
