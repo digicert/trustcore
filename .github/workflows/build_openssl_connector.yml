@@ -1,0 +1,121 @@
+name: "Build_OpenSSLConnector"
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 5 * * 1,3,5'
+
+permissions:
+  contents: read
+
+jobs:
+  build-openssl-connector:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Clone mocn-qa-m-products
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+        run: |
+          git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake wget
+          cmake --version
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Prepare thirdparty directory
+        run: |
+          mkdir -p thirdparty
+
+      - name: Install OpenSSL 1.1.1i
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1i/openssl-1.1.1i.tar.gz
+          tar -xzf openssl-1.1.1i.tar.gz -C thirdparty/ 
+
+      - name: Install OpenSSL 3.0.7
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz
+          tar -xzf openssl-3.0.7.tar.gz -C thirdparty/
+
+      - name: Install OpenSSL 3.0.12
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/openssl-3.0.12/openssl-3.0.12.tar.gz
+          tar -xzf openssl-3.0.12.tar.gz -C thirdparty/
+
+      - name: Copy Build script 
+        run: |
+          cp ~/mocn-qa-m-products/openssl_shim_test/Opensource_OSSL_BUILD_ALL.sh .
+
+      # ---------------- OpenSSL Connector BUILDS ----------------
+
+      - name: CMAKE Build with NanoCAP
+        id: ossl_1
+        continue-on-error: true
+        run: |
+          ./Opensource_OSSL_BUILD_ALL.sh 2
+
+      - name: Remove and Prepare thirdparty directory for TAP Local
+        run: |
+          rm -rf thirdparty
+          mkdir -p thirdparty
+          tar -xzf openssl-1.1.1i.tar.gz -C thirdparty/
+          tar -xzf openssl-3.0.7.tar.gz -C thirdparty/
+          tar -xzf openssl-3.0.12.tar.gz -C thirdparty/
+
+      - name: CMAKE Build with NanoCAP and NanoTAP Local
+        id: ossl_2
+        continue-on-error: true
+        run: |
+          ./Opensource_OSSL_BUILD_ALL.sh 3
+
+      - name: Remove and Prepare thirdparty directory for TAP Remote
+        run: |
+          rm -rf thirdparty
+          mkdir -p thirdparty
+          tar -xzf openssl-1.1.1i.tar.gz -C thirdparty/
+          tar -xzf openssl-3.0.7.tar.gz -C thirdparty/
+          tar -xzf openssl-3.0.12.tar.gz -C thirdparty/
+
+      - name: CMAKE Build with NanoCAP and NanoTAP Remote
+        id: ossl_3
+        continue-on-error: true
+        run: |
+          ./Opensource_OSSL_BUILD_ALL.sh 4
+
+
+      # ---------------- FINAL FAILURE CHECK ----------------
+
+      - name: Fail job if any build failed
+        if: always()
+        run: |
+          FAILED=0
+
+          if [[ "${{ steps.ossl_1.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCAP FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ossl_2.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCAP and NanoTAP Local FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ossl_3.outcome }}" == "failure" ]]; then
+            echo "❌ CMAKE Build with NanoCAP and NanoTAP Remote FAILED"
+            FAILED=1
+          fi
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "One or more builds failed."
+            exit 1
+          else
+            echo ""
+            echo "All builds passed."
+          fi
+
+
+
