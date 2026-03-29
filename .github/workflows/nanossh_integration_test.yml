@@ -66,6 +66,14 @@ jobs:
       run: |
         PYTHONUNBUFFERED=1 python3 run.py global_nanossh_cap_no_tap.json
 
+    - name: Upload Valgrind Report Artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: report_valgrind
+        path: report_valgrind.zip
+        retention-days: 5
+
     - name: Cleanup mocn-qa-m-products
       if: always()
       run: |

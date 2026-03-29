@@ -1,5 +1,4 @@
 name: "NanoCert SCEP Integration Tests"
-
 on:
   workflow_dispatch: {}
 
@@ -78,6 +77,14 @@ jobs:
       run: |
         echo "Coverage Summary:"
         lcov --list /tmp/scep_total.info
+
+    - name: Upload Valgrind Report Artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: report_valgrind_client
+        path: report_valgrind_client.zip
+        retention-days: 5
 
     - name: Cleanup mocn-qa-m-products
       run: |

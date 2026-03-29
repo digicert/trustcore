@@ -18,6 +18,8 @@ jobs:
         MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
       run: |
         git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+        cd ~/mocn-qa-m-products
+        git checkout DTM-7857-add-upload-valrgind-report-step-for-all-the-integration-test-workflow-files-in-trustcore-test
 
     - name: Install Dependencies
       run: |
@@ -95,6 +97,14 @@ jobs:
         CM_ENV_CODE_COVERAGE: 1
       run: |
          python3 nanossl_integration_test.py build_server_cap_no_tap.json
+
+    - name: Upload Valgrind Report Artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: report_valgrind
+        path: report_valgrind.zip
+        retention-days: 5
   
     - name: Baseline Coverage
       run: |
