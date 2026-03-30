@@ -18,8 +18,6 @@ jobs:
         MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
       run: |
         git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
-        cd ~/mocn-qa-m-products
-        git checkout DTM-7857-add-upload-valrgind-report-step-for-all-the-integration-test-workflow-files-in-trustcore-test
 
     - name: Install Dependencies
       run: |
