@@ -1,0 +1,96 @@
+name: "Build_CryptoInterface_Example_with_NanoCrypto"
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 5 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  build-cryptointerface-example-nanocrypto:
+    runs-on: [self-hosted]
+
+    steps:
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update && sudo apt install -y cmake build-essential autoconf automake libtool pkg-config libssl-dev
+          cmake --version
+
+      - name: Install SoftHSM library
+        run: |
+          git clone https://github.com/softhsm/SoftHSMv2.git
+          cd SoftHSMv2
+          sh autogen.sh
+          ./configure --disable-non-paged-memory
+          make
+          sudo make install
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      # ---------------- CryptoInterface Example with NanoCrypto BUILDS ----------------
+
+      - name: CryptoInterface Example Basic Build
+        id: build_1
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_CI_EXAMPLE=ON -DWITH_LOGGING=ON -DCM_BUILD_X64=ON -DCM_ENABLE_CERT=ON -DCM_ENABLE_MSG_LOG=ON -DCM_ENABLE_JSON=ON -DCM_ENABLE_URI=ON -DCM_ENABLE_CMS=ON -DCM_ENABLE_CUSTOM_ENTROPY=ON -DCM_ENABLE_CMC=ON -DCM_ENABLE_JSON_VERIFY=ON -DCM_ENABLE_SSL_OCSP=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/crypto_interface_example
+
+      - name: CryptoInterface Example with TAP/TPM2 Build
+        id: build_2
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DENABLE_CI_EXAMPLE=ON -DWITH_LOGGING=ON -DCM_BUILD_X64=ON -DCM_ENABLE_CERT=ON -DENABLE_TAP=ON -DENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -DCM_ENABLE_PSS_VAR_SALT=ON  -DCM_ENABLE_MSG_LOG=ON -DCM_ENABLE_JSON=ON -DCM_ENABLE_URI=ON -DCM_ENABLE_CMS=ON -DCM_ENABLE_CUSTOM_ENTROPY=ON -DCM_ENABLE_CMC=ON -DCM_ENABLE_JSON_VERIFY=ON -DCM_ENABLE_SSL_OCSP=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/crypto_interface_example
+
+      - name: CryptoInterface Example with TAP/PKCS11/SOFTHSM2 Build
+        id: build_3
+        continue-on-error: true
+        run: |
+          rm -rf build lib/* samples/bin/*
+          sudo cp -r /usr/local/lib/softhsm/libsofthsm2.so lib/
+          cmake -DBUILD_SAMPLES=ON -DENABLE_CI_EXAMPLE=ON -DENABLE_PKCS11_SOFTHSM=ON -DWITH_LOGGING=ON -DCM_BUILD_X64=ON -DENABLE_TAP=ON -DENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -DCM_ENABLE_JSON=ON -DCM_ENABLE_URI=ON -DCM_ENABLE_CMS=ON -DCM_ENABLE_SMP_PKCS11=ON -DCM_ENABLE_CMC=ON -DCM_ENABLE_JSON_VERIFY=ON -DCM_ENABLE_SSL_OCSP=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/crypto_interface_example
+
+      # ---------------- FINAL FAILURE CHECK ----------------
+
+      - name: Fail job if any build failed
+        if: always()
+        run: |
+          FAILED=0
+
+          if [[ "${{ steps.mqtt_1.outcome }}" == "failure" ]]; then
+            echo "❌ CryptoInterface Example Basic Build FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.mqtt_2.outcome }}" == "failure" ]]; then
+            echo "❌ CryptoInterface Example with TAP/TPM2 Build FAILED"
+            FAILED=1
+          fi
+
+          if [[ "${{ steps.mqtt_3.outcome }}" == "failure" ]]; then
+            echo "❌ CryptoInterface Example with TAP/PKCS11/SOFTHSM2 Build FAILED"
+            FAILED=1
+          fi
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "One or more builds failed."
+            exit 1
+          else
+            echo ""
+            echo "All builds passed."
+          fi
+
+
+
