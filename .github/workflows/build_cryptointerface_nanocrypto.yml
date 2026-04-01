@@ -16,17 +16,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sudo apt update && sudo apt install -y cmake build-essential autoconf automake libtool pkg-config libssl-dev
+          sudo apt update && sudo apt install -y cmake build-essential autoconf automake libtool pkg-config libssl-dev softhsm2 libsofthsm2
           cmake --version
-
-      - name: Install SoftHSM library
-        run: |
-          git clone https://github.com/softhsm/SoftHSMv2.git
-          cd SoftHSMv2
-          sh autogen.sh
-          ./configure --disable-non-paged-memory
-          make
-          sudo make install
+          softhsm2-util --version
 
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -56,7 +48,7 @@ jobs:
         continue-on-error: true
         run: |
           rm -rf build lib/* samples/bin/*
-          sudo cp -r /usr/local/lib/softhsm/libsofthsm2.so lib/
+          sudo cp -r /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so lib/
           cmake -DBUILD_SAMPLES=ON -DENABLE_CI_EXAMPLE=ON -DENABLE_PKCS11_SOFTHSM=ON -DWITH_LOGGING=ON -DCM_BUILD_X64=ON -DENABLE_TAP=ON -DENABLE_TPM2=ON -DCM_ENABLE_TAP_LOCAL=ON -DCM_ENABLE_JSON=ON -DCM_ENABLE_URI=ON -DCM_ENABLE_CMS=ON -DCM_ENABLE_SMP_PKCS11=ON -DCM_ENABLE_CMC=ON -DCM_ENABLE_JSON_VERIFY=ON -DCM_ENABLE_SSL_OCSP=ON -B build -S .
           cmake --build build
           test -f samples/bin/crypto_interface_example
