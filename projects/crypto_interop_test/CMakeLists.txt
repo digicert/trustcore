@@ -109,7 +109,8 @@ platform_${MSS_LIB_NAME}
 unittest_${MSS_LIB_NAME}
 ${BSSL_ALL_LIBS}
 ${WOLFSSL_ALL_LIBS}
-${EXTRA_LIBS})
+${EXTRA_LIBS}
+stdc++)
 
 ## Use CTest
 set(CT_VALGRIND_XML_OPTIONS "--xml=yes --xml-file=${CMAKE_SOURCE_DIR}/memcheck.xml")
