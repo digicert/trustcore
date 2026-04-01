@@ -67,7 +67,7 @@ if [ ${WOLF_BUILD} -eq 1 ]; then
   fi
   echo "Building wolfssl"
   ./autogen.sh
-  ./configure --enable-experimental --enable-dilithium --enable-kyber --enable-static --disable-dh --enable-debug
+  ./configure --enable-experimental --enable-dilithium=yes,no-ctx --enable-kyber --enable-static --disable-dh --enable-debug
   make
   cd ..
 fi
