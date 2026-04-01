@@ -54,7 +54,7 @@ if [ ${BSSL_BUILD} -eq 1 ]; then
   fi
   echo "Building boringssl"
   cmake -GNinja -B build
-  ninja -C build
+  ninja -C build -j1
   cd ..
 fi
 
