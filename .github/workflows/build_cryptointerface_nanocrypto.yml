@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-cryptointerface-example-nanocrypto:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -68,17 +68,17 @@ jobs:
         run: |
           FAILED=0
 
-          if [[ "${{ steps.mqtt_1.outcome }}" == "failure" ]]; then
+          if [[ "${{ steps.build_1.outcome }}" == "failure" ]]; then
             echo "❌ CryptoInterface Example Basic Build FAILED"
             FAILED=1
           fi
 
-          if [[ "${{ steps.mqtt_2.outcome }}" == "failure" ]]; then
+          if [[ "${{ steps.build_2.outcome }}" == "failure" ]]; then
             echo "❌ CryptoInterface Example with TAP/TPM2 Build FAILED"
             FAILED=1
           fi
 
-          if [[ "${{ steps.mqtt_3.outcome }}" == "failure" ]]; then
+          if [[ "${{ steps.build_3.outcome }}" == "failure" ]]; then
             echo "❌ CryptoInterface Example with TAP/PKCS11/SOFTHSM2 Build FAILED"
             FAILED=1
           fi
