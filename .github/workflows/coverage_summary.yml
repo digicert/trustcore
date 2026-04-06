@@ -29,7 +29,7 @@ jobs:
           WF="common_unittest.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -49,7 +49,7 @@ jobs:
           WF="crypto_unittest.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -69,7 +69,7 @@ jobs:
           WF="asn1_unittest.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -89,7 +89,7 @@ jobs:
           WF="crypto_interface_unittest.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -109,7 +109,7 @@ jobs:
           WF="est_unittest.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -129,7 +129,7 @@ jobs:
           WF="scep_unittest.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -149,7 +149,7 @@ jobs:
           WF="nanomqtt_unit_test.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -169,7 +169,7 @@ jobs:
           WF="nanossh_unit_test.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
@@ -189,7 +189,7 @@ jobs:
           WF="smp_nanoroot_unittest.yml"
           RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
-            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+            echo "No runs found for workflow '$WF'"
           fi
           echo "Run ID: $RUN_ID"
           if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
