@@ -61,7 +61,7 @@ jobs:
           lcov --extract /tmp/ssh_combined.info '*/ssh/*' --output-file /tmp/ssh_filtered.info
           lcov --list /tmp/ssh_filtered.info | tee coverage_summary.log
 
-      - name: Upload Valgrind Report Artifact
+      - name: Upload Coverage Summary Artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
