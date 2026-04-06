@@ -2,6 +2,7 @@ name: "Coverage Summary"
 
 permissions:
   contents: read
+  actions: read
 
 on:
   workflow_dispatch: {} 
