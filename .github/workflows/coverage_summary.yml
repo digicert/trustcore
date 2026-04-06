@@ -5,8 +5,6 @@ permissions:
 
 on:
   workflow_dispatch: {} 
-  push:
-    branches: [ "coverage_info_trial" ]
   schedule:
     - cron: '0 2 * * *' # Optional daily at 2 AM UTC
 
@@ -28,7 +26,7 @@ jobs:
       - name: Fetch Coverage for Common Unit Tests
         run: |
           WF="common_unittest.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -48,7 +46,7 @@ jobs:
       - name: Fetch Coverage for Crypto Unit Tests
         run: |
           WF="crypto_unittest.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -68,7 +66,7 @@ jobs:
       - name: Fetch Coverage for ASN1 Unit Tests
         run: |
           WF="asn1_unittest.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -88,7 +86,7 @@ jobs:
       - name: Fetch Coverage for Crypto Interface Unit Tests
         run: |
           WF="crypto_interface_unittest.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -108,7 +106,7 @@ jobs:
       - name: Fetch Coverage for EST Unit Tests
         run: |
           WF="est_unittest.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -128,7 +126,7 @@ jobs:
       - name: Fetch Coverage for SCEP Unit Tests
         run: |
           WF="scep_unittest.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -148,7 +146,7 @@ jobs:
       - name: Fetch Coverage for NanoMQTT Unit Tests
         run: |
           WF="nanomqtt_unit_test.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -168,7 +166,7 @@ jobs:
       - name: Fetch Coverage for NanoSSH Unit Tests
         run: |
           WF="nanossh_unit_test.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
@@ -188,7 +186,7 @@ jobs:
       - name: Fetch Coverage for SMP NanoRoot Unit Tests
         run: |
           WF="smp_nanoroot_unittest.yml"
-          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="main") | .databaseId' | head -n 1)
           if [ -z "$RUN_ID" ]; then
             echo "No runs found for workflow '$WF' on branch coverage_info_trial"
           fi
