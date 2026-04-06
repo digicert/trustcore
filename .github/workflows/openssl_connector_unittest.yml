@@ -71,3 +71,25 @@ jobs:
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_server --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_server_cert certs/rsa_cert.pem --ssl_server_keyblob keys/rsa_key.pem &
           sleep 2
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_client_local --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_ca_cert ca/rsa_ca.pem --ssl_servername rsa-test
+
+      - name: Baseline Coverage
+        run: |
+          lcov --no-external --capture --initial --directory . --output-file /tmp/ossl_base.info
+
+      - name: Capture Coverage
+        run: |
+          lcov --no-external --capture --directory . --output-file /tmp/ossl_test.info
+          lcov --add-tracefile /tmp/ossl_base.info --add-tracefile /tmp/ossl_test.info --output-file /tmp/ossl_total.info
+
+      - name: Print Coverage Summary
+        run: |
+          echo "Coverage Summary:"
+          lcov --extract /tmp/ossl_total.info '*/src/openssl_wrapper/*' '*/src/ssl/*' --output-file /tmp/ossl_filtered.info
+          lcov --list /tmp/ossl_filtered.info | tee coverage_summary.log
+
+      - name: Upload Valgrind Report Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: openssl_connector_unittest_coverage_summary
+          path: coverage_summary.log
