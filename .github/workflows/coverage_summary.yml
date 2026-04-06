@@ -1,0 +1,231 @@
+name: "Coverage Summary"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch: {} 
+    #push:
+    #branches: [ "coverage_info_trial" ]
+  schedule:
+    - cron: '0 2 * * *' # Optional daily at 2 AM UTC
+
+jobs:
+  fetch-coverage:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install -y gh
+
+      - name: Authenticate GitHub CLI
+        run: gh auth login --with-token <<< "${{ secrets.MY_SECRET_TOKEN }}"
+
+      - name: Fetch Coverage for Common Unit Tests
+        run: |
+          WF="common_unittest.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "Common Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for Crypto Unit Tests
+        run: |
+          WF="crypto_unittest.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "Crypto Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for ASN1 Unit Tests
+        run: |
+          WF="asn1_unittest.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "ASN1 Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for Crypto Interface Unit Tests
+        run: |
+          WF="crypto_interface_unittest.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "Crypto Interface Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for EST Unit Tests
+        run: |
+          WF="est_unittest.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "EST Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for SCEP Unit Tests
+        run: |
+          WF="scep_unittest.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "SCEP Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for NanoMQTT Unit Tests
+        run: |
+          WF="nanomqtt_unit_test.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "NanoMQTT Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for NanoSSH Unit Tests
+        run: |
+          WF="nanossh_unit_test.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "NanoSSH Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Fetch Coverage for SMP NanoRoot Unit Tests
+        run: |
+          WF="smp_nanoroot_unittest.yml"
+          RUN_ID=$(gh run list --workflow="$WF" --limit 20 --json databaseId,headBranch,status --jq '.[] | select(.headBranch=="coverage_info_trial") | .databaseId' | head -n 1)
+          if [ -z "$RUN_ID" ]; then
+            echo "No runs found for workflow '$WF' on branch coverage_info_trial"
+          fi
+          echo "Run ID: $RUN_ID"
+          if gh run download "$RUN_ID" --name "${WF%.yml}_coverage_summary" --dir "./coverage_logs_${WF%.yml}"; then
+            LOG_FILE="./coverage_logs_${WF%.yml}/coverage_summary.log"
+            cat "$LOG_FILE"
+            TOTAL_LINE=$(grep "Total:" "$LOG_FILE")
+            if [ -n "$TOTAL_LINE" ]; then
+              TOTAL_DATA=$(echo "$TOTAL_LINE" | sed 's/.*Total:|//')
+              echo "SMP NanoRoot Unit Test|$TOTAL_DATA" >> coverage_totals.txt
+            fi
+          else
+            echo "Artifact '${WF%.yml}_coverage_summary' not found for run $RUN_ID"
+          fi
+
+      - name: Final Coverage Summary
+        run: |
+          if [ ! -f coverage_totals.txt ]; then
+            echo "No coverage data found"
+            exit 0
+          fi
+
+          echo "================ FINAL COVERAGE SUMMARY ================"
+          printf "\n"
+
+          # Header
+          printf "%-30s | %-18s | %-18s | %-12s\n" "Unit Test" "Lines" "Functions" "Branches"
+          printf "%-30s-+-%-18s-+-%-18s-+-%-12s\n" "------------------------------" "------------------" "------------------" "------------"
+
+          while IFS="|" read -r NAME DATA; do
+            # Split DATA into columns
+            LINES=$(echo "$DATA" | awk -F'|' '{print $1}')
+            FUNCS=$(echo "$DATA" | awk -F'|' '{print $2}')
+            BRANCH=$(echo "$DATA" | awk -F'|' '{print $3}')
+            printf "%-30s | %-18s | %-18s | %-12s\n" "$NAME" "$LINES" "$FUNCS" "$BRANCH"
+          done < coverage_totals.txt
+
+          printf "\n=======================================================\n"
+       

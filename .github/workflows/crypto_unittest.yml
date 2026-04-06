@@ -49,4 +49,11 @@ jobs:
       - name: Print Coverage Summary
         run: |
           echo "Coverage Summary:"
-          lcov --list /tmp/crypto_total.info
+          lcov --list /tmp/crypto_total.info | tee coverage_summary.log
+
+      - name: Upload Valgrind Report Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: crypto_unittest_coverage_summary
+          path: coverage_summary.log
