@@ -1,6 +1,7 @@
 name: OpenSSL Connector Unit Tests
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - "scripts/openssl/**"
