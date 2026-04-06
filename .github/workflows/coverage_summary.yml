@@ -5,8 +5,8 @@ permissions:
 
 on:
   workflow_dispatch: {} 
-    #push:
-    #branches: [ "coverage_info_trial" ]
+  push:
+    branches: [ "coverage_info_trial" ]
   schedule:
     - cron: '0 2 * * *' # Optional daily at 2 AM UTC
 
