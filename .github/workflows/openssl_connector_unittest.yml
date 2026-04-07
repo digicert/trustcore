@@ -65,6 +65,12 @@ jobs:
         run: |
           lcov --no-external --capture --directory . --output-file /tmp/ossl_test1_${{ matrix.openssl_version }}.info
 
+      - name: Print Coverage Summary with DigiCert provider
+        run: |
+          echo "Coverage Summary:"
+          lcov --add-tracefile /tmp/ossl_base1_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_test1_${{ matrix.openssl_version }}.info --output-file /tmp/ossl_total1_${{ matrix.openssl_version }}.info
+          lcov --list /tmp/ossl_total1_${{ matrix.openssl_version }}.info
+
       - name: Build OpenSSL Connector for testing
         env:
           CM_ENV_CODE_COVERAGE: 1
@@ -95,6 +101,12 @@ jobs:
       - name: Capture Coverage
         run: |
           lcov --no-external --capture --directory . --output-file /tmp/ossl_test2_${{ matrix.openssl_version }}.info
+
+      - name: Print Coverage Summary for OpenSSL Connector
+        run: |
+          echo "Coverage Summary:"
+          lcov --add-tracefile /tmp/ossl_base2_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_test2_${{ matrix.openssl_version }}.info --output-file /tmp/ossl_total2_${{ matrix.openssl_version }}.info
+          lcov --list /tmp/ossl_total2_${{ matrix.openssl_version }}.info
 
       - name: Combine All Coverage
         run: |
