@@ -81,6 +81,10 @@ jobs:
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_12
           fi
 
+      - name: Clean coverage after rebuild
+        run: |
+          find . -name "*.gcda" -delete || true
+
       - name: Run OpenSSL Crypto Tests
         run: |
           cd thirdparty/openssl-${{ matrix.openssl_version }}
