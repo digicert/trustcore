@@ -138,6 +138,13 @@ if(CM_ENABLE_MONOLITHIC_BUILD)
     set(LINK_LIBS_IN_BIN_STATIC "ON")
 endif()
 
+if("$ENV{CM_ENV_CODE_COVERAGE}" STREQUAL "1")
+    message(STATUS "################# COVERAGE ENABLED #################")
+
+    add_compile_options(-fprofile-arcs -ftest-coverage)
+    add_link_options(-fprofile-arcs -ftest-coverage)
+endif()
+
 if(WIN32)
     if("STATIC" STREQUAL "${LIB_TYPE}")
         set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32_static")
