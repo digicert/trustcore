@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   OpenSSLConnectorUnitTest:
-    runs-on: [ubuntu-latest]
+    runs-on: [ubuntu-22.04]
     strategy:
       matrix:
         openssl_version: ["3.0.7", "3.0.12"]
@@ -80,22 +80,22 @@ jobs:
 
       - name: Baseline Coverage
         run: |
-          lcov --no-external --capture --initial --directory . --output-file /tmp/ossl_base.info
+          lcov --no-external --capture --initial --directory . --output-file /tmp/ossl_base_${{ matrix.openssl_version }}.info
 
       - name: Capture Coverage
         run: |
-          lcov --no-external --capture --directory . --output-file /tmp/ossl_test.info
-          lcov --add-tracefile /tmp/ossl_base.info --add-tracefile /tmp/ossl_test.info --output-file /tmp/ossl_total.info
+          lcov --no-external --capture --directory . --output-file /tmp/ossl_test_${{ matrix.openssl_version }}.info
+          lcov --add-tracefile /tmp/ossl_base_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_test_${{ matrix.openssl_version }}.info --output-file /tmp/ossl_total_${{ matrix.openssl_version }}.info
 
       - name: Print Coverage Summary
         run: |
           echo "Coverage Summary:"
-          lcov --extract /tmp/ossl_total.info '*/src/openssl_wrapper/*' '*/src/ssl/*' --output-file /tmp/ossl_filtered.info
-          lcov --list /tmp/ossl_filtered.info | tee coverage_summary.log
+          lcov --extract /tmp/ossl_total_${{ matrix.openssl_version }}.info '*/src/openssl_wrapper/*' '*/src/ssl/*' --output-file /tmp/ossl_filtered_${{ matrix.openssl_version }}.info
+          lcov --list /tmp/ossl_filtered_${{ matrix.openssl_version }}.info | tee coverage_summary_${{ matrix.openssl_version }}.log
 
       - name: Upload Valgrind Report Artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: openssl_connector_unittest_coverage_summary
-          path: coverage_summary.log
+          name: openssl_connector_unittest_coverage_summary_${{ matrix.openssl_version }}
+          path: coverage_summary_${{ matrix.openssl_version }}.log
