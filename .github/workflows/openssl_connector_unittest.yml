@@ -57,7 +57,17 @@ jobs:
           cd thirdparty/openssl-${{ matrix.openssl_version }}
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib make TESTS=test_cms test
 
+      - name: Baseline Coverage with DigiCert provider
+        run: |
+          lcov --no-external --capture --initial --directory . --output-file /tmp/ossl_base1_${{ matrix.openssl_version }}.info
+
+      - name: Capture Coverage with DigiCert provider
+        run: |
+          lcov --no-external --capture --directory . --output-file /tmp/ossl_test1_${{ matrix.openssl_version }}.info
+
       - name: Build OpenSSL Connector for testing
+        env:
+          CM_ENV_CODE_COVERAGE: 1
         run: |
           if [ "${{ matrix.openssl_version }}" = "3.0.7" ]; then
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_7
@@ -80,12 +90,15 @@ jobs:
 
       - name: Baseline Coverage
         run: |
-          lcov --no-external --capture --initial --directory . --output-file /tmp/ossl_base_${{ matrix.openssl_version }}.info
+          lcov --no-external --capture --initial --directory . --output-file /tmp/ossl_base2_${{ matrix.openssl_version }}.info
 
       - name: Capture Coverage
         run: |
-          lcov --no-external --capture --directory . --output-file /tmp/ossl_test_${{ matrix.openssl_version }}.info
-          lcov --add-tracefile /tmp/ossl_base_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_test_${{ matrix.openssl_version }}.info --output-file /tmp/ossl_total_${{ matrix.openssl_version }}.info
+          lcov --no-external --capture --directory . --output-file /tmp/ossl_test2_${{ matrix.openssl_version }}.info
+
+      - name: Combine All Coverage
+        run: |
+          lcov --add-tracefile /tmp/ossl_base1_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_test1_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_base2_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_test2_${{ matrix.openssl_version }}.info --output-file /tmp/ossl_total_${{ matrix.openssl_version }}.info
 
       - name: Print Coverage Summary
         run: |
