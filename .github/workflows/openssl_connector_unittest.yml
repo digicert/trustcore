@@ -39,11 +39,9 @@ jobs:
           cd scripts/openssl
           ./apply-patch.sh openssl-${{ matrix.openssl_version }}
 
-      - name: Set coverage env
+      - name: Build OpenSSL ${{ matrix.openssl_version }} with DigiCert provider
         env:
           CM_ENV_CODE_COVERAGE: 1
-
-      - name: Build OpenSSL ${{ matrix.openssl_version }} with DigiCert provider
         run: |
           if [ "${{ matrix.openssl_version }}" = "3.0.7" ]; then
             ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_0_7 --ossl-digi-test
