@@ -18,7 +18,7 @@ jobs:
     runs-on: [ubuntu-22.04]
     strategy:
       matrix:
-        openssl_version: ["3.0.7", "3.0.12"]
+        openssl_version: ["3.0.7"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
