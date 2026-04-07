@@ -1,5 +1,4 @@
 name: OpenSSL Connector Unit Tests
-
 on:
   workflow_dispatch: {}
   push:
