@@ -18,7 +18,7 @@ jobs:
     runs-on: [ubuntu-22.04]
     strategy:
       matrix:
-        openssl_version: ["3.0.7"]
+        openssl_version: ["3.0.7", "3.0.12"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,7 +43,6 @@ jobs:
           echo "Cleaning previous build and coverage files..."
           find . -name "*.gcda" -delete
           find . -name "*.gcno" -delete
-          find . -name "*.info" -delete
 
       - name: Build OpenSSL Connector for testing
         env:
