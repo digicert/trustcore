@@ -90,8 +90,7 @@ jobs:
       - name: Print Coverage Summary
         run: |
           echo "Coverage Summary:"
-          lcov --extract /tmp/ossl_total_${{ matrix.openssl_version }}.info '*/src/openssl_wrapper/*' '*/src/ssl/*' --output-file /tmp/ossl_filtered_${{ matrix.openssl_version }}.info
-          lcov --list /tmp/ossl_filtered_${{ matrix.openssl_version }}.info | tee coverage_summary_${{ matrix.openssl_version }}.log
+          lcov --list /tmp/ossl_total_${{ matrix.openssl_version }}.info | tee coverage_summary_${{ matrix.openssl_version }}.log
 
       - name: Upload Valgrind Report Artifact
         if: always()
