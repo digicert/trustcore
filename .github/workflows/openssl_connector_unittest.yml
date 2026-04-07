@@ -71,6 +71,12 @@ jobs:
           lcov --add-tracefile /tmp/ossl_base1_${{ matrix.openssl_version }}.info --add-tracefile /tmp/ossl_test1_${{ matrix.openssl_version }}.info --output-file /tmp/ossl_total1_${{ matrix.openssl_version }}.info
           lcov --list /tmp/ossl_total1_${{ matrix.openssl_version }}.info
 
+      - name: Clean before OpenSSL Connector rebuild
+        run: |
+          rm -f lib/libnanossl.so lib/libopenssl_shim.so lib/libnanossl.a lib/libopenssl_shim.a || true
+          find . -name "*.gcda" -delete || true
+          find . -name "*.gcno" -delete || true
+
       - name: Build OpenSSL Connector for testing
         env:
           CM_ENV_CODE_COVERAGE: 1
@@ -79,11 +85,6 @@ jobs:
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_7
           else
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_12
-          fi
-
-      - name: Clean coverage after rebuild
-        run: |
-          find . -name "*.gcda" -delete || true
 
       - name: Run OpenSSL Crypto Tests
         run: |
