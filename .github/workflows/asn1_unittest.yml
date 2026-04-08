@@ -47,4 +47,11 @@ jobs:
       - name: Print Coverage Summary
         run: |
           echo "Coverage Summary:"
-          lcov --list /tmp/asn1_total.info
+          lcov --list /tmp/asn1_total.info | tee coverage_summary.log
+
+      - name: Upload Coverage Summary Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: asn1_unittest_coverage_summary
+          path: coverage_summary.log

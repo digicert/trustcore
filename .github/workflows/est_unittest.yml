@@ -61,4 +61,11 @@ jobs:
         run: |
           cd trustcore-test
           echo "Coverage Summary:"
-          lcov --list /tmp/est_total.info
+          lcov --list /tmp/est_total.info | tee coverage_summary.log
+
+      - name: Upload Coverage Summary Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: est_unittest_coverage_summary
+          path: trustcore-test/coverage_summary.log

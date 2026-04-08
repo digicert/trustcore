@@ -59,7 +59,14 @@ jobs:
         run: |
           echo "NanoSSH Coverage Summary:"
           lcov --extract /tmp/ssh_combined.info '*/ssh/*' --output-file /tmp/ssh_filtered.info
-          lcov --list /tmp/ssh_filtered.info
+          lcov --list /tmp/ssh_filtered.info | tee coverage_summary.log
+
+      - name: Upload Coverage Summary Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nanossh_unit_test_coverage_summary
+          path: coverage_summary.log
 
       - name: Show Job Status
         run: echo "🍏 This job's status is ${{ job.status }}."

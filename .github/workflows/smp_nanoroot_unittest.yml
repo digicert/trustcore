@@ -324,7 +324,14 @@ jobs:
         run: |
           echo "NanoROOT Coverage Summary:"
           lcov --extract /tmp/nanoroot_total.info '*/src/smp/smp_nanoroot/*' --output-file /tmp/nanoroot_filtered.info
-          lcov --list /tmp/nanoroot_filtered.info
+          lcov --list /tmp/nanoroot_filtered.info | tee coverage_summary.log
+
+      - name: Upload Coverage Summary Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: smp_nanoroot_unittest_coverage_summary
+          path: coverage_summary.log
 
   Build-and-Test-SecurePath:
     name: Build and Test (SECURE_PATH Enabled)
