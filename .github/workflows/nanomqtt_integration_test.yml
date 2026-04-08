@@ -61,8 +61,14 @@ jobs:
       run: |
         echo "Coverage Summary:"
         lcov --extract /tmp/mqtt_total.info '*/mqtt/*' --output-file /tmp/mqtt_filtered.info
-        lcov --list /tmp/mqtt_filtered.info
+        lcov --list /tmp/mqtt_filtered.info | tee coverage_summary.log
 
+    - name: Upload Coverage Summary
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: nanomqtt-coverage-summary
+        path: coverage_summary.log
     - name: Cleanup mocn-qa-m-products
       if: always()
       run: |
