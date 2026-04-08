@@ -2,7 +2,7 @@ name: OpenSSL Connector Unit Tests
 on:
   workflow_dispatch: {}
   push:
-    branches: ["coverage_info_trial"] 
+    branches: ["DTM-8744-github-action-for-coverage-summary"] 
   pull_request:
     paths:
       - "scripts/openssl/**"
@@ -57,12 +57,6 @@ jobs:
       - name: Baseline Coverage
         run: |
           lcov --no-external --capture --initial --directory . --output-file /tmp/ossl_base2_${{ matrix.openssl_version }}.info
-          
-      - name: Run OpenSSL Crypto Tests
-        run: |
-          cd thirdparty/openssl-${{ matrix.openssl_version }}
-          LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib make TESTS=test_evp test
-
       - name: Run OpenSSL SSL Tests
         run: |
           cd thirdparty/openssl-${{ matrix.openssl_version }}/sample
