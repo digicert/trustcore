@@ -7,7 +7,7 @@ on:
 
 jobs:
   mqtt-integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
@@ -21,6 +21,8 @@ jobs:
         sudo apt-get install -y python3-pip
         pip3 install paho-mqtt
         pip3 install psutil
+        sudo apt-get install -y lcov
+        lcov --version
  
     - name: Create /etc/digicert/keystore/ca folder 
       run: |
@@ -41,8 +43,32 @@ jobs:
       run: chmod +x run_nanomqtt_client.sh
 
     - name: Run MQTT Integration Test
+      env:
+        CM_ENV_CODE_COVERAGE: 1
       run: |
         ./run_nanomqtt_client.sh
+
+    - name: Baseline Coverage
+      run: |
+        lcov --no-external --capture --initial --directory . --output-file /tmp/mqtt_base.info
+
+    - name: Capture Coverage
+      run: |
+        lcov --no-external --capture --directory . --output-file /tmp/mqtt_test.info
+        lcov --add-tracefile /tmp/mqtt_base.info --add-tracefile /tmp/mqtt_test.info --output-file /tmp/mqtt_total.info
+
+    - name: Print Coverage Summary
+      run: |
+        echo "Coverage Summary:"
+        lcov --extract /tmp/mqtt_total.info '*/mqtt/*' --output-file /tmp/mqtt_filtered.info
+        lcov --list /tmp/mqtt_filtered.info | tee coverage_summary.log
+
+    - name: Upload Coverage Summary
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: nanomqtt_integration_test_coverage_summary
+        path: coverage_summary.log
 
     - name: Cleanup mocn-qa-m-products
       if: always()

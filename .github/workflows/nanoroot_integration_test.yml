@@ -62,6 +62,8 @@ jobs:
         cp -r ~/mocn-qa-m-products/nanoroot_test/etc_digicert_folder/* /etc/digicert/
     
     - name: NanoRoot Build Command
+      env:
+        CM_ENV_CODE_COVERAGE: 1
       run: |
         cmake -DENABLE_NANOROOT=ON -DBUILD_SAMPLES=ON -DCM_ENABLE_RSA_8K=ON -B build -S .
         cmake --build build
@@ -77,6 +79,29 @@ jobs:
         mv report_valgrind_nanoroot.txt report_valgrind
         mv report_valgrind_nanoroot_config.txt report_valgrind
         python3 run_valgrind_check_dir.py
+
+    - name: Baseline Coverage
+      run: |
+        lcov --no-external --capture --initial --directory . --output-file /tmp/nanoroot_base.info
+
+    - name: Capture Coverage
+      run: |
+        lcov --no-external --capture --directory . --output-file /tmp/nanoroot_test.info
+        lcov --add-tracefile /tmp/nanoroot_base.info --add-tracefile /tmp/nanoroot_test.info --output-file /tmp/nanoroot_total.info
+
+    - name: Print Coverage Summary
+      run: |
+        echo "Coverage Summary:"
+        lcov --extract /tmp/nanoroot_total.info '*/src/smp/smp_nanoroot/*' --output-file /tmp/nanoroot_filtered.info
+        lcov --list /tmp/nanoroot_filtered.info | tee coverage_summary.log
+
+    - name: Upload Coverage Summary Artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: nanoroot_integration_test_coverage_summary
+        path: coverage_summary.log
+        retention-days: 5
 
     - name: Zip Valgrind Report
       if: always()
