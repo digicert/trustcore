@@ -77,7 +77,7 @@ jobs:
       run: |
         echo "Coverage Summary:"
         lcov --extract /tmp/scep_total.info '*/est/*' --output-file /tmp/scep_filtered.info
-        lcov --list /tmp/scep_filtered.info
+        lcov --list /tmp/scep_filtered.info | tee coverage_summary.log
 
     - name: Upload Coverage Summary Artifact
       if: always()

@@ -117,7 +117,7 @@ jobs:
       run: |
         echo "Coverage Summary:"
         lcov --extract /tmp/ssl_total.info '*/ssl/*' --output-file /tmp/ssl_filtered.info
-        lcov --list /tmp/ssl_filtered.info
+        lcov --list /tmp/ssl_filtered.info | tee coverage_summary.log
 
     - name: Upload Coverage Summary Artifact
       if: always()
