@@ -116,7 +116,16 @@ jobs:
     - name: Print Coverage Summary
       run: |
         echo "Coverage Summary:"
-        lcov --list /tmp/ssl_total.info
+        lcov --extract /tmp/ssl_total.info '*/ssl/*' --output-file /tmp/ssl_filtered.info
+        lcov --list /tmp/ssl_filtered.info
+
+    - name: Upload Coverage Summary Artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: nanossl_integration_test_coverage_summary
+        path: coverage_summary.log
+        retention-days: 5
 
     - name: Cleanup mocn-qa-m-products
       run: |

@@ -76,7 +76,16 @@ jobs:
     - name: Print Coverage Summary
       run: |
         echo "Coverage Summary:"
-        lcov --list /tmp/scep_total.info
+        lcov --extract /tmp/scep_total.info '*/est/*' --output-file /tmp/scep_filtered.info
+        lcov --list /tmp/scep_filtered.info
+
+    - name: Upload Coverage Summary Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nanocert_scep_integration_test_coverage_summary
+          path: coverage_summary.log
+          retention-days: 5
 
     - name: Upload Valgrind Report Artifact
       if: always()

@@ -65,10 +65,11 @@ jobs:
 
     - name: Upload Coverage Summary
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
-        name: nanomqtt-coverage-summary
+        name: nanomqtt_integration_test_coverage_summary
         path: coverage_summary.log
+
     - name: Cleanup mocn-qa-m-products
       if: always()
       run: |
