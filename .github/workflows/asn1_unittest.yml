@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   UnitTest:
-    runs-on: [ubuntu-22.04]
+    runs-on: [self-hosted]
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -55,3 +55,21 @@ jobs:
         with:
           name: asn1_unittest_coverage_summary
           path: coverage_summary.log
+
+      - name: Send Slack notification (Success)
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "text": "✅ Build succeeded for branch `${{ github.ref_name }}`\nTriggered by: ${{ github.actor }}\nRun: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack notification (Failure)
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "text": "❌ Build failed for branch `${{ github.ref_name }}`\nTriggered by: ${{ github.actor }}\nRun: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
