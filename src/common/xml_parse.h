@@ -14,7 +14,7 @@
  * *Contact DigiCert at sales@digicert.com for more details.*
  */
 
-#define MAX_TAG_NAME 32;
+#define MAX_TAG_NAME 32
 
 MOC_EXTERN MSTATUS findTagName(ubyte * pBuff, sbyte4 maxBytesToParse, sbyte4 * bytesParsed, ubyte * tagContents );
 MOC_EXTERN MSTATUS findTagValue(ubyte * pBuff, sbyte4 maxBytesToParse, sbyte4 * bytesParsed, ubyte * tagValue );

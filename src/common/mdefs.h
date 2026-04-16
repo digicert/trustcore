@@ -1,7 +1,7 @@
 /*
  * mdefs.h
  *
- * Digicert Definitions
+ * DigiCert Definitions
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

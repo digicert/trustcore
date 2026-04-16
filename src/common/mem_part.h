@@ -1,4 +1,4 @@
-/*
+/**
  * @file   mem_part.h
  * @brief  Overlays a memory partition over a given memory region
  *

@@ -1,4 +1,4 @@
-/*
+/**
  * @file  debug_console.h
  * @brief Mocana Debug Console Header
  *

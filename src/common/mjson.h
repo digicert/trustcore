@@ -1,4 +1,4 @@
-/*
+/**
  * @file   mjson.h
  * @brief  Mocana JSON Parse utility functions.
  *

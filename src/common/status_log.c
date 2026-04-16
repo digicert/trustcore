@@ -1,5 +1,5 @@
 /*
- * status_loc.c
+ * status_log.c
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

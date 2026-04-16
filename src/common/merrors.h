@@ -1,4 +1,4 @@
-/*
+/**
  * @file merrors.h
  *
  * @ingroup common_tree

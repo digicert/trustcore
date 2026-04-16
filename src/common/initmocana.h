@@ -1,4 +1,4 @@
-/*
+/**
  * @file  initmocana.h
  * @brief Initialization Routines.
  *
