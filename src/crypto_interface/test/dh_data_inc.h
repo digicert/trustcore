@@ -1,3 +1,18 @@
+/*
+ * dh_data_inc.h
+ *
+ * Copyright 2026 DigiCert, Inc. All Rights Reserved.
+ *
+ * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
+ *
+ * 1. **Open Source License**: GNU Affero General Public License v3.0 (AGPL v3).
+ * See: https://github.com/digicert/trustcore/blob/main/LICENSE.md
+ * 2. **Commercial License**: Available under DigiCert's Master Services Agreement.
+ * See: https://www.digicert.com/master-services-agreement/
+ *
+ * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
+ * *Contact DigiCert at sales@digicert.com for more details.*
+ */
 static ubyte gpVector0_newY[24] =
 {
     0x16,0xF2,0x72,0x83,0x5D,0x10,0xDF,0x07,0x68,0xF8,0x9C,0x49,0x67,0x88,0xAB,0x60,0x51,0x0C,0xFA,0x7C,0x11,0x0E,0x5A,0x97
