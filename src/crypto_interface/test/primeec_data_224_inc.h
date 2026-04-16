@@ -14,6 +14,8 @@
  * *Contact DigiCert at sales@digicert.com for more details.*
  */
 
+/* p224 = 2^224 - 2^96 + 1 */
+
 static ubyte gpP_224[28] =
 {
     0xFF,0xFF,0xFF,0xFF,
