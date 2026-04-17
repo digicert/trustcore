@@ -19,7 +19,7 @@ jobs:
         openssl_version: ["3.0.7", "3.0.12"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Install build dependencies
         run: |
@@ -71,3 +71,31 @@ jobs:
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_server --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_server_cert certs/rsa_cert.pem --ssl_server_keyblob keys/rsa_key.pem &
           sleep 2
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_client_local --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_ca_cert ca/rsa_ca.pem --ssl_servername rsa-test
+          
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled())
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="OpenSSL Connector UnitTest failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="OpenSSL Connector UnitTest failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi  
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
