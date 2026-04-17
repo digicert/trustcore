@@ -1,5 +1,7 @@
 /*
- * Linux UDP Abstraction Layer
+ * atmos_udp.c
+ *
+ * ATMOS UDP Abstraction Layer
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

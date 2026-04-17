@@ -1,7 +1,7 @@
 /*
- * win32_tcp.c
+ * cygwin_tcp_async.c
  *
- * Win32 TCP Abstraction Layer
+ * Cygwin TCP Abstraction Layer
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

@@ -1,7 +1,7 @@
 /*
- * linux_tcp_async.c
+ * osx_tcp_async.c
  *
- * Linux TCP Async Abstraction Layer
+ * OSX TCP Async Abstraction Layer
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
