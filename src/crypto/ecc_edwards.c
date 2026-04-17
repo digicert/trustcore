@@ -3,14 +3,17 @@
  *
  * Edward's (and Montgomery) Form Elliptic Curve Arithmetic
  *
- * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
- * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
- * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
- *   or https://www.digicert.com/master-services-agreement/
- * 
- * *For commercial licensing, contact DigiCert at sales@digicert.com.*
+ * Copyright 2026 DigiCert, Inc. All Rights Reserved.
+ *
+ * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
+ *
+ * 1. **Open Source License**: GNU Affero General Public License v3.0 (AGPL v3).
+ * See: https://github.com/digicert/trustcore/blob/main/LICENSE.md
+ * 2. **Commercial License**: Available under DigiCert's Master Services Agreement.
+ * See: https://www.digicert.com/master-services-agreement/
+ *
+ * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
+ * *Contact DigiCert at sales@digicert.com for more details.*
  *
  */
 
