@@ -1,3 +1,20 @@
+/*
+ * rsa_data_inc.h
+ *
+ *
+ * Copyright 2026 DigiCert, Inc. All Rights Reserved.
+ *
+ * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
+ *
+ * 1. **Open Source License**: GNU Affero General Public License v3.0 (AGPL v3).
+ * See: https://github.com/digicert/trustcore/blob/main/LICENSE.md
+ * 2. **Commercial License**: Available under DigiCert's Master Services Agreement.
+ * See: https://www.digicert.com/master-services-agreement/
+ *
+ * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
+ * *Contact DigiCert at sales@digicert.com for more details.*
+ */
+
 /* simple flags to ifdef out vectors that we may not support or that mbed may not support */
 #if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_RSA__) && defined(__ENABLE_DIGICERT_RSA_MBED__)
 #define __MBED_OPERATOR__

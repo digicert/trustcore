@@ -4,12 +4,12 @@
  * SSL implementation
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
@@ -2509,7 +2509,7 @@ enum TLS_SignatureAlgorithm
 #ifdef __ENABLE_DIGICERT_PQC__
     TLS_MLDSA_44                     = 4,
     TLS_MLDSA_65                     = 5,
-    TLS_MLDSA_87                     = 6,      
+    TLS_MLDSA_87                     = 6,
 #ifdef __ENABLE_DIGICERT_PQC_COMPOSITE__
     TLS_MLDSA_44_ECDSA_P256_SHA256   = 7, /* ok to have duplicate values */
     TLS_MLDSA_65_ECDSA_P384_SHA384   = 8,
@@ -3314,7 +3314,7 @@ static void convertEcGroupsToKeyIdList(
     ubyte4 supportedGroups, ubyte4 *pList, ubyte4 *pListLen)
 {
     ubyte4 curveIdsLen = *pListLen;
-    
+
 #if defined(__ENABLE_DIGICERT_ECC_P192__)
     if (supportedGroups & EC_P192_FLAG)
     {
@@ -3577,7 +3577,7 @@ getCertSigAlgo(ubyte* pCertificate, ubyte4 certLen, ubyte2* pRetCertSigAlgo)
                         break;
                     case cid_RSA_4096_PKCS15:
                         pubKeyType = TLS_MLDSA_65_RSA_4096_SHA384;
-                        break;                   
+                        break;
                     case cid_RSA_3072_PSS:
                         pubKeyType = TLS_MLDSA_65_RSA_3072_PSS_SHA256;
                         break;
@@ -3605,7 +3605,7 @@ getCertSigAlgo(ubyte* pCertificate, ubyte4 certLen, ubyte2* pRetCertSigAlgo)
                         goto exit;
                 }
                 break;
-            
+
             default:
                 status = ERR_SSL_UNSUPPORTED_ALGORITHM;
                 goto exit;
@@ -3618,7 +3618,7 @@ getCertSigAlgo(ubyte* pCertificate, ubyte4 certLen, ubyte2* pRetCertSigAlgo)
 
         /* override what was chosen by X509_getCertSignAlgoTypeEx */
         hashType = TLS_QS;
-    
+
         if (cid_PQC_MLDSA_44 == qsType)
         {
             pubKeyType = TLS_MLDSA_44;
@@ -3648,7 +3648,7 @@ getCertSigAlgo(ubyte* pCertificate, ubyte4 certLen, ubyte2* pRetCertSigAlgo)
 exit:
     if (pCert)
         TREE_DeleteTreeItem((TreeItem*)pCert);
-    
+
 #ifdef __ENABLE_DIGICERT_CV_CERT__
     if (NULL != pCertData)
     {
@@ -5240,7 +5240,7 @@ static MSTATUS SSL_SOCK_receiveDTLS13Record(SSLSocket* pSSLSock, ubyte* pSRH,
 
 static MSTATUS freeMsgBufferDescrRecords(msgBufferDescr *pMsg);
 #endif
-                                         
+
 static MSTATUS handleFragmentedRecord(SSLSocket* pSSLSock,
                                          ubyte **ppPacketPayload,
                                          ubyte4 *pPacketLength);
@@ -6807,7 +6807,7 @@ MSTATUS SSL_SOCK_setCertTLS13(
 
 #ifdef __DISABLE_DIGICERT_SERVERNAME_VALIDATION__
             /* Couldn't find valid entry with SNI. Attempt to validate the
-             * entry without SNI - only keep the 1st entry found but keep 
+             * entry without SNI - only keep the 1st entry found but keep
              * parsing the list for other entries with SNI
              */
             if (TRUE != validWithoutSNI)
@@ -6835,7 +6835,7 @@ MSTATUS SSL_SOCK_setCertTLS13(
                 goto exit;
             }
 #ifdef __DISABLE_DIGICERT_SERVERNAME_VALIDATION__
-            if ((pIdentity == NULL) && (TRUE == validWithoutSNI)) 
+            if ((pIdentity == NULL) && (TRUE == validWithoutSNI))
             { /* End of the List and Entry without SNI found */
               valid = TRUE;
               break;
@@ -6849,7 +6849,7 @@ MSTATUS SSL_SOCK_setCertTLS13(
          * certificate signatures unless no valid certificate chain can be
          * produced without it.
          *
-         * If validateNotSha1 flag is TRUE then the above loop is the same as 
+         * If validateNotSha1 flag is TRUE then the above loop is the same as
          * this loop, therefore no need to loop here. The loop above would have
          * already found a certificate without SHA-1.
          *
@@ -6860,7 +6860,7 @@ MSTATUS SSL_SOCK_setCertTLS13(
          */
         if ((TRUE == valid) && (TRUE != validateNotSha1))
         {
-            /* Parse the list again only if atleast a valid entry found above, 
+            /* Parse the list again only if atleast a valid entry found above,
              * and No SHA1 was not already enforced
              */
             status = CERT_STORE_findIdentityCertChainFirstFromList(
@@ -6922,7 +6922,7 @@ exit:
     {
         (void) DIGI_FREE((void **) &pSigAlgoIds);
     }
-   
+
     if (OK > status)
     {
         DEBUG_ERROR(DEBUG_SSL_TRANSPORT, (sbyte*)"SSL_SOCK_setCertTLS13() returns status = ", status);
@@ -7301,7 +7301,7 @@ checkBuffer(SSLSocket* pSSLSock, sbyte4 requestedSize, ubyte4 sizeofRecordHeader
         if (DTLS13_MINORVERSION < pSSLSock->sslMinorVersion || 0 == sizeofRecordHeader)
 #endif
             sizeofRecordHeader = sizeof(DTLSRecordHeader);
-    } 
+    }
     else
 #endif
     {
@@ -7622,7 +7622,7 @@ SSLSOCK_sendAlert(SSLSocket* pSSLSock, intBoolean encryptBool, sbyte4 alertId, s
             {
                 if (NULL != pSSLSock->pTransportHandler->funcPtrTransportSend)
                 {
-                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId, 
+                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId,
                                                                                          (sbyte *)alertMesg, sizeofAlertMesg, &numBytesSent)))
                     {
                         DEBUG_ERROR(DEBUG_SSL_TRANSPORT, (sbyte*)"Send Transport Handler failed, status = ", status);
@@ -8497,7 +8497,7 @@ processCertificateVerifyHybrid(const ubyte* pMessage, ubyte4 messageLen,
                                vlong **ppVlongQueue)
 {
     MSTATUS status = OK;
-    
+
 #ifdef __ENABLE_DIGICERT_TLS13__
     ubyte4 verifyFailure = 0;
     ubyte *pDomain = NULL;
@@ -8521,7 +8521,7 @@ processCertificateVerifyHybrid(const ubyte* pMessage, ubyte4 messageLen,
                                                      pSignature, signatureLen, &verifyFailure);
         if (OK != status)
             goto exit;
-        
+
         if (verifyFailure)
         {
             status = ERR_CERT_INVALID_SIGNATURE;
@@ -8533,16 +8533,16 @@ processCertificateVerifyHybrid(const ubyte* pMessage, ubyte4 messageLen,
     }
 
 exit:
-    
+
     if (NULL != pDomain)
     {
         (void) DIGI_MEMSET_FREE(&pDomain, domainLen);
     }
 
 #endif
-    
+
     return status;
-    
+
 } /* processCertificateVerifyHybrid */
 
 /*------------------------------------------------------------------*/
@@ -8555,7 +8555,7 @@ processCertificateVerifyQS(const ubyte* pMessage, ubyte4 messageLen,
 {
     MSTATUS status = OK;
     ubyte4 verifyFailure = 0;
-    
+
 #ifdef __ENABLE_DIGICERT_TLS13__
     if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
@@ -8564,7 +8564,7 @@ processCertificateVerifyQS(const ubyte* pMessage, ubyte4 messageLen,
                                                 pSignature, signatureLen, &verifyFailure);
         if (OK != status)
             goto exit;
-        
+
         if (verifyFailure)
         {
             status = ERR_CERT_INVALID_SIGNATURE;
@@ -8575,11 +8575,11 @@ processCertificateVerifyQS(const ubyte* pMessage, ubyte4 messageLen,
         }
     }
 #endif
-    
+
 exit:
-    
+
     return status;
-    
+
 } /* processCertificateVerifyQS */
 #endif
 
@@ -8646,7 +8646,7 @@ processCertificateVerify(SSLSocket *pSSLSock, AsymmetricKey key, ubyte* pSHSH, u
         goto exit;
 
 #ifdef __ENABLE_DIGICERT_TLS13__
-    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
     {
         if (pSSLSock->server)
@@ -9361,7 +9361,7 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
     ubyte4              actualLen;
     ubyte*              pDomain = NULL;
     ubyte4              domainLen = 0;
-    
+
     /* set the handshake part, not the length since we don't know it yet */
     pSHSH = pBuffer;
     actualLen = (ubyte4) *pLength;
@@ -9370,7 +9370,7 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
     {
         sizeofHandshakeHeader = sizeof(DTLSHandshakeHeader);
         ((DTLSHandshakeHeader*)pSHSH)->handshakeType = SSL_CLIENT_CERTIFICATE_VERIFY;
-        
+
     }
     else
 #endif
@@ -9378,10 +9378,10 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
         sizeofHandshakeHeader = sizeof(SSLHandshakeHeader);
         ((SSLHandshakeHeader*)pSHSH)->handshakeType = SSL_CLIENT_CERTIFICATE_VERIFY;
     }
-    
+
     pParams = (ubyte*)(pSHSH + sizeofHandshakeHeader);
     actualLen -= sizeofHandshakeHeader;
-    
+
     /* store signature/hash algo */
     if ((pSSLSock->isDTLS && (pSSLSock->sslMinorVersion <= DTLS12_MINORVERSION)) ||
         (!pSSLSock->isDTLS && pSSLSock->sslMinorVersion >= TLS12_MINORVERSION))
@@ -9390,12 +9390,12 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
         pParams += 2;
         actualLen -= 2;
     }
-    
+
     /* can't set the length yet */
     pParams += 2;  /* where to put the signature */
     actualLen -= 2;
 
-    /* if this is a private key, we can do the signature ourselves */    
+    /* if this is a private key, we can do the signature ourselves */
     if (TRUE == key.pQsCtx->isPrivate)
     {
         ubyte4 qsAlg = 0;
@@ -9406,7 +9406,7 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
         if (OK > (status = CRYPTO_getAlgoOIDAlloc(key.clAlg, qsAlg, &pDomain, &domainLen)))
             goto exit;
 
-        if (OK > (status = CRYPTO_INTERFACE_QS_compositeSign(MOC_ASYM(pSSLSock->hwAccelCookie) &key, TRUE, pSSLSock->rngFun, pSSLSock->rngFunArg, 
+        if (OK > (status = CRYPTO_INTERFACE_QS_compositeSign(MOC_ASYM(pSSLSock->hwAccelCookie) &key, TRUE, pSSLSock->rngFun, pSSLSock->rngFunArg,
                                                              pDomain, domainLen, (ubyte *) pHash, hashLen, pParams, actualLen, &actualLen)))
             goto exit;
     }
@@ -9418,7 +9418,7 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
             status = ERR_SSL_UNABLE_TO_SIGN_CERTIFICATE_VERIFY;
             goto exit;
         }
-        
+
         /* callback API specify a fixed length, so the return value is
          used to indicate the length of the signature */
         if (OK > (status = (MSTATUS) SSL_sslSettings()->funcPtrMutualAuthCertificateVerify(SSL_findConnectionInstance(pSSLSock), pHash, hashLen,
@@ -9429,20 +9429,20 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
         actualLen = (ubyte4) status;
 #endif
     }
-    
+
     /* actualLen is the length of the signature -- update data */
     /* store signature length */
     pParams -= 2;
     setShortValue(pParams, (ubyte2)actualLen);
     actualLen += 2;
-    
+
     /* store signature/hash algo */
     if ((pSSLSock->isDTLS && (pSSLSock->sslMinorVersion <= DTLS12_MINORVERSION)) ||
         (!pSSLSock->isDTLS && pSSLSock->sslMinorVersion >= TLS12_MINORVERSION))
     {
         actualLen += 2;
     }
-    
+
 #ifdef __ENABLE_DIGICERT_DTLS_CLIENT__
     if (pSSLSock->isDTLS)
     {
@@ -9454,12 +9454,12 @@ static MSTATUS SSLSOCK_fillCertificateVerifyHybrid(ubyte2 signAlgo, SSLSocket* p
     {
         setMediumValue(((SSLHandshakeHeader*)pSHSH)->handshakeSize, (ubyte2)(actualLen));
     }
-    
+
     actualLen += sizeofHandshakeHeader;
     *pLength = (ubyte2) actualLen;
-    
+
 exit:
-    
+
     if (NULL != pDomain)
     {
         (void) DIGI_MEMSET_FREE(&pDomain, domainLen);
@@ -9476,7 +9476,7 @@ static MSTATUS SSLSOCK_fillCertificateVerifyQS(ubyte2 signAlgo, SSLSocket* pSSLS
     ubyte4              sizeofHandshakeHeader;
     MSTATUS             status;
     ubyte4              actualLen;
-    
+
     /* set the handshake part, not the length since we don't know it yet */
     pSHSH = pBuffer;
     actualLen = (ubyte4) *pLength;
@@ -9485,7 +9485,7 @@ static MSTATUS SSLSOCK_fillCertificateVerifyQS(ubyte2 signAlgo, SSLSocket* pSSLS
     {
         sizeofHandshakeHeader = sizeof(DTLSHandshakeHeader);
         ((DTLSHandshakeHeader*)pSHSH)->handshakeType = SSL_CLIENT_CERTIFICATE_VERIFY;
-        
+
     }
     else
 #endif
@@ -9493,10 +9493,10 @@ static MSTATUS SSLSOCK_fillCertificateVerifyQS(ubyte2 signAlgo, SSLSocket* pSSLS
         sizeofHandshakeHeader = sizeof(SSLHandshakeHeader);
         ((SSLHandshakeHeader*)pSHSH)->handshakeType = SSL_CLIENT_CERTIFICATE_VERIFY;
     }
-    
+
     pParams = (ubyte*)(pSHSH + sizeofHandshakeHeader);
     actualLen -= sizeofHandshakeHeader;
-    
+
     /* store signature/hash algo   TODO DO WE STILL DO THIS FOR PQC? */
     if ((pSSLSock->isDTLS && (pSSLSock->sslMinorVersion <= DTLS12_MINORVERSION)) ||
         (!pSSLSock->isDTLS && pSSLSock->sslMinorVersion >= TLS12_MINORVERSION))
@@ -9505,15 +9505,15 @@ static MSTATUS SSLSOCK_fillCertificateVerifyQS(ubyte2 signAlgo, SSLSocket* pSSLS
         pParams += 2;
         actualLen -= 2;
     }
-    
+
     /* can't set the length yet */
     pParams += 2;  /* where to put the signature */
     actualLen -= 2;
-    
+
     /* if this is a private key, we can do the signature ourselves */
     if (TRUE == key.pQsCtx->isPrivate)
     {
-        if (OK > (status = CRYPTO_INTERFACE_QS_SIG_sign(MOC_HASH(pSSLSock->hwAccelCookie) key.pQsCtx, pSSLSock->rngFun, pSSLSock->rngFunArg, 
+        if (OK > (status = CRYPTO_INTERFACE_QS_SIG_sign(MOC_HASH(pSSLSock->hwAccelCookie) key.pQsCtx, pSSLSock->rngFun, pSSLSock->rngFunArg,
                                                         (ubyte *) pHash, hashLen, pParams, actualLen, &actualLen)))
         {
             goto exit;
@@ -9527,7 +9527,7 @@ static MSTATUS SSLSOCK_fillCertificateVerifyQS(ubyte2 signAlgo, SSLSocket* pSSLS
             status = ERR_SSL_UNABLE_TO_SIGN_CERTIFICATE_VERIFY;
             goto exit;
         }
-        
+
         /* callback API specify a fixed length, so the return value is
          used to indicate the length of the signature */
         if (OK > (status = (MSTATUS) SSL_sslSettings()->funcPtrMutualAuthCertificateVerify(SSL_findConnectionInstance(pSSLSock), pHash, hashLen,
@@ -9538,20 +9538,20 @@ static MSTATUS SSLSOCK_fillCertificateVerifyQS(ubyte2 signAlgo, SSLSocket* pSSLS
         actualLen = (ubyte4) status;
 #endif
     }
-    
+
     /* actualLen is the length of the signature -- update data */
     /* store signature length */
     pParams -= 2;
     setShortValue(pParams, (ubyte2)actualLen);
     actualLen += 2;
-    
+
     /* store signature/hash algo */
     if ((pSSLSock->isDTLS && (pSSLSock->sslMinorVersion <= DTLS12_MINORVERSION)) ||
         (!pSSLSock->isDTLS && pSSLSock->sslMinorVersion >= TLS12_MINORVERSION))
     {
         actualLen += 2;
     }
-    
+
 #ifdef __ENABLE_DIGICERT_DTLS_CLIENT__
     if (pSSLSock->isDTLS)
     {
@@ -9563,14 +9563,14 @@ static MSTATUS SSLSOCK_fillCertificateVerifyQS(ubyte2 signAlgo, SSLSocket* pSSLS
     {
         setMediumValue(((SSLHandshakeHeader*)pSHSH)->handshakeSize, (ubyte2)(actualLen));
     }
-    
+
     actualLen += sizeofHandshakeHeader;
     *pLength = (ubyte2) actualLen;
-    
+
 exit:
-    
+
     return status;
-    
+
 }
 #endif
 
@@ -10210,7 +10210,7 @@ addToHandshakeHash(SSLSocket* pSSLSock, ubyte* data, sbyte4 size)
 
 #if defined(__ENABLE_DIGICERT_TLS13__)
         if ( (!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion && pSSLSock->helloRetryRequest) ||
-             (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion)) 
+             (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
         {
             updateRunningHash = TRUE;
         }
@@ -14212,7 +14212,7 @@ sendDataSSL(SSLSocket* pSSLSock, ubyte protocol, const sbyte* data, sbyte4 dataS
             {
                 if (NULL != pSSLSock->pTransportHandler->funcPtrTransportSend)
                 {
-                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId, 
+                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId,
                                                                                          (sbyte *)pSendBuffer, sendBufferLen, &numBytesSocketSent)))
                     {
                         DEBUG_ERROR(DEBUG_SSL_TRANSPORT, (sbyte*)"Send Transport Handler failed, status = ", status);
@@ -14432,7 +14432,7 @@ sendChangeCipherSpec(SSLSocket* pSSLSock)
             {
                 if (NULL != pSSLSock->pTransportHandler->funcPtrTransportSend)
                 {
-                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId, 
+                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId,
                                                                                          (sbyte *)ccs, sizeofCcs, &numBytesSent)))
                     {
                         DEBUG_ERROR(DEBUG_SSL_TRANSPORT, (sbyte*)"Send Transport Handler failed, status = ", status);
@@ -14761,7 +14761,7 @@ processFinished(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
                "decrypt_error" alert.
              */
 #ifdef __ENABLE_DIGICERT_TLS13__
-            if((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+            if((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
                (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
             {
 #ifdef __ENABLE_DIGICERT_SSL_ALERTS__
@@ -14779,7 +14779,7 @@ processFinished(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
     else
 #endif
 #ifdef __ENABLE_DIGICERT_TLS13__
-    if((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+    if((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
     {
         /* RFC 8446 Section 4.4.4
@@ -15292,7 +15292,7 @@ processCertificate(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 handshakeRecLen,
     }
 
 #if defined(__ENABLE_DIGICERT_TLS13__)
-    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
     {
         if (!pSSLSock->server)
@@ -15379,7 +15379,7 @@ processCertificate(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 handshakeRecLen,
             if (pSSLSock->server)
             {
 #if defined(__ENABLE_DIGICERT_TLS13__)
-                if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+                if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
                     (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
                 {
                     /* TODO sendAlert for DTLS? */
@@ -15580,7 +15580,7 @@ processCertificate(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 handshakeRecLen,
          * signature algorithms extension.
          */
 #ifdef __ENABLE_DIGICERT_TLS13__
-        if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+        if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
             (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
         {
             ubyte4 numOfCerts = 0;
@@ -15628,7 +15628,7 @@ processCertificate(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 handshakeRecLen,
         /* if RSA, verify the public key is of sufficient size */
         if (akt_rsa == (pSSLSock->mutualAuthKey.type & 0xFF))
         {
-#ifndef __DISABLE_DIGICERT_SSL_RSA_SUPPORT__            
+#ifndef __DISABLE_DIGICERT_SSL_RSA_SUPPORT__
             minRSAKeyLen = SSL_sslSettings()->minRSAKeySize;
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
             ubyte4 bitLength;
@@ -15715,7 +15715,7 @@ processCertificate(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 handshakeRecLen,
 #endif
             status = CERTCHAIN_validate(MOC_ASYM(pSSLSock->hwAccelCookie)
                                                 pSSLSock->pCertChain, &vc);
-#ifdef __ENABLE_DIGICERT_CV_CERT__                                            
+#ifdef __ENABLE_DIGICERT_CV_CERT__
         }
 #endif
         if (OK != status)
@@ -15849,7 +15849,7 @@ processCertificate(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 handshakeRecLen,
     /* Certificate chain has been validated. Now process the certificate
      * extensions.
      */
-    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
     {
         status = processCertificateChainExtensions(pSSLSock, &vc);
@@ -15863,7 +15863,7 @@ processCertificate(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 handshakeRecLen,
 #if defined(__ENABLE_DIGICERT_OCSP_CLIENT__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     /* Need server certificate and its issuer here for certificate status request extension */
     if (!pSSLSock->server && pSSLSock->certStatusReqExt &&
-        ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) || 
+        ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) ||
          (!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion)))
     {
         /*Add the SSL server certificate and the issuer certificate to the OCSP context*/
@@ -15996,7 +15996,7 @@ constructTLSExtSupportedGroup(
      * used to tell the peer the format of the curve values. For TLS 1.3 this
      * extension does not exist as there is only a single curve format.
      */
-    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion) || 
+    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion) ||
          (pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) )
     {
         setShortValue( *ppPacket, (ubyte2) tlsExt_ECPointFormat);
@@ -16371,11 +16371,11 @@ exit1:
         ubyte4 pqcKeyOffset;
 
         pECCKey = ((AsymmetricKey *) pSharedKey->pKey)->key.pECC;
-                
+
         status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &eccKeyLen);
         if (OK != status)
             goto exit;
-        
+
         if (HYBRID_IS_PQC_FIRST(namedGroup))
         {
             eccKeyOffset = pubKeyLen - eccKeyLen;
@@ -16391,7 +16391,7 @@ exit1:
         status = CRYPTO_INTERFACE_EC_writePublicKeyToBufferAux(pECCKey, pPubKey + eccKeyOffset, eccKeyLen);
         if (OK != status)
             goto exit;
-        
+
         /* now write the qs public key */
         status = CRYPTO_INTERFACE_QS_getPublicKey(pKemCtx, pPubKey + pqcKeyOffset, pubKeyLen - eccKeyLen);
     }
@@ -16448,16 +16448,16 @@ static MSTATUS getLengthFromSharedKeyEntry(sharedKey *pSharedKey, ubyte4 *pPubKe
     {
         ubyte4 qsPubLen = 0;
         QS_CTX *pQsCtx = NULL;
-        
+
         pECCKey = ((AsymmetricKey *) pSharedKey->pKey)->key.pECC;
         pQsCtx = ((AsymmetricKey *) pSharedKey->pKey)->pQsCtx;
 
         if (OK > (status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &length)))
             goto exit;
-        
+
         if (OK > (status = CRYPTO_INTERFACE_QS_getPublicKeyLen(pQsCtx, &qsPubLen)))
             goto exit;
-        
+
         *pPubKeyLen = length + qsPubLen;
     }
 #endif
@@ -16619,7 +16619,7 @@ static MSTATUS deleteSharedKey(sharedKey* pSharedKey)
             goto exit;
         }
     }
-    
+
 exit:
     return status;
 }
@@ -16760,16 +16760,16 @@ static MSTATUS generateSharedKey(SSLSocket* pSSLSock, ubyte4 namedGroup, sharedK
     {
         pSharedKey->type = type;
         pSharedKey->namedGroup = namedGroup;
-        
+
         /* generate the ECC portion */
         status = generateKeyShareEntryECDHE(qsEcCurve, &pAsymKey, pSSLSock);
         if (OK != status)
             goto exit;
-        
+
         status = CRYPTO_INTERFACE_QS_newCtx(MOC_HASH(pSSLSock->hwAccelCookie) &pAsymKey->pQsCtx, qsAlgo);
         if (OK != status)
             goto exit;
-        
+
         status = CRYPTO_INTERFACE_QS_generateKeyPair(MOC_HASH(pSSLSock->hwAccelCookie) pAsymKey->pQsCtx, pSSLSock->rngFun, pSSLSock->rngFunArg);
         if (OK != status)
             goto exit;
@@ -16826,7 +16826,7 @@ constructTLSExtKeyShare(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte2 *pLength)
          * replacing the list of shares with a list containing a single
          * KeyShareEntry from the indicated group.
          */
-        if (pSSLSock->helloRetryRequest && pSSLSock->roleSpecificInfo.client.selectedGroup) 
+        if (pSSLSock->helloRetryRequest && pSSLSock->roleSpecificInfo.client.selectedGroup)
         {
             status = getNamedGroupLength(pSSLSock->roleSpecificInfo.client.selectedGroup, &curveLength);
             if (OK != status)
@@ -16901,7 +16901,7 @@ constructTLSExtKeyShare(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte2 *pLength)
                     goto exit;
                 }
             }
-            
+
 
             extensionLen +=  2 + 2 + curveLength;
         }
@@ -17276,7 +17276,7 @@ constructTLSExtKeyShare(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte2 *pLength)
                 {
                     goto exit;
                 }
-             
+
                 /* Generate ciphertext and shared secret (non-QS secret is
                  * generated later) */
                 status = CRYPTO_INTERFACE_QS_KEM_encapsulate(
@@ -17401,48 +17401,30 @@ SSL_SOCK_constructTLSExtSupportedVersions(SSLSocket* pSSLSock, ubyte** ppVersion
     }
     else
     {
-        if (pSSLSock->helloRetryRequest)
+        /* RFC 8446 §4.1.2: CH2 MUST preserve the full supported_versions list from CH1. */
+        if (pSSLSock->runtimeFlags & SSL_FLAG_VERSION_SET)
         {
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-#if defined(__ENABLE_DIGICERT_DTLS_CLIENT__)
-                if (pSSLSock->isDTLS)
-                {
-                    maxSupportedVersion = majorVersion << 8 | DTLS13_MINORVERSION;
-                }
-                else
+
+            maxSupportedVersion = majorVersion << 8 | pSSLSock->advertisedMinorVersion;
 #endif
-                {
-                    maxSupportedVersion = majorVersion << 8 | TLS13_MINORVERSION;
-                }
+            supportedVersionLen = 1; /* Include only the configured version */
+        }
+        else if (pSSLSock->runtimeFlags & SSL_FLAG_MINIMUM_FALLBACK_VERSION_SET)
+        {
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+            maxSupportedVersion = majorVersion << 8 | SSL_sslSettings()->sslMaxProtoVersion;
+            minSupportedVersion = majorVersion << 8 | pSSLSock->minFallbackMinorVersion;
 #endif
-            supportedVersionLen = 1;
+            supportedVersionLen = numSupportedVersions - pSSLSock->minFallbackMinorVersion + 1;
         }
         else
         {
-            if (pSSLSock->runtimeFlags & SSL_FLAG_VERSION_SET)
-            {
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-
-                maxSupportedVersion = majorVersion << 8 | pSSLSock->advertisedMinorVersion;
+            maxSupportedVersion = majorVersion << 8 | SSL_sslSettings()->sslMaxProtoVersion;
+            minSupportedVersion = majorVersion << 8 | SSL_sslSettings()->sslMinProtoVersion;
 #endif
-                supportedVersionLen = 1; /* Include only the configured version */
-            }
-            else if (pSSLSock->runtimeFlags & SSL_FLAG_MINIMUM_FALLBACK_VERSION_SET)
-            {
-#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-                maxSupportedVersion = majorVersion << 8 | SSL_sslSettings()->sslMaxProtoVersion;
-                minSupportedVersion = majorVersion << 8 | pSSLSock->minFallbackMinorVersion;
-#endif
-                supportedVersionLen = numSupportedVersions - pSSLSock->minFallbackMinorVersion + 1;
-            }
-            else
-            {
-#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-                maxSupportedVersion = majorVersion << 8 | SSL_sslSettings()->sslMaxProtoVersion;
-                minSupportedVersion = majorVersion << 8 | SSL_sslSettings()->sslMinProtoVersion;
-#endif
-                supportedVersionLen = numSupportedVersions;
-            }
+            supportedVersionLen = numSupportedVersions;
         }
     }
 
@@ -17490,8 +17472,7 @@ SSL_SOCK_constructTLSExtSupportedVersions(SSLSocket* pSSLSock, ubyte** ppVersion
         /* SSL version is configured using SSL_ioctl call.
          * Send only the configured version in support version list
          */
-        if ( (pSSLSock->runtimeFlags & SSL_FLAG_VERSION_SET) ||
-             (pSSLSock->helloRetryRequest) )
+        if ( pSSLSock->runtimeFlags & SSL_FLAG_VERSION_SET )
         {
             /* Only one version is supported, i.e range is not set */
             setShortValue( *ppVersionBuffer, maxSupportedVersion);
@@ -17627,7 +17608,7 @@ extern MSTATUS SSL_SOCK_sendEarlyData(SSLSocket *pSSLSock)
             sizeofHandshakeRecord = sizeof(DTLSHandshakeRecord);
         }
         sizeofHandshakeHeader = sizeof(DTLSHandshakeHeader);
-    } 
+    }
     else
 #endif
     {
@@ -17638,7 +17619,7 @@ extern MSTATUS SSL_SOCK_sendEarlyData(SSLSocket *pSSLSock)
 
     /* hash pool already initialized for dtls13 */
 #if defined(__ENABLE_DIGICERT_DTLS_CLIENT__) && defined(__ENABLE_DIGICERT_TLS13__)
-    if (!pSSLSock->isDTLS || DTLS13_MINORVERSION < pSSLSock->sslMinorVersion)                
+    if (!pSSLSock->isDTLS || DTLS13_MINORVERSION < pSSLSock->sslMinorVersion)
 #endif
     {
         if (OK > (status = SSL_SOCK_initHashPool(pSSLSock)))
@@ -17917,7 +17898,7 @@ constructTLSExtPreSharedKey(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte hrrRepl
 #ifdef __ENABLE_DIGICERT_DTLS_CLIENT__
     if (pSSLSock->isDTLS)
     {
-        partialClientHelloLen = pSSLSock->buffers[0].length - totalBinderLen - BINDER_LENGTH_VARIABLE - RECORD_LAYER_LENGTH_DTLS; 
+        partialClientHelloLen = pSSLSock->buffers[0].length - totalBinderLen - BINDER_LENGTH_VARIABLE - RECORD_LAYER_LENGTH_DTLS;
     }
     else
 #endif
@@ -18622,7 +18603,7 @@ SSL_SOCK_initHashPool(SSLSocket *pSSLSock )
     MSTATUS     status;
 
 #if defined(__ENABLE_DIGICERT_TLS13__)
-    if ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) || 
+    if ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) ||
         (!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion))
 #endif
     {
@@ -19891,7 +19872,7 @@ SSL_SOCK_receive(SSLSocket* pSSLSock, sbyte* buffer, sbyte4 bufferSize,
 #endif
 
                 minorVersion = DTLS13_MINORVERSION;
-            } 
+            }
 
             /* If there is application data and the connection instance is
              * TLS 1.3 and the state is at kSslReceiveHelloState then the
@@ -19998,7 +19979,7 @@ SSL_SOCK_receive(SSLSocket* pSSLSock, sbyte* buffer, sbyte4 bufferSize,
 #endif
 
 #if defined(__ENABLE_DIGICERT_TLS13__)
-            if((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+            if((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
                 (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
             {
                 /* In TLS v1.3 flow, we receive encrypted packets before changeCipherSpec.
@@ -20078,7 +20059,7 @@ SSL_SOCK_receive(SSLSocket* pSSLSock, sbyte* buffer, sbyte4 bufferSize,
                         }
                         status = OK;
                     }
-                } 
+                }
                 else
 #endif
                 {
@@ -20745,7 +20726,7 @@ SSL_SOCK_getCipherList(SSLSocket *pSSLSock, ubyte2 **ppCipherIdList, ubyte4 *pCo
 
     for (i = 0; i < NUM_CIPHER_SUITES; i++)
     {
-        /* Cipher is supported && 
+        /* Cipher is supported &&
          * if CipherTable is initialized, check if this cipher is enabled
          */
         if ((gCipherSuites[i].supported) &&
@@ -21642,10 +21623,10 @@ flushPendingBytes(SSLSocket *pSSLSock)
                         DEBUG_ERROR(DEBUG_SSL_TRANSPORT, (sbyte*)"Send Transport Handler failed, status = ", status);
                         goto exit;
                     }
-    
+
                     if (numBytesSent > pSSLSock->numBytesToSend)
                         pSSLSock->numBytesToSend = numBytesSent = 0;        /**!!! should never happen */
-    
+
                     pSSLSock->pOutputBuffer  = numBytesSent + pSSLSock->pOutputBuffer;
                     pSSLSock->numBytesToSend = pSSLSock->numBytesToSend - numBytesSent;
                 }
@@ -21666,7 +21647,7 @@ flushPendingBytes(SSLSocket *pSSLSock)
                 {
                     if (numBytesSent > pSSLSock->numBytesToSend)
                         pSSLSock->numBytesToSend = numBytesSent = 0;        /**!!! should never happen */
-    
+
                     pSSLSock->pOutputBuffer  = numBytesSent + pSSLSock->pOutputBuffer;
                     pSSLSock->numBytesToSend = pSSLSock->numBytesToSend - numBytesSent;
                 }
@@ -21681,15 +21662,15 @@ flushPendingBytes(SSLSocket *pSSLSock)
             {
                 if (NULL != pSSLSock->pOutputBufferBase)
                     FREE(pSSLSock->pOutputBufferBase);
-        
+
                 pSSLSock->pOutputBufferBase = NULL;
                 /* Exit condition */
                 pSSLSock->pOutputBuffer     = NULL;
-        
+
             }
         }
     }
- 
+
 exit:
 
     return status;
@@ -22030,7 +22011,7 @@ SSLSOCK_HmacKdfDeriveSecret(MOC_HASH(hwAccelDescr hwAccelCtx)
      */
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     status = CRYPTO_INTERFACE_HmacKdfExpand(MOC_HASH(hwAccelCtx)
-        pDigest, pSecret, pDigest->digestSize, pContext, contextLen, 
+        pDigest, pSecret, pDigest->digestSize, pContext, contextLen,
         NULL, 0, pDerivedSecret, pDigest->digestSize);
 #else
     status = HmacKdfExpand(MOC_HASH(hwAccelCtx)
@@ -23167,7 +23148,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
     ubyte *pCipher = NULL;
     ubyte4 pqcSSLen = 0;
 #endif
-    
+
 #if defined(__ENABLE_DIGICERT_SSL_SERVER__)
     if (pSSLSock->server)
     {
@@ -23202,8 +23183,8 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
             {
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #ifdef __ENABLE_DIGICERT_DH_MODES__
-                status = CRYPTO_INTERFACE_DH_keyAgreementScheme(MOC_DH(pSSLSock->hwAccelCookie) DH_EPHEMERAL, 
-                    g_pRandomContext, NULL, pSSLSock->pDHcontext, NULL, 0, 
+                status = CRYPTO_INTERFACE_DH_keyAgreementScheme(MOC_DH(pSSLSock->hwAccelCookie) DH_EPHEMERAL,
+                    g_pRandomContext, NULL, pSSLSock->pDHcontext, NULL, 0,
                     pSSLSock->roleSpecificInfo.server.receivedPubKey,
                     pSSLSock->roleSpecificInfo.server.receivedPubKeyLen,
                     &pSharedSecret, &sharedSecretLen);
@@ -23231,7 +23212,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
             {
                 ubyte4 eccPubOffset;
                 pKemCtx = pSSLSock->ecdheKey.pQsCtx;
-                
+
                 status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(
                     pECCKey, &eccPubLen);
                 if (OK != status)
@@ -23254,7 +23235,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                     eccPubLen, &pEccSS, &eccSSLen, ECDH_X_CORD_ONLY, NULL);
                 if (OK != status)
                     goto exit;
-                
+
                 /* Server has already computed QS shared secret when QS key
                  * share was sent */
                 sharedSecretLen = eccSSLen + pSSLSock->qsSharedSecretLen;
@@ -23286,7 +23267,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                     if (OK != status)
                         goto exit;
                 }
-                
+
                 DIGI_MEMSET_FREE(&pSSLSock->pQsSharedSecret, pSSLSock->qsSharedSecretLen);
             }
 #endif /* __ENABLE_DIGICERT_PQC__ */
@@ -23316,8 +23297,8 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                 diffieHellmanContext *pCtx = (diffieHellmanContext *) (pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex].pKey);
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #ifdef __ENABLE_DIGICERT_DH_MODES__
-                status = CRYPTO_INTERFACE_DH_keyAgreementScheme(MOC_DH(pSSLSock->hwAccelCookie) DH_EPHEMERAL, 
-                    g_pRandomContext, NULL, pCtx, NULL, 0, 
+                status = CRYPTO_INTERFACE_DH_keyAgreementScheme(MOC_DH(pSSLSock->hwAccelCookie) DH_EPHEMERAL,
+                    g_pRandomContext, NULL, pCtx, NULL, 0,
                     pSSLSock->roleSpecificInfo.client.receivedPubKey,
                     pSSLSock->roleSpecificInfo.client.receivedPubKeyLen,
                     &pSharedSecret, &sharedSecretLen);
@@ -23374,7 +23355,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                  /* TO DO, is this always the initiator flow? */
                 pECCKey = ((AsymmetricKey *) pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex].pKey)->key.pECC;
                 pKemCtx = ((AsymmetricKey *) pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex].pKey)->pQsCtx;
-                
+
                 status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(
                     pECCKey, &eccPubLen);
                 if (OK != status)
@@ -23385,7 +23366,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                     status = CRYPTO_INTERFACE_QS_KEM_getCipherTextLen(pKemCtx, &eccPubOffset);
                     if (OK != status)
                         goto exit;
-                    
+
                     pqcPubOffset = 0;
                 }
                 else
@@ -23403,7 +23384,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                 status = CRYPTO_INTERFACE_QS_KEM_getSharedSecretLen(pKemCtx, &pqcSSLen);
                 if (OK != status)
                     goto exit;
-                
+
                 sharedSecretLen = eccSSLen + pqcSSLen;
                 status = DIGI_MALLOC((void **) &pSharedSecret, sharedSecretLen);
                 if (OK != status)
@@ -23424,14 +23405,14 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                 status = DIGI_MEMCPY(pSharedSecret + eccSSOffset, pEccSS, eccSSLen);
                 if (OK != status)
                     goto exit;
-                
+
                 status = CRYPTO_INTERFACE_QS_KEM_decapsulate(
                     pKemCtx, pSSLSock->roleSpecificInfo.client.receivedPubKey + pqcPubOffset,
                     pSSLSock->roleSpecificInfo.client.receivedPubKeyLen - eccPubLen,
                     pSharedSecret + pqcSSOffset, pqcSSLen);
                 if (OK != status)
                     goto exit;
-                
+
                 /* TO DO how to put ciphertext after the server's public key? Just straight add it to pSSLSock->roleSpecificInfo..receivedPubKey, */
             }
 #endif /* __ENABLE_DIGICERT_PQC__ */
@@ -23467,19 +23448,19 @@ exit:
     {
         DIGI_FREE((void **)&pSharedSecret);
     }
-    
+
 #ifdef __ENABLE_DIGICERT_PQC__
     if (NULL != pEccSS)
     {
         DIGI_MEMSET_FREE(&pEccSS, eccSSLen);
     }
-    
+
     if (NULL != pCipher)
     {
         DIGI_MEMSET_FREE(&pCipher, pqcSSLen);
     }
 #endif
-    
+
     return status;
 }
 
