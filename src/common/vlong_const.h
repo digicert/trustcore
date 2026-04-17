@@ -1,6 +1,6 @@
 /**
  * @file  vlong_const.h
- * @brief Very Long Integer Library Constant Time Operatons Header
+ * @brief Very Long Integer Library Constant Time Operations Header
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

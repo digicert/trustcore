@@ -1,6 +1,6 @@
 /**
  * @file  tpm2_path.h
- * @brief TPM2 configuation file path
+ * @brief TPM2 configuration file path
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

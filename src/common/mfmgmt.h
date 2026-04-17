@@ -1,6 +1,6 @@
 /**
- * @file   mfgmt.h
- * @brief  File Manamgement Abstraction Layer
+ * @file   mfmgmt.h
+ * @brief  File Management Abstraction Layer
  *
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
