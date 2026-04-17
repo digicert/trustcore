@@ -4,12 +4,12 @@
  * SSL Client Specific Functionality
  *
  * Copyright 2025 DigiCert Project Authors. All Rights Reserved.
- * 
+ *
  * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
  * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
  *   or https://www.digicert.com/master-services-agreement/
- * 
+ *
  * *For commercial licensing, contact DigiCert at sales@digicert.com.*
  *
  */
@@ -200,14 +200,11 @@ SSL_CLIENT_numCipherSuites(SSLSocket* pSSLSock, ubyte4* flags, ubyte minimumVers
 #if MIN_SSL_MINORVERSION <= SSL3_MINORVERSION
 #if ((defined(__ENABLE_DIGICERT_SSL_REHANDSHAKE__)) && (!defined(__DISABLE_DIGICERT_SSL_REHANDSHAKE_FIX__)))
     if ((TLS11_MINORVERSION > pSSLSock->minFallbackMinorVersion) &&
-        (0 == pSSLSock->handshakeCount)
-#if defined(__ENABLE_DIGICERT_TLS13__)
-        && (0 == pSSLSock->helloRetryRequest)
-#endif
-        )
+        (0 == pSSLSock->handshakeCount))
     {
         /* TLS_EMPTY_RENEGOTIATION_INFO_SCSV */
         /* send only during initial SSL 3.0 hello */
+        /* RFC 8446 §4.1.2: count must match the write path so CH2 buffer sizing is consistent. */
         count++;
     }
 #endif /* ((defined(__ENABLE_DIGICERT_SSL_REHANDSHAKE__)) && (!defined(__DISABLE_DIGICERT_SSL_REHANDSHAKE_FIX__))) */
@@ -685,17 +682,8 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
 #endif
             pSSLSock->rngFun(pSSLSock->rngFunArg, SSL_RANDOMSIZE, START_RANDOM(pSSLSock));
     }
-#ifdef __ENABLE_DIGICERT_TLS13__
-    if(pSSLSock->helloRetryRequest)
-    {
-        numCiphers = 1;
-        cipherFlags |= pSSLSock->pHandshakeCipherSuite->pKeyExAuthAlgo->flags;
-    }
-    else
-#endif
-    {
-        numCiphers = SSL_CLIENT_numCipherSuites( pSSLSock, &cipherFlags, minimumVersion, maximumVersion);
-    }
+    /* RFC 8446 §4.1.2: CH2 MUST send the same cipher suite list as CH1. */
+    numCiphers = SSL_CLIENT_numCipherSuites( pSSLSock, &cipherFlags, minimumVersion, maximumVersion);
 
     /* Cipher suite in Client Hello must be at least 2 bytes. Each cipher suite
      * consists of 2 bytes so there must at least be a single valid cipher in
@@ -719,7 +707,7 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
         if (pSSLSock->isDTLS)
         {
             pSSLSock->sslMinorVersion = DTLS12_MINORVERSION;
-            pSSLSock->advertisedMinorVersion = DTLS12_MINORVERSION;            
+            pSSLSock->advertisedMinorVersion = DTLS12_MINORVERSION;
         }
         else
 #endif
@@ -816,7 +804,7 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
              */
         if ((!pSSLSock->isDTLS && (
                ((pSSLSock->runtimeFlags & SSL_FLAG_VERSION_SET) && TLS12_MINORVERSION >= pSSLSock->advertisedMinorVersion) ||
-               ((pSSLSock->runtimeFlags & SSL_FLAG_MINIMUM_FALLBACK_VERSION_SET) && TLS12_MINORVERSION >= pSSLSock->minFallbackMinorVersion))) 
+               ((pSSLSock->runtimeFlags & SSL_FLAG_MINIMUM_FALLBACK_VERSION_SET) && TLS12_MINORVERSION >= pSSLSock->minFallbackMinorVersion)))
             || (pSSLSock->isDTLS && DTLS12_MINORVERSION == pSSLSock->sslMinorVersion && TRUE == pSSLSock->supportExtendedMasterSecret))
         {
             extensionsLength += 4;/* extension type (2) + extension length(2) */
@@ -832,8 +820,8 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
                                       extension length(2) +
                                       list length(1) */
 
-            if( (pSSLSock->runtimeFlags & SSL_FLAG_VERSION_SET) ||
-                (pSSLSock->helloRetryRequest) )
+            /* RFC 8446 §4.1.2: CH2 MUST preserve the full supported_versions list from CH1. */
+            if( pSSLSock->runtimeFlags & SSL_FLAG_VERSION_SET )
             {
                 extensionsLength += 2; /* Only one version in the list */
                 pSSLSock->roleSpecificInfo.client.numOfSharedVersions = 1;
@@ -896,11 +884,11 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
             }
 
             /* "key_share" extension Length*/
-            /* type(2) + type length(2)+key_share ext length(2) + 
+            /* type(2) + type length(2)+key_share ext length(2) +
              * group name(2*supportedGroupsListLength) +
              * Key Length(2*supportedGroupsListLength)+
              * legacy(1*supportedGroupsListLength) +
-             * keyLength (SUM_OF_ALL_KEYS)*/ 
+             * keyLength (SUM_OF_ALL_KEYS)*/
             if (pSSLSock->helloRetryRequest && pSSLSock->roleSpecificInfo.client.selectedGroup)
             {
                 status = getNamedGroupLength(
@@ -1079,10 +1067,10 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
                 {
                     pTempPSK = pTempPSKList->pPSK;
 
-                    if (DTLS13_MINORVERSION == pSSLSock->sslMinorVersion && 0 == earlyDataSet && 
+                    if (DTLS13_MINORVERSION == pSSLSock->sslMinorVersion && 0 == earlyDataSet &&
                         pTempPSK->maxEarlyDataSize > 0 && NULL != pSSLSock->pEarlyData)
                     {
-                        /* For ClientHello early_data extension's extension_data field 
+                        /* For ClientHello early_data extension's extension_data field
                             should be empty */
                         extensionsLength += 2 + 2; /* early_data extension type(2) + extension length(2) + empty(0)*/
                         earlyDataSet = 1;
@@ -1139,21 +1127,21 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
 #ifdef __ENABLE_DIGICERT_TLS13_0RTT__
                     /*
 					   RFC #8446 section 4.2.10:
-					   Section 4.2.10, Page 54: A client MUST not include the "early_data" 
+					   Section 4.2.10, Page 54: A client MUST not include the "early_data"
 					   extension in its followup ClientHello
 
                        RFC 9147 for DTLS does not clarify but since followup ClientHello
                        is neccessary we assume it should have the extension.
 					 */
                     if (0 == pSSLSock->helloRetryRequest
-#ifdef __ENABLE_DIGICERT_DTLS_CLIENT__                    
+#ifdef __ENABLE_DIGICERT_DTLS_CLIENT__
                         || DTLS13_MINORVERSION == pSSLSock->sslMinorVersion
 #endif
                         )
                     {
                         if ((0 == earlyDataSet) && (pTempPSK->maxEarlyDataSize > 0) && (NULL != pSSLSock->pEarlyData))
                         {
-                            /* For ClientHello early_data extension's extension_data field 
+                            /* For ClientHello early_data extension's extension_data field
                                should be empty */
                             extensionsLength += 2 + 2; /* early_data extension type(2) + extension length(2) + empty(0)*/
                             earlyDataSet = 1;
@@ -1204,7 +1192,7 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
 #endif
             if (pSSLSock->helloRetryRequest)
             {
-                /* Cookie 
+                /* Cookie
                  * Extension type(2) + Extension Length(2)+ CookieLength(2) + ActualCookie
                  */
                 if(pSSLSock->helloCookieLen > 0)
@@ -1311,15 +1299,8 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
                                     extension length (2) +
                                     size of curve list (2) */
 
-                /* for DTLS 1.3, if server sent us a selcted group, do not send entire list. */
-                if(!pSSLSock->helloRetryRequest || ((DTLS13_MINORVERSION == pSSLSock->sslMinorVersion) && pSSLSock->roleSpecificInfo.client.selectedGroup == 0))
-                {
-                    extensionsLength += pSSLSock->supportedGroupListLength * 2;
-                }
-                else
-                {
-                    extensionsLength += 2;
-                }
+                /* RFC 8446 §4.1.2: CH2 MUST preserve the full supported_groups list from CH1. */
+                extensionsLength += pSSLSock->supportedGroupListLength * 2;
             }
         }
         else
@@ -1508,17 +1489,15 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
 #if MIN_SSL_MINORVERSION <= SSL3_MINORVERSION
 #if ((defined(__ENABLE_DIGICERT_SSL_REHANDSHAKE__)) && (!defined(__DISABLE_DIGICERT_SSL_REHANDSHAKE_FIX__)))
     if ((TLS11_MINORVERSION > pSSLSock->minFallbackMinorVersion) &&
-        (0 == pSSLSock->handshakeCount)
-#if defined(__ENABLE_DIGICERT_TLS13__)
-        && (0 == pSSLSock->helloRetryRequest)
-#endif
-        )
+        (0 == pSSLSock->handshakeCount))
     {
         /* TLS_EMPTY_RENEGOTIATION_INFO_SCSV {0x00, 0xFF} */
         /* send only during initial SSL 3.0 hello */
         /* DO NOT add SCSV to gCipherSuites;
          * This SCSV is not a true cipher suite (it does not correspond to any
          * valid set of algorithms) and cannot be negotiated.
+         * RFC 8446 §4.1.2: included on CH2 (HRR) when it was in CH1, consistent
+         * with the SCSV count in SSL_CLIENT_numCipherSuites().
          */
         *pTemp++ = (ubyte)0x00;
         *pTemp++ = (ubyte)0xFF;
@@ -1538,18 +1517,10 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
         *pTemp++ = (ubyte)0x00;
 	}
 
-#ifdef __ENABLE_DIGICERT_TLS13__
-    /* RFC: 4.1.4.  Hello Retry Request:  in its updated ClientHello, 
-     * the client SHOULD NOT offer any pre-shared keys associated with 
-     * a hash other than that of the selected cipher suite.
+    /* RFC 8446 §4.1.2: CH2 MUST send the same cipher suite list as CH1.
+     * Note: the client SHOULD NOT offer PSKs with a hash other than that of the
+     * selected cipher suite (RFC 8446 §4.1.4), but the full list is still sent.
      */
-    if(pSSLSock->helloRetryRequest)
-    {
-        *pTemp++ = (ubyte) (pSSLSock->pHandshakeCipherSuite->cipherSuiteId >> 8);
-        *pTemp++ = (ubyte) pSSLSock->pHandshakeCipherSuite->cipherSuiteId;
-    }
-    else
-#endif
     {
 
         for (i = 0; i < (sbyte4) NUM_CIPHER_SUITES; ++i)
@@ -1639,7 +1610,7 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
                 {
                     goto exit;
                 }
-            
+
 #ifdef __ENABLE_DIGICERT_DTLS_CLIENT__
                 if (pSSLSock->isDTLS)
                 {
@@ -1652,7 +1623,7 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
                 }
                 else
 #endif
-                {            
+                {
                     pSSLSock->legacySSLMinorVersion = TLS12_MINORVERSION; /* Set the legacy field to TLS1.2 */
 
                     if (TLS13_MINORVERSION == pSSLSock->clientHelloMinorVersion)
@@ -1666,7 +1637,7 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
             else
 #endif
             {
-                /* note the most preferred version we sent -- used for RSA later on 
+                /* note the most preferred version we sent -- used for RSA later on
                    For TLS v1.3, we set the first version sent in "supported_versions"
                    ext as the most preferred version. This is done in
                    SSL_SOCK_constructTLSExtSupportedVersions() */
@@ -1939,33 +1910,24 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
             }
 #endif
 
-#if defined(__ENABLE_DIGICERT_TLS13__)
-            /* For DTLS1.3 server didn't send a group, so continue to the else leg even on retryRequest */
-            if (pSSLSock->helloRetryRequest && pSSLSock->roleSpecificInfo.client.selectedGroup)
+            /* RFC 8446 §4.1.2: CH2 MUST preserve the full supported_groups list from CH1.
+             * The key_share extension (handled by constructTLSExtKeyShare) is updated
+             * separately to contain only the server-requested group. */
+            if ( cipherFlags & (SSL_KEYEX_ECDH_BIT | SSL_KEYEX_ECDHE_BIT) )
             {
                 status = constructTLSExtSupportedGroup(
-                    pSSLSock, &pTemp, 1, 1 << pSSLSock->roleSpecificInfo.client.selectedGroup);
+                    pSSLSock, &pTemp, pSSLSock->supportedGroupListLength, pSSLSock->supportedGroups);
                 if (OK > status)
                 {
                     goto exit;
                 }
-            }
-            else
-#endif /* __ENABLE_DIGICERT_TLS13__ */
-            {
-                if ( cipherFlags & (SSL_KEYEX_ECDH_BIT | SSL_KEYEX_ECDHE_BIT) )
-                {
-                    status = constructTLSExtSupportedGroup(
-                        pSSLSock, &pTemp, pSSLSock->supportedGroupListLength, pSSLSock->supportedGroups);
-                    if (OK > status)
-                    {
-                        goto exit;
-                    }
-                }
-            }
 #if defined(__ENABLE_DIGICERT_TLS13__)
-            pSSLSock->sentExtensions[extCount++] = tlsExt_supportedGroups;
+                /* Record only when the extension was actually written to the wire;
+                 * avoids falsely claiming supported_groups was advertised when
+                 * cipherFlags had no ECC key exchange bits. */
+                pSSLSock->sentExtensions[extCount++] = tlsExt_supportedGroups;
 #endif
+            }
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) && defined(__ENABLE_DIGICERT_DTLS_SRTP__))
             /* use_srtp extension? */
@@ -2143,8 +2105,8 @@ SSL_CLIENT_sendClientHello(SSLSocket* pSSLSock)
             {
                 if (NULL != pSSLSock->pTransportHandler->funcPtrTransportSend)
                 {
-                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId, 
-                                                                                          (sbyte *)(pSSLSock->buffers[0].pHeader), 
+                    if (OK > (status = pSSLSock->pTransportHandler->funcPtrTransportSend(pSSLSock->pTransportHandler->sslId,
+                                                                                          (sbyte *)(pSSLSock->buffers[0].pHeader),
                                                                                           totalLength, &numBytesSent)))
                     {
                         DEBUG_ERROR(DEBUG_SSL_TRANSPORT, (sbyte*)"Send Transport Handler failed, status = ", status);
@@ -3892,12 +3854,12 @@ SSL_CLIENT_sendClientResponseBlock(SSLSocket* pSSLSock)
 
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #ifdef __ENABLE_DIGICERT_DH_MODES__
-            status = CRYPTO_INTERFACE_DH_keyAgreementScheme(MOC_DH(pSSLSock->hwAccelCookie) DH_EPHEMERAL, 
-                                                            g_pRandomContext, 
-                                                            NULL, 
+            status = CRYPTO_INTERFACE_DH_keyAgreementScheme(MOC_DH(pSSLSock->hwAccelCookie) DH_EPHEMERAL,
+                                                            g_pRandomContext,
+                                                            NULL,
                                                             pSSLSock->pDHcontext,
                                                             NULL,
-                                                            0, 
+                                                            0,
                                                             pSSLSock->pRemotePublicKey,
                                                             pSSLSock->remotePublicKeyLength,
                                                             &(pSSLSock->pSharedSecret),
@@ -4059,7 +4021,7 @@ SSL_CLIENT_sendClientResponseBlock(SSLSocket* pSSLSock)
 #ifdef __ENABLE_DIGICERT_PQC__
         case akt_hybrid:
 
-            if (OK > (status = CRYPTO_INTERFACE_QS_compositeGetSigLen(MOC_ASYM(pSSLSock->hwAccelCookie) 
+            if (OK > (status = CRYPTO_INTERFACE_QS_compositeGetSigLen(MOC_ASYM(pSSLSock->hwAccelCookie)
                                                                     &pSSLSock->mutualAuthKey, TRUE, &lenSignature)))
             {
                 goto exit;
@@ -4139,7 +4101,7 @@ SSL_CLIENT_sendClientResponseBlock(SSLSocket* pSSLSock)
                 DTLS_SET_RECORD_HEADER_EXT(pSRH, pSSLSock, SSL_HANDSHAKE,
                                   pSSLSock->buffers[bufIndex].length - sizeofRecordHeader);
             }
-        } 
+        }
         else
 #endif
         {
@@ -4160,7 +4122,7 @@ SSL_CLIENT_sendClientResponseBlock(SSLSocket* pSSLSock)
     }
 
 #if defined(__ENABLE_DIGICERT_TLS13__)
-    if ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) || 
+    if ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) ||
         (!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion))
 #endif
     {
@@ -4232,8 +4194,8 @@ SSL_CLIENT_sendClientResponseBlock(SSLSocket* pSSLSock)
 #endif
 
     /* !reHandshake && (DTLS1.2 || TLS 1.2 or lower) */
-    if ( (TRUE != isRehandshake) && 
-         ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) || 
+    if ( (TRUE != isRehandshake) &&
+         ((pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion) ||
           (!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion)) )
     {
         /* send the handshakes records to SSL record layer *************/
@@ -4821,7 +4783,7 @@ processServerHelloExtensions(SSLSocket* pSSLSock, ubyte2 extensionType,
                 goto exit;
             }
             if (pSSLSock->helloCookieLen > 0)
-            { 
+            {
                 /* RFC 8446 Section 4.2.2
                  *
                  * Cookie length can range from 1 - 2^16-1. For NanoSSL if the
@@ -4839,7 +4801,7 @@ processServerHelloExtensions(SSLSocket* pSSLSock, ubyte2 extensionType,
                     status = ERR_SSL_EXTENSION_LENGTH;
                     goto exit;
                 }
-            
+
             }
             else
             {
@@ -4852,7 +4814,7 @@ processServerHelloExtensions(SSLSocket* pSSLSock, ubyte2 extensionType,
 #endif
                     status = ERR_SSL_FATAL_ALERT;
                     goto exit;
-                } 
+                }
             }
         }
         break;
@@ -4945,7 +4907,7 @@ processServerHelloExtensions(SSLSocket* pSSLSock, ubyte2 extensionType,
                 goto exit;
             }
 
-            /* RFC: 4.2.8.  Key Share 
+            /* RFC: 4.2.8.  Key Share
              * (1) the selected_group field corresponds to a group
              * which was provided in the "supported_groups" extension in the
              * original ClientHello.
@@ -5068,7 +5030,7 @@ processServerHelloExtensions(SSLSocket* pSSLSock, ubyte2 extensionType,
             if (extensionSize > 0)
             {
                 /* This extension is received inside NewSessionTicket */
-                if (extensionSize != 4) 
+                if (extensionSize != 4)
                 {
                     status = ERR_SSL_EXTENSION_LENGTH;
                     goto exit;
@@ -5079,8 +5041,8 @@ processServerHelloExtensions(SSLSocket* pSSLSock, ubyte2 extensionType,
             else
             {
                 /* RFC 4.3.1 In all handshakes, the server MUST send the EncryptedExtensions
-                   message immediately after the ServerHello message. 
-                   So by the time we receive this early_data extension we should have 
+                   message immediately after the ServerHello message.
+                   So by the time we receive this early_data extension we should have
                    received pre-shared key extension.
 
                    RFC #8446, Page 58.
@@ -5321,7 +5283,7 @@ getServerSelectedVersion(SSLSocket *pSSLSock, ubyte* pRecord, ubyte2 recordLen,
                     *majorVersion = *pMsg++;
                     *minorVersion = *pMsg++;
 
-                    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION > *minorVersion) || 
+                    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION > *minorVersion) ||
                          (pSSLSock->isDTLS && DTLS13_MINORVERSION < *minorVersion))
                     {
                         status = ERR_SSL_PROTOCOL_VERSION;
@@ -5451,7 +5413,7 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
     DIGI_MEMCPY(pSSLSock->pSecretAndRand + SSL_RSAPRESECRETSIZE + SSL_RANDOMSIZE,
             pTemp,
             SSL_RANDOMSIZE);
- 
+
 #ifdef __ENABLE_DIGICERT_TLS13__
     /*
        RFC #8446 Section 4.1.3, Page no 33, 3rd paragraph.
@@ -5473,7 +5435,7 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
         goto exit;
     }
 
-    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
          (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
     {
         DIGI_MEMCMP(pTemp, HrrRandom, SSL_RANDOMSIZE, &isNotHelloRetryRequest);
@@ -5516,7 +5478,7 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
          * an "illegal_parameter" alert.
          */
 
-        if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+        if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
              (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
         {
             if ((!pSSLSock->isDTLS && TLS13_MINORVERSION > serverSSLMinorVersion) ||
@@ -5621,7 +5583,7 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
                             sessionIdLen, &memcmpRes);
         if (OK > status)
         {
-        /* RFC: 4.1.3: Server Hello: 
+        /* RFC: 4.1.3: Server Hello:
          * A client which receives a legacy_session_id_echo field that does not match what
          * it sent in the ClientHello MUST abort the handshake with an "illegal_parameter" alert.
          */
@@ -5636,7 +5598,7 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
         }
 
         /* Session can be resumed for TLS 1.2 and below versions */
-        if (((!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion) || 
+        if (((!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion) ||
              (pSSLSock->isDTLS && DTLS13_MINORVERSION < pSSLSock->sslMinorVersion)) && 0 == memcmpRes)
         {
 #if defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
@@ -5662,7 +5624,7 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
                 {
                     status = ERR_SSL_PROTOCOL_BAD_LENGTH;
                     goto exit;
-                }             
+                }
                 pSSLSock->roleSpecificInfo.client.pMasterSecret = pSSLSock->roleSpecificInfo.client.pTicketTls->masterSecret;
                 pSSLSock->sessionResume = E_SessionTicketResume;
             }
@@ -5726,7 +5688,7 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
          * abort the handshake with an "illegal_parameter" alert.
          */
 #if defined(__ENABLE_DIGICERT_TLS13__)
-        if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+        if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
              (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
         {
 #ifdef __ENABLE_DIGICERT_SSL_ALERTS__
@@ -5769,13 +5731,13 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
     }
     else
     {
-    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) || 
+    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
 	{
 		pSSLSock->pActiveOwnCipherSuite = pSSLSock->pHandshakeCipherSuite;
 	}
 
-        /* RFC:4.1.4: Upon receiving the ServerHello, clients MUST 
+        /* RFC:4.1.4: Upon receiving the ServerHello, clients MUST
          * check that the cipher suite supplied in
          * the ServerHello is the same as that in the HelloRetryRequest and
          * otherwise abort the handshake with an "illegal_parameter" alert.
@@ -5958,8 +5920,8 @@ processServerHello(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
             (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion)) &&
            ((1 == previousHrr)
 #if defined(__ENABLE_DIGICERT_TLS13_PSK__) && defined(__ENABLE_DIGICERT_TLS13_0RTT__)
-         || (NULL != pSSLSock->pEarlyData 
-#if defined __ENABLE_DIGICERT_DTLS_CLIENT__         
+         || (NULL != pSSLSock->pEarlyData
+#if defined __ENABLE_DIGICERT_DTLS_CLIENT__
          && DTLS13_MINORVERSION != pSSLSock->sslMinorVersion
 #endif
             )
@@ -6065,8 +6027,8 @@ processCertificateRequest3(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
             goto exit;
         }
 
-        if (OK != (status = DIGI_CALLOC((void**)&(pSSLSock->certificateRequestContext), 
-                            1, 
+        if (OK != (status = DIGI_CALLOC((void**)&(pSSLSock->certificateRequestContext),
+                            1,
                             pSSLSock->certificateRequestContextLength)))
         {
             goto exit;
@@ -6263,7 +6225,7 @@ processCertificateRequest3(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
                     status = ERR_SSL_EXTENSION_LENGTH;
                     goto exit;
                 }
-                
+
                 pStartDistName = pData;
                 while (certAuthExtLen)
                 {
@@ -6276,7 +6238,7 @@ processCertificateRequest3(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
                     tempLen = getShortValue(pData);
                     pData += 2;
                     certAuthExtLen -= 2;
-                    
+
                     if (tempLen > certAuthExtLen)
                     {
                         status = ERR_SSL_EXTENSION_LENGTH;
@@ -6328,7 +6290,7 @@ processCertificateRequest3(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
                 break;
             }
             default:
-                /* Skip over the entire extension */ 
+                /* Skip over the entire extension */
                 pData += extensionSize;
                 break;
         }
@@ -6489,7 +6451,7 @@ findCertificate(SSLSocket *pSSLSock, void *pCertStore, ubyte4 *pAlgoIds, ubyte4 
 
     /* Convert supported curves from SSL flags to CERT_STORE flags */
     convertEcGroupsToKeyIdList(SUPPORTED_GROUPS_FLAGS, curveIds, &curveIdsLen);
-    
+
     /* Ed curves not checked here */
 
     /* Extend the pAlgoIds passed in for more entries, up to numHashes */
@@ -6529,7 +6491,7 @@ findCertificate(SSLSocket *pSSLSock, void *pCertStore, ubyte4 *pAlgoIds, ubyte4 
     do {
         /* reset back to the end of the copied ids */
         fullAlgoListLen = algoIdsLen;
-        
+
         /* reinitiate certDescriptor */
         switch (pCertTypes[offset++])
         {
@@ -6847,7 +6809,7 @@ processCertificateRequest(SSLSocket* pSSLSock, ubyte* pSHSH, ubyte2 recLen)
         const AsymmetricKey *pPrivateKey = 0;
 
         /* convert eccurve and server supported sig algos to algo id list */
-        status = convertToCertStoreAlgoIdList(pSSLSock, pSSLSock->signatureAlgoList, pSSLSock->signatureAlgoListLength, 
+        status = convertToCertStoreAlgoIdList(pSSLSock, pSSLSock->signatureAlgoList, pSSLSock->signatureAlgoListLength,
             &pAlgoIds, &algoIdsLen);
         if (OK != status)
             goto exit;
@@ -7249,7 +7211,7 @@ processEncryptedExtensions(SSLSocket* pSSLSock, ubyte* pMesg, ubyte2 msgLength)
     if (pSSLSock->isDTLS)
     {
         sizeofHandshakeHeader = sizeof(DTLSHandshakeHeader);
-    } 
+    }
     else
 #endif
     {
@@ -7337,7 +7299,7 @@ verifyServerKeyExchangeRSASignature(SSLSocket* pSSLSock, ubyte* pMesg,
         /* Get the signature algorithm
          */
         sigAlgo = getShortValue(pMesg + dataLen);
-        
+
         for (sigAlgoIndex = 0; sigAlgoIndex < NUM_SSL_SUPPORTED_SIGNATURE_ALGORITHMS; sigAlgoIndex++)
         {
             if (sigAlgo == gSupportedSignatureAlgorithms[sigAlgoIndex])
@@ -8059,7 +8021,7 @@ processServerKeyExchange(SSLSocket *pSSLSock, ubyte* pMesg, ubyte2 mesgLen)
     }
 
     /* extract p */
-    
+
     /* check that the DH key is of sufficient size */
     status = ERR_SSL_DH_KEY_SIZE;
     if (lenBigInt > MAX_SSL_DH_SIZE/8)
@@ -8084,14 +8046,14 @@ processServerKeyExchange(SSLSocket *pSSLSock, ubyte* pMesg, ubyte2 mesgLen)
 
         if (i == lenBigInt)   /* prime is all 0x00 bytes */
         {
-            goto exit; 
+            goto exit;
         }
 
         /* Now convert actual Len to bits */
         actualLen = ((actualLen - 1) * 8) + DIGI_BITLENGTH((ubyte4) pTemp[i]);
         if ( actualLen < SSL_sslSettings()->minDHKeySize)
         {
-            goto exit; 
+            goto exit;
         }
     }
 
@@ -8121,12 +8083,12 @@ processServerKeyExchange(SSLSocket *pSSLSock, ubyte* pMesg, ubyte2 mesgLen)
     }
 
     /* extract g */
-    
+
     /* sanity check that g is not too large */
     if (lenBigInt > MAX_SSL_DH_SIZE/8)
     {
         status = ERR_SSL_DH_KEY_SIZE;
-        goto exit;        
+        goto exit;
     }
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     template.pG = pTemp;
@@ -8732,7 +8694,7 @@ processNewSessionTicket(SSLSocket *pSSLSock, ubyte *pMsg, ubyte2 msgLen)
     if (pSSLSock->isDTLS)
     {
         sizeofHandshakeHeader = sizeof(DTLSHandshakeHeader);
-    } 
+    }
     else
 #endif
     {
@@ -8914,7 +8876,7 @@ processNewSessionTicket(SSLSocket *pSSLSock, ubyte *pMsg, ubyte2 msgLen)
 #endif
 
 exit:
-    
+
     if (NULL != pPSK)
     {
         DIGI_FREE((void **) &pPSK);
@@ -9403,7 +9365,7 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
 #if (defined(__ENABLE_DIGICERT_TLS13__) && defined(__ENABLE_DIGICERT_TLS13_PSK__) && defined(__ENABLE_DIGICERT_TLS13_0RTT__))
                     /* In TLS13 0-RTT flow ClientHello is added to handshakeHash in SSL_SOCK_sendEarlyData() function itself.
                        For DTLS13 it still will be added here */
-                    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion) || 
+                    if ((!pSSLSock->isDTLS && TLS13_MINORVERSION > pSSLSock->sslMinorVersion) ||
                          pSSLSock->isDTLS || FALSE == pSSLSock->sendEarlyData)
 #endif
                     {
@@ -9543,7 +9505,7 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
                             pSSLSock->peerSeqnumHigh = 0x20000;
                             pSSLSock->ownSeqnum = 0;
                             pSSLSock->ownSeqnumHigh = 0x20000;
-                            pSSLSock->currentPeerEpoch = (ubyte2) 0x02;  
+                            pSSLSock->currentPeerEpoch = (ubyte2) 0x02;
                             /* record the existing ciphersuite for re-transmission */
                             pSSLSock->pActiveOwnCipherSuite = pSSLSock->pHandshakeCipherSuite;
                         }
@@ -10038,7 +10000,7 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
             case SSL_CLIENT_END_OF_EARLY_DATA:
                 {
                     /* RFC 8446, Section 4.5. Servers MUST not send this message, and clients receiving it MUST
-                       terminate the connection with an "unexpected_message" alert.*/ 
+                       terminate the connection with an "unexpected_message" alert.*/
 #ifdef __ENABLE_DIGICERT_SSL_ALERTS__
                     SSLSOCK_sendAlert(pSSLSock, TRUE,
                             SSL_ALERT_UNEXPECTED_MESSAGE,
