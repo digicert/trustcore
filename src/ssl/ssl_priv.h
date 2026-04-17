@@ -17,13 +17,6 @@
  *
  */
 
-/*
-  ssl_priv.h
-  ssl
-
-
-*/
-
 #ifndef __SSL_PRIV_HEADER__
 #define __SSL_PRIV_HEADER__
 
