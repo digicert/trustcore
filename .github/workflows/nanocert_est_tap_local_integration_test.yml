@@ -6,6 +6,8 @@ on:
     - cron: '30 12 * * 3'   # Wednesday 6:00 PM IST
     - cron: '30 12 * * 5'   # Friday 6:00 PM IST
 
+permissions:
+  contents: read
 jobs:
   nanocert-est-tap-local-integration-tests:
     runs-on: ubuntu-22.04
