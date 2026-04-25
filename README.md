@@ -1,9 +1,9 @@
 # TrustCore SDK
 
-**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices. 
+**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices. [Learn more at digicert.com](https://www.digicert.com/iot/trustcore-sdk).
 
 > [!NOTE]
-> DigiCert is in the process of completely open-sourcing the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use. Code will be open-sourced on a per-module basis and progress on which modules have been released can be tracked in the related [Github Project](https://github.com/orgs/digicert/projects/31). 
+> DigiCert is in the process of completely open-sourcing the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use. Code will be open-sourced on a per-module basis and progress on which modules have been released can be tracked in the related [Github Project](https://github.com/orgs/digicert/projects/31).
 
 ## TrustCore SDK Overview  
 
@@ -55,7 +55,7 @@ This project is available under a **dual-license model**:
   This license allows you to use, modify, and distribute the code for free in accordance with AGPL terms.
 
 - **Commercial License:**  
-If you wish to use TrustCore SDK in a **proprietary** or **commercial** product (e.g., embedded in closed-source firmware or commercial SaaS applications), a commercial license is available under DigiCert’s [Master Services Agreement](https://www.digicert.com/master-services-agreement/) (MSA).  Contact us at [sales@digicert.com](mailto:sales@digicert.com) for commercial licensing details.
+If you wish to use TrustCore SDK in a **proprietary** or **commercial** product (e.g., embedded in closed-source firmware or commercial SaaS applications) or require FIPS 140-3 certification, a commercial license is available under DigiCert’s [Master Services Agreement](https://www.digicert.com/master-services-agreement/) (MSA).  Contact us at [device-trust@digicert.com](mailto:device-trust@digicert.com) for commercial licensing details.
 
 ## Support
 
