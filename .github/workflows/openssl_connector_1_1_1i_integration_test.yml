@@ -1,0 +1,137 @@
+name: "OpenSSL Connector 1.1.1i Integration Tests"
+
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 11 * * 2'   # Tuesday 5:00 PM IST
+    - cron: '30 11 * * 5'   # Friday 5:00 PM IST
+    
+permissions:
+  contents: read
+  
+jobs:
+  openssl-connector-1-1-1i-integration-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+
+      - name: Clone mocn-qa-m-products
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+        run: |
+          git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+          cd ~/mocn-qa-m-products
+          git checkout DTM-5923-github-actions-for-open-ssl-connector-test-automation-server-and-client-tls-test
+  
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake python3-pip valgrind expect
+          cmake --version
+          pip3 install --upgrade pip
+          pip3 install psutil
+          pip3 install tls-client
+          pip3 install typing_extensions
+          valgrind --version
+          expect -v
+  
+      - name: Prepare thirdparty_app directory
+        run: |
+          mkdir -p ~/thirdparty_app
+          
+      - name: Install OpenSSL 1.0.2l
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz
+          tar -xf openssl-1.0.2l.tar.gz
+          cd openssl-1.0.2l
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+  
+      - name: Install OpenSSL 1.1.1k
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+          tar -xf openssl-1.1.1k.tar.gz
+          cd openssl-1.1.1k
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+  
+      - name: Install OpenSSL 3.0.7
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
+          tar -xf openssl-3.0.7.tar.gz
+          cd openssl-3.0.7
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+  
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      
+      - name: Prepare thirdparty directory
+        run: |
+          mkdir -p thirdparty
+  
+      - name: Install OpenSSL 1.1.1i
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1i/openssl-1.1.1i.tar.gz
+          tar -xzf openssl-1.1.1i.tar.gz -C thirdparty/
+  
+      - name: Copy SSL Test Files
+        run: |
+          cp -r ~/mocn-qa-m-products/qa_utils/setup_qa_reports/jenkins_auto_integration/* .
+          cp -r ~/mocn-qa-m-products/openssl_shim_test/test_opensource/* .
+  
+      - name: Run OpenSSL Connector Integration Test
+        run: |
+          PYTHONUNBUFFERED=1 python3 python_integration_test_temp.py ossl_1_1_cap.json
+          
+      - name: Upload Valgrind Report Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: report_valgrind_tls
+          path: report_valgrind_tls.zip
+          retention-days: 5
+  
+      - name: Cleanup mocn-qa-m-products
+        run: |
+          rm -rf ~/mocn-qa-m-products
+          
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+  
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="OpenSSL Connector 3.0.12 Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="OpenSSL Connector 3.0.12 Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
