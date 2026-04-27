@@ -21,8 +21,6 @@ jobs:
           MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
         run: |
           git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
-          cd ~/mocn-qa-m-products
-          git checkout DTM-5923-github-actions-for-open-ssl-connector-test-automation-server-and-client-tls-test
   
       - name: Install Dependencies
         run: |
