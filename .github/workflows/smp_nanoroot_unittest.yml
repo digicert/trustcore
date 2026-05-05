@@ -93,7 +93,7 @@ jobs:
             --infile test_document.txt \
             --sigfile rsa2048_signature.bin \
             --pubKey rsa2048_public_key.pem \
-            --keyId 0x100000002 \
+            --keyId 0x01000002 \
             --signBuffer \
             --hashType 1
           
@@ -102,7 +102,7 @@ jobs:
             --infile test_document.txt \
             --sigfile rsa2048_signature.bin \
             --pubKey rsa2048_public_key.pem \
-            --keyId 0x100000002 \
+            --keyId 0x01000002 \
             --verify \
             --hashType 1
 
@@ -113,7 +113,7 @@ jobs:
             --infile test_document.txt \
             --sigfile rsa3072_signature.bin \
             --pubKey rsa3072_public_key.pem \
-            --keyId 0x100000003 \
+            --keyId 0x01000003 \
             --signBuffer \
             --hashType 1
 
@@ -122,7 +122,7 @@ jobs:
             --infile test_document.txt \
             --sigfile rsa3072_signature.bin \
             --pubKey rsa3072_public_key.pem \
-            --keyId 0x100000003 \
+            --keyId 0x01000003 \
             --verify \
             --hashType 1
           
@@ -133,7 +133,7 @@ jobs:
             --infile test_document.txt \
             --sigfile rsa4096_signature.bin \
             --pubKey rsa4096_public_key.pem \
-            --keyId 0x100000004 \
+            --keyId 0x01000004 \
             --signBuffer \
             --hashType 2
           
@@ -142,7 +142,7 @@ jobs:
             --infile test_document.txt \
             --sigfile rsa4096_signature.bin \
             --pubKey rsa4096_public_key.pem \
-            --keyId 0x100000004 \
+            --keyId 0x01000004 \
             --verify \
             --hashType 2
 
@@ -160,7 +160,7 @@ jobs:
             --infile test_document.txt \
             --sigfile ecc_p256_signature.bin \
             --pubKey ecc_p256_public_key.pem \
-            --keyId 0x300000001 \
+            --keyId 0x03000001 \
             --signBuffer \
             --hashType 1
           
@@ -169,7 +169,7 @@ jobs:
             --infile test_document.txt \
             --sigfile ecc_p256_signature.bin \
             --pubKey ecc_p256_public_key.pem \
-            --keyId 0x300000001 \
+            --keyId 0x03000001 \
             --verify \
             --hashType 1
           
@@ -180,7 +180,7 @@ jobs:
             --infile test_document.txt \
             --sigfile ecc_p384_signature.bin \
             --pubKey ecc_p384_public_key.pem \
-            --keyId 0x300000002 \
+            --keyId 0x03000002 \
             --signBuffer \
             --hashType 1
           
@@ -189,7 +189,7 @@ jobs:
             --infile test_document.txt \
             --sigfile ecc_p384_signature.bin \
             --pubKey ecc_p384_public_key.pem \
-            --keyId 0x300000002 \
+            --keyId 0x03000002 \
             --verify \
             --hashType 1
 
@@ -200,7 +200,7 @@ jobs:
             --infile test_document.txt \
             --sigfile ecc_p521_signature.bin \
             --pubKey ecc_p521_public_key.pem \
-            --keyId 0x300000003 \
+            --keyId 0x03000003 \
             --signBuffer \
             --hashType 2
 
@@ -209,7 +209,7 @@ jobs:
             --infile test_document.txt \
             --sigfile ecc_p521_signature.bin \
             --pubKey ecc_p521_public_key.pem \
-            --keyId 0x300000003 \
+            --keyId 0x03000003 \
             --verify \
             --hashType 2
 
@@ -227,7 +227,7 @@ jobs:
             --infile test_document.txt \
             --sigfile mldsa44_signature.bin \
             --pubKey mldsa44_public_key.pem \
-            --keyId 0x200000001 \
+            --keyId 0x02000001 \
             --signBuffer \
             --hashType 0
           
@@ -236,7 +236,7 @@ jobs:
             --infile test_document.txt \
             --sigfile mldsa44_signature.bin \
             --pubKey mldsa44_public_key.pem \
-            --keyId 0x200000001 \
+            --keyId 0x02000001 \
             --verify \
             --hashType 0
           
@@ -247,7 +247,7 @@ jobs:
             --infile test_document.txt \
             --sigfile mldsa65_signature.bin \
             --pubKey mldsa65_public_key.pem \
-            --keyId 0x200000002 \
+            --keyId 0x02000002 \
             --signBuffer \
             --hashType 0
           
@@ -256,7 +256,7 @@ jobs:
             --infile test_document.txt \
             --sigfile mldsa65_signature.bin \
             --pubKey mldsa65_public_key.pem \
-            --keyId 0x200000002 \
+            --keyId 0x02000002 \
             --verify \
             --hashType 0
           
@@ -267,7 +267,7 @@ jobs:
             --infile test_document.txt \
             --sigfile mldsa87_signature.bin \
             --pubKey mldsa87_public_key.pem \
-            --keyId 0x200000003 \
+            --keyId 0x02000003 \
             --signBuffer \
             --hashType 0
           
@@ -276,7 +276,7 @@ jobs:
             --infile test_document.txt \
             --sigfile mldsa87_signature.bin \
             --pubKey mldsa87_public_key.pem \
-            --keyId 0x200000003 \
+            --keyId 0x02000003 \
             --verify \
             --hashType 0
 
@@ -397,7 +397,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/rsa2048_signature_secure.bin \
             --pubKey /opt/digicert/rsa2048_public_key_secure.pem \
-            --keyId 0x100000002 \
+            --keyId 0x01000002 \
             --signBuffer \
             --hashType 1
           
@@ -406,7 +406,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/rsa2048_signature_secure.bin \
             --pubKey /opt/digicert/rsa2048_public_key_secure.pem \
-            --keyId 0x100000002 \
+            --keyId 0x01000002 \
             --verify \
             --hashType 1
 
@@ -417,7 +417,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/rsa3072_signature_secure.bin \
             --pubKey /opt/digicert/rsa3072_public_key_secure.pem \
-            --keyId 0x100000003 \
+            --keyId 0x01000003 \
             --signBuffer \
             --hashType 1
 
@@ -426,7 +426,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/rsa3072_signature_secure.bin \
             --pubKey /opt/digicert/rsa3072_public_key_secure.pem \
-            --keyId 0x100000003 \
+            --keyId 0x01000003 \
             --verify \
             --hashType 1
           
@@ -437,7 +437,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/rsa4096_signature_secure.bin \
             --pubKey /opt/digicert/rsa4096_public_key_secure.pem \
-            --keyId 0x100000004 \
+            --keyId 0x01000004 \
             --signBuffer \
             --hashType 2
           
@@ -446,7 +446,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/rsa4096_signature_secure.bin \
             --pubKey /opt/digicert/rsa4096_public_key_secure.pem \
-            --keyId 0x100000004 \
+            --keyId 0x01000004 \
             --verify \
             --hashType 2
 
@@ -464,7 +464,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/ecc_p256_signature_secure.bin \
             --pubKey /opt/digicert/ecc_p256_public_key_secure.pem \
-            --keyId 0x300000001 \
+            --keyId 0x03000001 \
             --signBuffer \
             --hashType 1
           
@@ -473,7 +473,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/ecc_p256_signature_secure.bin \
             --pubKey /opt/digicert/ecc_p256_public_key_secure.pem \
-            --keyId 0x300000001 \
+            --keyId 0x03000001 \
             --verify \
             --hashType 1
           
@@ -484,7 +484,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/ecc_p384_signature_secure.bin \
             --pubKey /opt/digicert/ecc_p384_public_key_secure.pem \
-            --keyId 0x300000002 \
+            --keyId 0x03000002 \
             --signBuffer \
             --hashType 1
           
@@ -493,7 +493,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/ecc_p384_signature_secure.bin \
             --pubKey /opt/digicert/ecc_p384_public_key_secure.pem \
-            --keyId 0x300000002 \
+            --keyId 0x03000002 \
             --verify \
             --hashType 1
 
@@ -504,7 +504,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/ecc_p521_signature_secure.bin \
             --pubKey /opt/digicert/ecc_p521_public_key_secure.pem \
-            --keyId 0x300000003 \
+            --keyId 0x03000003 \
             --signBuffer \
             --hashType 2
 
@@ -513,7 +513,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/ecc_p521_signature_secure.bin \
             --pubKey /opt/digicert/ecc_p521_public_key_secure.pem \
-            --keyId 0x300000003 \
+            --keyId 0x03000003 \
             --verify \
             --hashType 2
 
@@ -531,7 +531,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/mldsa44_signature_secure.bin \
             --pubKey /opt/digicert/mldsa44_public_key_secure.pem \
-            --keyId 0x200000001 \
+            --keyId 0x02000001 \
             --signBuffer \
             --hashType 0
           
@@ -540,7 +540,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/mldsa44_signature_secure.bin \
             --pubKey /opt/digicert/mldsa44_public_key_secure.pem \
-            --keyId 0x200000001 \
+            --keyId 0x02000001 \
             --verify \
             --hashType 0
           
@@ -551,7 +551,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/mldsa65_signature_secure.bin \
             --pubKey /opt/digicert/mldsa65_public_key_secure.pem \
-            --keyId 0x200000002 \
+            --keyId 0x02000002 \
             --signBuffer \
             --hashType 0
           
@@ -560,7 +560,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/mldsa65_signature_secure.bin \
             --pubKey /opt/digicert/mldsa65_public_key_secure.pem \
-            --keyId 0x200000002 \
+            --keyId 0x02000002 \
             --verify \
             --hashType 0
           
@@ -571,7 +571,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/mldsa87_signature_secure.bin \
             --pubKey /opt/digicert/mldsa87_public_key_secure.pem \
-            --keyId 0x200000003 \
+            --keyId 0x02000003 \
             --signBuffer \
             --hashType 0
           
@@ -580,7 +580,7 @@ jobs:
             --infile /opt/digicert/test_document_secure.txt \
             --sigfile /opt/digicert/mldsa87_signature_secure.bin \
             --pubKey /opt/digicert/mldsa87_public_key_secure.pem \
-            --keyId 0x200000003 \
+            --keyId 0x02000003 \
             --verify \
             --hashType 0
 
@@ -628,7 +628,7 @@ jobs:
             --infile /tmp/test_outside.txt \
             --sigfile /tmp/signature.bin \
             --pubKey /tmp/public_key.pem \
-            --keyId 0x100000002 \
+            --keyId 0x01000002 \
             --signBuffer \
             --hashType 1 2>&1 | grep -i "error\|fail\|denied"; then
             echo "✓ SECURE_PATH enforcement working correctly - access denied as expected"
