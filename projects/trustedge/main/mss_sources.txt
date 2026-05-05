@@ -1,0 +1,3 @@
+MSS_SRC_DIR/trustedge/trustedge_main.c
+MSS_SRC_DIR/trustedge/trustedge_agent_main.c
+MSS_SRC_DIR/trustedge/trustedge_certificate_main.c

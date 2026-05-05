@@ -1,0 +1,16 @@
+{
+    "divisionId": "843fc46c-a77a-4fff-81a7-b4a4f5ccc2cc",
+    "accountId": "843fc46c-a77a-4fff-81a7-b4a4f5ccc2cd",
+    "deviceId": "843fc46c-a77a-4fff-81a7-b4a4f5ccc2ce",
+    "status": "OK",
+    "createdOn": "2012-04-23T18:25:43.000Z",
+    "updatedOn": "2012-04-23T18:25:43.000Z",
+    "pendingPolicies": [
+        {
+            "deviceGroupId": "128975",
+            "policyType": "CERTIFICATE",
+            "policyId": "294820113",
+            "priority": 0
+        }
+    ]
+}

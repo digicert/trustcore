@@ -1650,7 +1650,7 @@ MSTATUS SMP_API(NanoROOT, initObject,
     TAP_Attribute *pCreatedKeyAttributes = NULL;
     NanoROOT_Object *pObject = NULL;
     TAP_Buffer objectId = {0};
-    ubyte8 keyId = 0;
+    ubyte4 keyId = 0;
     ubyte4 count = 0;
     randomContext *pRandCtx = NULL;
     ubyte4 subKeyType = 0;
@@ -1769,8 +1769,21 @@ MSTATUS SMP_API(NanoROOT, initObject,
         goto exit;
     }
 
-    keyId = *(ubyte8*) objectId.pBuffer;
-    DB_PRINT("Key ID : %llX\n", keyId);
+    if (objectId.bufferLen < sizeof(ubyte4))
+    {
+        DB_PRINT("%s.%d Invalid key ID buffer size = %d\n",
+                 __FUNCTION__, __LINE__, objectId.bufferLen);
+        NanoROOT_FillError(&pNanoRootModule->error, &status, ERR_INVALID_ARG, "ERR_INVALID_ARG");
+        goto exit;
+    }
+    {
+        const ubyte *pIdBytes = (const ubyte *)objectId.pBuffer;
+        keyId = ((ubyte4)pIdBytes[0])        |
+                ((ubyte4)pIdBytes[1] << 8)   |
+                ((ubyte4)pIdBytes[2] << 16)  |
+                ((ubyte4)pIdBytes[3] << 24);
+    }
+    DB_PRINT("Key ID : 0x%X\n", keyId);
 
     status = TAP_NanoROOT_parse_algorithm_info(keyId, &keyAlgorithm, &keySize, &subKeyType);
     if (OK != status)

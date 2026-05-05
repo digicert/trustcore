@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * @file       smp_tee_api.c
  * @brief      NanoSMP module feature API definitions for TEE.
  * @details    This C file contains feature function

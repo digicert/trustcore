@@ -24,7 +24,7 @@
     --id=[String id]
          (Mandatory) Data identifier.
     --conf=[TEE configuration file]
-        Path to TEE module configuration file. Default is /etc/mocana/tee_smp.conf
+        Path to TEE module configuration file. Default is /etc/digicert/tee_smp.conf
     --s=[server name]
         Host on which TEE is located. This can be 'localhost' or a         
         remote host running a TAP server.
@@ -83,7 +83,7 @@
 #if defined(__RTOS_WIN32__)
 #define TEE_CONFIG_PATH "tee_smp.conf"
 #else
-#define TEE_CONFIG_PATH "/etc/mocana/tee_smp.conf"
+#define TEE_CONFIG_PATH "/etc/digicert/tee_smp.conf"
 #endif
 #endif
 
@@ -209,7 +209,7 @@ void printHelp()
     LOG_MESSAGE("                   Port on which the TAP server is listening.\n");
 #else
     LOG_MESSAGE("           --conf=[TEE configuration file]");
-    LOG_MESSAGE("                   Path to the TEE module configuration file. Default is /etc/mocana/tee_smp.conf\n");
+    LOG_MESSAGE("                   Path to the TEE module configuration file. Default is /etc/digicert/tee_smp.conf\n");
 #endif
     LOG_MESSAGE("           --modulenum=[module num]");
     LOG_MESSAGE("                   Specify the module num to use. If not provided, the first module found is used.\n");

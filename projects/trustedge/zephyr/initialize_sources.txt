@@ -1,0 +1,4 @@
+MSS_SRC_DIR/common/initmocana.c
+MSS_SRC_DIR/common/mocana.c
+MSS_SRC_DIR/examples/custom_entropy.c
+MSS_SRC_DIR/examples/external_rand_thread.c

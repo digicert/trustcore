@@ -1,0 +1,69 @@
+{
+    "version": "1.0",
+    "name": "rpm-installer-test",
+    "artifactVersion": "1.0",
+    "description": "Sample RPM installer artifact",
+    "artifactType": "Application",
+    "actions": [
+        {
+            "action": "install",
+            "handler": {
+                "handlerType": "PkgMgr",
+                "handlerSubType": "rpm"
+            },
+            "actionPath": "./payload/package/Digicert-demo-package-1.0-2.noarch.rpm",
+            "actionArgument": ""
+        },
+        {
+            "action": "rollback",
+            "handler": {
+                "handlerType": "PkgMgr",
+                "handlerSubType": "rpm"
+            },
+            "actionPath": "",
+            "actionArgument": "Digicert-demo-package"
+        }
+    ],
+    "components": [
+        {
+            "name": "component1",
+            "location": "./payload.zip",
+            "checksum": "sha256:e8035c039579ba549f1379351a70291b172b6cf3a36919138bd044bac108479d"
+        }
+    ],
+    "requirements": {
+        "device_attributes": [
+            {
+                "key": "location",
+                "value": [
+                    "val1",
+                    "va2"
+                ]
+            },
+        {
+            "key": "key2",
+            "value": [
+                "val1",
+                "va2"
+            ]
+        }
+    
+        ]
+    },
+    "dependsOn": [
+        "",
+        ""
+    ],
+"provides": [
+"",
+""
+],
+"signature": [
+{
+    "sigAlg": "",
+    "sig": "",
+    "sigFormat": "base64",
+    "certificate": ""
+}
+]
+}

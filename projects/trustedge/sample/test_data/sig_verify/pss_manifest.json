@@ -1,0 +1,50 @@
+{
+  "version" : "1.0",
+  "name" : "EMEA Firmware Version 1.0",
+  "artifactVersion" : "1.0",
+  "description" : "EMEA Firmware Version 1.0",
+  "artifactType" : "Configuration",
+  "actions" : [ {
+    "action" : "rollBack",
+    "handler" : {
+      "handlerType" : "script",
+      "handlerSubType" : "bash"
+    },
+    "actionPath" : "script/rollbackconf.sh"
+  }, {
+    "action" : "install",
+    "handler" : {
+      "handlerType" : "script",
+      "handlerSubType" : "bash"
+    },
+    "actionPath" : "script/installpkg.sh",
+    "actionArgument" : "package/digicertdemopkg.deb"
+  } ],
+  "components" : [ {
+    "name" : "component1",
+    "location" : "./payload.zip",
+    "checksum" : "sha256:ec80eab2ce16d2469bbb856c1e8e76570d0d9718b63736379a899b0413a66c91"
+  } ],
+  "requirements" : {
+    "device_attributes": [
+    { 
+      "key": "location", 
+      "value": ["val1","va2"]
+    },
+    { 
+      "key": "key2", 
+      "value": ["val1","va2"]
+    }
+    ]
+  },
+  "dependsOn": [],
+  "provides": [ "c", "d" ],
+  "signature": [
+    {
+        "sigAlg" : "PS256",
+        "sig" : "Kw16q19uNXSOXwjADUwlMwyjraOBQdQusL7pebVS4QbgwY3eUY3vmlJA19Pg0Usiu7xCGGMJLjVR9nuC/384E4r/RtrotjmH+maZ6qiViD3A9xQQWwhdHSrwqH6Vwps//TRJ6vFhOfRtd54DGy8cM2uJPlDIJZ+dVv+uYWGO4i2VKlP0Hy+QKE+ByFyLN74ynM2GZC3C1L63lew0NE4nNGKdlK+VEb5HjxA7j6ybW99zgAWam8hVm06nRVMrxBd3DwoVX5/xIAKsUGVcTVg3Zbm5vOXbjhsVIjrFGrlH+X3svH9mZVSBdj7wkh7vtwDISejM/ixsDgYZcGzLqYmg1A==",
+        "sigFormat" : "base64",
+        "certificate": "MIIEOTCCAiECCQCZHGPsEWA8ODANBgkqhkiG9w0BAQwFADBgMQswCQYDVQQGEwJVUzELMAkGA1UECAwCQ0ExCzAJBgNVBAcMAk1WMREwDwYDVQQKDAhEaWdpQ2VydDELMAkGA1UECwwCUUExFzAVBgNVBAMMDm9wZW5zc2wtcnNhLWNhMB4XDTIzMDMwMjIyMDkwOFoXDTMzMDIyNzIyMDkwOFowXTELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMQswCQYDVQQHDAJNVjERMA8GA1UECgwIRGlnaUNlcnQxCzAJBgNVBAsMAlFBMRQwEgYDVQQDDAtvcGVuc3NsLXJzYTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL4JVWbKbncDlQRILJCaufwqASTAArNtr+E40oi9VE/vjin+BYGDQYDalrbjNcK5T6kE7PMHPpIQMrM9AyE+wYgj0bpfamKJF/8WbtljFzG/zeM6uKwFcrPZoTAwF9o9NAsdndvp4eCkJAlyQiI73NrkCBEL68WOFQwtbdYjcTm2B0/NHy+dtOzCLTYxRo9W0uN8DnuluEntVbyEoYIDWPbdAAmQFCeeEQkE3+Lfp2qdj45DC+TFF2kj3saXRieONBxBKIpyuwekoKWMlyGWhQqmYEZEQsw8xpADQpDUAP836B1T7ewHOu+HhOCSVEhWhNqS3xMPTSfu580Fp7L4mm8CAwEAATANBgkqhkiG9w0BAQwFAAOCAgEAP32enHv7DXAJJnxfguXbyUV27m2ordKZGM+Qn7ObXSYW7vGXo2aG7MxboafEUi6EQuxpQF7D5CF33ip3SnNkd/Ry1tMwS4NY5pbZGjA6vYNcbQBT4q1hTgEivXwrRyHWqBixS/EcHro6YH3KebZ3GPgIocqI2rANSaw9V9OLAdEowTw2TR4cCrBEgq6PV1nl7fPnqAXJ2Tu6QqOcSXb3OHwJ8phB50aIWk1rARWyOL8lwL8KDaHgeUb3E7DTCqtedBSpfdfEm7JVi+uDR9vRd88mZlhxGpQ+lJ0T/VnBSBB27rY1zBKW68BfTFoLKaRqgRfxAxEeJUeOB5mw1QzXFYZvJXLXxXOKp35I5NPuWBx9qvLrYZF0q05OTbAyROIQnIczcNkUriseddfgYi5sWuE0VdSBwgMgrBtnGF4ZOqa9U4b2IzedI/vc9fiqJQxyxmBrRtrvrpsObLaFNstaiWaSvKnU6/WU6rx7otvIxX73wZAOBqYaYtF1LbR2Jiq6tWA7CfvH2I7xZopW/+p6641UnZKWtTCaRGuZRgVX1nimOw0JOqcsdSNIz/SC4L4Iruyecgg/r5HJq8BxHAU8poxAqIRZ9/AJRCHbNtudyqGcd/j2/z/LL+07PdF/8u8epuALdVTBTdnisKZROpj9hwPNkjjUfmThZSzVWa0kuqc="
+    }
+  ]
+}

@@ -204,6 +204,71 @@ WIN32_TCP_listenSocketLocal(TCP_SOCKET *listenSocket, ubyte2 portNumber)
 
 /*------------------------------------------------------------------*/
 
+/**
+ * This function creates a listen socket on a specific IP address and port.
+ */
+extern MSTATUS
+WIN32_TCP_listenSocketAddr(TCP_SOCKET *listenSocket, sbyte *pIpAddress, ubyte2 portNumber)
+{
+    TCP_SOCKET           newSocket;
+    int                  nRet;
+    ADDRINFO             Hints, *AddrInfo;
+    char                 Port[10];
+    int                  RetVal;
+
+    WIN32_TCP_init();
+    newSocket = (TCP_SOCKET)socket(M_AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (newSocket == INVALID_SOCKET)
+    {
+        DEBUG_PRINTNL(DEBUG_PLATFORM, (sbyte *)"Could not create listen socket");
+        return ERR_TCP_LISTEN_SOCKET_ERROR;
+    }
+
+    memset(&Hints, 0, sizeof (Hints));
+
+    Hints.ai_family = M_AF_INET;
+    Hints.ai_socktype = SOCK_STREAM;
+    Hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
+
+    _itoa(portNumber, Port, 10);
+
+    /* Use provided IP address or NULL for any address */
+    RetVal = getaddrinfo((const char *)pIpAddress, Port, &Hints, &AddrInfo);
+    if (RetVal != 0) {
+        DEBUG_ERROR(DEBUG_PLATFORM, "getaddrinfo failed with error %d ",
+                RetVal);
+        closesocket(newSocket);
+        return ERR_TCP_LISTEN_ADDRINFO;
+    }
+
+    nRet = bind(newSocket, AddrInfo->ai_addr, (int) AddrInfo->ai_addrlen);
+    if (nRet == SOCKET_ERROR)
+    {
+        int lastErr = WSAGetLastError();
+        closesocket(newSocket);
+        freeaddrinfo(AddrInfo);
+        DEBUG_ERROR(DEBUG_PLATFORM, (sbyte *)"bind() error : ", lastErr);
+        return ERR_TCP_LISTEN_BIND_ERROR;
+    }
+
+    nRet = listen(newSocket, SOMAXCONN);
+    if (nRet == SOCKET_ERROR)
+    {
+        int lastErr = WSAGetLastError();
+        closesocket(newSocket);
+        freeaddrinfo(AddrInfo);
+        DEBUG_ERROR(DEBUG_PLATFORM, (sbyte *)"listen() error: ", lastErr);
+        return ERR_TCP_LISTEN_ERROR;
+    }
+
+    *listenSocket = newSocket;
+    freeaddrinfo(AddrInfo);
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
 extern MSTATUS
 WIN32_TCP_acceptSocket(TCP_SOCKET *clientSocket, TCP_SOCKET listenSocket,
                        intBoolean *isBreakSignalRequest)
@@ -494,6 +559,26 @@ WIN32_TCP_getPeerName(TCP_SOCKET socket, ubyte2 *pRetPortNo, MOC_IP_ADDRESS_S *p
 
 exit:
     return status;
+}
+
+/*------------------------------------------------------------------*/
+/* TCP_READ_AVL_EX wrapper for pre-built libraries */
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+WIN32_TCP_readSocketAvailableEx(TCP_SOCKET socket, sbyte *pBuffer, ubyte4 maxBytesToRead,
+                                ubyte4 *pNumBytesRead, ubyte4 msTimeout)
+{
+    return WIN32_TCP_readSocketAvailable(socket, pBuffer, maxBytesToRead, pNumBytesRead, msTimeout);
+}
+
+/* Symbol for pre-built libraries that call TCP_READ_AVL_EX directly */
+#undef TCP_READ_AVL_EX
+extern MSTATUS
+TCP_READ_AVL_EX(TCP_SOCKET socket, sbyte *pBuffer, ubyte4 maxBytesToRead,
+                ubyte4 *pNumBytesRead, ubyte4 msTimeout)
+{
+    return WIN32_TCP_readSocketAvailable(socket, pBuffer, maxBytesToRead, pNumBytesRead, msTimeout);
 }
 
 

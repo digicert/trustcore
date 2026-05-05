@@ -13,6 +13,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * Description:
  *************************************************************************/
 #ifndef __BCM5862_H__

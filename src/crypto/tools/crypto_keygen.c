@@ -177,7 +177,7 @@ typedef struct extKeyUsageInfo
 /* Most library mode builds will not use the TAP init function here,
    but just in case, set a default of TPM2 */
 #if defined(__ENABLE_DIGICERT_CRYPTO_KEYGEN_LIB__) && defined(__ENABLE_DIGICERT_TAP__)
-#if !defined(__ENABLE_DIGICERT_SMP_PKCS11__) && !defined(__ENABLE_DIGICERT_TPM2__)
+#if !defined(__ENABLE_DIGICERT_SMP_PKCS11__) && !defined(__ENABLE_DIGICERT_TPM2__) && !defined(__ENABLE_DIGICERT_TEE__)
 #define __ENABLE_DIGICERT_TPM2__
 #endif
 #endif
@@ -188,33 +188,40 @@ typedef struct extKeyUsageInfo
 
 #ifndef KEYGEN_TAP_CONFIG_PATH
 #if defined(__ENABLE_DIGICERT_SMP_PKCS11__)
-#define KEYGEN_TAP_CONFIG_PATH "/etc/mocana/pkcs11_smp.conf"
+#define KEYGEN_TAP_CONFIG_PATH "/etc/digicert/pkcs11_smp.conf"
 #elif defined(__ENABLE_DIGICERT_TPM2__)
 #include "../../common/tpm2_path.h"
 #define KEYGEN_TAP_CONFIG_PATH TPM2_CONFIGURATION_FILE
+#elif defined(__ENABLE_DIGICERT_TEE__)
+#include "../../smp/smp_tee/smp_tap_tee.h"
+#define KEYGEN_TAP_CONFIG_PATH "/etc/digicert/tee_smp.conf"
 #else
 #error "SMP flag not specified. Cannot set default path to TAP config file."
 #endif
-#endif
+#endif /* KEYGEN_TAP_CONFIG_PATH */
 
 #ifndef KEYGEN_TAP_PROVIDER
 #if defined(__ENABLE_DIGICERT_SMP_PKCS11__)
 #define KEYGEN_TAP_PROVIDER TAP_PROVIDER_PKCS11
 #elif defined(__ENABLE_DIGICERT_TPM2__)
 #define KEYGEN_TAP_PROVIDER TAP_PROVIDER_TPM2
+#elif defined(__ENABLE_DIGICERT_TEE__)
+#define KEYGEN_TAP_PROVIDER TAP_PROVIDER_TEE
 #else
 #error "SMP flag not specified. Cannot set TAP provider."
 #endif
-#endif
+#endif /* KEYGEN_TAP_PROVIDER */
 
 #if defined(__ENABLE_DIGICERT_SMP_PKCS11__)
 #define KEYGEN_TAP_PROVIDER_NAME " PKCS11"
-#else
+#elif defined(__ENABLE_DIGICERT_TPM2__)
 #define KEYGEN_TAP_PROVIDER_NAME " TPM2"
-#endif
-
+#elif defined(__ENABLE_DIGICERT_TEE__)
+#define KEYGEN_TAP_PROVIDER_NAME " TEE"
 #else
 #define KEYGEN_TAP_PROVIDER_NAME ""
+#endif /* __ENABLE_DIGICERT_SMP_PKCS11__ */
+
 #endif /* !__ENABLE_DIGICERT_TAP_REMOTE__ */
 
 static KeyGenTapArgs gTapArgs = {0};
@@ -367,20 +374,23 @@ static MSTATUS KEYGEN_TAP_init(KeyGenArgs *pArgs, KeyGenTapArgs *pTapArgs)
     module.moduleId = pArgs->gModNum;
     pModule = &module;
 
+#ifndef __ENABLE_DIGICERT_TEE__
     status = TAP_getModuleCredentials(pModule, (char *) KEYGEN_TAP_CONFIG_PATH, TRUE, &pTapArgs->gpTapEntityCredList, gpErrContext);
     if (OK != status)
         goto exit;
-
 #endif
+#endif /* __ENABLE_DIGICERT_TAP_REMOTE__ */
 
     status = TAP_initContext(pModule, pTapArgs->gpTapEntityCredList, NULL, &pTapArgs->gpTapCtx, gpErrContext);
     if (OK != status)
         goto exit;
 
+#ifndef __ENABLE_DIGICERT_TEE__
     /* also allocate an empty credList */
     status = DIGI_CALLOC((void **) &pTapArgs->gpTapCredList, 1, sizeof(TAP_CredentialList));
     if (OK != status)
         goto exit;
+#endif
 
     status = CRYPTO_INTERFACE_registerTapCtxCallback(KEYGEN_TAP_getCtx);
 
@@ -396,6 +406,69 @@ exit:
     if (OK != status)
     {
         KEYGEN_TAP_clean(&gTapArgs);
+    }
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS KEYGEN_readId(sbyte *pStr, TAP_Buffer *pOutId, intBoolean *pIsHex)
+{
+    MSTATUS status = ERR_INVALID_ARG;
+    ubyte *pId = NULL;
+    ubyte4 idLen = 0;
+
+    if (NULL == pStr || NULL == pOutId)
+        return ERR_NULL_POINTER;
+
+    idLen = (ubyte4) DIGI_STRLEN(pStr);
+    if ( (idLen >= 2) && pStr[0] == '0' && (pStr[1] == 'x' || pStr[1] == 'X') )
+    {
+        if (NULL != pIsHex)
+             *pIsHex = TRUE;
+        
+        /* use idLen as a temp for string form lem */
+        if (idLen < 4 || idLen & 0x01)
+        {
+            goto exit;
+        }
+
+        /* now get the real id Len */
+        idLen = (idLen - 2) / 2;
+
+        status = DIGI_MALLOC((void **) &pId, idLen);
+        if (OK != status)
+            goto exit;
+
+        status = DIGI_ATOH(pStr + 2, idLen*2, pId);
+        if (OK != status)
+            goto exit;
+    }
+    else
+    {
+        if (NULL != pIsHex)
+           *pIsHex = FALSE;
+
+        status = DIGI_MALLOC((void **) &pId, idLen + 1); /* we'll add a zero byte for string form printing */
+        if (OK != status)
+            goto exit;
+
+        status = DIGI_MEMCPY(pId, (ubyte *) pStr, idLen);
+        if (OK != status)
+            goto exit;
+
+        pId[idLen] = 0x0;
+    }
+
+    pOutId->pBuffer = pId; pId = NULL;
+    pOutId->bufferLen = idLen; idLen = 0;
+
+exit:
+
+    if (NULL != pId)
+    {
+        (void) DIGI_MEMSET_FREE(&pId, idLen);
     }
 
     return status;
@@ -459,12 +532,15 @@ static void KEYGEN_getEnteredPassword(ubyte *pPassword)
     } while (c != 0x0D);
 }
 
-static MSTATUS KEYGEN_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswordLen, char *pPwName, char *pFileName)
+MOC_EXTERN MSTATUS KEYGEN_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswordLen, char *pPwName, char *pFileName)
 {
+    MSTATUS status = OK;
     ubyte pPass1[MAX_PASSWORD_LEN] = {0};
     ubyte pPass2[MAX_PASSWORD_LEN] = {0};
     ubyte *pRetPw = NULL;
     ubyte4 retries = 0;
+    ubyte4 i = 0;
+    ubyte4 j = 0;
 
     /* internal method, NULL checks not necc */
 
@@ -473,6 +549,7 @@ static MSTATUS KEYGEN_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswordLen
     printf ("Enter %s pass phrase for protecting the %s: ", pPwName, pFileName);
 
     KEYGEN_getEnteredPassword(pPass1);
+    i = (ubyte4)DIGI_STRLEN((sbyte*)pPass1);
 
     printf("\n");
 
@@ -481,6 +558,7 @@ static MSTATUS KEYGEN_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswordLen
         printf("Re-enter %s pass phrase for protecting the %s: ", pPwName, pFileName);
 
         KEYGEN_getEnteredPassword(pPass2);
+        j = (ubyte4)DIGI_STRLEN((sbyte*)pPass2);
 
         printf("\n");
 
@@ -530,7 +608,7 @@ exit:
         (void) DIGI_MEMSET_FREE(&pRetPw, i);
     }
 
-    return OK;
+    return status;
 }
 
 #endif /* __RTOS_WIN32__ */
@@ -3072,7 +3150,11 @@ MOC_EXTERN MSTATUS KEYGEN_outputPrivKey(KeyGenArgs *pArgs, AsymmetricKey *pKey, 
     sbyte *pFullPath = NULL;
 #endif
 
+#ifdef __ENABLE_DIGICERT_TEE__
+    if (pArgs->gProtected)
+#else
     if (pArgs->gProtected && !pArgs->gTap)
+#endif
     {
         status = KEYGEN_getPassword(&pPass, &passLen, "PEM", "private key");
         if (OK != status)
@@ -3113,9 +3195,20 @@ MOC_EXTERN MSTATUS KEYGEN_outputPrivKey(KeyGenArgs *pArgs, AsymmetricKey *pKey, 
         if (FORMAT_DER == pArgs->gOutForm)
             privForm = privateKeyInfoDer;
 
-        status = CRYPTO_serializeAsymKey (pKey, privForm, &pPriv, &privLen);
-        if (OK != status)
-            goto exit;
+#ifdef __ENABLE_DIGICERT_TEE__
+        if (pArgs->gTap)
+        {
+            status = CRYPTO_serializeAsymKeyToStorage (pKey, privForm, pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE, &pPriv, &privLen);
+            if (OK != status)
+                goto exit;
+        }
+        else
+#endif
+        {
+            status = CRYPTO_serializeAsymKey (pKey, privForm, &pPriv, &privLen);
+            if (OK != status)
+                goto exit;
+        }
     }
 
     if (pArgs->gVerbose)
@@ -3449,6 +3542,11 @@ static void KEYGEN_displayHelp()
     DB_PRINT("                          TAP_ENC_SCHEME_OAEP_SHA256\n");
     DB_PRINT("                          TAP_ENC_SCHEME_OAEP_SHA384\n");
     DB_PRINT("                          TAP_ENC_SCHEME_OAEP_SHA512\n");
+#ifdef __ENABLE_DIGICERT_TEE__
+    DB_PRINT(" -tkh, --tap-key-handle   Secure Storage key handle identifier for the new key.\n");
+    DB_PRINT("                          Begin with a leading '0x' if the identifier is hex,\n");
+    DB_PRINT("                          otherwise it'll be treated as a string.\n");
+#endif
 #endif
 #ifdef __ENABLE_DIGICERT_PQC__
     DB_PRINT(" -c, --curve           [Required for ECC]\n");
@@ -3814,7 +3912,22 @@ static MSTATUS KEYGEN_getArgs(KeyGenArgs *pArgs, int argc, char *argv[])
             }
             continue;
         }
+#ifdef __ENABLE_DIGICERT_TEE__
+        else if (0 == DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-tkh") || 0 == DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"--tap-key-handle"))
+        {
+            if (++i < argc)
+            {
+                status = KEYGEN_readId((sbyte *) argv[i], &pArgs->tapKeyHandle, NULL);
+                if (OK != status)
+                {
+                    DB_PRINT("ERROR: Invalid -tkh or --tap-key-handle option: %s, status = %d.\n", argv[i], status);
+                    return status;
+                }
+            }
+            continue;
+        }
 #endif
+#endif /* __ENABLE_DIGICERT_TAP__ */
         else if (0 == DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"-c") || 0 == DIGI_STRCMP((const sbyte *)argv[i], (const sbyte *)"--curve"))
         {
             if (++i < argc)
@@ -4773,10 +4886,10 @@ static MSTATUS KEYGEN_getArgs(KeyGenArgs *pArgs, int argc, char *argv[])
 
     if (akt_rsa == pArgs->gKeyType && pArgs->gKeyIsPss)
     {
+#ifndef __ENABLE_DIGICERT_TEE__
         if (!pArgs->gTap)
-        {
+#endif
             pArgs->gKeyType = akt_rsa_pss;
-        }
     }
     else if (akt_rsa != pArgs->gKeyType && akt_hybrid != pArgs->gKeyType && pArgs->gKeyIsPss)
     {
@@ -4798,6 +4911,13 @@ static MSTATUS KEYGEN_getArgs(KeyGenArgs *pArgs, int argc, char *argv[])
     }
 
 #ifdef __ENABLE_DIGICERT_TAP__
+#ifdef __ENABLE_DIGICERT_TEE__
+    if (pArgs->gTap && NULL == pArgs->tapKeyHandle.pBuffer)
+    {
+        DB_PRINT("ERROR: Must enter a tep key handle -tkh option for a TEE key.\n");
+        return (MSTATUS) -1;
+    }
+#else
     if (pArgs->gTap && (akt_rsa == pArgs->gKeyType || akt_ecc == pArgs->gKeyType) )
     {
         pArgs->gKeyType |= 0x00020000; /* will modify gKeyType to akt_tap_rsa or akt_tap_ecc */
@@ -4816,6 +4936,7 @@ static MSTATUS KEYGEN_getArgs(KeyGenArgs *pArgs, int argc, char *argv[])
         return (MSTATUS) -1;
     }
 #endif
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
     if (FORMAT_SSH == pArgs->gOutPubForm && NULL == pArgs->gpOutPubFile)
     {
@@ -4859,7 +4980,14 @@ MOC_EXTERN void KEYGEN_resetArgs(KeyGenArgs *pArgs)
     pArgs->gPort = KEYGEN_TAP_DEFAULT_PORT; /* set back to defaults */
     pArgs->gTapProvider = KEYGEN_TAP_DEFAULT_PROVIDER;
 #endif
+#ifdef __ENABLE_DIGICERT_TEE__
+    if (NULL != pArgs->tapKeyHandle.pBuffer)
+    {
+        (void) DIGI_MEMSET_FREE(&pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen);
+    }
+    pArgs->tapKeyHandle.bufferLen = 0;
 #endif
+#endif /* __ENABLE_DIGICERT_TAP__ */
 
     pArgs->gOutForm = FORMAT_PEM; /* default */
     pArgs->gOutPubForm = FORMAT_PEM; /* default */
@@ -5399,7 +5527,7 @@ exit:
     }
 #endif
 
-#ifdef __ENABLE_DIGICERT_TAP__
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
     /* If the generated key is a TAP key and was not used to sign a (self signed) cert, it needs to be unloaded */
     if (gKeyGenArgs.gTap && (NULL == gKeyGenArgs.gpOutCertFile || (NULL != gKeyGenArgs.gpOutCertFile && NULL != gKeyGenArgs.gpSigningKey)))
     {

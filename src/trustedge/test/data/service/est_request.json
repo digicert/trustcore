@@ -1,0 +1,46 @@
+{
+    "protocol": "EST",
+    "estAttributes": {
+        "username": "estuser",
+        "password": "",
+        "serverFQDN": "clientauth.demo.one.digicert.com",
+        "serverURI": "/.well-known/est/IOT_c75d6gui",
+        "operation": "simpleenroll"
+    },
+    "keyCertAttributes": {
+      "algorithm": "ECC+P256",
+      "keyAlias": "dev101"
+    },
+    "csrAttributes": {
+      "fields": [
+        {
+          "id": "subject.country",
+          "defaultValue": ["US"]
+        },
+        {
+          "id": "subject.state",
+          "defaultValue": ["California"]
+        },
+        {
+          "id": "subject.locality",
+          "defaultValue": ["San Francisco"]
+        },
+        {
+          "id": "subject.organization_name",
+          "defaultValue": ["DBA"]
+        },
+        {
+          "id": "subject.organization_unit",
+          "defaultValue": ["BU"]
+        },
+        {
+          "id": "subject.common_name",
+          "defaultValue": ["iot-device101"]
+        },
+        {
+          "id": "key_usage.ecdsa_additional_values",
+          "defaultValue": ["digital_signature", "key_agreement"]
+        }
+      ]
+    }
+}

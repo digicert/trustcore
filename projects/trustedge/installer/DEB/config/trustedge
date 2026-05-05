@@ -1,0 +1,312 @@
+#!/bin/bash
+# TrustEdge bash completion script
+# This script provides intelligent tab completion for the trustedge command
+# It uses completion for flags when trustedge binary is built with the following flags enabled.
+# #######################################################################
+# --package --monolithic --proxy --pqc --pqc-composite --enable-pc --tpm2
+# #######################################################################
+# If trustedge binary is built with some flags omitted from above list, tab completion will still
+# show all the flags but they will not work.
+
+_trustedge_completion() {
+    local cur prev words cword
+    _init_completion || return
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    _contains_word() {
+        local word="$1"
+        for ((i=1; i < COMP_CWORD; i++)); do
+            if [[ "${COMP_WORDS[i]}" == "$word" ]]; then
+                return 0
+            fi
+        done
+        return 1
+    }
+
+    _get_command_context() {
+        local i=1
+        while [[ i -lt COMP_CWORD ]]; do
+            case "${COMP_WORDS[i]}" in
+                agent|mqtt|certificate)
+                    echo "${COMP_WORDS[i]}"
+                    return
+                    ;;
+            esac
+            ((i++))
+        done
+        echo "main"
+    }
+
+    _get_cert_subcommand() {
+        local i=1
+        local found_cert=0
+        while [[ i -lt COMP_CWORD ]]; do
+            if [[ "${COMP_WORDS[i]}" == "certificate" ]]; then
+                found_cert=1
+            elif [[ found_cert -eq 1 && ("${COMP_WORDS[i]}" == "scep" || "${COMP_WORDS[i]}" == "est") ]]; then
+                echo "${COMP_WORDS[i]}"
+                return
+            fi
+            ((i++))
+        done
+        if [[ found_cert -eq 1 ]]; then
+            echo "certificate"
+        fi
+    }
+
+    # File path completions
+    case "$prev" in
+        --bootstrap-zip|--bootstrap-configuration|--bootstrap-key|--bootstrap-cert|\
+        --creds-key|--creds-cert|\
+        --ssl_ca_file|--ssl_key_file|--ssl_cert_file|--mqtt_pub_file|\
+        --csr-conf|--signing-cert|--signing-key|--output-file|--output-pub-file|\
+        --x509-cert|--print-cert|--scepc-cepcert)
+            COMPREPLY=($(compgen -f -- "$cur"))
+            return
+            ;;
+        --workspace-dir|--key-store-path)
+            COMPREPLY=($(compgen -d -- "$cur"))
+            return
+            ;;
+        --pkcs12)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" && "$cert_sub" == "est" ]]; then
+                COMPREPLY=($(compgen -W "0 1" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -f -- "$cur"))
+            fi
+            return
+            ;;
+    esac
+
+    # Predefined value completions
+    case "$prev" in
+        --log-level)
+            COMPREPLY=($(compgen -W "NONE ERROR WARNING DEBUG INFO VERBOSE" -- "$cur"))
+            return
+            ;;
+        --algorithm)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" ]]; then
+                if [[ "$cert_sub" == "scep" ]]; then
+                    COMPREPLY=($(compgen -W "ECC RSA" -- "$cur"))
+                elif [[ "$cert_sub" == "est" ]]; then
+                    COMPREPLY=($(compgen -W "ECC RSA QS HYBRID" -- "$cur"))
+                else
+                    COMPREPLY=($(compgen -W "ECC RSA DSA QS HYBRID" -- "$cur"))
+                fi
+            fi
+            return
+            ;;
+        --curve)
+            COMPREPLY=($(compgen -W "P192 P224 P256 P384 P521 CURVE25519 CURVE448" -- "$cur"))
+            return
+            ;;
+        --pq-alg)
+            COMPREPLY=($(compgen -W "MLDSA_44 MLDSA_65 MLDSA_87 SLHDSA_SHA2_128S SLHDSA_SHA2_128F SLHDSA_SHA2_192S SLHDSA_SHA2_192F SLHDSA_SHA2_256S SLHDSA_SHA2_256F SLHDSA_SHAKE_128S SLHDSA_SHAKE_128F SLHDSA_SHAKE_192S SLHDSA_SHAKE_192F SLHDSA_SHAKE_256S SLHDSA_SHAKE_256F" -- "$cur"))
+            return
+            ;;
+        --tap-provider)
+            COMPREPLY=($(compgen -W "PKCS11 TPM2" -- "$cur"))
+            return
+            ;;
+        --tap-key-usage)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" && "$cert_sub" == "est" ]]; then
+                COMPREPLY=($(compgen -W "TAP_KEY_USAGE_GENERAL TAP_KEY_USAGE_SIGNING TAP_KEY_USAGE_DECRYPT TAP_KEY_USAGE_ATTESTATION" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "TAP_KEY_USAGE_GENERAL TAP_KEY_USAGE_SIGNING TAP_KEY_USAGE_DECRYPT" -- "$cur"))
+            fi
+            return
+            ;;
+        --tap-sig-scheme)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" && "$cert_sub" == "est" ]]; then
+                local schemes="TAP_SIG_SCHEME_NONE TAP_SIG_SCHEME_PKCS1_5 TAP_SIG_SCHEME_PKCS1_5_SHA1 TAP_SIG_SCHEME_PKCS1_5_SHA256 TAP_SIG_SCHEME_PKCS1_5_DER TAP_SIG_SCHEME_PSS_SHA1 TAP_SIG_SCHEME_PSS_SHA256 TAP_SIG_SCHEME_ECDSA_SHA1 TAP_SIG_SCHEME_ECDSA_SHA224 TAP_SIG_SCHEME_ECDSA_SHA256 TAP_SIG_SCHEME_ECDSA_SHA384 TAP_SIG_SCHEME_ECDSA_SHA512"
+            else
+                local schemes="TAP_SIG_SCHEME_NONE TAP_SIG_SCHEME_PKCS1_5 TAP_SIG_SCHEME_PKCS1_5_SHA1 TAP_SIG_SCHEME_PKCS1_5_SHA256 TAP_SIG_SCHEME_PKCS1_5_SHA384 TAP_SIG_SCHEME_PKCS1_5_SHA512 TAP_SIG_SCHEME_PKCS1_5_DER TAP_SIG_SCHEME_PSS TAP_SIG_SCHEME_PSS_SHA1 TAP_SIG_SCHEME_PSS_SHA256 TAP_SIG_SCHEME_PSS_SHA384 TAP_SIG_SCHEME_PSS_SHA512 TAP_SIG_SCHEME_ECDSA_SHA1 TAP_SIG_SCHEME_ECDSA_SHA224 TAP_SIG_SCHEME_ECDSA_SHA256 TAP_SIG_SCHEME_ECDSA_SHA384 TAP_SIG_SCHEME_ECDSA_SHA512"
+            fi
+            COMPREPLY=($(compgen -W "$schemes" -- "$cur"))
+            return
+            ;;
+        --tap-enc-scheme)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" && "$cert_sub" == "est" ]]; then
+                COMPREPLY=($(compgen -W "TAP_ENC_SCHEME_NONE TAP_ENC_SCHEME_PKCS1_5 TAP_ENC_SCHEME_OAEP_SHA1 TAP_ENC_SCHEME_OAEP_SHA256" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "TAP_ENC_SCHEME_NONE TAP_ENC_SCHEME_PKCS1_5 TAP_ENC_SCHEME_OAEP_SHA1 TAP_ENC_SCHEME_OAEP_SHA256 TAP_ENC_SCHEME_OAEP_SHA384 TAP_ENC_SCHEME_OAEP_SHA512" -- "$cur"))
+            fi
+            return
+            ;;
+        --tap-hierarchy)
+            COMPREPLY=($(compgen -W "STORAGE ENDORSEMENT PLATFORM" -- "$cur"))
+            return
+            ;;
+        --digest)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" && "$cert_sub" == "scep" ]]; then
+                COMPREPLY=($(compgen -W "SHA224 SHA256 SHA384 SHA512" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "MD5 SHA1 SHA224 SHA256 SHA384 SHA512" -- "$cur"))
+            fi
+            return
+            ;;
+        --key-digest|--scepc-digest|--scepc-oaepDigest)
+            COMPREPLY=($(compgen -W "MD5 SHA1 SHA224 SHA256 SHA384 SHA512" -- "$cur"))
+            return
+            ;;
+        --estc-digest-algo)
+            COMPREPLY=($(compgen -W "SHA1 SHA224 SHA256 SHA384 SHA512" -- "$cur"))
+            return
+            ;;
+        --q-size)
+            COMPREPLY=($(compgen -W "160 224 256" -- "$cur"))
+            return
+            ;;
+        --input-form|--output-form)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" && "$cert_sub" == "certificate" ]]; then
+                COMPREPLY=($(compgen -W "PEM DER SSH" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "PEM DER" -- "$cur"))
+            fi
+            return
+            ;;
+        --pkcs12-encryption-type)
+            COMPREPLY=($(compgen -W "sha_3des sha_rc4_40 sha_rc4_128" -- "$cur"))
+            return
+            ;;
+        --tap-primary)
+            COMPREPLY=($(compgen -W "0 1" -- "$cur"))
+            return
+            ;;
+        --mqtt_version)
+            COMPREPLY=($(compgen -W "5 3.1.1" -- "$cur"))
+            return
+            ;;
+        --mqtt_pub_qos|--mqtt_will_qos)
+            COMPREPLY=($(compgen -W "0 1 2" -- "$cur"))
+            return
+            ;;
+        --mqtt_transport)
+            COMPREPLY=($(compgen -W "TCP SSL" -- "$cur"))
+            return
+            ;;
+        --mqtt_sub_topic_retain_handling)
+            COMPREPLY=($(compgen -W "0 1 2" -- "$cur"))
+            return
+            ;;
+        --scepc-pkiOperation)
+            COMPREPLY=($(compgen -W "PKCSReq RenewalReq RekeyReq GetCACert GetCACaps" -- "$cur"))
+            return
+            ;;
+        --scepc-serverType)
+            COMPREPLY=($(compgen -W "MOC EJBCA ECDSA WIN2003 WIN2008 WIN2012 WIN2016 GEN_GET GEN_POST" -- "$cur"))
+            return
+            ;;
+        --scepc-encalgo)
+            COMPREPLY=($(compgen -W "desEDE3CBC aes128CBC aes192CBC aes256CBC" -- "$cur"))
+            return
+            ;;
+        --estc-authentication-mode)
+            COMPREPLY=($(compgen -W "BASIC DIGEST" -- "$cur"))
+            return
+            ;;
+        --pkcs8-enc-alg)
+            COMPREPLY=($(compgen -W "p5_v2_3des p5_v2_aes128 p5_v2_aes192 p5_v2_aes256" -- "$cur"))
+            return
+            ;;
+        --estc-full-cmc-req-type)
+            COMPREPLY=($(compgen -W "enroll renew rekey" -- "$cur"))
+            return
+            ;;
+    esac
+
+    # Free-form input completions - flags that require user-provided values
+    case "$prev" in
+        --devtm-bootstrap-uri|--trustedge-user|--trustedge-group|\
+        --mqtt_servername|--mqtt_port|--mqtt_client_id|\
+        --mqtt_sub_topic|--mqtt_unsub_topic|\
+        --mqtt_pub_topic|--mqtt_pub_message|\
+        --mqtt_session_expiry_interval|--mqtt_keep_alive|\
+        --mqtt_username|--mqtt_password|\
+        --mqtt_will_topic|--mqtt_will_message|\
+        --mqtt_connect_properties|--mqtt_publish_properties|\
+        --mqtt_subscribe_properties|--mqtt_unsubscribe_properties|\
+        --mqtt_disconnect_properties|--mqtt_will_properties|\
+        --proxy|\
+        --tap-modnum|--tap-key-handle|--tap-key-nonce-handle|--tap-cert-handle|\
+        --size|--key-salt|--salt|--days|--start-date|--key-alias|\
+        --scepc-serverURL|--scepc-challengePass|--scepc-label|\
+        --uri|--estc-server-dn|--estc-server-url|\
+        --estc-user|--estc-pass|--estc-server-ip|--estc-server-port|\
+        --estc-tls-cert|--estc-cacerts-alias|--estc-renew-window|--estc-rekey-alias)
+            COMPREPLY=("<input-here>")
+            return
+            ;;
+        --pkcs12-integrity-pw|--pkcs12-privacy-pw|--pkcs12-key-pw)
+            local context=$(_get_command_context)
+            local cert_sub=$(_get_cert_subcommand)
+            if [[ "$context" == "certificate" && "$cert_sub" == "est" ]]; then
+                COMPREPLY=("<input-here>")
+                return
+            fi
+            # In cert/scep mode these are prompt-only flags (no CLI argument), fall through
+            ;;
+    esac
+
+    local context=$(_get_command_context)
+    local cert_sub=$(_get_cert_subcommand)
+
+    case "$context" in
+        main)
+            if [[ "$cur" == -* ]]; then
+                COMPREPLY=($(compgen -W "--help --version --daemon" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "agent mqtt certificate" -- "$cur"))
+            fi
+            ;;
+
+        agent)
+            local agent_opts="--help --configure --download --reset --devtm-bootstrap-uri --bootstrap-zip --bootstrap-configuration --bootstrap-key --bootstrap-cert --trustedge-user --trustedge-group --creds-key --creds-cert --workspace-dir --log-level --require-pqc --qs-format-oqs"
+            COMPREPLY=($(compgen -W "$agent_opts" -- "$cur"))
+            ;;
+
+        mqtt)
+            local mqtt_opts="--help --mqtt_servername --mqtt_port --mqtt_client_id --mqtt_version --print_hex_bytes --mqtt_sub_topic --mqtt_sub_topic_no_local_option --mqtt_sub_topic_retain_as_published --mqtt_sub_topic_retain_handling --mqtt_sub_topic_single --mqtt_unsub_topic --mqtt_unsub_topic_single --mqtt_pub_topic --mqtt_pub_message --mqtt_pub_file --mqtt_pub_qos --mqtt_pub_retain --mqtt_clean_start --mqtt_session_expiry_interval --mqtt_keep_alive --mqtt_username --mqtt_password --mqtt_will_topic --mqtt_will_message --mqtt_will_qos --mqtt_will_retain --mqtt_connect_properties --mqtt_publish_properties --mqtt_subscribe_properties --mqtt_unsubscribe_properties --mqtt_disconnect_properties --mqtt_will_properties --mqtt_transport --ssl_ca_file --ssl_allow_untrusted --ssl_key_file --ssl_cert_file --proxy --require-pqc"
+            COMPREPLY=($(compgen -W "$mqtt_opts" -- "$cur"))
+            ;;
+
+        certificate)
+            case "$cert_sub" in
+                scep)
+                    local scep_opts="--help --log-level --key-store-path --algorithm --tap --tap-provider --tap-modnum --tap-key-usage --tap-sig-scheme --tap-enc-scheme --tap-primary --tap-hierarchy --tap-key-handle --tap-key-nonce-handle --tap-cert-handle --curve --size --pss --key-digest --key-salt --csr-conf --digest --salt --days --start-date --signing-key-tap --original-key-pw --input-form --scepc-pkiOperation --scepc-serverURL --scepc-serverType --scepc-challengePass --scepc-encalgo --scepc-digest --scepc-oaep --scepc-oaepDigest --scepc-label --scepc-cepcert --key-alias --pkcs12 --pkcs12-encryption-type --pkcs12-integrity-pw --pkcs12-privacy-pw --pkcs12-key-pw --output-form --protect"
+                    COMPREPLY=($(compgen -W "$scep_opts" -- "$cur"))
+                    ;;
+                est)
+                    local est_opts="--help --log-level --require-pqc --key-store-path --algorithm --tap --tap-provider --tap-modnum --tap-key-usage --tap-sig-scheme --tap-enc-scheme --tap-primary --tap-hierarchy --tap-key-handle --tap-key-nonce-handle --tap-cert-handle --tpm2-idevid-enrollment --tpm2-iak-enrollment --curve --pq-alg --qs-format-oqs --size --csr-conf --uri --estc-server-dn --estc-server-url --estc-user --estc-pass --estc-server-ip --estc-server-port --estc-authentication-mode --estc-disable-ca-cert --estc-digest-algo --estc-tls-cert --estc-cacerts-alias --estc-renew-window --estc-full-cmc-req-type --estc-rekey-alias --key-alias --pkcs12 --pkcs12-encryption-type --pkcs12-integrity-pw --pkcs12-privacy-pw --pkcs12-key-pw --protect --pkcs8-enc-alg"
+                    COMPREPLY=($(compgen -W "$est_opts" -- "$cur"))
+                    ;;
+                certificate)
+                    if [[ "$cur" == -* ]]; then
+                        local cert_opts="--help --log-level --key-store-path --algorithm --tap --tap-provider --tap-modnum --tap-key-usage --tap-sig-scheme --tap-enc-scheme --tap-primary --tap-hierarchy --tap-key-handle --tap-key-nonce-handle --tap-cert-handle --curve --pq-alg --qs-format-oqs --size --q-size --pss --key-digest --key-salt --csr-conf --digest --salt --days --start-date --signing-cert --signing-key --signing-key-tap --signing-key-pw --cert-sign-req --input-form --output-file --output-pub-file --x509-cert --pkcs12 --pkcs12-encryption-type --pkcs12-integrity-pw --pkcs12-privacy-pw --pkcs12-key-pw --output-form --protect --print-cert"
+                        COMPREPLY=($(compgen -W "$cert_opts" -- "$cur"))
+                    else
+                        COMPREPLY=($(compgen -W "scep est" -- "$cur"))
+                    fi
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+complete -F _trustedge_completion trustedge

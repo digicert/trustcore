@@ -14,6 +14,8 @@
  * *Contact DigiCert at sales@digicert.com for more details.*
  */
 
+/* p192 = 2^192 - 2^64 - 1 */
+
 static ubyte gpP_192[24] =
 {
     0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,

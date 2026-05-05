@@ -1,0 +1,33 @@
+{
+    "policyService": "UpdatePolicy",
+    "deviceId": "abd104cd-54c4-49a8-b9be-db7edc576789",
+    "accountId": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "mode": "release_artifact_list",
+    "timestamp":"2024-10-25T03:39:26Z",
+    "updatePolicyId": "REL_9343cc63-ca25-4f3c-a180-3c4d18bb8bcc",
+    "deviceGroupId": "c30853d1-1961-4507-a416-fac2b63585c5",
+    "deploymentId": "6a2b9d4e-2d1c-4f7a-a5b0-8e3f6c7d9a0b",
+    "artifacts": [
+        {
+            "artifactId": "3f6d8a2b-1e9c-5d7b-c4a3-0b6e5f8c9d2a",
+            "artifactName": "single_character",
+            "artifactVersion": "0.0.1",
+            "artifactTimestamp": "2024-03-28T12:51:02Z",
+            "artifactSize": 1
+        },
+        {
+            "artifactId": "9c5b8a3f-7d1e-4c6b-b2a0-5d9e8f3c2a1b",
+            "artifactName": "hello_world",
+            "artifactVersion": "21.0.2",
+            "artifactTimestamp": "2024-03-28T12:52:02Z",
+            "artifactSize": 11
+        },
+        {
+            "artifactId": "9c5b8a3f-7d1e-4c6b-b2a0-5d9e8f3c2a1c",
+            "artifactName": "hello_world",
+            "artifactVersion": "21.0.2",
+            "artifactTimestamp": "2024-03-28T12:52:02Z",
+            "artifactSize": 11
+        }
+    ]
+}

@@ -2,7 +2,6 @@
  * @file   mjson.h
  * @brief  Mocana JSON Parse utility functions.
  *
- *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
@@ -14,6 +13,13 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
+ * @details  This header file provides declarations, definitions, enumerations,
+ *           and structure definitions for parsing JSON strings.
+ *
+ * @flags    There are no flag dependencies to use this header file.
+ *
+ * @filedoc  mjson.h
  */
 
 #ifndef __MJSON_HEADER__

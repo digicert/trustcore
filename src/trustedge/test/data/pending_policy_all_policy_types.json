@@ -1,0 +1,23 @@
+{
+    "divisionId": "0c56d835-c1c5-4862-963f-5943e9ed5480",
+    "accountId": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "deviceId": "abd104bd-54c4-49a8-b9be-db7edc576787",
+    "status": "?",
+    "createdOn": "?",
+    "updatedOn": "?",
+    "pendingPolicies": [
+        {
+            "deviceGroupId": "c30853d1-1961-4507-a416-fac2b63585c5",
+            "policyType": "CERTIFICATE",
+            "policyId": "294820115",
+            "priority": 1
+        },
+        {
+            "deviceGroupId": "c30853d1-1961-4507-a416-fac2b63585c5",
+            "policyType": "UPDATE",
+            "policyId": "294820116",
+            "deploymentId": "5088534",
+            "priority": 0
+        }
+    ]
+}

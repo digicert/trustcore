@@ -35,6 +35,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* strtok_r is POSIX, use strtok_s on Windows */
+#if defined(__RTOS_WIN32__) || defined(_MSC_VER)
+#define strtok_r strtok_s
+#endif
+
 #define MAX_DIRECTORY_NAME                         (256)
 #define MAX_ASN1_BMPSTRING                         (2*MAX_ASN1_STRING)
 #define MAX_ASN1_LINES                             (10)

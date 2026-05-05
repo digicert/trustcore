@@ -1,0 +1,65 @@
+{
+    "version": "1.0",
+    "name": "debian-installer-test",
+    "artifactVersion": "1.0",
+    "description": "Sample Debian installer artifact",
+    "artifactType": "Application",
+    "actions": [
+        {
+            "action": "install",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "bash"
+            },
+            "actionPath": "payload/script/installpkg.sh",
+            "actionArgument": "payload/package/digicertdemopkg.deb"
+        },
+        {
+            "action": "rollback",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "bash"
+            },
+            "actionPath": "payload/script/rollbackpkg.sh",
+            "actionArgument": "Digicert-demo-package"
+        }
+    ],
+    "components": [
+        {
+            "name": "component1",
+            "location": "./payload.tar",
+            "checksum": "sha256:your_checksum_here"
+        }
+    ],
+    "requirements": {
+        "device_attributes": [
+            {
+                "key": "location",
+                "value": [
+                    "val1",
+                    "va2"
+                ]
+            },
+        {
+            "key": "key2",
+            "value": [
+                "val1",
+                "va2"
+            ]
+        }
+    
+        ]
+    },
+    "dependsOn": [
+    ],
+"provides": [
+],
+"signature": [
+{
+    "sigAlg": "",
+    "sig": "",
+    "sigFormat": "base64",
+    "certificate": ""
+}
+]
+}

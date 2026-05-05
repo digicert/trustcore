@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "name": "JR Artifact",
+  "artifactVersion": "1.0",
+  "artifactType": "Application",
+  "description": "sample description",
+  "actions": [
+    {
+      "action": "install",
+      "handler": {
+        "handlerType": "script",
+        "handlerSubType": "bash"
+      },
+      "actionPath": "script/installpkg.sh",
+      "actionArgument": "package/digicertdemopkg.deb"
+    }
+  ],
+  "components": [
+    {
+      "name": "component1",
+      "location": "./payload.zip",
+      "checksum": "sha256:75ad2296fc496760cadde539dccc42363a7bb4cd43c71527c3d1b2b1a1cfaae2"
+    }
+  ],
+  "requirements": {}
+}

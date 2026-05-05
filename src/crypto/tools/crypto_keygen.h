@@ -83,6 +83,9 @@ typedef struct _KeyGenArgs
     ubyte4 gSigScheme;
     TAP_Buffer *gpKeyHandle;
     ubyte8 gKeyNonceHandle;
+#ifdef __ENABLE_DIGICERT_TEE__
+    TAP_Buffer tapKeyHandle;
+#endif
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
     sbyte *gpOutFile;
@@ -192,6 +195,8 @@ MOC_EXTERN MSTATUS KEYGEN_persistDataAtNVIndex(
     TAP_AUTH_CONTEXT_PROPERTY inputAuthProp);
 
 MOC_EXTERN MSTATUS KEYGEN_addCreds(TAP_CredentialList *pCredList);
+MOC_EXTERN MSTATUS KEYGEN_readId(sbyte *pStr, TAP_Buffer *pOutId, intBoolean *pIsHex);
+
 #endif
 
 #ifdef __cplusplus

@@ -1,0 +1,2 @@
+MSS_SRC_DIR/trustedge/utils/trustedge_utils.c
+MSS_SRC_DIR/trustedge/utils/trustedge_tap.c

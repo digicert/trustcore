@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CPack WIX Patch File for TrustEdge
+  Adds ProgramData configuration/data directories to the installer
+-->
+<CPackWiXPatch>
+  <!-- Add FeatureRef inside Product element to include our ProgramData feature -->
+  <CPackWiXFragment Id="#PRODUCT">
+    <FeatureRef Id="ProgramDataFeature" />
+  </CPackWiXFragment>
+</CPackWiXPatch>

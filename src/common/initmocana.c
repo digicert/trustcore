@@ -1,4 +1,4 @@
-/*
+/**
  * @file   initmocana.c
  * @brief  Mocana Initialization Routines
  *

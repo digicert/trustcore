@@ -1,0 +1,19 @@
+{
+    "policyService": "UpdatePolicy",
+    "device_id": "abd104bd-54c4-49a8-b9be-db7edc576787",
+    "account_id": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "mode": "release_artifact_list",
+    "timestamp":"2024-03-28T12:53:02Z",
+    "updatePolicyId": "unique_up_id",
+    "deviceGroupId": "unique_dev_grp_id",
+    "deploymentId": "unique_dep_id",
+    "artifacts": [
+        {
+            "artifactId": "unique_id1",
+            "artifactName": "single_character",
+            "artifactVersion": "0.0.1",
+            "artifactTimestamp": "2024-03-28T12:51:02Z",
+            "artifactSize": 1
+        }
+    ]
+}

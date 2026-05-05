@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * @file       mocpkcs11_serializekey.c
  * @brief      Utility to serialize a given key by ID into PEM/DER or Mocana Blob format.
  * @details    Utility to serialize a given key by ID into PEM/DER or Mocana Blob format.
@@ -53,7 +54,7 @@
 #endif
 
 #ifndef TAP_TEST_CONFIG_PATH
-#define TAP_TEST_CONFIG_PATH "/etc/mocana/pkcs11_smp.conf"
+#define TAP_TEST_CONFIG_PATH "/etc/digicert/pkcs11_smp.conf"
 #endif
 
 #ifndef TAP_TEST_PROVIDER

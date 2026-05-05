@@ -1,0 +1,64 @@
+{
+    "version": "1.0",
+    "name": "trustedge-installer-4.1.21-1",
+    "artifactVersion": "4.1.21-1",
+    "description": "Trustedge Installer",
+    "artifactType": "Application",
+    "actions": [
+        {
+            "action": "install",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "bash"
+            },
+            "actionPath": "payload/scripts/install_trustedge.sh",
+            "actionArgument": "--dpkg payload/package/trustedge_4.1.21-1-linux.x86_64.deb"
+        },
+        {
+            "action": "rollback",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "bash"
+            },
+            "actionPath": "payload/scripts/rollbackpkg.sh",
+            "actionArgument": "trustedge"
+        }
+    ],
+    "components": [
+        {
+            "name": "component1",
+            "location": "./payload.tar"
+        }
+    ],
+    "requirements": {
+        "device_attributes": [
+            {
+                "key": "location",
+                "value": [
+                    "val1",
+                    "va2"
+                ]
+            },
+        {
+            "key": "key2",
+            "value": [
+                "val1",
+                "va2"
+            ]
+        }
+    
+        ]
+    },
+    "dependsOn": [
+    ],
+"provides": [
+],
+"signature": [
+{
+    "sigAlg": "",
+    "sig": "",
+    "sigFormat": "base64",
+    "certificate": ""
+}
+]
+}

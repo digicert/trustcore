@@ -730,4 +730,181 @@ exit:
     return status;
 }
 
+/*------------------------------------------------------------------*/
+/* Additional Windows RTOS functions for TrustEdge compatibility */
+/*------------------------------------------------------------------*/
+
+MOC_EXTERN intBoolean
+WIN32_sleepCheckStatusMS(ubyte4 sleepTimeInMS)
+{
+    WIN32_sleepMS(sleepTimeInMS);
+    return TRUE;
+}
+
+/*------------------------------------------------------------------*/
+/* Semaphore implementation using Windows Semaphores */
+/*------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS
+WIN32_semCreate(RTOS_SEM* pSem, sbyte4 initialValue)
+{
+    HANDLE hSem;
+
+    if (NULL == pSem)
+        return ERR_NULL_POINTER;
+
+    hSem = CreateSemaphoreA(NULL, (LONG)initialValue, LONG_MAX, NULL);
+    if (NULL == hSem)
+        return ERR_RTOS_SEM_ALLOC;
+
+    *pSem = (RTOS_SEM)hSem;
+    return OK;
+}
+
+/*------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS
+WIN32_semWait(RTOS_SEM sem)
+{
+    DWORD result;
+
+    if (NULL == sem)
+        return ERR_NULL_POINTER;
+
+    result = WaitForSingleObject((HANDLE)sem, INFINITE);
+    if (result != WAIT_OBJECT_0)
+        return ERR_RTOS_SEM_WAIT;
+
+    return OK;
+}
+
+/*------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS
+WIN32_semTimedWait(RTOS_SEM sem, ubyte4 timeoutMS, byteBoolean *pTimeout)
+{
+    DWORD result;
+
+    if (NULL == sem || NULL == pTimeout)
+        return ERR_NULL_POINTER;
+
+    *pTimeout = FALSE;
+
+    result = WaitForSingleObject((HANDLE)sem, timeoutMS);
+    if (result == WAIT_TIMEOUT)
+    {
+        *pTimeout = TRUE;
+        return OK;
+    }
+    if (result != WAIT_OBJECT_0)
+        return ERR_RTOS_SEM_WAIT;
+
+    return OK;
+}
+
+/*------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS
+WIN32_semTryWait(RTOS_SEM sem)
+{
+    DWORD result;
+
+    if (NULL == sem)
+        return ERR_NULL_POINTER;
+
+    result = WaitForSingleObject((HANDLE)sem, 0);
+    if (result == WAIT_TIMEOUT)
+        return ERR_RTOS_SEM_NOT_READY;
+    if (result != WAIT_OBJECT_0)
+        return ERR_RTOS_SEM_WAIT;
+
+    return OK;
+}
+
+/*------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS
+WIN32_semSignal(RTOS_SEM sem)
+{
+    if (NULL == sem)
+        return ERR_NULL_POINTER;
+
+    if (!ReleaseSemaphore((HANDLE)sem, 1, NULL))
+        return ERR_GENERAL;
+
+    return OK;
+}
+
+/*------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS
+WIN32_semFree(RTOS_SEM* pSem)
+{
+    if (NULL == pSem || NULL == *pSem)
+        return ERR_NULL_POINTER;
+
+    CloseHandle((HANDLE)*pSem);
+    *pSem = NULL;
+    return OK;
+}
+
+/* Thread wrappers */
+MOC_EXTERN void RTOS_exitThread(void *pRetVal)
+{
+    MOC_UNUSED(pRetVal);
+    _endthreadex(0);
+}
+
+MOC_EXTERN MSTATUS RTOS_joinThread(RTOS_THREAD threadId, void **ppRetVal)
+{
+    DWORD result;
+
+    MOC_UNUSED(ppRetVal);
+
+    if (NULL == threadId)
+        return ERR_NULL_POINTER;
+
+    result = WaitForSingleObject((HANDLE)threadId, INFINITE);
+    if (result != WAIT_OBJECT_0)
+        return ERR_GENERAL;
+
+    WIN32_destroyThread(threadId);
+    return OK;
+}
+
+/* Time wrapper */
+MOC_EXTERN sbyte4 RTOS_timeCompare(const moctime_t *pTime1, const moctime_t *pTime2)
+{
+    sbyte4 diff_sec;
+    sbyte4 diff_usec;
+
+    if (NULL == pTime1 || NULL == pTime2)
+        return 0;
+
+    /* Compare using the time[0] (seconds) and time[1] (microseconds) fields */
+    diff_sec  = (sbyte4)(pTime1->u.time[0] - pTime2->u.time[0]);
+    diff_usec = (sbyte4)(pTime1->u.time[1] - pTime2->u.time[1]);
+
+    while (diff_sec < 0 && diff_usec > 0)
+    {
+        diff_usec -= 1000000;
+        diff_sec++;
+    }
+
+    if (diff_sec < 0) return -1;
+
+    while (diff_sec > 0 && diff_usec < 0)
+    {
+        diff_usec += 1000000;
+        diff_sec--;
+    }
+
+    if (diff_sec > 0) return 1;
+
+    if (diff_usec < 0) return -1;
+    else if (diff_usec > 0) return 1;
+
+    return 0;
+}
+
 #endif /* __RTOS_WIN32__ */

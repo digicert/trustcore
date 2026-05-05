@@ -1,0 +1,8 @@
+{
+    "artifactId": "",
+    "artifactName": "python3-test",
+    "artifactVersion": "1.0",
+    "description": "Sample python3 artifact",
+    "artifactChunkOffset": 0,
+    "artifactChunkSize": 1
+}

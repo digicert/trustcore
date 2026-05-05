@@ -577,6 +577,10 @@ MOC_EXTERN MSTATUS MLDSA_deserializeKey(MLDSACtx *ctx, bool pubOnly, ubyte *serK
             pDataPtr++;
             status = MLDSA_setPrivateKey(pDataPtr, MLDSA_SEED_LEN, ctx); /* we don't validate the pub and pri match */
         }
+        else if ((ubyte4)MLDSA_SEED_LEN == privKeyLen) /* seed format (no tag prefix) */
+        {
+            status = MLDSA_setPrivateKey(pDataPtr, MLDSA_SEED_LEN, ctx);
+        }
 #ifdef __ENABLE_MLDSA_LONG_FORM_PRIV_KEY_SER__
         else if(4 + expPrivLen == privKeyLen) /* extra octet string tag and 3 byte length */
         {

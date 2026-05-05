@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * @file       smp_tap_tpm2.h
  * @brief      TAP-TPM2 interface header file
  * @details    This header file contains TPM2 specific definitions needed by TAP 

@@ -97,9 +97,11 @@ extern "C" {
 #define TCP_SHUTDOWN             WIN32_TCP_shutdown
 #define TCP_LISTEN_SOCKET        WIN32_TCP_listenSocket
 #define TCP_LISTEN_SOCKET_LOCAL  WIN32_TCP_listenSocketLocal
+#define TCP_LISTEN_SOCKET_ADDR   WIN32_TCP_listenSocketAddr
 #define TCP_ACCEPT_SOCKET        WIN32_TCP_acceptSocket
 #define TCP_CLOSE_SOCKET         WIN32_TCP_closeSocket
 #define TCP_READ_AVL             WIN32_TCP_readSocketAvailable
+#define TCP_READ_AVL_EX          WIN32_TCP_readSocketAvailableEx
 #define TCP_WRITE                WIN32_TCP_writeSocket
 #define TCP_CONNECT              WIN32_TCP_connectSocket
 #define TCP_getPeerName          WIN32_TCP_getPeerName

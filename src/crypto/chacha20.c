@@ -14,6 +14,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * Derived from the implementation in libsodium
  "chacha-merged.c version 20080118
  D. J. Bernstein

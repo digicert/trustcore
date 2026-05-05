@@ -1,0 +1,37 @@
+/*
+ * add file system to the build
+*/
+
+/ {
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs1: lfs1 {
+			compatible = "zephyr,fstab,littlefs";
+			read-size = <1>;
+			prog-size = <16>;
+			cache-size = <256>;
+			lookahead-size = <32>;
+			block-cycles = <512>;
+			partition = <&lfs1_partition>;
+			mount-point = "/lfs1";
+		};
+	};
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* use remaining half of flash for the file system */
+		storage_partition: partition@0 {
+			label = "storage";
+			reg = <0x000000 DT_SIZE_K(1012)>;
+		};
+		lfs1_partition: partition@F7120 {
+			label = "lfs1";
+			reg = <0x0F7120 DT_SIZE_K(12)>;
+		};
+	};
+};

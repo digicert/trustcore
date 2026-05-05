@@ -22,6 +22,8 @@
 #include <unistd.h>
 #endif
 
+#include <stdio.h>
+
 #include "../common/mtypes.h"
 #include "../common/mdefs.h"
 #include "../common/merrors.h"

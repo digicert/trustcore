@@ -1,0 +1,40 @@
+{
+  "configuration": {
+    "device_id": "abd104bd-54c4-49a8-b9be-db7edc576787",
+    "account_id": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "division_id": "0c56d835-c1c5-4862-963f-5943e9ed5480",
+    "device_group_id": "c30853d1-1961-4507-a416-fac2b63585c5",
+    "device_name": "testDevice",
+    "rendezvous_configuration": {
+      "mqtt_endpoint": {
+        "primary": [ "mqtt://localhost:1883" ]
+      },
+      "persist_connection": false
+    },
+    "device_attributes": [
+      {
+        "key": "Configuration Type",
+        "value": "Local Test Config"
+      },
+      {
+        "key": "Mandatory Parse Test",
+        "value": "Mandatory Parse Test",
+        "mandatory": true
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "key": "operating_system",
+        "value": "INVENTORY_ATTRIBUTE_SHOULD_BE_SKIPPED"
+      }
+    ]
+  },
+  "authentication": [
+    {
+      "method": "x509",
+      "key_alias": "rsa_2048.pem",
+      "cert_alias": "rsa_2048.pem"
+    }
+  ]
+}

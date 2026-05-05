@@ -1,0 +1,15 @@
+MSS_SRC_DIR/cap/asymencf.c
+MSS_SRC_DIR/cap/cipherf.c
+MSS_SRC_DIR/cap/decodesymkey.c
+MSS_SRC_DIR/cap/digestf.c
+MSS_SRC_DIR/cap/encodesymkey.c
+MSS_SRC_DIR/cap/keyf.c
+MSS_SRC_DIR/cap/keygenf.c
+MSS_SRC_DIR/cap/kmatch.c
+MSS_SRC_DIR/cap/macf.c
+MSS_SRC_DIR/cap/mocasym.c
+MSS_SRC_DIR/cap/mocsym.c
+MSS_SRC_DIR/cap/randomf.c
+MSS_SRC_DIR/cap/sharedsecret.c
+MSS_SRC_DIR/cap/signf.c
+MSS_SRC_DIR/cap/kemf.c

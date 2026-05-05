@@ -1,0 +1,31 @@
+{
+  "version" : "1.0",
+  "name" : "create testfile.txt",
+  "artifactVersion" : "1.0",
+  "description" : "",
+  "artifactType" : "Configuration",
+  "actions" : [ {
+    "action" : "install",
+    "handler" : {
+      "handlerType" : "script",
+      "handlerSubType" : "bash"
+    },
+    "actionPath" : "payload/script/create_file.sh",
+    "actionArgument" : "/etc/digicert/conf/testfile.txt"
+  },
+  {
+    "action" : "rollback",
+    "handler" : {
+      "handlerType" : "script",
+      "handlerSubType" : "bash"
+    },
+    "actionPath" : "payload/script/delete_file.sh",
+    "actionArgument" : "/etc/digicert/conf/testfile.txt"
+  }
+  ],
+  "components" : [ {
+    "name" : "component1",
+    "location" : "./payload.zip"
+  } ],
+  "requirements" : { }
+}

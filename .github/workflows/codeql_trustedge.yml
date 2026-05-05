@@ -1,0 +1,72 @@
+name: "CodeQL Trustedge"
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "scripts/ci/trustedge/**"
+      - "src/trustedge/**"
+      - "projects/trustedge/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "scripts/ci/trustedge/**"
+      - "src/trustedge/**"
+      - "projects/trustedge/**"
+
+jobs:
+  analyze:
+    name: Analyze Trustedge
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2
+      with:
+        languages: c-cpp
+        queries: security-extended,security-and-quality
+
+    - name: Build Trustedge
+      run: |
+        ./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --cvc --proxy --pqc --pqc-composite --enable-pc
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2
+      with:
+        category: "/language:c-cpp/trustedge"
+    
+    - name: Get Slack User ID
+      if: always()
+      id: slack_map
+      run: |
+        GITHUB_USER="${{ github.actor }}"
+        SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+        
+        SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+        
+        echo "GitHub User: $GITHUB_USER"
+        echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+
+    - name: Send Slack notification (Failure)
+      if: always() && (failure() || cancelled()) 
+      run: |
+        SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+        if [ -n "$SLACK_USER_ID" ]; then
+          MENTION="<@$SLACK_USER_ID>"
+        else
+          MENTION="${GITHUB_ACTOR}"
+        fi
+        if [ "$GITHUB_REF_NAME" = "main" ]; then
+          MESSAGE="CodeQL TrustEdge Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        else
+          MESSAGE="CodeQL TrustEdge Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        fi  
+        curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

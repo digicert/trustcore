@@ -58,9 +58,9 @@ extern "C" {
 
 #ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
 /* --- Bitmask Macros --- */
-#define NanoROOT_MAKE_ALGO_ID(algo, subtype)   ((((ubyte8)(algo)) << 32) | ((ubyte8)(subtype)))
-#define NanoROOT_GET_ALGO_ID(value)            ((ubyte4)(((value) >> 32) & 0xFFFFFFFF))
-#define NanoROOT_GET_SUBTYPE(value)            ((ubyte4)((value) & 0xFFFFFFFF))
+#define NanoROOT_MAKE_ALGO_ID(algo, subtype)   (((((ubyte4)(algo)) & 0xFF) << 24) | (((ubyte4)(subtype)) & 0x00FFFFFF))
+#define NanoROOT_GET_ALGO_ID(value)            ((ubyte4)(((value) >> 24) & 0xFF))
+#define NanoROOT_GET_SUBTYPE(value)            ((ubyte4)((value) & 0x00FFFFFF))
 
 /* --- Algorithm IDs --- */
 #define NanoROOT_ALGO_RSA      0x00000001
@@ -99,7 +99,7 @@ extern "C" {
 ****************************************************************/
 
 #ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
-MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte8 value, TAP_KEY_ALGORITHM *keyAlgorithm,
+MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte4 value, TAP_KEY_ALGORITHM *keyAlgorithm,
 				TAP_KEY_SIZE *keySize, ubyte4 *subKeyType);
 #endif
 

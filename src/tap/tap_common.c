@@ -747,7 +747,40 @@ exit:
 
 
 #ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
-MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte8 value,
+/*
+ * Parse the packed NanoROOT algorithm information contained in 'value'
+ * and convert it into TAP-specific types.
+ *
+ * The 32-bit 'value' is expected to encode:
+ *   - a high-level algorithm identifier (extracted via NanoROOT_GET_ALGO_ID)
+ *   - an algorithm subtype or key-usage / variant (extracted via NanoROOT_GET_SUBTYPE)
+ *   - key size or other algorithm-specific parameters, according to the
+ *     NanoROOT encoding specification.
+ *
+ * On success:
+ *   - *keyAlgorithm is set to the corresponding TAP_KEY_ALGORITHM value
+ *   - *keySize     is set to the corresponding TAP_KEY_SIZE value
+ *   - *subKeyType  is set to a subtype identifier derived from 'value'
+ *
+ * Parameters:
+ *   value        Packed NanoROOT algorithm information word.
+ *   keyAlgorithm Output parameter for the decoded TAP_KEY_ALGORITHM.
+ *   keySize      Output parameter for the decoded TAP_KEY_SIZE.
+ *   subKeyType   Output parameter for an algorithm-specific subtype or
+ *                key type value.
+ *
+ * Return value:
+ *   - OK on successful parsing and mapping of all output fields.
+ *   - An error status (for example, ERR_TAP_INVALID_PARAMETER or an
+ *     algorithm-specific error) if 'value' is zero, any output pointer is
+ *     NULL, or if 'value' encodes an unsupported or unknown algorithm /
+ *     key size combination.
+ *
+ * Note:
+ *   Callers should treat the output parameters as uninitialized if a
+ *   non-OK status is returned.
+ */
+MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte4 value,
 				TAP_KEY_ALGORITHM *keyAlgorithm,
 				TAP_KEY_SIZE *keySize,
 				ubyte4 *subKeyType
@@ -763,7 +796,7 @@ MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte8 value,
         return ERR_INVALID_INPUT;
     }
 
-    DB_PRINT("Raw 64-bit Value: 0x%016llX\n", (unsigned long long)value);
+    DB_PRINT("Raw 32-bit Value: 0x%08X\n", (unsigned int)value);
 
     switch (algo) {
         case NanoROOT_ALGO_RSA:

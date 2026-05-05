@@ -60,7 +60,7 @@
     } while (0)
 
 #ifndef TAP_TEST_CONFIG_PATH
-#define TAP_TEST_CONFIG_PATH "/etc/mocana/pkcs11_smp.conf"
+#define TAP_TEST_CONFIG_PATH "/etc/digicert/pkcs11_smp.conf"
 #endif
 
 #ifndef TAP_TEST_PROVIDER

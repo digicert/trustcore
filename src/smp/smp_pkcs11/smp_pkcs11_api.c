@@ -1,4 +1,4 @@
-/*
+/**
  * smp_pkcs11_api.c
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * @file       smp_pkcs11_api.c
  * @brief      NanoSMP module feature API definitions for PKCS11.
  * @details    This C file contains feature function
@@ -76,8 +77,12 @@ const ubyte eccOid521[] = {0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x23};
 
 const sbyte iniFile[] = "/etc/IDGo800/Pkcs11.PKCS11.ini";
 
-#define MOC_SMP_PKCS11_RT_CERT  "/etc/mocana/moc_pkcs11_root_cert.der"
-#define MOC_SMP_PKCS11_RT_KEY   "/etc/mocana/moc_pkcs11_root_key"
+#ifndef MOC_SMP_PKCS11_RT_CERT
+#define MOC_SMP_PKCS11_RT_CERT  "/etc/digicert/moc_pkcs11_root_cert.der"
+#endif
+#ifndef MOC_SMP_PKCS11_RT_KEY
+#define MOC_SMP_PKCS11_RT_KEY   "/etc/digicert/moc_pkcs11_root_key"
+#endif
 #define MAX_SYM_BLOCK_SIZE (16)
 #define AES_BLOCK_SIZE     (16)
 #define DES_BLOCK_SIZE     (8)
@@ -2025,7 +2030,7 @@ exit:
     {
         if (NULL != pGemModule)
         {
-            if (&pGemModule->moduleSession)
+            if (pGemModule->moduleSession)
             {
 #ifdef __ENABLE_DIGICERT_PKCS11_DYNAMIC_LOAD__
                 if (NULL != pFuncTable)
@@ -2449,8 +2454,6 @@ MSTATUS SMP_API(PKCS11, uninitToken,
     Pkcs11_Token* pGemToken = (Pkcs11_Token*) ((uintptr)tokenHandle);
     Pkcs11_Token* pPrevToken = NULL;
     Pkcs11_Token* pToken = NULL;
-    Pkcs11_Object* pObject = NULL;
-    Pkcs11_Object* pNextObj = NULL;
     MSTATUS status = OK;
 #ifdef __ENABLE_DIGICERT_PKCS11_DYNAMIC_LOAD__
     CK_FUNCTION_LIST_PTR pFuncTable = NULL;
@@ -2705,21 +2708,18 @@ MSTATUS SMP_API(PKCS11, initObject,
         while (listCount < pObjectAttributes->listLen)
         {
             /* handle parameters we need */
-            switch (pAttribute->type)
+            if (TAP_ATTR_OBJECT_ID_BYTESTRING == pAttribute->type)
             {
-                case TAP_ATTR_OBJECT_ID_BYTESTRING:
-
-                    if ((sizeof(TAP_Buffer) != pAttribute->length) ||
-                        (NULL == pAttribute->pStructOfType))
-                    {
-                        status = ERR_INVALID_ARG;
-                        DB_PRINT("%s.%d Invalid byte string ID structure length %d, status = %d\n",
-                                    __FUNCTION__, __LINE__, pAttribute->length, status);
-                        goto exit;
-                    }
-                    objectId.pBuffer = ((TAP_Buffer *)(pAttribute->pStructOfType))->pBuffer;
-                    objectId.bufferLen = ((TAP_Buffer *)(pAttribute->pStructOfType))->bufferLen;
-                    break;
+                if ((sizeof(TAP_Buffer) != pAttribute->length) ||
+                    (NULL == pAttribute->pStructOfType))
+                {
+                    status = ERR_INVALID_ARG;
+                    DB_PRINT("%s.%d Invalid byte string ID structure length %d, status = %d\n",
+                                __FUNCTION__, __LINE__, pAttribute->length, status);
+                    goto exit;
+                }
+                objectId.pBuffer = ((TAP_Buffer *)(pAttribute->pStructOfType))->pBuffer;
+                objectId.bufferLen = ((TAP_Buffer *)(pAttribute->pStructOfType))->bufferLen;
             }
 
             pAttribute++;
@@ -3132,6 +3132,11 @@ PKCS11_verifyInit(Pkcs11_Module *pGemModule,
     /* null checks already done */
 
     pSigScheme = (TAP_SIG_SCHEME*)PKCS11_fetchAttributeFromList(pMechanism, TAP_ATTR_SIG_SCHEME, NULL);
+    if (NULL == pSigScheme)
+    {
+        PKCS11_FillError(&pGemModule->error, &status, ERR_INVALID_ARG, "ERR_INVALID_ARG");
+        goto exit;
+    }
 
     switch(*pSigScheme)
     {
@@ -3201,16 +3206,9 @@ MSTATUS SMP_API(PKCS11, verify,
     ubyte *pInSignature = NULL;
     ubyte4 signatureLen = 0;
     TAP_KEY_ALGORITHM keyAlgo = TAP_KEY_ALGORITHM_UNDEFINED;
-    intBoolean sigretval = 0;
-    AsymmetricKey asymKey = {0};
     TAP_SIG_SCHEME sigScheme = TAP_SIG_SCHEME_PKCS1_5;
     TAP_Attribute *pAttribute = NULL;
     TAP_OP_EXEC_FLAG opExecFlag = TAP_OP_EXEC_FLAG_HW;
-    hwAccelDescr hwAccelCtx = 0;
-    static ubyte4 oidLen = SHA256_OID_LEN;
-    ubyte *pResultBuf = NULL;
-    ubyte4 resultBufSize = 0;
-    sbyte4 cmpResult = 1;
     ubyte4 listCount = 0;
     byteBoolean isDataNotDigest = FALSE;
     CK_ATTRIBUTE keyTypeTemplate[] =
@@ -3230,7 +3228,6 @@ MSTATUS SMP_API(PKCS11, verify,
     ubyte*          pDigestBuffer = 0;
     ubyte4          digestBufferLen;
     DER_ITEMPTR     pSequence = 0;
-    TAP_SIG_SCHEME *pSigScheme = NULL;
     CK_ULONG        saltLen = 0;
     byteBoolean     saltProvided = FALSE;
 
@@ -3834,10 +3831,6 @@ MSTATUS SMP_API(PKCS11, signDigest,
     CK_ULONG ulBitLength = 0;
     TAP_KEY_ALGORITHM keyAlgo = TAP_KEY_ALGORITHM_UNDEFINED;
 
-    TAP_SymSignature *pSymSignature = NULL;
-    TAP_RSASignature *pRsaSignature = NULL;
-    TAP_ECCSignature *pEccSignature = NULL;
-
     CK_ATTRIBUTE keyTypeTemplate[] =
             {
                     {CKA_KEY_TYPE, &keyType, sizeof(keyType)}
@@ -3902,23 +3895,18 @@ MSTATUS SMP_API(PKCS11, signDigest,
         while (listCount < pSignatureAttributes->listLen)
         {
             /* handle parameters we need */
-            switch (pAttribute->type)
+            if (TAP_ATTR_SALT_LEN == pAttribute->type)
             {
-                case TAP_ATTR_SALT_LEN:
-                    if ((sizeof(ubyte4) != pAttribute->length) ||
-                            (NULL == pAttribute->pStructOfType))
-                    {
-                        status = ERR_INVALID_ARG;
-                        DB_PRINT("%s.%d Invalid salt length %d, status = %d\n",
-                                 __FUNCTION__, __LINE__, pAttribute->length, status);
-                        goto exit;
-                    }
-                    saltLen = (CK_ULONG) *((ubyte4 *)(pAttribute->pStructOfType));
-                    saltProvided = TRUE;
-                    break;
-
-                default:
-                    break;
+                if ((sizeof(ubyte4) != pAttribute->length) ||
+                        (NULL == pAttribute->pStructOfType))
+                {
+                    status = ERR_INVALID_ARG;
+                    DB_PRINT("%s.%d Invalid salt length %d, status = %d\n",
+                                __FUNCTION__, __LINE__, pAttribute->length, status);
+                    goto exit;
+                }
+                saltLen = (CK_ULONG) *((ubyte4 *)(pAttribute->pStructOfType));
+                saltProvided = TRUE;
             }
 
             pAttribute++;
@@ -4511,23 +4499,18 @@ MSTATUS SMP_API(PKCS11, signBuffer,
         while (listCount < pSignatureAttributes->listLen)
         {
             /* handle parameters we need */
-            switch (pAttribute->type)
+            if (TAP_ATTR_SALT_LEN == pAttribute->type)
             {
-                case TAP_ATTR_SALT_LEN:
-                    if ((sizeof(ubyte4) != pAttribute->length) ||
-                            (NULL == pAttribute->pStructOfType))
-                    {
-                        status = ERR_INVALID_ARG;
-                        DB_PRINT("%s.%d Invalid salt length %d, status = %d\n",
-                                 __FUNCTION__, __LINE__, pAttribute->length, status);
-                        goto exit;
-                    }
-                    saltLen = (CK_ULONG) *((ubyte4 *)(pAttribute->pStructOfType));
-                    saltProvided = TRUE;
-                    break;
-
-                default:
-                    break;
+                if ((sizeof(ubyte4) != pAttribute->length) ||
+                        (NULL == pAttribute->pStructOfType))
+                {
+                    status = ERR_INVALID_ARG;
+                    DB_PRINT("%s.%d Invalid salt length %d, status = %d\n",
+                                __FUNCTION__, __LINE__, pAttribute->length, status);
+                    goto exit;
+                }
+                saltLen = (CK_ULONG) *((ubyte4 *)(pAttribute->pStructOfType));
+                saltProvided = TRUE;
             }
 
             pAttribute++;
@@ -10297,7 +10280,6 @@ MSTATUS SMP_API(PKCS11, createObject,
     TAP_SYM_KEY_MODE symMode = TAP_SYM_KEY_MODE_CTR;
     TAP_HASH_ALG hashAlg = TAP_HASH_ALG_SHA256;
     Pkcs11_Object* pNewObject = NULL;
-    CK_ULONG keyId = 0;
     CK_BBOOL isTrue = TRUE;
     CK_BBOOL token = TRUE;
     CK_BBOOL decryptUsage = FALSE;
@@ -11495,8 +11477,6 @@ MSTATUS SMP_API(PKCS11,importDuplicateKey,
     TAP_Attribute *pAttribute = NULL;
     ubyte4 numAttrs = 4;
     ubyte4 count = 0;
-    CK_ULONG keyId = 0;
-    CK_BBOOL isTrue = TRUE;
     CK_BBOOL token = TRUE;
     CK_BBOOL decryptUsage = FALSE;
     CK_BBOOL signUsage = FALSE;
@@ -11743,28 +11723,23 @@ MSTATUS SMP_API(PKCS11,importDuplicateKey,
             }
     }
 
-    switch(keyAlgorithm)
+    if(TAP_KEY_ALGORITHM_AES == keyAlgorithm)
     {
-        case TAP_KEY_ALGORITHM_AES:
-        {
-            keyType = CKK_AES;
-            objClass = CKO_SECRET_KEY;
+        keyType = CKK_AES;
+        objClass = CKO_SECRET_KEY;
 
-            INSERT_ATTRIBUTE(keyTemplate[numAttrs], CKA_ENCRYPT, &decryptUsage, sizeof(decryptUsage));
-            numAttrs++;
-            INSERT_ATTRIBUTE(keyTemplate[numAttrs], CKA_ENCRYPT, &decryptUsage, sizeof(decryptUsage));
-            numAttrs++;
-            INSERT_ATTRIBUTE(keyTemplate[numAttrs], CKA_KEY_TYPE, &keyType, sizeof(keyType));
-            numAttrs++;
-        }
-        break;
-
-        default:
-            {
-                status = ERR_INVALID_INPUT;
-                DB_PRINT("%s.%d Invalid key type for unwrap\n", __FUNCTION__,__LINE__);
-                goto exit;
-            }
+        INSERT_ATTRIBUTE(keyTemplate[numAttrs], CKA_ENCRYPT, &decryptUsage, sizeof(decryptUsage));
+        numAttrs++;
+        INSERT_ATTRIBUTE(keyTemplate[numAttrs], CKA_ENCRYPT, &decryptUsage, sizeof(decryptUsage));
+        numAttrs++;
+        INSERT_ATTRIBUTE(keyTemplate[numAttrs], CKA_KEY_TYPE, &keyType, sizeof(keyType));
+        numAttrs++;
+    }
+    else
+    {
+        status = ERR_INVALID_INPUT;
+        DB_PRINT("%s.%d Invalid key type for unwrap\n", __FUNCTION__,__LINE__);
+        goto exit;
     }
 
     if (OK != (status = DIGI_MALLOC((void**)&pNewObject, sizeof(Pkcs11_Object))))

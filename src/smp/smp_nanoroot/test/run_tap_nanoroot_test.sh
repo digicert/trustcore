@@ -393,9 +393,9 @@ test_rsa_signatures() {
     print_header "Testing RSA Signature Operations (2K, 3K, 4K)"
     
     local -a rsa_tests=(
-        "2K:100000002:1:sha256"
-        "3K:100000003:1:sha256"
-        "4K:100000004:2:sha512"
+        "2K:1000002:1:sha256"
+        "3K:1000003:1:sha256"
+        "4K:1000004:2:sha512"
     )
     
     for test_config in "${rsa_tests[@]}"; do
@@ -435,7 +435,7 @@ test_rsa8k_signatures() {
     print_header "Testing RSA Signature Operations (8K)"
     
     local key_size="8K"
-    local key_id="100000005"
+    local key_id="1000005"
     local hash_type="2"
     local openssl_hash="sha512"
 
@@ -472,9 +472,9 @@ test_mldsa_signatures() {
     print_header "Testing Post-Quantum MLDSA Signature Operations"
     
     local -a mldsa_tests=(
-        "44:200000001"
-        "65:200000002"
-        "87:200000003"
+        "44:2000001"
+        "65:2000002"
+        "87:2000003"
     )
     
     for test_config in "${mldsa_tests[@]}"; do
@@ -505,9 +505,9 @@ test_ecc_signatures() {
     print_header "Testing ECC Signature Operations"
     
     local -a ecc_tests=(
-        "256:0x300000001:1:sha256"
-        "384:0x300000002:1:sha256"
-        "521:0x300000003:2:sha512"
+        "256:0x3000001:1:sha256"
+        "384:0x3000002:1:sha256"
+        "521:0x3000003:2:sha512"
     )
     
     for test_config in "${ecc_tests[@]}"; do

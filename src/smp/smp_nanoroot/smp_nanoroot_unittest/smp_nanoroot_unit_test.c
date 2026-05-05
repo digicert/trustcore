@@ -1917,12 +1917,12 @@ static void test_integration_sign_digest(void **state) {
     TAP_ModuleHandle moduleHandle = 0;
     TAP_TokenHandle tokenHandle = 0;
     TAP_ObjectHandle objectHandle = 0;
-    TAP_ObjectId keyIdIn = 0x100000002; /* RSA-2048 key ID */
+    TAP_ObjectId keyIdIn = 0x01000002; /* RSA-2048 key ID */
     TAP_ObjectId objectIdOut = 0;
     TAP_ObjectAttributes objAttr = {0};
     TAP_ObjectCapabilityAttributes objCapAttr = {0};
     TAP_Attribute keyIdAttr = {0};
-    ubyte keyIdBytes[8];
+    ubyte keyIdBytes[4];
     TAP_Buffer keyIdBuffer = {0};
     TAP_Signature *signature = NULL;
     TAP_Buffer digest = {0};
@@ -1978,12 +1978,12 @@ static void test_integration_sign_digest(void **state) {
     }
     
     /* Prepare key ID attribute with little-endian bytes */
-    for (ubyte4 i = 0; i < sizeof(ubyte8); i++) {
+    for (ubyte4 i = 0; i < sizeof(ubyte4); i++) {
         keyIdBytes[i] = (ubyte)((keyIdIn >> (8 * i)) & 0xFF);
     }
     
     keyIdBuffer.pBuffer = keyIdBytes;
-    keyIdBuffer.bufferLen = sizeof(ubyte8);
+    keyIdBuffer.bufferLen = sizeof(ubyte4);
     
     keyIdAttr.type = TAP_ATTR_OBJECT_ID_BYTESTRING;
     keyIdAttr.length = sizeof(TAP_Buffer);
@@ -2048,12 +2048,12 @@ static void test_integration_sign_buffer(void **state) {
     TAP_ModuleHandle moduleHandle = 0;
     TAP_TokenHandle tokenHandle = 0;
     TAP_ObjectHandle objectHandle = 0;
-    TAP_ObjectId keyIdIn = 0x100000002; /* RSA-2048 key ID */
+    TAP_ObjectId keyIdIn = 0x01000002; /* RSA-2048 key ID */
     TAP_ObjectId objectIdOut = 0;
     TAP_ObjectAttributes objAttr = {0};
     TAP_ObjectCapabilityAttributes objCapAttr = {0};
     TAP_Attribute keyIdAttr = {0};
-    ubyte keyIdBytes[8];
+    ubyte keyIdBytes[4];
     TAP_Buffer keyIdBuffer = {0};
     TAP_Signature *signature = NULL;
     TAP_Buffer buffer = {0};
@@ -2111,11 +2111,11 @@ static void test_integration_sign_buffer(void **state) {
     }
     
     /* Prepare key ID attribute with little-endian bytes */
-    for (ubyte4 i = 0; i < sizeof(ubyte8); i++) {
+    for (ubyte4 i = 0; i < sizeof(ubyte4); i++) {
         keyIdBytes[i] = (ubyte)((keyIdIn >> (8 * i)) & 0xFF);
     }
     keyIdBuffer.pBuffer = keyIdBytes;
-    keyIdBuffer.bufferLen = sizeof(ubyte8);
+    keyIdBuffer.bufferLen = sizeof(ubyte4);
     
     keyIdAttr.type = TAP_ATTR_OBJECT_ID_BYTESTRING;
     keyIdAttr.length = sizeof(TAP_Buffer);
@@ -2186,13 +2186,13 @@ static void test_smp_cc_sign_buffer_rsa2k(void **state)
     ubyte4 i;
     TAP_ConfigInfo configInfo = {0};
     const char *configPath = get_config_path();
-    TAP_ObjectId keyIdIn = 0x100000002; /* RSA-2048 key ID */
+    TAP_ObjectId keyIdIn = 0x01000002; /* RSA-2048 key ID */
     TAP_ObjectId keyIdOut = 0;
     TAP_ObjectCapabilityAttributes objCapAttr = {0};
     TAP_ObjectAttributes objAttr = {0};
     TAP_Attribute keyAttrList[1] = {0};
     TAP_Buffer keyIdBuffer = {0};
-    ubyte keyIdBytes[8] = {0};
+    ubyte keyIdBytes[4] = {0};
 
     /* Check if config file is available */
     if (!configPath) {
@@ -2255,11 +2255,11 @@ static void test_smp_cc_sign_buffer_rsa2k(void **state)
     }
 
     /* Setup key ID buffer (little-endian format) */
-    for (i = 0; i < sizeof(ubyte8); i++) {
+    for (i = 0; i < sizeof(ubyte4); i++) {
         keyIdBytes[i] = (ubyte)((keyIdIn >> (8 * i)) & 0xFF);
     }
     keyIdBuffer.pBuffer = keyIdBytes;
-    keyIdBuffer.bufferLen = sizeof(ubyte8);
+    keyIdBuffer.bufferLen = sizeof(ubyte4);
 
     /* Setup object capability attributes with key ID */
     keyAttrList[0].type = TAP_ATTR_OBJECT_ID_BYTESTRING;
@@ -2343,13 +2343,13 @@ static void test_smp_cc_sign_digest_rsa2k(void **state)
     TAP_Signature *pSignature = NULL;
     TAP_ConfigInfo configInfo = {0};
     const char *configPath = get_config_path();
-    TAP_ObjectId keyIdIn = 0x100000002; /* RSA-2048 key ID */
+    TAP_ObjectId keyIdIn = 0x01000002; /* RSA-2048 key ID */
     TAP_ObjectId keyIdOut = 0;
     TAP_ObjectCapabilityAttributes objCapAttr = {0};
     TAP_ObjectAttributes objAttr = {0};
     TAP_Attribute keyAttrList[1] = {0};
     TAP_Buffer keyIdBuffer = {0};
-    ubyte keyIdBytes[8] = {0};
+    ubyte keyIdBytes[4] = {0};
     ubyte4 i;
     /* Pre-computed SHA-256 digest for testing */
     ubyte sha256Digest[32] = {
@@ -2416,11 +2416,11 @@ static void test_smp_cc_sign_digest_rsa2k(void **state)
     }
 
     /* Setup key ID buffer (little-endian format) */
-    for (i = 0; i < sizeof(ubyte8); i++) {
+    for (i = 0; i < sizeof(ubyte4); i++) {
         keyIdBytes[i] = (ubyte)((keyIdIn >> (8 * i)) & 0xFF);
     }
     keyIdBuffer.pBuffer = keyIdBytes;
-    keyIdBuffer.bufferLen = sizeof(ubyte8);
+    keyIdBuffer.bufferLen = sizeof(ubyte4);
 
     /* Setup object capability attributes with key ID */
     keyAttrList[0].type = TAP_ATTR_OBJECT_ID_BYTESTRING;

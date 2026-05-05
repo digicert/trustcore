@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * Adapted from the public domain implementation in
  *  <https://github.com/floodyberry/poly1305-donna>
  */

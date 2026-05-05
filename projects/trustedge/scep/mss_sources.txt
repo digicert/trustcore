@@ -1,0 +1,5 @@
+MSS_SRC_DIR/trustedge/scep/trustedge_scep_context.c
+MSS_SRC_DIR/trustedge/scep/trustedge_scep_message.c
+MSS_SRC_DIR/trustedge/scep/trustedge_scep_api.c
+MSS_SRC_DIR/trustedge/scep/trustedge_scep_client.c
+MSS_SRC_DIR/trustedge/scep/trustedge_scep.c

@@ -1,0 +1,21 @@
+[Unit]
+Description=TrustEdge agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=valgrind --tool=memcheck --leak-check=yes --log-file=/var/log/trustedge.valgrind.log /usr/bin/trustedge --daemon
+KillMode=process
+PIDFile=/var/run/trustedge.pid
+TimeoutStopSec=60
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=trustedge
+Restart=always
+RestartSec=60
+User=root
+MemoryAccounting=yes
+CPUAccounting=yes
+
+[Install]
+WantedBy=default.target

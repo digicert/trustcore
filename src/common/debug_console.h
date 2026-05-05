@@ -2,6 +2,7 @@
  * @file  debug_console.h
  * @brief Mocana Debug Console Header
  *
+ *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
