@@ -14,6 +14,8 @@ function show_usage
   echo "   --fips            - Build with FIPS."
   echo "   --ipv6            - Build with IPV6 enabled."
   echo "   --process         - Build with process APIs."
+  echo "   --term            - Build with terminal APIs."
+  echo "   --signal          - Build with signal APIs."
   echo "   --libtype <static | shared> - Build a library either static type or shared type default is shared."
   echo "   --toolchain <rpi32 | rpi64 | bbb | android> - Specify the toolchain to be used"
   echo "                        rpi32     For Raspberry Pi 32-bit"
@@ -99,6 +101,14 @@ do
         --process)
             echo "Building with process APIs...";
             BUILD_OPTIONS+=" -DCM_ENABLE_PROCESS=ON"
+            ;;
+        --term)
+            echo "Building with terminal APIs...";
+            BUILD_OPTIONS+=" -DCM_ENABLE_TERM=ON"
+            ;;
+        --signal)
+            echo "Building with signal APIs...";
+            BUILD_OPTIONS+=" -DCM_ENABLE_SIGNAL=ON"
             ;;
         --mpart)
             echo "Building with memory partition enabled...";

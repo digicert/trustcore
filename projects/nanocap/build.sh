@@ -190,6 +190,6 @@ if [ ${OSI_BUILD} -eq 0 ] && [ ${BUILD_FOR_OSI} -eq 0 ]; then
     if [ $is_static_lib -eq 0 ]; then
         cp libs/${SHARED_LIB_NAME} ../../../bin/
     else
-        cp libnanocap.a ../../../bin_static/
+        cp libs/libnanocap.a ../../../bin_static/
     fi
 fi

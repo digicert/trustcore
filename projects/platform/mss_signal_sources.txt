@@ -1,0 +1,2 @@
+MSS_SRC_DIR/platform/linux_signal.c
+MSS_SRC_DIR/platform/win32_signal.c

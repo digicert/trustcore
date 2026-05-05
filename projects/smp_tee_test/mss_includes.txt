@@ -1,0 +1,3 @@
+MSS_SRC_DIR/common
+MSS_SRC_DIR/crypto
+MSS_SRC_DIR/smp/smp_tee

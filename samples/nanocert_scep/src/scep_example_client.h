@@ -2,6 +2,8 @@
  * @file  scep_example_client.h
  * @brief SCEP Example Client Sample Application Header File
  *
+ * SCEP Example Client Sample Application Header File
+ *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:

@@ -1,0 +1,2 @@
+MSS_SRC_DIR/platform/linux_term.c
+MSS_SRC_DIR/platform/win32_term.c

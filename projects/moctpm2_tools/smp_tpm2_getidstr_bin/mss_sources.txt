@@ -1,0 +1,1 @@
+MSS_SRC_DIR/smp/smp_tpm2/smp_test/getmoduleidstring.c

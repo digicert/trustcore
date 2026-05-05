@@ -1,0 +1,3 @@
+MSS_SRC_DIR/smp/smp_tee/smp_tee_api.c
+MSS_SRC_DIR/smp/smp_tee/smp_tee_util.c
+MSS_SRC_DIR/smp/smp_tee/smp_tee_interface.c

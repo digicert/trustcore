@@ -862,7 +862,7 @@ echo "Document to sign" > document.txt
     --infile document.txt \
     --sigfile signature.bin \
     --pubKey rsa_public_key.pem \
-    --keyId 0x100000002 \
+    --keyId 0x01000002 \
     --signBuffer \
     --hashType 1
 ```
@@ -879,7 +879,7 @@ export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
     --infile document.txt \
     --sigfile mldsa87_signature.bin \
     --pubKey mldsa87_public_key.pem \
-    --keyId 0x200000003 \
+    --keyId 0x02000003 \
     --signBuffer \
     --hashType 0
 ```
@@ -892,7 +892,8 @@ export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
 | `--infile`     | Input  | Yes      | Data file to sign (any file type, text or binary)                           |
 | `--sigfile`    | Output | Yes      | Digital signature output file (binary format, typically `.bin` or `.sig`)   |
 | `--pubKey`     | Output | Yes      | Public key output file (PEM format, `.pem` extension, auto-generated)       |
-| `--keyId`      | Input  | Yes      | Hexadecimal key identifier (required for sign/verify operations). Min: 9 chars, Max: 17 chars. Specifies cryptographic algorithm: RSA 2K-8K (`0x10000000X`), MLDSA (`0x20000000X`), ECC P-256/384/521 (`0x30000000X`). See supported algorithms table. |\n| `--signBuffer` | Flag   | Yes      | Operation mode flag indicating signature generation operation               |
+| `--keyId`      | Input  | Yes      | Hexadecimal key identifier (required for sign/verify operations). Accepted as hex with or without the `0x` prefix; zero-padded values such as `0x01000002`, `0x02000003`, and `0x03000001` are supported examples. Algorithm families use prefixes such as RSA 2K-8K (`0x0100000X`), MLDSA (`0x0200000X`), and ECC P-256/384/521 (`0x0300000X`). See supported algorithms table. |
+| `--signBuffer` | Flag   | Yes      | Operation mode flag indicating signature generation operation               |
 | `--hashType`   | Input  | Yes      | Hash algorithm code: `0` (none), `1` (SHA-256), `2` (SHA-512)              |
 
 **File Type Details:**
@@ -910,9 +911,12 @@ export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
 
 The `--keyId` parameter is a hexadecimal key identifier with the following characteristics:
 - **Format**: Hexadecimal string starting with `0x`
-- **Length**: Minimum 9 characters, Maximum 17 characters (including `0x` prefix)
+- **Length**: 10 characters (including `0x` prefix) representing a 4-byte (32-bit) key handle
 - **Purpose**: Identifies the cryptographic algorithm and key size for signature operations
-- **Validation**: Application validates the length is between MIN_KEY_ID_LEN (9) and MAX_KEY_ID_LEN (18)
+- **Structure**: `0xAABBBBCC` where:
+  - `AA` = Algorithm family (01=RSA, 02=MLDSA, 03=ECC)
+  - `BBBB` = Reserved/padding (typically 0000)
+  - `CC` = Key variant/size identifier
 
 **Supported Key Identifiers:**
 
@@ -920,16 +924,16 @@ The following hexadecimal key identifiers are supported (as defined in `tap_nano
 
 | Algorithm  | Key Size | Key ID        | Hash Type | Description |
 |------------|----------|---------------|-----------|-------------|
-| RSA        | 2048-bit | `0x100000002` | `1`       | RSA 2K with SHA-256 |
-| RSA        | 3072-bit | `0x100000003` | `1`       | RSA 3K with SHA-256 |
-| RSA        | 4096-bit | `0x100000004` | `2`       | RSA 4K with SHA-512 |
-| RSA        | 8192-bit | `0x100000005` | `2`       | RSA 8K with SHA-512 |
-| ECC P-256  | 256-bit  | `0x300000001` | `1`       | P-256 curve with SHA-256 |
-| ECC P-384  | 384-bit  | `0x300000002` | `1`       | P-384 curve with SHA-256 |
-| ECC P-521  | 521-bit  | `0x300000003` | `2`       | P-521 curve with SHA-512 |
-| MLDSA-44   | -        | `0x200000001` | `0`       | MLDSA44 (Post-Quantum) |
-| MLDSA-65   | -        | `0x200000002` | `0`       | MLDSA65 (Post-Quantum) |
-| MLDSA-87   | -        | `0x200000003` | `0`       | MLDSA87 (Post-Quantum) |
+| RSA        | 2048-bit | `0x01000002` | `1`       | RSA 2K with SHA-256 |
+| RSA        | 3072-bit | `0x01000003` | `1`       | RSA 3K with SHA-256 |
+| RSA        | 4096-bit | `0x01000004` | `2`       | RSA 4K with SHA-512 |
+| RSA        | 8192-bit | `0x01000005` | `2`       | RSA 8K with SHA-512 |
+| ECC P-256  | 256-bit  | `0x03000001` | `1`       | P-256 curve with SHA-256 |
+| ECC P-384  | 384-bit  | `0x03000002` | `1`       | P-384 curve with SHA-256 |
+| ECC P-521  | 521-bit  | `0x03000003` | `2`       | P-521 curve with SHA-512 |
+| MLDSA-44   | -        | `0x02000001` | `0`       | MLDSA44 (Post-Quantum) |
+| MLDSA-65   | -        | `0x02000002` | `0`       | MLDSA65 (Post-Quantum) |
+| MLDSA-87   | -        | `0x02000003` | `0`       | MLDSA87 (Post-Quantum) |
 
 **Supported Hash Algorithms:**
 
@@ -983,7 +987,7 @@ export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
     --infile document.txt \
     --sigfile signature.bin \
     --pubKey rsa_public_key.pem \
-    --keyId 0x100000002 \
+    --keyId 0x01000002 \
     --verify \
     --hashType 1
 ```
@@ -1000,7 +1004,7 @@ export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
     --infile document.txt \
     --sigfile mldsa87_signature.bin \
     --pubKey mldsa87_public_key.pem \
-    --keyId 0x200000003 \
+    --keyId 0x02000003 \
     --verify \
     --hashType 0
 ```
@@ -1136,7 +1140,7 @@ echo "Document to sign" > document.txt
     --infile document.txt \
     --sigfile signature.bin \
     --pubKey rsa_public_key.pem \
-    --keyId 0x100000002 \
+    --keyId 0x01000002 \
     --signBuffer \
     --hashType 1
 
@@ -1146,7 +1150,7 @@ echo "Document to sign" > document.txt
     --infile document.txt \
     --sigfile signature.bin \
     --pubKey rsa_public_key.pem \
-    --keyId 0x100000002 \
+    --keyId 0x01000002 \
     --verify \
     --hashType 1
 ```
@@ -1222,13 +1226,13 @@ echo "Document to sign with MLDSA-87" > /opt/digicert/document.txt
     --infile /opt/digicert/document.txt \
     --sigfile /opt/digicert/mldsa87_signature.bin \
     --pubKey /opt/digicert/mldsa87_public_key.pem \
-    --keyId 0x200000003 \
+    --keyId 0x02000003 \
     --signBuffer \
     --hashType 0
 ```
 
 **Parameters:**
-- `--keyId 0x200000003`: MLDSA-87 algorithm identifier
+- `--keyId 0x02000003`: MLDSA-87 algorithm identifier
 - `--hashType 0`: No pre-hashing (MLDSA performs internal hashing)
 - Public key is automatically generated and saved to the specified path
 
@@ -1240,7 +1244,7 @@ echo "Document to sign with MLDSA-87" > /opt/digicert/document.txt
     --infile /opt/digicert/document.txt \
     --sigfile /opt/digicert/mldsa87_signature.bin \
     --pubKey /opt/digicert/mldsa87_public_key.pem \
-    --keyId 0x200000003 \
+    --keyId 0x02000003 \
     --verify \
     --hashType 0
 ```

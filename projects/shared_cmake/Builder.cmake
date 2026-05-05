@@ -2,6 +2,7 @@
 if(NOT DEFINED MSS_DIR)
     set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 endif()
+
 # Set mss source directory
 set(MSS_SRC_DIR "${MSS_DIR}/src")
 # Set mss unittest directory
@@ -12,19 +13,21 @@ if(WIN32)
     set(MSS_BIN_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32")
     set(MSS_BIN_STATIC_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32_static")
 else()
-    if(BUILD_FOR_OSI)
-        set(MSS_BIN_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
-        set(MSS_BIN_STATIC_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
-    else()
-        set(MSS_BIN_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
-        set(MSS_BIN_STATIC_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_static")
-    endif()
+    set(MSS_BIN_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
+    set(MSS_BIN_STATIC_DIR_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_static")
 endif()
 if("STATIC" STREQUAL "${LIB_TYPE}")
     set(MSS_BIN_DIR "${MSS_BIN_STATIC_DIR_OUTPUT}")
     set(LINK_LIBS_IN_BIN_STATIC "ON")
 else()
     set(MSS_BIN_DIR "${MSS_BIN_DIR_OUTPUT}")
+endif()
+
+# Lib dir is different for osi
+if(BUILD_FOR_OSI)
+  set(LIB_DIR "${MSS_DIR}/lib")
+else()
+  set(LIB_DIR "${MSS_BIN_DIR}")
 endif()
 
 # Compile static libraries with position independent code (-fPIC), required for
@@ -47,12 +50,19 @@ endfunction()
 
 function(builder_add_flags FLAGS_VAR)
     message("----------------")
+    set(TEMP_FLAGS "${${FLAGS_VAR}}")
     foreach(FLAGS_FILE IN LISTS ARGN)
         message("${FLAGS_VAR} - adding flags in ${FLAGS_FILE}")
         file(STRINGS ${FLAGS_FILE} FLAGS_TO_ADD)
-        set(FLAGS_LIST "${FLAGS_LIST} ${FLAGS_TO_ADD}")
+        foreach(FLAG ${FLAGS_TO_ADD})
+            string(STRIP "${FLAG}" STRIPPED_FLAG)
+            if(NOT "${STRIPPED_FLAG}" STREQUAL "")
+                list(APPEND TEMP_FLAGS "${STRIPPED_FLAG}")
+            endif()
+        endforeach()
     endforeach()
-    set(${FLAGS_VAR} "${${FLAGS_VAR}} ${FLAGS_LIST}" PARENT_SCOPE)
+    # Use unquoted to preserve list semantics
+    set(${FLAGS_VAR} ${TEMP_FLAGS} PARENT_SCOPE)
 endfunction()
 
 function(builder_add_flags_to_files FLAGS_VAR FILES_VAR)
@@ -69,11 +79,21 @@ endfunction()
 
 function(builder_finalize_flags FLAGS_VAR)
     message("----------------")
+    set(FINAL_FLAGS "")
     foreach(FLAG ${${FLAGS_VAR}})
-        string(STRIP "${STRIPPED_FLAGS} ${FLAG}" STRIPPED_FLAGS)
+        string(STRIP "${FLAG}" STRIPPED_FLAG)
+        if(NOT "${STRIPPED_FLAG}" STREQUAL "")
+            # Ensure each define has proper -D prefix for add_definitions()
+            string(REGEX REPLACE "^-D" "" CLEANED_FLAG "${STRIPPED_FLAG}")
+            if(NOT "${CLEANED_FLAG}" STREQUAL "")
+                # Add -D prefix for CMake add_definitions compatibility
+                list(APPEND FINAL_FLAGS "-D${CLEANED_FLAG}")
+            endif()
+        endif()
     endforeach()
-    set(${FLAGS_VAR} "${STRIPPED_FLAGS}" PARENT_SCOPE)
-    message("${FLAGS_VAR} = ${${FLAGS_VAR}}")
+    # Don't quote FINAL_FLAGS - let CMake treat it as a list for add_definitions()
+    set(${FLAGS_VAR} ${FINAL_FLAGS} PARENT_SCOPE)
+    message("${FLAGS_VAR} = ${FINAL_FLAGS}")
 endfunction()
 
 function(builder_add_includes INCLUDE_VAR)
@@ -118,7 +138,11 @@ function(builder_add_library_link LINK_VAR)
     message("----------------")
     foreach(LINK_LIB IN LISTS ARGN)
         message("${LINK_VAR} - linking against ${LINK_LIB}")
-        locate_lib(CUR_LINK_LIB ${LINK_LIB})
+        if(BUILD_FOR_OSI)
+            set(CUR_LINK_LIB  "${LIB_DIR}/lib${LINK_LIB}.so")
+        else()
+            locate_lib(CUR_LINK_LIB ${LINK_LIB})
+        endif()
         set(LINK_LIST ${LINK_LIST} ${CUR_LINK_LIB})
     endforeach()
     set(${LINK_VAR} ${${LINK_VAR}} ${LINK_LIST} PARENT_SCOPE)
@@ -130,7 +154,11 @@ function(builder_add_library_link_static LINK_VAR)
     message("----------------")
     foreach(LINK_LIB IN LISTS ARGN)
         message("${LINK_VAR} - linking against ${LINK_LIB}")
-        locate_lib(CUR_LINK_LIB ${LINK_LIB})
+        if(BUILD_FOR_OSI)
+            set(CUR_LINK_LIB  "${LIB_DIR}/lib${LINK_LIB}.a")
+        else()
+            locate_lib(CUR_LINK_LIB ${LINK_LIB})
+        endif()
         set(LINK_LIST ${LINK_LIST} ${CUR_LINK_LIB})
     endforeach()
     set(${LINK_VAR} ${${LINK_VAR}} ${LINK_LIST} PARENT_SCOPE)
@@ -150,15 +178,21 @@ function(builder_finalize_target)
         get_target_property(TARGET_TYPE ${CUR_TARGET} TYPE)
         if(TARGET_TYPE STREQUAL "EXECUTABLE")
             message("${CUR_TARGET} - Finalizing executable")
-        else()
-            message("${CUR_TARGET} - Finalizing library")
-        endif()
-        add_custom_command(
-            TARGET ${CUR_TARGET}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
+            add_custom_command(
+              TARGET ${CUR_TARGET}
+              POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E copy
                 $<TARGET_FILE:${CUR_TARGET}>
                 ${MSS_BIN_DIR})
+        else()
+            message("${CUR_TARGET} - Finalizing library")
+            add_custom_command(
+              TARGET ${CUR_TARGET}
+              POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:${CUR_TARGET}>
+                ${LIB_DIR})
+        endif()
     endforeach()
 endfunction()
 
