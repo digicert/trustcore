@@ -351,12 +351,23 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_deltaConstMS           WIN32_deltaConstMS
 #define RTOS_timerAddMS             WIN32_timerAddMS
 #define RTOS_sleepMS                WIN32_sleepMS
+#define RTOS_sleepCheckStatusMS     WIN32_sleepCheckStatusMS
+#define RTOS_processExecute         WIN32_processExecute
+#define RTOS_processExecuteWithArg  WIN32_processExecuteWithArg
 #define RTOS_createThread           WIN32_createThread
 #define RTOS_destroyThread          WIN32_destroyThread
 #define RTOS_currentThreadId        WIN32_currentThreadId
 #define RTOS_timeGMT                WIN32_timeGMT
 #define RTOS_getHwAddr              WIN32_getHwAddr
 #define RTOS_getHwAddrByIfname      WIN32_getHwAddrByIfname
+
+/* Semaphore functions - map to mutex for basic functionality */
+#define RTOS_semCreate              WIN32_semCreate
+#define RTOS_semWait                WIN32_semWait
+#define RTOS_semTimedWait           WIN32_semTimedWait
+#define RTOS_semTryWait             WIN32_semTryWait
+#define RTOS_semSignal              WIN32_semSignal
+#define RTOS_semFree                WIN32_semFree
 
 
 #elif defined __VXWORKS_RTOS__

@@ -1,0 +1,1 @@
+MSS_SRC_DIR/tap/tools/tpm2/moctpm2_selftest.c

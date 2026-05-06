@@ -321,6 +321,7 @@ typedef struct
     TAP_Buffer *pKeyHandle;
     ubyte8 keyNonceHandle;
     ubyte8 certHandle;
+    ubyte4 provider;
 } CertEnrollTAPAttributes;
 
 MOC_EXTERN MSTATUS CERT_ENROLL_parseTAPAttributes(

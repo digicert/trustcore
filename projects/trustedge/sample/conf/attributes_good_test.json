@@ -1,0 +1,40 @@
+{
+    "attributes": [
+        {
+            "attribute_name": "operating_system",
+            "attribute_value": {
+                "type": "ENV",
+                "variable_name": "OS_SYSTEM"
+            }
+        },
+        {
+            "attribute_name": "serial_number",
+            "attribute_value": {
+                "type": "program",
+                "path": "projects/trustedge/sample/scripts/serial_number.sh"
+            }
+        },
+        {
+            "attribute_names": [
+                "location",
+                "ip_address"
+            ],
+            "attribute_value": {
+                "type": "program",
+                "path": "projects/trustedge/sample/scripts/get_attributes.sh",
+                "argument": "location ip_address",
+                "output_format": "JSON"
+            }
+        },
+        {
+            "attribute_names": [
+                "hardware_model"
+            ],
+            "attribute_value": {
+                "type": "program",
+                "path": "projects/trustedge/sample/scripts/hardware_model.sh",
+                "output_format": "JSON"
+            }
+        }
+    ]
+}

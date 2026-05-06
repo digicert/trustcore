@@ -1,0 +1,17 @@
+{
+    "divisionId": "0c56d835-c1c5-4862-963f-5943e9ed5480",
+    "accountId": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "deviceId": "abd104cd-54c4-49a8-b9be-db7edc576789",
+    "status": "PROVISIONED",
+    "createdOn": "2024-04-23T18:25:43Z",
+    "updatedOn": "2024-04-23T18:25:43Z",
+    "pendingPolicies": [
+        {
+            "deviceGroupId": "c30853d1-1961-4507-a416-fac2b63585c5",
+            "policyType": "UPDATE",
+            "policyId": "REL_9343cc63-ca25-4f3c-a180-3c4d18bb8bcc",
+            "deploymentId": "6a2b9d4e-2d1c-4f7a-a5b0-8e3f6c7d9a0b",
+            "priority": 1
+        }
+    ]
+}

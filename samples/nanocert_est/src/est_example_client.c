@@ -2,6 +2,8 @@
  * @file  est_example_client.c
  * @brief EST Example Client Sample Application
  *
+ * EST Example Client Sample Application
+ *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
@@ -22,14 +24,10 @@
 #ifndef __RTOS_FREERTOS__
 #ifndef __RTOS_AZURE__
 #include <unistd.h>
-#ifndef __RTOS_VXWORKS__
-#include <termios.h>
-#endif /* !__RTOS_VXWORKS__ */
 #endif /* !__RTOS_AZURE__*/
 #endif /* !__RTOS_FREERTOS__*/
 #else
 #include <Windows.h>
-#include <conio.h>
 #endif /* !__RTOS_WIN32__ */
 
 #ifdef __RTOS_VXWORKS__
@@ -63,6 +61,7 @@
 #include "../common/vlong.h"
 #include "../common/random.h"
 #include "../common/utils.h"
+#include "../common/mterm.h"
 #include "../crypto/hw_accel.h"
 #include "../common/base64.h"
 #include "../common/datetime.h"
@@ -1026,82 +1025,6 @@ EST_EXAMPLE_displayHelp(char *prog)
     return;
 }
 
-#if (!defined(__RTOS_WIN32__) && !defined(__RTOS_VXWORKS__) && !defined(__RTOS_FREERTOS__) && !defined(__RTOS_AZURE__))
-static ssize_t getPasswordFromUser (sbyte **password, size_t passwdLength, int mask)
-{
-    FILE *stdinFp = stdin;
-    size_t idx = 0;         /* index, number of chars in read   */
-    int c = 0;
-    struct termios oldKbdMode;    /* orig keyboard settings   */
-    struct termios newKbdMode;
-
-    if (!password || !passwdLength || !stdinFp)
-    {
-        return -1;
-    }
-
-    if (tcgetattr (0, &oldKbdMode))
-    {   /* save orig settings   */
-        verbosePrintNL(ESTC_VERBOSE_LEVEL_INFO, "error: tcgetattr failed.");
-        return -1;
-    }   /* copy old to new */
-    DIGI_MEMCPY (&newKbdMode, &oldKbdMode, sizeof(struct termios));
-
-    newKbdMode.c_lflag &= ~(ICANON | ECHO);  /* new kbd flags */
-    newKbdMode.c_cc[VTIME] = 0;
-    newKbdMode.c_cc[VMIN] = 1;
-    if (tcsetattr (0, TCSANOW, &newKbdMode))
-    {
-        verbosePrintNL(ESTC_VERBOSE_LEVEL_INFO, "error: tcsetattr failed.");
-        return -1;
-    }
-
-    /* read chars from stdinFp, mask if valid char specified */
-    while (((c = fgetc (stdinFp)) != '\n' && c != EOF && idx < passwdLength - 1) ||
-            (idx == passwdLength - 1 && c == 127))
-    {
-        if (c != 127)
-        {
-            /* Enforce strict buffer bounds validation */
-            if (idx >= passwdLength - 1)
-            {
-                break;
-            }
-            if (31 < mask && mask < 127)
-            {  /* valid ascii char */
-                fputc (mask, stdout);
-            }
-            (*password)[idx++] = c;
-        }
-        else if (idx > 0)
-        {   /* handle backspace (del)   */
-            if (31 < mask && mask < 127)
-            {
-                fputc (0x8, stdout);
-                fputc (' ', stdout);
-                fputc (0x8, stdout);
-            }
-            (*password)[--idx] = 0;
-        }
-    }
-    (*password)[idx] = 0;
-
-    /* reset original keyboard  */
-    if (tcsetattr (0, TCSANOW, &oldKbdMode))
-    {
-        verbosePrintNL(ESTC_VERBOSE_LEVEL_INFO, "error: tcsetattr failed.");
-        return -1;
-    }
-
-    if (idx == passwdLength - 1 && c != '\n')
-    {   /* warn if password truncated */
-        verbosePrintNL(ESTC_VERBOSE_LEVEL_INFO, "warning: password truncated");
-    }
-
-    return idx;
-}
-#endif
-
 
 static void
 setStringParameter(sbyte **ppParam, char *pValue)
@@ -1806,7 +1729,9 @@ static MSTATUS EST_EXAMPLE_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswo
 
     printf("Enter %s pass phrase for protecting the %s: ", pPwName, pFileName);
 
-    if (getPasswordFromUser(&tempPassword, MAX_PASSWORD_LEN + 1, '*') < 0)
+#if defined(__RTOS_WIN32__) || defined(__RTOS_LINUX__)
+    if (TERM_promptPassword(tempPassword, MAX_PASSWORD_LEN + 1, '*') < 0)
+#endif
     {
         status = ERR_NULL_POINTER;
         goto exit;
@@ -1840,7 +1765,9 @@ static MSTATUS EST_EXAMPLE_getPassword(ubyte **ppRetPassword, ubyte4 *pRetPasswo
 
         printf("Re-enter %s pass phrase for protecting the %s: ", pPwName, pFileName);
 
-        if (getPasswordFromUser(&tempPassword, MAX_PASSWORD_LEN + 1, '*') < 0)
+#if defined(__RTOS_WIN32__) || defined(__RTOS_LINUX__)
+        if (TERM_promptPassword(tempPassword, MAX_PASSWORD_LEN + 1, '*') < 0)
+#endif
         {
             status = ERR_NULL_POINTER;
             goto exit;
@@ -2781,17 +2708,8 @@ EST_CLIENT_getArgs(int argc, char **pArgv)
                 DIGI_MEMSET((ubyte *)pUserPasswd, '\0', USER_PASSWORD_LENGTH);
                 passwdLoopCount++;
                 printf ("\nPlease enter password for the user \"%s\" \n", estc_User);
-#if (!defined(__RTOS_WIN32__) && !defined(__RTOS_VXWORKS__) && !defined(__RTOS_FREERTOS__) && !defined(__RTOS_AZURE__))
-                passwdLen = getPasswordFromUser(&pUserPasswd, USER_PASSWORD_LENGTH, '*');
-#elif defined(__RTOS_VXWORKS__) || defined(__RTOS_FREERTOS__) || defined(__RTOS_AZURE__)
-#else
-				while ((c = (char)_getch()) != 13 && idx < (USER_PASSWORD_LENGTH - 1))
-				{
-					pUserPasswd[idx++] = c;
-					printf("*");
-				}
-				pUserPasswd[idx] = 0;
-				passwdLen = idx;
+#if defined(__RTOS_WIN32__) || defined(__RTOS_LINUX__)
+                passwdLen = TERM_promptPassword(pUserPasswd, USER_PASSWORD_LENGTH, '*');
 #endif
                 verbosePrintNL(ESTC_VERBOSE_LEVEL_DEFAULT, ""); /* Just to move cursor to next line */
                 if (passwdLen > 0)

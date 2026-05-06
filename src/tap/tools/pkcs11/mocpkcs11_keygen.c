@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * @file       mocpkcs11_keygen.c
  * @brief      Utility to generate RSA/ECC key pairs using PKCS11
  * @details    This utility generates RSA or ECC key pairs in a PKCS11 token
@@ -64,7 +65,7 @@
     } while (0)
 
 #ifndef TAP_TEST_CONFIG_PATH
-#define TAP_TEST_CONFIG_PATH "/etc/mocana/pkcs11_smp.conf"
+#define TAP_TEST_CONFIG_PATH "/etc/digicert/pkcs11_smp.conf"
 #endif
 
 #ifndef TAP_TEST_PROVIDER

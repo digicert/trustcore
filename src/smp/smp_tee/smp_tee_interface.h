@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  *@file      smp_tee_interface.h
  *@brief     NanoSMP provider Interface that an application(NanoTAP) will use to
  *           communicate/manage Tee SMP module plugin.

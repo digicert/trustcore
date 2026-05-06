@@ -1,0 +1,32 @@
+{
+  "attributes": [
+      {
+          "attribute_name": "serial_number",
+          "attribute_value": {
+              "type": "program",
+              "path": "/etc/digicert/scripts/customer_script.sh"
+          }
+      },
+      {
+          "attribute_name": "home_dir",
+          "attribute_value": {
+              "type": "ENV",
+              "variable_name": "HOME"
+          }
+      },
+      {
+          "attribute_name": [
+              "location",
+              "cpu_id",
+              "hardware_model",
+              "operating_system"
+          ],
+          "attribute_value": {
+              "type": "program",
+              "path": "/etc/digicert/scripts/customer_script.sh",
+              "output_format": "JSON",
+              "argument": "-v"
+          }
+      }
+  ]
+}

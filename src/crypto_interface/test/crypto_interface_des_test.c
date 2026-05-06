@@ -45,6 +45,8 @@ static void *gpHwAccelCtx = NULL;
 #endif
 #endif
 
+#include <stdio.h>
+
 /*
  * Plain text and cipher text buffers are
  * the size of the largest test passed
@@ -1250,6 +1252,10 @@ int crypto_interface_des_test_init()
         goto exit;
     }
 
+#ifdef __ENABLE_DIGICERT_SOFTHSM_TEST_SET__
+    /* SoftHSM2 does not support single DES (only 3DES/TDES) - skip DES TAP tests */
+    printf("Skipping DES TAP tests - SoftHSM2 only supports 3DES, not single DES\n");
+#else
     errorCount = (errorCount + tapTestCbc(FALSE));
     errorCount = (errorCount + tapTestEcb(FALSE));
     
@@ -1261,6 +1267,7 @@ int crypto_interface_des_test_init()
 
     errorCount += tapKATEcb(TRUE);
     errorCount += tapKATEcb(FALSE);
+#endif /* __ENABLE_DIGICERT_SOFTHSM_TEST_SET__ */
 
 #endif /* __ENABLE_DIGICERT_TAP__ */
 

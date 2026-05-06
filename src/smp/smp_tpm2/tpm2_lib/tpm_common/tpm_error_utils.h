@@ -17,6 +17,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * @flags
  *  To enable this file's functions, the following flags must be defined in moptions.h:
  *  + \c \__ENABLE_DIGICERT_TPM2__

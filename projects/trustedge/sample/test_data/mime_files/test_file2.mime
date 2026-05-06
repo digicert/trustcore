@@ -1,0 +1,17 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=DeviceTM_Artifact_Download_Boundary
+
+--DeviceTM_Artifact_Download_Boundary
+Content-Description: Artifact JSON
+Content-Disposition: form-data; name="Artifact JSON"
+Content-Type: application/json; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+{
+  "artifactId" : "d9013cba-fc66-4fe6-a461-6242055b8359",
+  "artifactName" : "EMEA Firmware Version 1.0",
+  "artifactVersion" : "1.0",
+  "artifactChunkOffset" : 0,
+  "artifactChunkSize" : 1869
+}
+--DeviceTM_Artifact_Download_Boundary--

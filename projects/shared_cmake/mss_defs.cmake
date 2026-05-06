@@ -399,8 +399,14 @@ if("$ENV{CM_ENV_NO_OPTIMIZATION}" STREQUAL "1")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
 endif()
 
-set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_START           "-Wl,--whole-archive")
-set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_END             "-Wl,--no-whole-archive")
+if(WIN32)
+    # Windows linker doesn't use --whole-archive flags
+    set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_START           "")
+    set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_END             "")
+else()
+    set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_START           "-Wl,--whole-archive")
+    set(ARCHIVE_TO_SHARED_LIB_LINK_FLAG_END             "-Wl,--no-whole-archive")
+endif()
 
 # To enable memory sanitizer set CM_ENV_FSANITIZE=1 in the build environment
 if ("$ENV{CM_ENV_BACKWARDS_COMPATABILITY}" STREQUAL "1")

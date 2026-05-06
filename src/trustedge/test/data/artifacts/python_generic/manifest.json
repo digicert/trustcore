@@ -1,0 +1,65 @@
+{
+    "version": "1.0",
+    "name": "python3-test",
+    "artifactVersion": "1.0",
+    "description": "Sample python3 artifact",
+    "artifactType": "Application",
+    "actions": [
+        {
+            "action": "install",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "python3"
+            },
+            "actionPath": "./payload/script/installhello.py",
+            "actionArgument": "Install abc wxzy 1234 55"
+        },
+        {
+            "action": "rollback",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "python3"
+            },
+            "actionPath": "./payload/script/rollbackhello.py",
+            "actionArgument": "Rollback abc wxyz 1234 55"
+        }
+    ],
+    "components": [
+        {
+            "name": "component1",
+            "location": "./payload.zip",
+            "checksum": "sha256:22f2dc9def63b225711e188fedf70a4d65b4aa651006c54a23ced701ea5ce465"
+        }
+    ],
+    "requirements": {
+        "device_attributes": [
+            {
+                "key": "location",
+                "value": [
+                    "val1",
+                    "va2"
+                ]
+            },
+        {
+            "key": "key2",
+            "value": [
+                "val1",
+                "va2"
+            ]
+        }
+    
+        ]
+    },
+    "dependsOn": [
+    ],
+"provides": [
+],
+"signature": [
+{
+    "sigAlg": "",
+    "sig": "",
+    "sigFormat": "base64",
+    "certificate": ""
+}
+]
+}

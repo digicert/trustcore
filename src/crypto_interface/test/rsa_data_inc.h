@@ -1,7 +1,6 @@
 /*
  * rsa_data_inc.h
  *
- *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:

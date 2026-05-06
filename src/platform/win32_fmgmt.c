@@ -992,31 +992,37 @@ extern MSTATUS WIN32_rename (const sbyte *pOldName, sbyte *pNewName)
     if ((NULL == pOldName) || (NULL == pNewName))
         goto exit;
 
-    if (0 == rename (pOldName, pNewName))
+    /* Use MoveFileExA with MOVEFILE_REPLACE_EXISTING to handle existing
+     * destination files. Standard C rename() fails on Windows if the
+     * destination file already exists.
+     */
+    if (MoveFileExA(pOldName, pNewName, MOVEFILE_REPLACE_EXISTING))
     {
         status = OK;
         goto exit;
     }
 
-    switch (errno)
+    switch (GetLastError())
     {
-        case EACCES:
+        case ERROR_ACCESS_DENIED:
             /* Permission denied. */
             status = ERR_DIR_ACCESS_DENIED;
             break;
-        case ENFILE:
+        case ERROR_TOO_MANY_OPEN_FILES:
             /* The system-wide limit on total number of open files has been reached */
             status = ERR_DIR_MAX_OPEN_FILES;
             break;
-        case ENOENT:
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
             /* Directory does not exist, or pDirPath is an empty string */
             status = ERR_DIR_INVALID_PATH;
             break;
-        case ENOMEM:
+        case ERROR_NOT_ENOUGH_MEMORY:
+        case ERROR_OUTOFMEMORY:
             /* Insufficient memory to complete the operation. */
             status = ERR_DIR_INSUFFICIENT_MEMORY;
             break;
-        case ENOTDIR:
+        case ERROR_DIRECTORY:
             /* pDirPath is not a directory. */
             status = ERR_DIR_NOT_DIRECTORY;
             break;

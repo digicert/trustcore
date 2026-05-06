@@ -924,6 +924,7 @@ MOC_EXTERN MSTATUS CERT_ENROLL_addCsrAttributeTOML(
     byteBoolean sanSet = FALSE;
     sbyte *pEvaluatedValue = NULL;
     ubyte4 evaluatedValueLen = 0;
+    ubyte4 lineLen;
 
     if (NULL == ppExtensions)
     {
@@ -948,6 +949,13 @@ MOC_EXTERN MSTATUS CERT_ENROLL_addCsrAttributeTOML(
         }
         (void) DIGI_MEMCPY(line, pStartPtr, (ubyte4) (pEndPtr - pStartPtr));
         line[(ubyte4)(pEndPtr - pStartPtr)] = '\0';
+
+        /* Check for CRLF and convert to LF (required for Windows) */
+        lineLen = DIGI_STRLEN(line);
+        if (lineLen > 0 && line[lineLen - 1] == '\r')
+        {
+            line[lineLen - 1] = '\0';
+        }
 
         /* get ready for next iteration */
         pStartPtr = pEndPtr + 1;

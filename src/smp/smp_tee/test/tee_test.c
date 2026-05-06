@@ -33,7 +33,7 @@
 #include <stdio.h>
 
 #ifndef TEE_CONFIG_PATH
-#define TEE_CONFIG_PATH "/etc/mocana/tee_smp.conf"
+#define TEE_CONFIG_PATH "/etc/digicert/tee_smp.conf"
 #endif
 
 char *gpKey =

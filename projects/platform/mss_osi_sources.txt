@@ -3,3 +3,5 @@ MSS_SRC_DIR/platform/linux_tcp_async.c
 MSS_SRC_DIR/platform/linux_tcp.c
 MSS_SRC_DIR/platform/linux_udp.c
 MSS_SRC_DIR/platform/linux_fmgmt.c
+MSS_SRC_DIR/platform/linux_signal.c
+MSS_SRC_DIR/platform/linux_term.c

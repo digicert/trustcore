@@ -1,0 +1,38 @@
+{
+  "configuration": {
+    "device_id": "abd104bd-54c4-49a8-b9be-db7edc576787",
+    "account_id": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "division_id": "0c56d835-c1c5-4862-963f-5943e9ed5480",
+    "device_group_id": "c30853d1-1961-4507-a416-fac2b63585c5",
+    "device_name": "testDevice",
+    "rendezvous_configuration": {
+      "mqtt_endpoint": {
+        "primary": [ "mqtts://localhost:1883", "mqtt://localhost:1883" ]
+      },
+      "persist_connection": false
+    },
+    "device_attributes": [
+      {
+        "key": "Device name",
+        "value": "RPi 0122: MS",
+        "mandatory": true
+      },
+      {
+        "key": "Device Identifier",
+        "value": "0122",
+        "mandatory": true
+      },
+      {
+        "key": "OS.VERSION",
+        "value": "1.1"
+      }
+    ]
+  },
+  "authentication": [
+    {
+      "method": "x509",
+      "key_alias": "ec_256.pem",
+      "cert_alias": "ec_256.pem"
+    }
+  ]
+}

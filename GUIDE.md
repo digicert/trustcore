@@ -26,8 +26,8 @@
 | **NanoROOT**    | NanoROOT SMP library  | **[→ Build & Run](samples/nanoroot/BUILD_RUN.md)**    |
 
 ### 🔒 NanoCrypto Example
-| Component                    | Description                         | Guide                                                              |
-|-------------------------     |-------------------------------------|--------------------------------------------------------------------|
+| Component              | Description                                        | Guide                                                              |
+|------------------------|----------------------------------------------------|--------------------------------------------------------------------|
 | **NanoCrypto Example** | Demonstrates NanoCrypto usage via crypto interface | **[→ Build & Run](samples/crypto_interface_example/BUILD_RUN.md)** |
 
 ### 🛠️ NanoSSL
@@ -51,10 +51,20 @@
 |----------------|----------------------------------------------|---------------------------------------------------------|
 | **EST Sample** | EST certificate enrollment sample            | **[→ Build & Run](samples/nanocert_est/BUILD_RUN.md)**  |
 
+### 🛡️ NanoSec
+| Component     | Description                  | Guide                                              |
+|---------------|------------------------------|----------------------------------------------------|
+| **NanoSec**   | IPsec/IKE security sample    | **[→ Build & Run](samples/nanosec/BUILD_RUN.md)**  |
+
 ### 🔗 OpenSSL Connector
 | Component            | Description                           | Guide                                                       |
 |----------------------|---------------------------------------|-------------------------------------------------------------|
 | **OpenSSL Connector** | Demonstrates OpenSSL Connector Usage | **[→ Build & Run](samples/openssl_connector/BUILD_RUN.md)** |
+
+### 🏢 TrustEdge
+| Component     | Description                                                 | Guide                                               |
+|---------------|-------------------------------------------------------------|-----------------------------------------------------|
+| **TrustEdge** | IoT device provisioning and lifecycle management executable | **[→ Build & Run](samples/trustedge/BUILD_RUN.md)** |
 
 
 ## ⚙️ Commonly Used CMake Options

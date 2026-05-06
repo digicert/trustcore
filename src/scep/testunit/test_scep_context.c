@@ -1,6 +1,8 @@
 /*
  * test_scep_context.c
  *
+ * Unit tests for SCEP context APIs.
+ *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:

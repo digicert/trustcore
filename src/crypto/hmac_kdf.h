@@ -1,7 +1,7 @@
 /*
  * hmac_kdf.h
  * 
- * Implementes Hmac KDF (HKDF) as per RFC 5869
+ * Implements Hmac KDF (HKDF) as per RFC 5869
  * 
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

@@ -45,6 +45,22 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#elif defined(__RTOS_WIN32__)
+#include <stdio.h>
+#include <io.h>
+#include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
+
+#ifdef __ENABLE_DIGICERT_PRINTF__
+#define MOC_VA_START(a,f) va_start(a.ap, f)
+#define MOC_VA_END(a) va_end(a.ap)
+#else
+typedef va_list moc_va_list;
+#define MOC_VA_START(a,f) va_start(a, f)
+#define MOC_VA_END(a) va_end(a)
+#endif
+
 #else
 #ifndef __RTOS_MQX__
 #include <stdio.h>

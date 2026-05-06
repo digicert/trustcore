@@ -34,16 +34,24 @@ project (smpnanoroot C)
 
 #set(CMAKE_VERBOSE_MAKEFILE "ON")
 
+if(WIN32)
+    set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32")
+else()
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_static")
+  else()
+    set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
+  endif()
+endif()
+
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../bin)
+
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
 if(BUILD_FOR_OSI)
-  set(LIB_DIR  "${MSS_DIR}/lib")
-else()
-  set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
+  set(LIB_DIR "${MSS_DIR}/lib")
+  set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
-
-link_directories(${LIB_DIR})
-set(MSS_BIN_DIR "${LIB_DIR}")
 set(CMAKE_INSTALL_RPATH "${MSS_BIN_DIR}")
 
 set(LIB_TYPE "SHARED" CACHE STRING "Which lib type to build: SHARED (default) or STATIC")
@@ -110,7 +118,7 @@ message("MOCANA_FLAGS = ${MOCANA_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "")
 
 buildLibrary(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
-            ${SMP_NANOROOT_BUILD_DIR} ${MSS_BIN_DIR}  ${libraryLists})
+            ${SMP_NANOROOT_BUILD_DIR} ${MSS_BIN_DIR} "${libraryLists}")
 # adding mocana flags
 target_compile_definitions(${TARGET_NAME}   PRIVATE "${MOCANA_FLAGS}")
 

@@ -1,0 +1,58 @@
+{
+    "version": "1.0",
+    "name": "config-file-test",
+    "artifactVersion": "2.0",
+    "description": "Sample config file artifact",
+    "artifactType": "Configuration",
+    "actions": [
+        {
+            "action": "install",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "bash"
+            },
+            "actionPath": "payload/config/test.conf",
+            "actionArgument": "/"
+        },
+        {
+            "action": "rollback",
+            "handler": {
+                "handlerType": "Script",
+                "handlerSubType": "bash"
+            },
+            "actionPath": "/test.conf",
+            "actionArgument": ""
+        }
+    ],
+    "components": [ ],
+    "requirements": {
+        "device_attributes": [
+            {
+                "key": "location",
+                "value": [
+                    "val1",
+                    "va2"
+                ]
+            },
+        {
+            "key": "key2",
+            "value": [
+                "val1",
+                "va2"
+            ]
+        }
+    
+        ]
+    },
+    "dependsOn": [],
+"provides": [
+],
+"signature": [
+{
+    "sigAlg": "",
+    "sig": "",
+    "sigFormat": "base64",
+    "certificate": ""
+}
+]
+}

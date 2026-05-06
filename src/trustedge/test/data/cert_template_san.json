@@ -1,0 +1,77 @@
+{
+    "policyService": "CertificatePolicy",
+    "deviceId": "abd104bd-54c4-49a8-b9be-db7edc576787",
+    "accountId": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "mode": "certificate_specification",
+    "certificatePolicyId": "TEST_POLICY_ID_DO_NOT_CHANGE",
+    "deviceGroupId": "c30853d1-1961-4507-a416-fac2b63585c5",
+    "certificateSpecification": {
+        "certificateRequestFormat": {
+            "format": "PKCS10"
+        },
+        "keyCertAttributes": {
+            "keyAlgorithm": [ "RSA+2048" ],
+            "source": "SW"
+        },
+        "csrAttributes": {
+            "fields": [
+                {
+                    "id": "signature_algorithm",
+                    "defaultValue": [ "sha256WithRSA" ]
+                },
+                {
+                    "id": "subject.common_name",
+                    "defaultValue": [ "TrustEdge-Dev" ]
+                },
+                {
+                    "id": "san.dns_name",
+                    "defaultValue": [ "TrustEdge-Dev-DNS1" ]
+                },
+                {
+                    "id": "san.uri",
+                    "defaultValue": [ "https://some.uri.1" ]
+                },
+                {
+                    "id": "san.uri",
+                    "defaultValue": [ "https://some.uri.2" ]
+                },
+                {
+                    "id": "san.ip_address",
+                    "defaultValue": [ "0.0.0.0" ]
+                },
+                {
+                    "id": "san.ip_address",
+                    "defaultValue": [ "1.1.1.1" ]
+                },
+                {
+                    "id": "extended_key_usage.additional_values",
+                    "defaultValue": [ "server_authentication" ]
+                },
+                {
+                    "id": "extended_key_usage.additional_values",
+                    "defaultValue": [ "client_authentication" ]
+                },
+                {
+                    "id": "key_usage.rsa_additional_values",
+                    "defaultValue": [ "data_encipherment" ]
+                },
+                {
+                    "id": "key_usage.ecdsa_additional_values",
+                    "defaultValue": [ "key_agreement" ]
+                },
+                {
+                    "id": "key_usage.ed25519_additional_values",
+                    "defaultValue": [ "non_repudiation" ]
+                },
+                {
+                    "id": "san.registered_id",
+                    "defaultValue": [ "2.1.5.6.29" ]
+                },
+                {
+                    "id": "extensions.subject_directory",
+                    "defaultValue": [ "subject_dir" ]
+                }
+            ]
+        }
+    }
+}

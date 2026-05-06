@@ -1,0 +1,21 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="DeviceTM_Artifact_Download_Boundary"
+Content-Length: <length>
+
+--DeviceTM_Artifact_Download_Boundary
+Content-Type: application/json; charset=utf-8
+Content-Description: Artifact JSON
+
+{
+  "artifactId": "unique_id2",
+  "artifactName": "hello_world",
+  "artifactVersion": "21.0.2",
+  "artifactChunkOffset": 0,
+  "artifactChunkSize": 11
+}
+--DeviceTM_Artifact_Download_Boundary
+Content-Type: application/octet-stream
+Content-Description: Artifact Binary
+
+hello world
+--DeviceTM_Artifact_Download_Boundary--

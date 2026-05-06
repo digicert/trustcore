@@ -1,0 +1,259 @@
+name: TrustEdge v2 Local Artifacts
+permissions:
+  contents: read
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - .github/workflows/trustedge_v2_localartifact.yml
+
+env:
+  NEXUS_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/trustedge/dev/nux64/
+  NEXUS_REPO_RPI_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/trustedge/dev/rpi64/
+  NEXUS_REPO_RPI32_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/trustedge/dev/rpi32/
+  NEXUS_CMAKE_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/cmake/cmake-3.22.1/cmake-3.22.1-linux-x86_64.sh
+  NEXUS_NINJA_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/ninja/ninja-build-1.10.1/ninja-build_1.10.1-1_amd64.deb
+  NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu.tar.xz
+  NEXUS_LINARO_AARCH64_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz
+  NEXUS_LINARO_ARM_SYSROOT_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/sysroot-glibc-linaro-2.23-2018.12-arm-linux-gnueabihf.tar.xz
+  NEXUS_LINARO_ARM_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
+  NEXUS_RPM_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/rpm/rpm_4.18.2.tar.xz
+
+jobs:
+  TrustEdge_v2:
+    runs-on: [digicert-large]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Generate TrustEdge version number
+        id: trustedge-client-version
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3
+        with:
+          version_format: "${major}.${minor}.${patch}-${increment}"
+          tag_prefix: "trustedge_"
+          branch: main
+          search_commit_body: true
+
+      - name: Install dependencies
+        run: |
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O -v
+          export CMAKE_DIR=/opt/cmake
+          sudo mkdir $CMAKE_DIR
+          sudo bash cmake-3.22.1-linux-x86_64.sh --skip-license --prefix=$CMAKE_DIR
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          cmake --version
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_NINJA_REPO_URL }} -O -v
+          sudo dpkg -i ninja-build_1.10.1-1_amd64.deb
+          ninja --version
+      - name: Install rpm utilities
+        run: |
+          sudo apt update
+          sudo apt install -y rpm
+          # mkdir -p /tmp/rpm_4.18.2
+          # curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_RPM_REPO_URL }} -o /tmp/rpm_4.18.2/rpm_4.18.2.tar.xz -v
+          # tar -xvf /tmp/rpm_4.18.2/rpm_4.18.2.tar.xz -C /tmp/rpm_4.18.2
+          # sudo dpkg -i /tmp/rpm_4.18.2/rpm_4.18.2/*.deb || sudo apt-get install -f -y
+          # sudo dpkg -i /tmp/rpm_4.18.2/rpm_4.18.2/*.deb
+
+      - name: Build TrustEdge v2
+        run: |
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+      - name: Push Artifact - Unsigned Debian Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-x64-unsigned
+          path: dist/*.deb
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
+      - name: Push Artifact - Unsigned RPM Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-x64-rpm-unsigned
+          path: dist/*.rpm
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
+      - name: Push Artifact TGZ
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-x64-tgz
+          path: dist/*.tar.gz
+          retention-days: 5
+      - name: Install toolchain for RPI64
+        run: |
+          sudo mkdir -p /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL }} -O -v
+          sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_GCC_REPO_URL }} -O -v
+          sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
+      - name: Build TrustEdge v2 for RPI64
+        run: |
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+      - name: Push Artifact for RPI64 - Unsigned Debian Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-rpi64-unsigned
+          path: dist/*.deb
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
+      - name: Push Artifact for RPI64 - Unsigned RPM Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-rpi64-rpm-unsigned
+          path: dist/*.rpm
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
+      - name: Push Artifact for RPI64 TGZ
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-rpi64-tgz
+          path: dist/*.tar.gz
+          retention-days: 5
+      - name: Install toolchain for RPI32
+        run: |
+          sudo mkdir -p /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_SYSROOT_REPO_URL }} -O -v
+          sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_GCC_REPO_URL }} -O -v
+          sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
+      - name: Build TrustEdge v2 for RPI32
+        run: |
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+      - name: Push Artifact for RPI32 - Unsigned Debian Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-rpi32-unsigned
+          path: dist/*.deb
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
+      - name: Push Artifact for RPI32 - Unsigned RPM Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-rpi32-rpm-unsigned
+          path: dist/*.rpm
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
+      - name: Push Artifact for RPI32 TGZ
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-rpi32-tgz
+          path: dist/*.tar.gz
+          retention-days: 5
+
+  Sign_Debian_Packages:
+    runs-on: ubuntu-22.04 # This job needs systemd, so it runs on a Github-hosted runner.
+    needs: TrustEdge_v2
+    if: github.ref_name == 'main'
+    strategy:
+      matrix:
+        arch: [x64, rpi64, rpi32]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Download Unsigned Artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: trustedge-${{ matrix.arch }}-unsigned
+          path: dist/
+
+      - name: Setup Certificate
+        run: |
+          echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > ${{ github.workspace }}/Certificate_pkcs12.p12
+      - name: Set Variables
+        id: variables
+        run: |
+          echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          echo "SM_HOST=${{ secrets.SM_HOST }}" >> "$GITHUB_ENV"
+          echo "SM_API_KEY=${{ secrets.SM_API_KEY }}" >> "$GITHUB_ENV"
+          echo "SM_CLIENT_CERT_FILE=${{ github.workspace }}/Certificate_pkcs12.p12" >> "$GITHUB_ENV"
+          echo "SM_CLIENT_CERT_PASSWORD=${{ secrets.SM_CLIENT_CERT_PASSWORD }}" >> "$GITHUB_ENV"
+      - name: Setup SSM JCE
+        run: |
+          curl -X GET https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-linux-x64.tar.gz/download -H "x-api-key:${{ secrets.SM_API_KEY }}" -w "%{http_code}\n" -o smtools-linux-x64.tar.gz
+          curl -X GET https://one.digicert.com/signingmanager/api-ui/v1/releases/ssm-scd-linux-x64/download -H "x-api-key:${{ secrets.SM_API_KEY }}" -w "%{http_code}\n" -o ssm-scd
+          tar -xzvf smtools-linux-x64.tar.gz
+          mkdir -p /home/runner/.gnupg
+          chmod -R 755 /home/runner/.gnupg
+          mkdir -p ${{ github.workspace }}/gnupg_log
+          chmod -R 755 ${{ github.workspace }}/gnupg_log
+          chmod 755 ${{ github.workspace }}/ssm-scd
+          ls -la
+          touch ${{ github.workspace }}/gnupg_log/gpg_agent_log
+          ls -l ${{ github.workspace }}/gnupg_log
+
+      - name: Setup GPG Agent, Download GPG Key from Signing Manager and Install dpkg-sig
+        run: |
+          cat > /home/runner/.gnupg/gpg-agent.conf << "EOF"
+          verbose
+          debug-all
+          log-file ${{ github.workspace }}/gnupg_log/gpg_agent_log
+          scdaemon-program ${{ github.workspace }}/ssm-scd
+          pinentry-program /usr/bin/pinentry
+          EOF
+          rm -rf ${{ github.workspace }}/.gnupg/pubring.kbx
+          chmod -R 755 ${{ github.workspace }}/smtools-linux-x64
+          ls -l ${{ github.workspace }}/smtools-linux-x64
+          gpgconf --kill all
+
+          echo "--- Download GPG Key from Signing Manager ---"
+          ${{ github.workspace }}/smtools-linux-x64/smctl gpg keypair list
+          ${{ github.workspace }}/smtools-linux-x64/smctl gpg keyring download 679058bc-d0d0-4a7e-a2a2-5c612679e4b0
+          gpg --list-keys
+
+          echo " --- Importing environment for systemd user ---"
+          systemctl --user import-environment
+          systemctl --user show-environment
+          gpg --card-status
+
+          echo "--- Install dpkg-sig ---"
+          sudo apt-get update
+          sudo apt-get install -y dpkg-sig
+
+          echo "--- Signing ${{ matrix.arch }} .deb package ---"
+          DEB_FILE=$(find dist -name "*.deb")
+          if [ -z "$DEB_FILE" ]; then
+            echo "Error: No .deb file found in dist/ directory."
+            exit 1
+          fi
+          echo "Found package: $DEB_FILE"
+          dpkg-sig --sign builder "$DEB_FILE"
+          echo "--- Verifying signature ---"
+          dpkg-sig --verify "$DEB_FILE"
+
+      - name: Upload signed ${{ matrix.arch }} package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-${{ matrix.arch }}-signed
+          path: dist/*.deb
+          retention-days: 5
+      
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+  
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="TrustEdge v2 Local Artifact failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="TrustEdge v2 Local Artifact failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi  
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+

@@ -14,6 +14,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * The EAX mode of operation is not tied to the AES
  * cipher, it can be used with any cipher, but this
  * implementation does not parameterize the cipher

@@ -1,0 +1,21 @@
+{
+  "version" : "1.0",
+  "name" : "EMEA Firmware Version 1.0",
+  "artifactVersion" : "1.0",
+  "description" : "EMEA Firmware Version 1.0",
+  "artifactType" : "Configuration",
+  "actions" : [ {
+    "action" : "install",
+    "handler" : {
+      "handlerType" : "script",
+      "handlerSubType" : "bash"
+    },
+    "actionPath" : "./payload/script/max_sleep.sh",
+    "actionArgument" : "700"
+  } ],
+  "components" : [ {
+    "name" : "component1",
+    "location" : "./payload.zip"
+  } ],
+  "requirements" : { }
+}

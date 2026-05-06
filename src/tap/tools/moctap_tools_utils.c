@@ -22,7 +22,7 @@
 #define TPM_CONF_FILE_PATH  "tpm12.conf"
 #else
 #include "../../common/tpm2_path.h"
-#define TPM_CONF_FILE_PATH  "/etc/mocana/tpm12.conf"
+#define TPM_CONF_FILE_PATH  "/etc/digicert/tpm12.conf"
 #endif /* DIGICERT_TPM2_CONF_PATH */
 
 MSTATUS freeTapProviderEntry(tapProviderEntry **ppTapProviderEntry)

@@ -2,7 +2,6 @@
  * @file  est_client_api.h
  * @brief EST Client developer API header.
  *
- * @ingroup    nanoaide_tree
  * @details    This header file contains definitions and function
  *             declarations used by EST Clients.
  * @flags      This file requires that the following flags be defined:

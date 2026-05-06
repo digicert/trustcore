@@ -1,5 +1,5 @@
 /**
- * smp_pkcs11_listslotdescriptions.c
+ * listslotdescriptions.c
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
@@ -12,7 +12,8 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
- * @file       smp_pkcs11_listslotdescriptions.c
+ *
+ * @file       listslotdescriptions.c
  * @brief      Utility to list PKCS11 slot descriptions
  * @details    This utility returns the module id in string format that can be
                copied to the configuration file for unique identification of this

@@ -14,6 +14,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * Adapted from code originally from Steve Reid <sreid@sea-to-sky.net>
  *	100% Public Domain - no warranty
  *	Released 1997.10.11

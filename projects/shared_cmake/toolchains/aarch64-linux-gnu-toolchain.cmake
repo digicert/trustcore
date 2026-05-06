@@ -1,0 +1,41 @@
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "")
+  set(CMAKE_SYSTEM_NAME Linux)
+endif()
+set(CMAKE_SYSTEM_PROCESSOR ARM64)
+
+if(MINGW OR CYGWIN OR WIN32)
+    set(UTIL_SEARCH_CMD where)
+elseif(UNIX OR APPLE)
+    set(UTIL_SEARCH_CMD which)
+endif()
+
+set(TOOLCHAIN_PREFIX aarch64-linux-gnu-)
+
+message("Executing ${UTIL_SEARCH_CMD} ${TOOLCHAIN_PREFIX}gcc")
+execute_process(
+  COMMAND ${UTIL_SEARCH_CMD} ${TOOLCHAIN_PREFIX}gcc
+  OUTPUT_VARIABLE BINUTILS_PATH
+  ERROR_VARIABLE TOOLCHAIN_ERR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(NOT BINUTILS_PATH)
+  if(TOOLCHAIN_ERR)
+    message("Error: ${TOOLCHAIN_ERR}\n")
+  endif()
+  message(FATAL_ERROR "BINUTILS_PATH did not get set during cross-compile. \
+  This typically means that there was an issue setting the toolchain prefix. Exiting.")
+endif()
+
+get_filename_component(ARM_TOOLCHAIN_DIR ${BINUTILS_PATH} DIRECTORY)
+
+set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}g++)
+set(CMAKE_SYSROOT_COMPILE "${CMAKE_SYSROOT}")
+set(CMAKE_SYSROOT_LINK "${CMAKE_SYSROOT}")
+
+set(CMAKE_OBJCOPY ${ARM_TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}objcopy CACHE INTERNAL "objcopy tool")
+set(CMAKE_SIZE_UTIL ${ARM_TOOLCHAIN_DIR}/${TOOLCHAIN_PREFIX}size CACHE INTERNAL "size tool")
+
+set(CMAKE_FIND_ROOT_PATH ${BINUTILS_PATH})

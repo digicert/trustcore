@@ -1,0 +1,47 @@
+{
+    "protocol": "SCEP",
+    "scepAttributes": {
+      "operation":"PKCSReq",
+      "serverURI": "http://demo.one.digicert.com/iot/api/v1/scep/IOT_7f03c128-ed55-4d73-b49b-2bc5cabc58be",
+      "challengePassword": "",
+      "cepCertificate": "moc_CEP.pem"
+    },
+    "keyCertAttributes": {
+      "algorithm": "RSA+2048",
+      "keyAlias": "digi",
+      "certAlias": "cert",
+      "reusePreviousKey": true
+    },
+    "csrAttributes": {
+      "fields": [
+        {
+          "id": "subject.country",
+          "defaultValue": ["US"]
+        },
+        {
+          "id": "subject.state",
+          "defaultValue": ["CA"]
+        },
+        {
+          "id": "subject.locality",
+          "defaultValue": ["MV"]
+        },
+        {
+          "id": "subject.organization_name",
+          "defaultValue": ["Mocana"]
+        },
+        {
+          "id": "subject.organization_unit",
+          "defaultValue": ["Engineering"]
+        },
+        {
+          "id": "subject.common_name",
+          "defaultValue": ["qa-scep-testing-rsa"]
+        },
+        {
+          "id": "key_usage.rsa_additional_values",
+          "defaultValue": ["digital_signature", "key_encipherment"]
+        }
+      ]
+    }
+}

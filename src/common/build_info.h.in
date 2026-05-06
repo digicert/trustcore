@@ -1,0 +1,43 @@
+/*
+ * build_info.h.in
+ *
+ * Stubbed information for CMake to fill in with build-type version info
+ *
+ * Copyright 2017-@CURR_YEAR@ DigiCert Project Authors. All Rights Reserved.
+ * 
+ * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
+ * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
+ * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt  
+ *   or https://www.digicert.com/master-services-agreement/
+ * 
+ * For commercial licensing, contact DigiCert at sales@digicert.com.*
+ *
+ */
+
+#ifndef __BUILD_INFO_HEADER__
+#define __BUILD_INFO_HEADER__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+ * These values are automatically set according to their
+ * cmake variables.
+ */
+#define BUILD_INFO_PLATFORM_VAL     "@TP_BUILD_PLATFORM@"
+#define BUILD_INFO_BUILD_VAL        "@TP_BUILD_TAPINFO@"
+#define BUILD_INFO_TYPE_VAL         "@TP_BUILD_TYPE@"
+#define BUILD_INFO_VERSION_VAL      "@TP_BUILD_VERSION@"
+#define BUILD_INFO_DATE_VAL         "@TP_BUILD_DATE@"
+#define BUILD_INFO_YEAR_VAL         "@CURR_YEAR@"
+
+/*----------------------------------------------------------------------------*/
+
+MOC_EXTERN void BUILD_INFO_print(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __BUILD_INFO_HEADER__ */

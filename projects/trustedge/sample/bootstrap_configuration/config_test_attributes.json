@@ -1,0 +1,104 @@
+{
+  "configuration": {
+    "device_id": "abd104bd-54c4-49a8-b9be-db7edc576787",
+    "account_id": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "division_id": "0c56d835-c1c5-4862-963f-5943e9ed5480",
+    "device_group_id": "c30853d1-1961-4507-a416-fac2b63585c5",
+    "device_name": "testDevice",
+    "rendezvous_configuration": {
+      "mqtt_endpoint": {
+        "primary": [ "mqtt://localhost:1883" ]
+      },
+      "persist_connection": false
+    },
+    "device_attributes": [
+      {
+        "key": "dev_attr_attr1",
+        "value": "dev_attr_val1",
+        "mandatory": true
+      },
+      {
+        "key": "dev_attr_attr2",
+        "value": "dev_attr_val2",
+        "mandatory": true
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED",
+        "value": ""
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "value": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "key": "def_attr_attr1",
+        "value": "def_attr_val1",
+        "mandatory": true
+      },
+      {
+        "key": "def_attr_attr2",
+        "value": "def_attr_val2",
+        "mandatory": true
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED",
+        "value": ""
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "value": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "key": "sys_attr_attr1",
+        "value": "sys_attr_val1",
+        "mandatory": true
+      },
+      {
+        "key": "sys_attr_attr2",
+        "value": "sys_attr_val2",
+        "mandatory": true
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED",
+        "value": ""
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "value": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "key": "usr_attr_attr1",
+        "value": "usr_attr_val1",
+        "mandatory": true
+      },
+      {
+        "key": "usr_attr_attr2",
+        "value": "usr_attr_val2",
+        "mandatory": true
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED",
+        "value": ""
+      },
+      {
+        "key": "SHOULD_NOT_BE_ADDED"
+      },
+      {
+        "value": "SHOULD_NOT_BE_ADDED"
+      }
+    ]
+  },
+  "authentication": [
+    {
+      "method": "x509",
+      "key_alias": "rsa_2048.pem",
+      "cert_alias": "rsa_2048.pem"
+    }
+  ]
+}

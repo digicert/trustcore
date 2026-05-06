@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * This sample server is built similar to src/examples/ssl_example.c;
  * This example takes 2 keys and certs and populates the keystore with them.
  * This is mainly used to test the TAP local usecase with mutlitple TAP Keys

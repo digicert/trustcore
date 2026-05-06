@@ -1,0 +1,54 @@
+{
+    "directory_paths": {
+        "bin_dir": "/usr/bin",
+        "lib_dir": "/usr/lib",
+        "root_dir": "/etc/digicert",
+        "conf_dir": "/etc/digicert/conf",
+        "keystore_dir": "/etc/digicert/keystore"
+    },
+    "configuration": {
+        "require_pqc": false
+    },
+    "proxy": {
+        "url": null
+    },
+    "agent": {
+        "bootstrap": "/etc/digicert/conf/bootstrap_config.json",
+        "workspace_dir": "/tmp",
+        "connection_uptime_interval": 300,
+        "keepalive_interval": 30,
+        "policy_request_timeout": 100,
+        "sleep_interval": 3600,
+        "action_handler_timeout": 300,
+        "enforce_token": false,
+        "protocol_buffer_size": 16384,
+        "attributes_refresh_hours": 24,
+        "renewal_hours": 720,
+        "chunk_supported": true,
+        "chunk_size": 131072,
+        "chunk_window_size": 4
+    },
+    "certificate": {
+        "service_dir": "/etc/digicert/service",
+        "polling_interval": 15,
+        "renewal_hours": 360,
+        "mode": "est"
+    },
+    "service": {
+        "mode": "agent,certificate"
+    },
+    "api": {
+        "mode": "https",
+        "port": 8443,
+        "num_process": 5,
+        "num_resource": 5,
+        "server_keycert_alias": "te-api-server",
+	"server_hostname": "localhost"
+    },
+    "cloud_provider":{
+        "provider_creds_dir":"/etc/digicert/cloudprovider"
+    },
+    "log": {
+        "loglevel": "WARNING"
+    }
+}

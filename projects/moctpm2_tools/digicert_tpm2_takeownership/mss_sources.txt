@@ -1,0 +1,3 @@
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tools/moctpm2_takeownership.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tools/mocsmp_credwrite.c
+MSS_SRC_DIR/smp/smp_tpm2/tpm2_lib/tools/mocsmp_credparser.c

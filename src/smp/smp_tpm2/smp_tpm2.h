@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  * @file       smp_tpm2.h
  * @brief      NanoSMP for TPM2 Header file
  * @details    This header file contains private structure

@@ -1,5 +1,5 @@
 /*
- * ctrdrbgaesbedop.c
+ * ctrdrbgaesmbedop.c
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

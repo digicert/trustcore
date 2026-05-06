@@ -1,0 +1,73 @@
+{
+    "policyService": "CertificatePolicy",
+    "deviceId": "843fc46c-a77a-4fff-81a7-b4a4f5ccc2ce",
+    "accountId": "843fc46c-a77a-4fff-81a7-b4a4f5ccc2cd",
+    "mode": "certificate_specification",
+    "certificatePolicyId": "IOT_294820113",
+    "deviceGroupId": "128975",
+    "certificateSpecification": {
+        "certificateRequestFormat": {
+            "format": "PKCS10"
+        },
+        "keyCertAttributes": {
+            "keyAlgorithm": [ "RSA+2048" ],
+            "source": "SW"
+        },
+        "csrAttributes": {
+            "fields": [
+                {
+                    "id": "signature_algorithm",
+                    "defaultValue": [ "sha256WithRSA" ]
+                },
+                {
+                    "id": "subject.common_name",
+                    "defaultValue": "TrustEdge-Dev-IOT_294820113"
+                },
+                {
+                    "id": "subject.country",
+                    "defaultValue": "USA"
+                },
+                {
+                    "id": "subject.state",
+                    "defaultValue": "California"
+                },
+                {
+                    "id": "subject.locality",
+                    "defaultValue": "Sunnyvale"
+                },
+                {
+                    "id": "subject.organization_name",
+                    "defaultValue": "Digicert"
+                },
+                {
+                    "id": "subject.organization_unit",
+                    "defaultValue": "Digicert TrustEdge"
+                },
+                {
+                    "id": "subject.email",
+                    "defaultValue": "trustedge@digicert.com"
+                },
+                {
+                    "id": "subject.serial_number",
+                    "defaultValue": "SN-0123456789"
+                },
+                {
+                    "id": "key_usage.rsa_additional_values",
+                    "defaultValue": "digital_signature"
+                },
+                {
+                    "id": "key_usage.rsa_additional_values",
+                    "defaultValue": "key_encipherment"
+                },
+                {
+                    "id": "extended_key_usage.additional_values",
+                    "defaultValue": "server_authentication"
+                },
+                {
+                    "id": "extended_key_usage.additional_values",
+                    "defaultValue": "client_authentication"
+                }
+            ]
+        }
+    }
+}

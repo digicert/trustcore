@@ -1,0 +1,59 @@
+.\" Man page for trustedge
+.TH TRUSTEDGE 1 "February 2025" "TrustEdge Manual"
+.SH NAME
+trustedge \- IoT device management and security command-line tool
+
+.SH SYNOPSIS
+.B trustedge
+.I [ options ]
+
+.B trustedge
+.RI " <subcommand> " "[ options ]"
+
+.PP
+TrustEdge is built on DigiCert\(rg TrustCore SDK and provides device management and security operations. It can also interact with a device's secure hardware elements (TPM or TEE). 
+For complete and latest documentation, visit:  
+.IP
+\fIhttps://dev.digicert.com/en/trustedge.html\fR
+
+.SH COMMANDS
+Below are common subcommands. Run \fBtrustedge <subcommand> --help\fR for more details:
+.TP
+\fBagent\fR
+Manages interaction with DigiCert\(rg Device Trust Manager (bootstrap, configuration, device updates, etc.).
+.TP
+\fBcertificate\fR
+Generates and manages keys, creates CSRs, and supports x.509 certificate generation and renewal.
+.TP
+\fBmqtt\fR
+Publishes and subscribes to MQTT topics using x.509 authentication.
+
+.SH OPTIONS
+.TP
+\fB--help, -h\fR
+Displays help information for the main command or subcommands.
+.TP
+\fB--version\fR
+Displays the current version of TrustEdge.
+
+.SH EXAMPLES
+.TP
+Display general help and usage:
+.RS
+trustedge --help
+.RE
+.TP
+Show help for the \fBagent\fR subcommand:
+.RS
+trustedge agent --help
+.RE
+
+.SH LICENSE
+TrustEdge is free to download and use for non-commercial purposes. Use of TrustEdge for production or commercial environments requires a valid license. For complete license information, visit: 
+
+.IP
+\fIhttps://github.com/digicert/trustedge/blob/master/LICENSE.md\fR
+
+.SH COPYRIGHT
+Copyright \(co 2025 DigiCert.
+.br

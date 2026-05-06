@@ -82,8 +82,8 @@
 
 #define NanoROOT_MAX_SEED_LEN 64
 #define FILE_NAME_LEN 256
-#define MIN_KEY_ID_LEN 9
-#define MAX_KEY_ID_LEN 18
+#define MIN_KEY_ID_LEN 1
+#define MAX_KEY_ID_LEN 11
 #define NanoROOT_CONFIGURATION_FILE "./config/nanoroot_smp.conf"
 #define APP_STATE_TAP_INIT      0x00000001
 #define R_MAX_LEN  66 /* P-521 max size */
@@ -164,16 +164,16 @@ MOC_STATIC void printHelp()
 
     LOG_MESSAGE("  --keyId                 Hexadecimal key identifier (required for sign/verify operations)");
     LOG_MESSAGE("                          Supported values:");
-    LOG_MESSAGE("                            RSA 2K   → 0x100000002");
-    LOG_MESSAGE("                            RSA 3K   → 0x100000003");
-    LOG_MESSAGE("                            RSA 4K   → 0x100000004");
-    LOG_MESSAGE("                            RSA 8K   → 0x100000005");
-    LOG_MESSAGE("                            MLDSA44  → 0x200000001");
-    LOG_MESSAGE("                            MLDSA65  → 0x200000002");
-    LOG_MESSAGE("                            MLDSA87  → 0x200000003");
-    LOG_MESSAGE("                            P-256    → 0x300000001");
-    LOG_MESSAGE("                            P-384    → 0x300000002");
-    LOG_MESSAGE("                            P-521    → 0x300000003");
+    LOG_MESSAGE("                            RSA 2K   → 0x01000002");
+    LOG_MESSAGE("                            RSA 3K   → 0x01000003");
+    LOG_MESSAGE("                            RSA 4K   → 0x01000004");
+    LOG_MESSAGE("                            RSA 8K   → 0x01000005");
+    LOG_MESSAGE("                            MLDSA44  → 0x02000001");
+    LOG_MESSAGE("                            MLDSA65  → 0x02000002");
+    LOG_MESSAGE("                            MLDSA87  → 0x02000003");
+    LOG_MESSAGE("                            P-256    → 0x03000001");
+    LOG_MESSAGE("                            P-384    → 0x03000002");
+    LOG_MESSAGE("                            P-521    → 0x03000003");
 
     LOG_MESSAGE("  --hashType              Hash type required for sign/verify operations");
     LOG_MESSAGE("                          Supported values:");
@@ -1726,8 +1726,11 @@ static MSTATUS createKeyFromId(TAP_Context *pTapContext,
 MSTATUS getKeyId(char *pKeyId, TAP_Buffer *pKeyIdBuf)
 {
     MSTATUS status = OK;
-    ubyte* idBuf = pKeyIdBuf->pBuffer;
     char *endptr;
+    unsigned long parsedValue;
+    ubyte4 hexValue;
+    ubyte *idBuf;
+    size_t i;
 
     if(NULL == pKeyId || NULL == pKeyIdBuf)
     {
@@ -1736,16 +1739,38 @@ MSTATUS getKeyId(char *pKeyId, TAP_Buffer *pKeyIdBuf)
         return status;
     }
 
-    ubyte8 hexValue = strtoull((const char*)pKeyId, &endptr, 16);
-    if (*endptr != '\0') {
-        PRINT_ERR(status, "Error: Invalid hex string.");
+    if (pKeyIdBuf->bufferLen < sizeof(ubyte4))
+    {
+        PRINT_ERR(ERR_INVALID_ARG, "getKeyId() buffer too small");
+        return ERR_INVALID_ARG;
+    }
+
+    errno = 0;
+    parsedValue = strtoul((const char*)pKeyId, &endptr, 16);
+    if (errno == ERANGE)
+    {
+        PRINT_ERR(ERR_INVALID_INPUT, "Error: keyId value out of range.");
         return ERR_INVALID_INPUT;
     }
-    DB_PRINT("Hex String: %s\n", pKeyId);
-    DB_PRINT("Parsed Value (decimal): %llu\n", (unsigned long long)hexValue);
-    DB_PRINT("Parsed Value (hex): 0x%llX\n", (unsigned long long)hexValue);
+    if (*endptr != '\0')
+    {
+        PRINT_ERR(ERR_INVALID_INPUT, "Error: Invalid hex string.");
+        return ERR_INVALID_INPUT;
+    }
+    if (parsedValue > 0xFFFFFFFFUL)
+    {
+        PRINT_ERR(ERR_INVALID_INPUT, "Error: keyId value exceeds 32-bit range.");
+        return ERR_INVALID_INPUT;
+    }
 
-   for (int i = 0; i < sizeof(ubyte8); i++) {
+    hexValue = (ubyte4)parsedValue;
+    DB_PRINT("Hex String: %s\n", pKeyId);
+    DB_PRINT("Parsed Value (decimal): %u\n", (unsigned int)hexValue);
+    DB_PRINT("Parsed Value (hex): 0x%X\n", (unsigned int)hexValue);
+
+    idBuf = pKeyIdBuf->pBuffer;
+    for (i = 0; i < sizeof(ubyte4); i++)
+    {
         idBuf[i] = (hexValue >> (8 * i)) & 0xFF;
     }
 
@@ -1778,7 +1803,7 @@ MSTATUS signData(   TAP_Context *pTapContext,
         return status;
     }
 
-    status = TAP_NanoROOT_parse_algorithm_info(*(ubyte8*)pKeyId->pBuffer, &keyAlgorithm, &keySize, &subKeyType);
+    status = TAP_NanoROOT_parse_algorithm_info(*(ubyte4*)pKeyId->pBuffer, &keyAlgorithm, &keySize, &subKeyType);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unsupported Alogrithm status = %d\n",
@@ -2109,7 +2134,7 @@ MSTATUS verifyData( TAP_Buffer *pDataToVerify,
         goto exit;
     }
 
-    status = TAP_NanoROOT_parse_algorithm_info(*(ubyte8*)pKeyId->pBuffer, &keyAlgo, &keySize, &subKeyType);
+    status = TAP_NanoROOT_parse_algorithm_info(*(ubyte4*)pKeyId->pBuffer, &keyAlgo, &keySize, &subKeyType);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unsupported Alogrithm status = %d\n",
@@ -2184,7 +2209,7 @@ MSTATUS executeOptions(TAP_Context *pTapContext, cmdLineOpts *pOpts)
     TAP_AttributeList *pAttributeList = NULL;
     TAP_OBJECT_TYPE objectType = TAP_OBJECT_TYPE_UNDEFINED;
     TAP_Buffer keyId = {0};
-    ubyte idBuf[sizeof(ubyte8)] = {0};
+    ubyte idBuf[sizeof(ubyte4)] = {0};
     intBoolean isValidSign;
 
     if (NULL == pTapContext || NULL == pOpts)

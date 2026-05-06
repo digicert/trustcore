@@ -1,0 +1,1 @@
+export CM_TPM2_CONF_PATH="/etc/digicert"

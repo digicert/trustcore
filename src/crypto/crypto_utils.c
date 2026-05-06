@@ -1,7 +1,7 @@
 /*
  * crypto_utils.c
  *
- * Header file for crypto utility methods.
+ * Crypto utility methods.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

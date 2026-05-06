@@ -1,0 +1,2 @@
+MSS_SRC_DIR/smp/smp_tee/
+MSS_SRC_DIR/smp/smp_tee/include/

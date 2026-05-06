@@ -1,0 +1,2 @@
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_zephyr.c
+

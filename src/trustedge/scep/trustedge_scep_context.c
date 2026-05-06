@@ -1,0 +1,425 @@
+/*
+ * trustedge_scep_context.c
+ *
+ * SCEP context definition
+ *
+ * Copyright 2026 DigiCert, Inc. All Rights Reserved.
+ *
+ * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
+ *
+ * 1. **Open Source License**: GNU Affero General Public License v3.0 (AGPL v3).
+ * See: https://github.com/digicert/trustcore/blob/main/LICENSE.md
+ * 2. **Commercial License**: Available under DigiCert's Master Services Agreement.
+ * See: https://www.digicert.com/master-services-agreement/
+ *
+ * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
+ * *Contact DigiCert at sales@digicert.com for more details.*
+ */
+#include "../../common/moptions.h"
+
+#if defined(__ENABLE_DIGICERT_SCEP_CLIENT__)
+
+#include "../../common/mtypes.h"
+#include "../../common/mocana.h"
+#include "../../crypto/hw_accel.h"
+
+#include "../../common/mdefs.h"
+#include "../../common/merrors.h"
+#include "../../crypto/secmod.h"
+#include "../../common/mrtos.h"
+#include "../../common/mstdlib.h"
+#include "../../common/tree.h"
+#include "../../common/absstream.h"
+#include "../../common/memfile.h"
+#include "../../common/vlong.h"
+#include "../../common/random.h"
+#include "../../common/datetime.h"
+#include "../../crypto/crypto.h"
+#include "../../crypto/rsa.h"
+#include "../../crypto/md5.h"
+#include "../../crypto/primefld.h"
+#include "../../crypto/primeec.h"
+#include "../../crypto/pubcrypto.h"
+#include "../../asn1/oiddefs.h"
+#include "../../asn1/parseasn1.h"
+#include "../../crypto/ca_mgmt.h"
+#include "../../asn1/parsecert.h"
+#include "../../asn1/derencoder.h"
+#include "../../crypto/cert_store.h"
+#include "../../crypto/pkcs_common.h"
+#include "../../crypto/pkcs7.h"
+#include "../../crypto/pkcs10.h"
+#include "../../cert_enroll/cert_enroll.h"
+#include "../../http/http_context.h"
+#include "../../common/dynarray.h"
+#include "../../crypto/pki_client_common.h"
+#include "../../trustedge/scep/trustedge_scep_defn.h"
+#include "../../trustedge/scep/trustedge_scep_context.h"
+
+#ifdef __ENABLE_DIGICERT_TAP__
+#include "../../tap/tap.h"
+#include "../../trustedge/utils/trustedge_tap.h"
+#endif
+
+/*------------------------------------------------------------------*/
+
+static scepSettings mScepSettings;
+
+/*------------------------------------------------------------------*/
+
+extern scepSettings*
+SCEP_scepSettings(void)
+{
+    return &mScepSettings;
+}
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS SCEP_CONTEXT_createContext(scepContext **ppNewContext, sbyte4 roleType)
+{
+    MSTATUS status = OK;
+
+    if (!ppNewContext)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+    *ppNewContext = NULL;
+
+    if (roleType != SCEP_CLIENT && roleType != SCEP_SERVER)
+    {
+        status = ERR_SCEP_INVALID_ROLETYPE;
+        goto exit;
+    }
+
+    if (NULL == (*ppNewContext = (scepContext*) MALLOC(sizeof(scepContext))))
+    {
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
+    }
+
+    /* initialize */
+    if (OK > (status = DIGI_MEMSET((ubyte*)(*ppNewContext), 0x00, sizeof(scepContext))))
+        goto exit;
+
+    /* no need to create this for non-pkcs operation.
+     * But since the context can be reused for different scep requests, we will create this anyway. */
+#ifdef __ENABLE_DIGICERT_SCEP_CLIENT__
+    if (NULL == ((*ppNewContext)->pPkcsCtx = (pkcsCtxInternal*) MALLOC(sizeof(pkcsCtxInternal))))
+    {
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
+    }
+    /* initialize */
+    if (OK > (status = DIGI_MEMSET((ubyte*)(*ppNewContext)->pPkcsCtx, 0x00, sizeof(pkcsCtxInternal))))
+        goto exit;
+#endif
+
+    (*ppNewContext)->roleType = roleType;
+exit:
+    if (OK > status)
+    {
+        /* release memory in case of failure */
+        if (ppNewContext && *ppNewContext)
+        {
+            if ((*ppNewContext)->pTransAttrs)
+            {
+                FREE((*ppNewContext)->pTransAttrs);
+            }
+#ifdef __ENABLE_DIGICERT_SCEP_CLIENT__
+            if ((*ppNewContext)->pPkcsCtx)
+            {
+                FREE((*ppNewContext)->pPkcsCtx);
+            }
+#endif
+            FREE(*ppNewContext);
+            *ppNewContext = NULL;
+        }
+    }
+
+    return status;
+}
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS SCEP_CONTEXT_resetContext(scepContext *pScepContext)
+{
+    return SCEP_CONTEXT_resetContextEx(pScepContext, FALSE);
+}
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS
+SCEP_CONTEXT_releaseRequestInfo(requestInfo *pReqInfo)
+{
+    if (NULL == pReqInfo)
+        return OK;
+
+    switch (pReqInfo->type)
+    {
+        case scep_PKCSReq:
+            (void) CRYPTO_uninitAsymmetricKey(&pReqInfo->value.certInfoAndReqAttrs.pubKey, NULL);
+
+            if (NULL != pReqInfo->value.certInfoAndReqAttrs.pCsrCtx)
+            {
+                (void) CERT_ENROLL_cleanupCsrCtx(pReqInfo->value.certInfoAndReqAttrs.pCsrCtx);
+                (void) DIGI_MEMSET_FREE((ubyte **) &pReqInfo->value.certInfoAndReqAttrs.pCsrCtx, sizeof(CertCsrCtx));
+            }
+
+            break;
+
+        case scep_GetCertInitial:
+            if (pReqInfo->value.issuerAndSubject.pIssuer)
+            {
+                CA_MGMT_freeCertDistinguishedName(&pReqInfo->value.issuerAndSubject.pIssuer);
+            }
+
+            if (pReqInfo->value.issuerAndSubject.pSubject)
+            {
+                CA_MGMT_freeCertDistinguishedName(&pReqInfo->value.issuerAndSubject.pSubject);
+            }
+            break;
+        case scep_GetCert:
+            if (pReqInfo->value.issuerAndSerialNo.pIssuer)
+            {
+                CA_MGMT_freeCertDistinguishedName(&pReqInfo->value.issuerAndSerialNo.pIssuer);
+            }
+            if (pReqInfo->value.issuerAndSerialNo.serialNo)
+            {
+                FREE(pReqInfo->value.issuerAndSerialNo.serialNo);
+            }
+            break;
+        case scep_GetCRL:
+            if (pReqInfo->value.issuerSerialNoAndDistPts.pIssuer)
+            {
+                CA_MGMT_freeCertDistinguishedName(&pReqInfo->value.issuerSerialNoAndDistPts.pIssuer);
+            }
+            if (pReqInfo->value.issuerSerialNoAndDistPts.serialNo)
+            {
+                FREE(pReqInfo->value.issuerSerialNoAndDistPts.serialNo);
+            }
+            if (pReqInfo->value.issuerSerialNoAndDistPts.distPts)
+            {
+                FREE(pReqInfo->value.issuerSerialNoAndDistPts.distPts);
+            }
+
+            break;
+        case scep_GetCACert:
+        case scep_GetCACertChain:
+        case scep_GetNextCACert:
+        case scep_GetCACaps:
+        case scep_PublishCRL:
+            if (pReqInfo->value.caIdent.ident)
+            {
+                FREE(pReqInfo->value.caIdent.ident);
+            }
+            break;
+        case scep_RevokeCert:
+            if (pReqInfo->value.revokeCert.serialNo)
+            {
+                FREE(pReqInfo->value.revokeCert.serialNo);
+            }
+            break;
+        case scep_RegisterEndEntity:
+            if (pReqInfo->value.endEntityInfo.pSubject)
+            {
+                CA_MGMT_freeCertDistinguishedName(&pReqInfo->value.endEntityInfo.pSubject);
+            }
+            if (pReqInfo->value.endEntityInfo.password)
+            {
+                FREE(pReqInfo->value.endEntityInfo.password);
+            }
+        default:
+            break;
+    }
+    FREE(pReqInfo);
+    return OK;
+}
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS SCEP_CONTEXT_resetContextEx(scepContext *pScepContext, intBoolean resetForContinue)
+{
+    MSTATUS status = OK;
+
+    if (!pScepContext)
+
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+#ifdef __ENABLE_DIGICERT_SCEP_CLIENT__
+
+    pScepContext->useHttpPOST = FALSE;
+
+#endif
+
+    if (pScepContext->pTransAttrs)
+    {
+        /* reset transaction attributes, except transactionId, which may be needed for polling */
+        pScepContext->pTransAttrs->failinfo = 0;
+        pScepContext->pTransAttrs->messageType = 0;
+        pScepContext->pTransAttrs->pkiStatus = 0;
+
+        /* do not reset useHttpPOST or transactionID if we will continue, as in polling */
+        if (!resetForContinue)
+        {
+            if (pScepContext->pTransAttrs->transactionID)
+            {
+                FREE(pScepContext->pTransAttrs->transactionID);
+                pScepContext->pTransAttrs->transactionID = NULL;
+                pScepContext->pTransAttrs->transactionIDLen = 0;
+            }
+        }
+
+        if (pScepContext->pTransAttrs->senderNonce)
+        {
+            FREE(pScepContext->pTransAttrs->senderNonce);
+            pScepContext->pTransAttrs->senderNonce = NULL;
+            pScepContext->pTransAttrs->senderNonceLen = 0;
+        }
+
+        if (pScepContext->pTransAttrs->recipientNonce)
+        {
+            FREE(pScepContext->pTransAttrs->recipientNonce);
+            pScepContext->pTransAttrs->recipientNonce = NULL;
+            pScepContext->pTransAttrs->recipientNonceLen = 0;
+        }
+
+        if (!resetForContinue)
+        {
+            FREE(pScepContext->pTransAttrs);
+            pScepContext->pTransAttrs = NULL;
+        }
+    }
+    if (pScepContext->pReceivedData)
+    {
+        FREE(pScepContext->pReceivedData);
+        pScepContext->pReceivedData = NULL;
+        pScepContext->receivedDataLength = 0;
+    }
+
+    if (pScepContext->pSendingData)
+    {
+        FREE(pScepContext->pSendingData);
+        pScepContext->pSendingData = NULL;
+        pScepContext->sendingDataLength = 0;
+    }
+
+    /* reset requestInfo */
+    if (pScepContext->pReqInfo)
+    {
+        SCEP_CONTEXT_releaseRequestInfo(pScepContext->pReqInfo);
+        pScepContext->pReqInfo = NULL;
+    }
+exit:
+    return status;
+}
+
+/*------------------------------------------------------------------*/
+
+extern MSTATUS SCEP_CONTEXT_releaseContext(scepContext **ppReleaseContext)
+{
+    MSTATUS status = OK;
+
+    if ((NULL == ppReleaseContext) || (NULL == (*ppReleaseContext)))
+        goto exit;
+
+#ifdef __ENABLE_DIGICERT_SCEP_CLIENT__
+    if ((*ppReleaseContext)->pPkcsCtx)
+    {
+
+#ifdef __ENABLE_DIGICERT_TAP__
+        if ((*ppReleaseContext)->pPkcsCtx->isTap)
+        {
+            if ((uintptr) (*ppReleaseContext)->pPkcsCtx->pSignKey != (uintptr) (*ppReleaseContext)->pPkcsCtx->pKey)
+            {
+                (void) TRUSTEDGE_TAP_unloadKey((*ppReleaseContext)->pPkcsCtx->pSignKey);
+            }
+            (void) TRUSTEDGE_TAP_unloadKey((*ppReleaseContext)->pPkcsCtx->pKey);
+        }
+#endif
+        if ((uintptr) (*ppReleaseContext)->pPkcsCtx->pSignKey != (uintptr) (*ppReleaseContext)->pPkcsCtx->pKey)
+        {
+            (void) CRYPTO_uninitAsymmetricKey((*ppReleaseContext)->pPkcsCtx->pSignKey, NULL);
+            (void) DIGI_FREE((void **) &(*ppReleaseContext)->pPkcsCtx->pSignKey);
+        }
+        (void) CRYPTO_uninitAsymmetricKey((*ppReleaseContext)->pPkcsCtx->pKey, NULL);
+        (void) DIGI_FREE((void **) &(*ppReleaseContext)->pPkcsCtx->pKey);
+
+        if (SCEP_scepSettings()->funcPtrCertificateStoreRelease &&
+            (*ppReleaseContext)->pPkcsCtx->CACertDescriptor.pCertificate != (*ppReleaseContext)->pPkcsCtx->RACertDescriptor.pCertificate)
+        {
+            SCEP_scepSettings()->funcPtrCertificateStoreRelease(0, &(*ppReleaseContext)->pPkcsCtx->CACertDescriptor);
+        }
+        if (SCEP_scepSettings()->funcPtrCertificateStoreRelease)
+        {
+            SCEP_scepSettings()->funcPtrCertificateStoreRelease(0, &(*ppReleaseContext)->pPkcsCtx->RACertDescriptor);
+        }
+        if ((*ppReleaseContext)->pPkcsCtx->pRACertificate)
+        {
+            if ((*ppReleaseContext)->pPkcsCtx->pCACertificate != (*ppReleaseContext)->pPkcsCtx->pRACertificate)
+            {
+                TREE_DeleteTreeItem((TreeItem*)(*ppReleaseContext)->pPkcsCtx->pCACertificate);
+            }
+            TREE_DeleteTreeItem((TreeItem*)(*ppReleaseContext)->pPkcsCtx->pRACertificate);
+        }
+        if ((*ppReleaseContext)->pPkcsCtx->requesterCertDescriptor.pCertificate)
+        {
+            if (0 == (*ppReleaseContext)->pPkcsCtx->requesterCertDescriptor.cookie)
+            {
+                FREE((*ppReleaseContext)->pPkcsCtx->requesterCertDescriptor.pCertificate);
+            } else
+            {
+                if (SCEP_scepSettings()->funcPtrCertificateStoreRelease)
+                {
+                    SCEP_scepSettings()->funcPtrCertificateStoreRelease(0, &(*ppReleaseContext)->pPkcsCtx->requesterCertDescriptor);
+                }
+            }
+        }
+        if ((*ppReleaseContext)->pPkcsCtx->pRequesterCert)
+        {
+            TREE_DeleteTreeItem((TreeItem*)(*ppReleaseContext)->pPkcsCtx->pRequesterCert);
+        }
+        FREE((*ppReleaseContext)->pPkcsCtx);
+    }
+#endif
+
+    if ((*ppReleaseContext)->pReqInfo)
+    {
+        SCEP_CONTEXT_releaseRequestInfo((*ppReleaseContext)->pReqInfo);
+        (*ppReleaseContext)->pReqInfo = NULL;
+    }
+
+    if ((*ppReleaseContext)->pTransAttrs)
+    {
+        if ((*ppReleaseContext)->pTransAttrs->transactionID)
+        {
+            FREE((*ppReleaseContext)->pTransAttrs->transactionID);
+        }
+        if ((*ppReleaseContext)->pTransAttrs->senderNonce)
+        {
+            FREE((*ppReleaseContext)->pTransAttrs->senderNonce);
+        }
+        if ((*ppReleaseContext)->pTransAttrs->recipientNonce)
+        {
+            FREE((*ppReleaseContext)->pTransAttrs->recipientNonce);
+        }
+        FREE((*ppReleaseContext)->pTransAttrs);
+    }
+    if ((*ppReleaseContext)->pReceivedData)
+        FREE((*ppReleaseContext)->pReceivedData);
+
+    FREE(*ppReleaseContext);
+    *ppReleaseContext = NULL;
+
+exit:
+    return status;
+
+}
+
+/*------------------------------------------------------------------*/
+
+
+#endif /* #ifdef __ENABLE_DIGICERT_SCEP_CLIENT__ */

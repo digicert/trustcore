@@ -54,6 +54,7 @@ function show_usage
   echo "   --ssh-no-chachapoly - Build with SSH algorithms minus chachapoly."
   echo "   --ssl             - Build with NanoSSL support."
   echo "   --tpm2            - Build with TPM2.0 support."
+  echo "   --tee             - Build with TEE support."
   echo "   --scep            - Build with SCEP support."
   echo "   --ike             - Build with IKE support."
   echo "   --ipv6            - Build with IPV6 enabled."
@@ -338,6 +339,10 @@ do
         --tpm2)
             echo "Building with TPM2 support...";
             BUILD_OPTIONS+=" -DCM_ENABLE_TPM2=ON"
+            ;;
+        --tee)
+            echo "Building with TEE support...";
+            BUILD_OPTIONS+=" -DCM_ENABLE_TEE=ON"
             ;;
         --pss-var-salt)
             echo "Building with variable salt length for TAP...";

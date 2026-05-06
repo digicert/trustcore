@@ -174,7 +174,7 @@ static const ubyte kRFC5758_HASHTYPE_TO_RSA_HASHTYPE[] =
     ht_sha512
 };
 
-#if defined(__ENABLE_DIGICERT_CMS__) && defined(__ENABLE_DIGICERT_CMC__) && !defined(__RTOS_WIN32__)
+#if defined(__ENABLE_DIGICERT_CMS__) && defined(__ENABLE_DIGICERT_CMC__)
 const ubyte cct_pkiData_oid[] =
 {8, 0x2B, 0x06, 0x01, 0x05, 0x05, 0x07, 0x0C, 0x02}; /* 1.3.6.1.5.5.7.12.2 */
 const ubyte cct_PKIResponse_OID[] =

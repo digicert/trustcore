@@ -1,0 +1,11 @@
+MSS_SRC_DIR/trustedge/agent/trustedge_agent.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_artifact.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_attributes.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_certificate.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_debug.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_persist.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_policy.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_protobuf.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_updatepolicy.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_linux.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_windows.c

@@ -12,6 +12,7 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
+ *
  *@file      smp_PKCS11_interface.c
  *@brief     NanoSMP provider Interface function definition that an application
  *           (NanoTAP) will use to communicate/manage PKCS11 SMP module plugin.

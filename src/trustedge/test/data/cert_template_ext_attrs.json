@@ -1,0 +1,63 @@
+{
+    "policyService": "CertificatePolicy",
+    "deviceId": "abd104bd-54c4-49a8-b9be-db7edc576787",
+    "accountId": "ddcef16b-891e-4b08-93c2-df6cac44f407",
+    "mode": "certificate_specification",
+    "certificatePolicyId": "TEST_POLICY_ID_DO_NOT_CHANGE",
+    "deviceGroupId": "c30853d1-1961-4507-a416-fac2b63585c5",
+    "certificateSpecification": {
+        "certificateRequestFormat": {
+            "format": "PKCS10"
+        },
+        "keyCertAttributes": {
+            "keyAlgorithm": [ "RSA+2048" ],
+            "source": "SW"
+        },
+        "csrAttributes": {
+            "fields": [
+                {
+                    "id": "signature_algorithm",
+                    "defaultValue": [ "sha256WithRSA" ]
+                },
+                {
+                    "id": "subject.common_name",
+                    "defaultValue": [ "TrustEdge-Dev" ]
+                }
+            ],
+            "extAttrs": [
+                {
+                    "oid": "1.1.1.1",
+                    "tlv": [ "INTEGER 12 13" ]
+                },
+                {
+                    "oid": "1.1.1.2",
+                    "tlv": [ "IA5STRING myIA5string" ]
+                },
+                {
+                    "oid": "1.1.1.3",
+                    "tlv": [ "UTF8STRING myUTF8string" ]
+                },
+                {
+                    "oid": "1.1.1.4",
+                    "tlv": [ "BMPSTRING myBMPstring" ]
+                },
+                {
+                    "oid": "1.1.1.5",
+                    "tlv": [ "BITSTRING 42 17" ]
+                },
+                {
+                    "oid": "1.1.1.6",
+                    "tlv": [ "IA5STRING critical" ],
+                    "critical": true
+                },
+                {
+                    "oid": "1.1.1.7",
+                    "tlv": [ "SEQUENCE",
+                                "IA5STRING 1st-child",
+                                "UTF8STRING 2nd-child",
+                                "BMPSTRING 3nd-child" ]
+                }
+            ]
+        }
+    }
+}

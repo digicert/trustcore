@@ -1,0 +1,115 @@
+name: TrustEdgev2 TPM2 Tools
+permissions:
+  contents: read
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - .github/workflows/trustedge_tpm2_tools.yml
+env:
+  NEXUS_CMAKE_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/cmake/cmake-3.22.1/cmake-3.22.1-linux-x86_64.sh
+  NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu.tar.xz
+  NEXUS_LINARO_AARCH64_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz
+  NEXUS_LINARO_ARM_SYSROOT_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/sysroot-glibc-linaro-2.23-2018.12-arm-linux-gnueabihf.tar.xz
+  NEXUS_LINARO_ARM_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
+jobs:
+  TrustEdge_v2_TPM2_Tools:
+    runs-on: [digicert-large]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Generate TrustEdge version number
+        id: trustedge-client-version
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3
+        with:
+          version_format: "${major}.${minor}.${patch}-${increment}"
+          tag_prefix: "trustedge_"
+          branch: main
+          search_commit_body: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O -v
+          export CMAKE_DIR=/opt/cmake
+          sudo mkdir $CMAKE_DIR
+          sudo bash cmake-3.22.1-linux-x86_64.sh --skip-license --prefix=$CMAKE_DIR
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          cmake --version
+      - name: Build TPM2 Tools
+        run: |
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          ./scripts/ci/trustedge/build_trustedge_tools.sh
+      - name: Push Artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tpm2_tools-x86_64-${{ steps.trustedge-client-version.outputs.version }}
+          path: dist/*.zip
+      - name: Install toolchain for RPI64
+        run: |
+          sudo mkdir -p /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL }} -O -v
+          sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_GCC_REPO_URL }} -O -v
+          sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
+      - name: Build TPM2 Tools for RPI64
+        run: |
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          ./scripts/ci/trustedge/build_trustedge_tools.sh --toolchain rpi64
+      - name: Push Artifact for RPI64
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tpm2_tools-aarch64-${{ steps.trustedge-client-version.outputs.version }}
+          path: dist/*.zip
+      - name: Install toolchain for RPI32
+        run: |
+          sudo mkdir -p /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_SYSROOT_REPO_URL }} -O -v
+          sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
+          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_GCC_REPO_URL }} -O -v
+          sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
+      - name: Build TPM2 Tools for RPI32
+        run: |
+          export CMAKE_DIR=/opt/cmake
+          export PATH=$CMAKE_DIR/bin:$PATH
+          ./scripts/ci/trustedge/build_trustedge_tools.sh --toolchain rpi32
+      - name: Push Artifact for RPI32
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tpm2_tools-arm32-${{ steps.trustedge-client-version.outputs.version }}
+          path: dist/*.zip
+      
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="TrustEdgev2 TPM2 Tools Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="TrustEdgev2 TPM2 Tools Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi  
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

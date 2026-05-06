@@ -34,6 +34,9 @@ set(LIB_TYPE "SHARED" CACHE STRING "Type of library to build. Can be SHARED or S
 # Include Builder.cmake file for helper methods and build configuration setup
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../shared_cmake)
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+if(BUILD_FOR_OSI)
+  set(LIB_DIR "${MSS_DIR}/lib")
+endif()
 include(MocPlatform)
 include(build_rc_file)
 project(nanomqtt C)
@@ -83,22 +86,30 @@ if(CM_ENABLE_STREAMING)
     builder_add_flags(MOCANA_FLAGS "${CMAKE_CURRENT_SOURCE_DIR}/mocana_streaming_flags.txt")
 endif()
 builder_finalize_flags(MOCANA_FLAGS)
-add_definitions("${MOCANA_FLAGS}")
+add_definitions(${MOCANA_FLAGS})
 
 # Add extra definitions
 builder_finalize_flags(EXTRA_DEFINITIONS)
-add_definitions("${EXTRA_DEFINITIONS}")
+add_definitions(${EXTRA_DEFINITIONS})
 
 # Add include directories
 builder_add_includes(MOCANA_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/mss_includes.txt")
 builder_finalize_incudes(MOCANA_INCLUDES)
-include_directories("${MOCANA_INCLUDES}")
+include_directories(${MOCANA_INCLUDES})
 
 # Build nanomqtt library
 if(CM_BUILD_NANOMQTT)
     builder_add_sources(NANOMQTT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/nanomqtt/mss_sources.txt")
     builder_finialize_sources(NANOMQTT_SOURCES)
-    add_library(${PROJECT_NAME} ${LIB_TYPE} "${NANOMQTT_SOURCES}")
+    add_library(${PROJECT_NAME} ${LIB_TYPE} ${NANOMQTT_SOURCES})
+    if(BUILD_FOR_OSI)
+      add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+          $<TARGET_FILE:${PROJECT_NAME}>
+          "${LIB_DIR}")
+    endif()
 
     if("SHARED" STREQUAL "${LIB_TYPE}")
         if(CM_ENABLE_SSL)
@@ -116,10 +127,18 @@ endif()
 # Build MQTT client sample
 if(CM_BUILD_MQTT_CLIENT_SAMPLE)
     if(CM_BUILD_LIBRARY AND CM_ENABLE_COVERAGE)
-        builder_add_sources(CLIENT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/client/mss_sources.txt")
+        if(BUILD_FOR_OSI)
+            builder_add_sources(CLIENT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/client/mss_sources_osi.txt")
+        else()
+            builder_add_sources(CLIENT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/client/mss_sources.txt")
+        endif()
         builder_add_sources(CLIENT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/nanomqtt/mss_sources.txt")
     else()
-        builder_add_sources(CLIENT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/client/mss_sources.txt")
+        if(BUILD_FOR_OSI)
+            builder_add_sources(CLIENT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/client/mss_sources_osi.txt")
+        else()
+            builder_add_sources(CLIENT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/client/mss_sources.txt")
+        endif()
     endif()
     builder_finialize_sources(CLIENT_SOURCES)
     if(CM_BUILD_LIBRARY)

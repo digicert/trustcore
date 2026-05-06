@@ -1,0 +1,50 @@
+{
+  "version" : "1.0",
+  "name" : "EMEA Firmware Version 1.0",
+  "artifactVersion" : "1.0",
+  "description" : "EMEA Firmware Version 1.0",
+  "artifactType" : "Configuration",
+  "actions" : [ {
+    "action" : "rollBack",
+    "handler" : {
+      "handlerType" : "script",
+      "handlerSubType" : "bash"
+    },
+    "actionPath" : "script/rollbackconf.sh"
+  }, {
+    "action" : "install",
+    "handler" : {
+      "handlerType" : "script",
+      "handlerSubType" : "bash"
+    },
+    "actionPath" : "script/installpkg.sh",
+    "actionArgument" : "package/digicertdemopkg.deb"
+  } ],
+  "components" : [ {
+    "name" : "component1",
+    "location" : "./payload.zip",
+    "checksum" : "sha256:ec80eab2ce16d2469bbb856c1e8e76570d0d9718b63736379a899b0413a66c91"
+  } ],
+  "requirements" : {
+    "device_attributes": [
+    { 
+      "key": "location", 
+      "value": ["val1","va2"]
+    },
+    { 
+      "key": "key2", 
+      "value": ["val1","va2"]
+    }
+    ]
+  },
+  "dependsOn": [],
+  "provides": [ "c", "d" ],
+  "signature": [
+    {
+        "sigAlg" : "ES256",
+        "sig" : "JTSYU+14P6oOLkojlm84ISP/ujYY7X/WZBjQlLDK72FJka9qZSOBZYhP/GMa4Wc+iySIewO+HIc70DiRLWaO1g==",
+        "sigFormat" : "base64",
+        "certificate": "MIIBrjCCAVMCCQDLUYNujRFIKDAKBggqhkjOPQQDAjBgMQswCQYDVQQGEwJVUzELMAkGA1UECAwCQ0ExCzAJBgNVBAcMAk1WMQ8wDQYDVQQKDAZNb2NhbmExCzAJBgNVBAsMAlFBMRkwFwYDVQQDDBBvcGVuc3NsLWVjZHNhLWNhMB4XDTIyMDcxMzIyMDU1NFoXDTI0MDcxMjIyMDU1NFowXTELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMQswCQYDVQQHDAJNVjEPMA0GA1UECgwGTW9jYW5hMQswCQYDVQQLDAJRQTEWMBQGA1UEAwwNb3BlbnNzbC1lY2RzYTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABFjkMp7aNSWBNc/oFFvt99TKgdT3ot691pdRH0CZsD038Azfzd4AU8cfMqrksOchnCIO4iU+Y6uG8ZK9hRAT1A8wCgYIKoZIzj0EAwIDSQAwRgIhAIOtcIgtpoThLCLW5ZfITtO+2yCohskD2kYPCLP7rKQ4AiEAqdHeAhkmBv6fxhEuZmvlR5e0Sp5Ez/ZMxtRVdb01FWg="
+    }
+  ]
+}
