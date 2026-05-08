@@ -268,6 +268,15 @@ do
             SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
             OSSL_VER="3"
             ;;
+    --openssl_3_5_0)
+	    echo "Build with openssl 3.5.0..."
+            OPENSSL_OPTION=" $1"
+            OPENSSL_LIB_OPTION="openssl-3.5.0"
+            OPENSSL_ENGINE_TYPE=
+            OPENSSL_VER="3.5.0"
+            SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
+            OSSL_VER="3"
+            ;;
         --rsa1024)
             echo "Build with support for RSA 1024";
             RSA1024_OPTION=" $1"
@@ -562,7 +571,7 @@ do
     if [ "$pass" == "second" ]; then
         cd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}
         if [[ "$OSSL_CONFIG_CMD" == "" ]]; then
-            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]; then
+            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
                 ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 enable-mocana-cryptointerface ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test ${OSSL_EXTRA_OPTS} ${OSSL_PQC_OPTION} ${LEGACY_FIPS_DEFINE}
             else
                 ./config $OPENSSL_GDB_OPTIONS $OPENSSL_ENGINE_TYPE
@@ -574,14 +583,14 @@ do
             fi
         else
             eval ${OSSL_CONFIG_CMD}
-            if [[ "$OPENSSL_VER" == "1.1.1" ]] || [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]; then
+            if [[ "$OPENSSL_VER" == "1.1.1" ]] || [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
                 make $FIPS_MAKE_OPTION $REDEFINE_LIB_OPTION $STRICT_DH_OPTION_OSSL build_generated
             fi
         fi
 
         if [[ "$STATIC_OPTION" == "" ]]; then
             make clean
-            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]
+            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
             then
                 make build_libs
                 cp ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/libcrypto.so* ${MSS_DIR}/${BIN_DIR}
@@ -612,7 +621,7 @@ do
 done
 
 if [[ "$STATIC_OPTION" == "" ]]; then
-    if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]
+    if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
     then
         cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so
         cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so.3

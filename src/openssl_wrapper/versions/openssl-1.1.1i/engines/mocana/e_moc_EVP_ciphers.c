@@ -6117,7 +6117,7 @@ static RSA_METHOD moc_evp_rsa = {
 
 #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
 static const RSA_METHOD *moc_default_RSA_method = &moc_evp_rsa;
-const RSA_METHOD *MOC_RSA_get_default_method(void)
+const RSA_METHOD *DIGI_RSA_get_default_method(void)
 {
     return moc_default_RSA_method;
 }
@@ -7248,7 +7248,7 @@ static DSA_METHOD moc_evp_dsa_meth = {
 
 #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
 static const DSA_METHOD *moc_default_DSA_method = &moc_evp_dsa_meth;
-const DSA_METHOD *MOC_DSA_get_default_method(void)
+const DSA_METHOD *DIGI_DSA_get_default_method(void)
 {
     return moc_default_DSA_method;
 }
@@ -8169,7 +8169,7 @@ static DH_METHOD moc_evp_dh_meth = {
 
 #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
 static const DH_METHOD *moc_default_DH_method = &moc_evp_dh_meth;
-const DH_METHOD *MOC_DH_get_default_method(void)
+const DH_METHOD *DIGI_DH_get_default_method(void)
 {
     return moc_default_DH_method;
 }
@@ -8855,7 +8855,7 @@ static EC_KEY_METHOD moc_evp_ecc_meth = {
 
 #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
 static const EC_KEY_METHOD *moc_default_EC_KEY_method = &moc_evp_ecc_meth;
-const EC_KEY_METHOD *MOC_EC_KEY_get_default_method(void)
+const EC_KEY_METHOD *DIGI_EC_KEY_get_default_method(void)
 {
     return moc_default_EC_KEY_method;
 }

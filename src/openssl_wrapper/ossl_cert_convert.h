@@ -19,7 +19,7 @@
 #define OSSL_CERT_CONVERT_H
 
 extern MSTATUS ossl_CERT_STORE_addGenericIdentity(SSL_CTX *ctx, EVP_PKEY *pkey);
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && defined(__ENABLE_DIGICERT_TAP__)
+#if ((defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)) && defined(__ENABLE_DIGICERT_TAP__))
 extern void ossl_clearCredentials(void);
 #endif
 #endif

@@ -35,7 +35,7 @@
 #define SSL_ENC_SEED_IDX        11
 #define SSL_ENC_AES128GCM_IDX   12
 #define SSL_ENC_AES256GCM_IDX   13
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 # define SSL_ENC_AES128CCM_IDX   14
 # define SSL_ENC_AES256CCM_IDX   15
 # define SSL_ENC_AES128CCM8_IDX  16
@@ -44,17 +44,17 @@
 # define SSL_ENC_CHACHA_IDX      19
 # define SSL_ENC_ARIA128GCM_IDX  20
 # define SSL_ENC_ARIA256GCM_IDX  21
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 # define SSL_ENC_MAGMA_IDX       22
 # define SSL_ENC_KUZNYECHIK_IDX  23
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #endif
 /* SSL_ENC_NUM_IDX macro is used in ossl_ciph.c when declaring the cipher table
  * list. Different versions of OpenSSL support different sets of cipher
  * algorithms. When adding support for a new version, update the macro
  * appropriately and the cipher list in ossl_ciph.c.
  */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #define SSL_ENC_NUM_IDX         24
 #elif defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__)
 #define SSL_ENC_NUM_IDX         22
@@ -114,7 +114,7 @@
 # define SSL_GOST89MAC12         0x00000100U
 # define SSL_GOST12_512          0x00000200U
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 # define SSL_MD_MD5_IDX  0
 # define SSL_MD_SHA1_IDX 1
 # define SSL_MD_GOST94_IDX 2
@@ -127,7 +127,7 @@
 # define SSL_MD_MD5_SHA1_IDX 9
 # define SSL_MD_SHA224_IDX 10
 # define SSL_MD_SHA512_IDX 11
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)  || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 # define SSL_MD_MAGMAOMAC_IDX 12
 # define SSL_MD_KUZNYECHIKOMAC_IDX 13
 # define SSL_MAX_DIGEST 14
@@ -203,7 +203,7 @@
 # define SSL_kECDHEPSK           0x00000080U
 # define SSL_kDHEPSK             0x00000100U
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 /*
  * Define the Bitmasks for SSL_CIPHER.algorithms.
  * This bits are used packed as dense as possible. If new methods/ciphers
@@ -358,7 +358,7 @@
 # define SSL_ARIA128GCM          0x00100000U
 # define SSL_ARIA256GCM          0x00200000U
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 # define SSL_AESGCM              (SSL_AES128GCM | SSL_AES256GCM)
 # define SSL_AESCCM              (SSL_AES128CCM | SSL_AES256CCM | SSL_AES128CCM8 | SSL_AES256CCM8)
 # define SSL_AES                 (SSL_AES128|SSL_AES256|SSL_AESGCM|SSL_AESCCM)
@@ -1873,7 +1873,7 @@
 #define SRTP_AEAD_AES_128_GCM  0x0007
 #define SRTP_AEAD_AES_256_GCM  0x0008
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 /* OPENSSL_INIT flag 0x010000 reserved for internal use */
 #define OPENSSL_INIT_NO_LOAD_SSL_STRINGS    0x00100000L
 #define OPENSSL_INIT_LOAD_SSL_STRINGS       0x00200000L
@@ -1952,7 +1952,7 @@ int CRYPTO_THREAD_run_once(CRYPTO_ONCE *once, void (*init)(void));
 #define REHANDSHAKE_MAX_TIMER_COUNT  60 * 60 * 1000
 
 static const SSL_CIPHER cipher_aliases[] = {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     /* "ALL" doesn't include eNULL (must be specifically enabled) */
     {0, SSL_TXT_ALL, NULL, 0, 0, 0, ~SSL_eNULL, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     /* "COMPLEMENTOFALL" */

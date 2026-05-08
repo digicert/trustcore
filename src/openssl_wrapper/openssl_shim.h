@@ -46,7 +46,7 @@ typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 /* definition must match equivalent in mocana_glue.h */
 int moc_get_rsa_ex_app_data(void);
 int moc_get_ecc_ex_app_data(void);
@@ -175,7 +175,7 @@ typedef struct OSSL_sessionTicketStruct
     ubyte    *pTicket; /* Session ticket sent by the server */
 } OSSL_sessionTicket;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #define SSL_PSK_TLS13_MAX_LENGTH            (64)
 #define SSL_SESSION_TICKET_NONCE_SIZE       (64)
 #define SSL_ALPN_MAX_SIZE                   (64)
@@ -368,7 +368,7 @@ typedef MSTATUS (*NSSLsslClearAllSessionCache)(void *pPtr);
 typedef MSTATUS (*NSSLgetSharedSignatureAlgorithm)(sbyte4 connectionInstance, ubyte4 algoListIndex,
                                                    ubyte2 *pSigAlgo, ubyte isPeer);
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 typedef struct ssl_session_st SSL_SESSION;
 typedef struct ssl_cipher_st SSL_CIPHER;
 typedef MSTATUS (*NSSLsendPostHandshakeAuthCertReq)(sbyte4 connectionInstance);
@@ -416,13 +416,14 @@ typedef sbyte4  (*NSSLeccParamsToKeyBlob)(OSSL_ECCParams *pE, void *ppKeyBlob, u
 typedef MSTATUS (*NSSLextractEcKeyData)(AsymmetricKey *pAsymKey, MEccKeyTemplate **ppTemplate);
 typedef MSTATUS (*NSSLfreeEcKeyData)(AsymmetricKey *pAsymKey, MEccKeyTemplate **ppTemplate);
 typedef MSTATUS (*NSSLgetEcCurveId)(AsymmetricKey *pAsymKey, ubyte4 *pCurveId);
+typedef MSTATUS (*NSSLgetKEGroupId)(sbyte4 connectionInstance, ubyte2 *pGroupId);
 #endif
 #ifdef __ENABLE_DIGICERT_SERIALIZE__
 #if defined(__ENABLE_DIGICERT_TAP__)
 typedef MSTATUS (*NSSLserializeAsymKeyAlloc)(AsymmetricKey *pKeyToSerialize, ubyte **ppSerializedKey,
   ubyte4 *pSerializedKeyLen);
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 typedef MSTATUS (*NSSLdeserializeAsymKeyWithCreds)( ubyte *pSerializedKey, ubyte4 serializedKeyLen,
     ubyte *pPassword, ubyte4 passwordLen, AsymmetricKey *pDeserializedKey);
 typedef MSTATUS (*NSSLtapUnloadKey)(
@@ -670,10 +671,11 @@ typedef struct nssl_methods {
      NSSLextractEcKeyData     extractEcKeyData;    /* SSL_extractEcKeyData */
      NSSLfreeEcKeyData        freeEcKeyData;       /* SSL_freeEcKeyData */
      NSSLgetEcCurveId         getEcCurveId;        /* SSL_getEcCurveId */
+     NSSLgetKEGroupId         getKEGroupId;        /* SSL_getKEGroupId */
 #endif
 #ifdef __ENABLE_DIGICERT_SERIALIZE__
 #if defined(__ENABLE_DIGICERT_TAP__)
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      NSSLdeserializeAsymKeyWithCreds deserializeAsymKeyWithCreds; /* SSL_DeserializeAsymKey */
      NSSLtapUnloadKey tapUnloadKey; /* SSL_tapUnloadKey */
 #endif
@@ -745,7 +747,7 @@ typedef struct nssl_methods {
      NSSLmocMalloc            mocMalloc;            /* DIGI_MALLOC */
      NSSLmocFree              mocFree;              /* DIGI_FREE */
      NSSLgetSharedSignatureAlgorithm      getSharedSignatureAlgorithm;        /*  SSL_getSharedSignatureAlgorithm */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      NSSLsendPostHandshakeAuthCertReq     sendPostHandshakeAuthCertRequest;   /*  SSL_sendPosthandshakeAuthCertificateRequest */
      NSSLsetPskFindSessionCb              setPskFindSessionCb;                /*  SSL_setServerLookupPSKCallback  */
      NSSLsetPskUseSessionCb               setPskUseSessionCb;                 /*  SSL_CLIENT_setRetrievePSKCallback  */

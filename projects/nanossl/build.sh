@@ -69,6 +69,7 @@ function show_usage
   echo "   --openssl_1_1_1k  - Build with openssl 1_1_1k"
   echo "   --openssl_3_0_7   - Build with openssl 3_0_7"
   echo "   --openssl_3_0_12  - Build with openssl 3_0_12"
+  echo "   --openssl_3_5_0   - Build with openssl 3_5_0"
   echo "   --openssl_1_0_2u  - (OBSOLETE) Build with openssl 1_0_2u"
   echo "   --openssl_1_0_2t  - (OBSOLETE) Build with openssl 1_0_2t"
   echo "   --openssl_1_0_2p  - (OBSOLETE) Build with openssl 1_0_2p"
@@ -479,6 +480,10 @@ do
 	--openssl_3_0_12)
             echo "Building with openssl_3_0_12 libs ...";
             BUILD_OPTIONS+=" -DCM_ENABLE_SSL_OPENSSL_LIB_3_0_12=ON"
+            ;;
+    --openssl_3_5_0)
+            echo "Building with openssl_3_5_0 libs ...";
+            BUILD_OPTIONS+=" -DCM_ENABLE_SSL_OPENSSL_LIB_3_5_0=ON"
             ;;
         --openssl_1_1_1)
             echo "(OBSOLETE) Building with openssl_1_1_1 libs ...";

@@ -1,4 +1,3 @@
-/* Version: test_package */
 /*
  * ssl_cert_utils.c
  *

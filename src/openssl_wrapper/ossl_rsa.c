@@ -29,18 +29,18 @@
 #ifdef __RTOS_VXWORKS__
 #include <openssl/x509.h>
 #include "../openssl_wrapper/ossl_pem.h"
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <internal/evp_int.h>
 #include <rsa/rsa_locl.h>
 #include <dsa/dsa_locl.h>
 #include <openssl/err.h>
 #include <internal/o_dir.h>
 #include <openssl/crypto.h>
-#else /* !__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#else /* !__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #include <err.h>
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #else
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #if OPENSSL_VERSION_NUMBER < 0x010101060
 #include "crypto/rsa/rsa_locl.h"
 #include "crypto/dsa/dsa_locl.h"
@@ -61,7 +61,7 @@
 #include "../openssl_wrapper/ossl_pem.h"
 #include <crypto/err/err.h>
 #include "crypto/o_dir.h"
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #endif
 
 #include "../common/moptions.h"
@@ -168,7 +168,7 @@ int ssl_cert_type(X509 *x, EVP_PKEY *pkey)
      {
 	  return OSSL_PKEY_EC;
      }
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      else if (i == EVP_PKEY_ED448)
      {
          return OSSL_EVP_PKEY_ED448;
@@ -177,7 +177,7 @@ int ssl_cert_type(X509 *x, EVP_PKEY *pkey)
      {
          return OSSL_EVP_PKEY_ED25519;
      }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
      return -1;
 }
@@ -215,7 +215,7 @@ static int ssl_set_cert(SSL_CTX *ctx, X509 *x)
         X509_free(ctx->cert_x509);
     ctx->ossl_pkey_idx	= i;
     ctx->cert_x509 	= x;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     X509_up_ref(x);
 #else
     CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
@@ -493,7 +493,7 @@ SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey)
      }
 
     ctx->privatekey[i] = pkey;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     EVP_PKEY_up_ref(pkey);
 #else
     CRYPTO_add(&pkey->references, 1, CRYPTO_LOCK_EVP_PKEY);
@@ -598,7 +598,7 @@ static MSTATUS LoadKeyFromDSATemplate(DSA *pKey, MDsaKeyTemplate *pTemplate)
     if ( (NULL == pKey) || (NULL == pTemplate) )
         goto exit;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (NULL != pTemplate->pP)
         pKey->params.p = BN_bin2bn(pTemplate->pP, pTemplate->pLen, NULL);
     else
@@ -975,7 +975,7 @@ exit:
 }
 
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static MSTATUS LoadECXKey(ECX_KEY *pECXKey, AsymmetricKey *pAsymKey)
 {
     MSTATUS status;
@@ -1010,7 +1010,7 @@ exit:
 
     return status;
 }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #endif /* __ENABLE_DIGICERT_ECC__ */
 /*-----------------------------------------------------------------*/
 static MSTATUS moc_get_asymmetric_key_from_pem(AsymmetricKey *pAsymKey,
@@ -1116,7 +1116,7 @@ exit:
 
 /*-----------------------------------------------------------------*/
 
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static EVP_PKEY *EVP_PKEY_moc_load_from_pem_file(SSL_CTX *ctx, const char *file, int type,
                                                  pemPasswordInfo *pPasswordInfo)
 {
@@ -1528,10 +1528,10 @@ static EVP_PKEY *EVP_PKEY_moc_load_from_pem_buf(
     EC_KEY *eckey = NULL;
     int curveName;
     ubyte4 curveId;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     ECX_KEY *pECXKey = NULL;
     int ecxKeyType   = 0;
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #endif
     MRsaKeyTemplate template = { 0 };
     status = NSSL_CHK_CALL(initAsymmetricKey, &asymKey);
@@ -1948,7 +1948,7 @@ SSL_CTX_use_PrivateKey_file(SSL_CTX *ctx, const char *file, int type)
      * has been enabled then the non-standard key deserialization flow will
      * call back into the Mocana deserialization routine and fail again.
      */
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     pkey = EVP_PKEY_moc_load_from_pem_file(ctx, file, type, &passwordInfo);
     if (pkey)
     {
@@ -2090,7 +2090,12 @@ exit:
 
 void SSL_set_client_CA_list(SSL *s, STACK_OF(X509_NAME) *name_list)
 {
-     set_client_CA_list(&(s->client_CA), name_list);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *sc = (SSL_CONNECTION *)s;
+#else
+    SSL *sc = s;
+#endif
+     set_client_CA_list(&(sc->client_CA), name_list);
      if (name_list != NULL)
      {
         OSSL_setClientCAList(name_list);

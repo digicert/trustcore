@@ -31,7 +31,7 @@
 #include <openssl/opensslconf.h>
 
 #ifdef __RTOS_VXWORKS__
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <bio/bio_lcl.h>
 #include <openssl/x509.h>
 #include <internal/evp_int.h>
@@ -41,10 +41,10 @@
 #include <dh/dh_locl.h>
 #include <openssl/conf.h>
 #include <openssl/err.h>
-#else /* !__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#else /* !__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #include <openssl/x509.h>
 #include <err.h>
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #include <openssl/evp.h>
 #include <arpa/inet.h>
 
@@ -54,7 +54,7 @@
 #endif  /* IPSSL */
 
 #else   /* !__RTOS_VXWORKS__ */
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #if OPENSSL_VERSION_NUMBER < 0x010101060
 #include <crypto/bio/bio_lcl.h>
 #else
@@ -79,9 +79,9 @@
 #include <crypto/dh/dh_local.h>
 #include <include/crypto/x509.h>
 #endif
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <internal/sslconf.h>
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #include <include/openssl/conf.h>
 #include <openssl/engine.h>
 /*#include <openssl/async.h>*/
@@ -94,11 +94,16 @@
 
 #include <openssl/crypto.h>
 #include <openssl/conf.h>
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <openssl/bio.h>
 #endif
 #include <stdio.h>     /* for strcmp/snprintf */
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#include <internal/e_os.h>
+#include <internal/refcount.h>
+#else
 #include <e_os.h> /* clear_sys_error() */
+#endif
 #include <stdlib.h>    /* for getenv() */
 #ifndef __RTOS_WIN32__
 #include <dirent.h>    /* for opendir/readdir */
@@ -280,7 +285,7 @@ typedef struct
     int (*cmd) (SSL_CONF_CTX *cctx, const char *value);
     const char *str_file;
     const char *str_cmdline;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     unsigned short flags;
 #endif
     unsigned int value_type;
@@ -308,7 +313,7 @@ enum OSSL_TLS13_SignatureAlgorithm
 };
 /*------------------------------------------------------------------*/
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static int cmd_emptyStub(SSL_CONF_CTX *pCtx, const char *pValue);
 
 #define SSL_CONF_CMD(name, cmdopt, flags, type) \
@@ -323,13 +328,13 @@ static int cmd_emptyStub(SSL_CONF_CTX *pCtx, const char *pValue);
 #define SSL_CONF_CMD_SWITCH(name, flags) \
         {0, NULL, name, flags, SSL_CONF_TYPE_NONE}
 
-#else /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#else /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #define SSL_CONF_CMD(name, cmdopt, type) \
         {cmd_##name, #name, cmdopt, type}
 
 #define SSL_CONF_CMD_STRING(name, cmdopt) \
         SSL_CONF_CMD(name, cmdopt, SSL_CONF_TYPE_STRING)
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 static int cmd_CipherString(SSL_CONF_CTX *cctx, const char *value);
 static int cmd_Protocol(SSL_CONF_CTX *cctx, const char *value);
@@ -341,7 +346,7 @@ cmd_DHParameters(SSL_CONF_CTX *pConfCtx, const char *pValue);
 DH *PEM_read_bio_DHparams(BIO *bp, DH **x, pem_password_cb *cb, void *u);
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static int cmd_MinProtocol(SSL_CONF_CTX *pCtx, const char *pValue);
 static int cmd_MaxProtocol(SSL_CONF_CTX *pCtx, const char *pValue);
 static int cmd_Groups(SSL_CONF_CTX *pConfCtx, const char *pValue);
@@ -349,7 +354,7 @@ static int cmd_Groups(SSL_CONF_CTX *pConfCtx, const char *pValue);
 
 /* Array of commands available through the SSL_CONF API.
  */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static const ssl_conf_cmd_tbl ssl_conf_cmds[] = {
     SSL_CONF_CMD_STRING(CipherString, "cipher", 0),
     SSL_CONF_CMD_STRING(Protocol, NULL, 0),
@@ -434,7 +439,7 @@ static const ssl_conf_cmd_tbl ssl_conf_cmds[] = {
 extern int rsaExAppDataIndex;
 extern int eccExAppDataIndex;
 
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 # define SSL2_NUM_CIPHERS (sizeof(ssl2_ciphers)/sizeof(SSL_CIPHER))
 
@@ -623,7 +628,7 @@ OPENSSL_GLOBAL const SSL_CIPHER ssl2_ciphers[] = {
 
 # define OSSL_NELEM(x)    (sizeof(x)/sizeof((x)[0]))
 /* list of available SSLv3 ciphers (sorted by id) */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static SSL_CIPHER ssl3_ciphers[] = {
     {
      1,
@@ -9727,7 +9732,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
 };
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #define SSL_DEFAULT_CIPHER_LIST "ALL:!COMPLEMENTOFDEFAULT:!eNULL"
 /* This is the default set of TLSv1.3 ciphersuites */
 # if !defined(OPENSSL_NO_CHACHA) && !defined(OPENSSL_NO_POLY1305)
@@ -9742,7 +9747,7 @@ OPENSSL_GLOBAL SSL_CIPHER ssl3_ciphers[] = {
 #define SSL_DEFAULT_CIPHER_LIST "ALL:!EXPORT:!LOW:!aNULL:!eNULL:!SSLv2"
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static int stopped;
 static int ssl_base_inited     = 0;
 static int ssl_strings_inited  = 0;
@@ -9755,7 +9760,7 @@ static void ssl_library_stop(void);
 int SSL_state(const SSL *ssl);
 int OPENSSL_init_ssl(uint64_t opts, const OPENSSL_INIT_SETTINGS * settings);
 #endif
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 *bytesWritten);
 #endif
 static int OSSL_shutdown(void);
@@ -9767,7 +9772,7 @@ const SSL_CIPHER *ssl23_get_cipher(unsigned int u);
 int ssl3_num_ciphers(void);
 const SSL_CIPHER *ssl3_get_cipher(unsigned int u);
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #define ZEROS_26 ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 
 
 /* RGK Add support for SSLv2 and DTLS v0.9, 1,0 and 1.2 */
@@ -9839,7 +9844,7 @@ static SSL_METHOD dtlsv1_method = {1, DTLSV1_VERSION, SSL_CLIENT_METHOD|SSL_SERV
 static SSL_METHOD dtlsv1_client_method = {1, DTLSV1_VERSION, SSL_CLIENT_METHOD, "DTLSv1",dtls1_get_cipher,dtls1_num_ciphers,0,0,0};
 static SSL_METHOD dtlsv1_server_method = {1, DTLSV1_VERSION, SSL_SERVER_METHOD, "DTLSv1",dtls1_get_cipher,dtls1_num_ciphers,0,0,0};
 #endif
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ or __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ or __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 static int ssl_cipher_process_rulestr(const char *rule_str,
                                       CIPHER_ORDER **head_p,
@@ -9848,7 +9853,7 @@ static int ssl_cipher_process_rulestr(const char *rule_str,
 
 STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
                                     const char *str,
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                                     STACK_OF(SSL_CIPHER) *tls13_ciphersuites,
 #endif
                                     STACK_OF(SSL_CIPHER) **cipher_list,
@@ -9876,10 +9881,19 @@ static int ssl_mac_pkey_id[SSL_MD_NUM_IDX] = {
 static int OSSL_get_major_proto_version(int version);
 static int OSSL_verify_proto_version(int version);
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 /*
  * Clear the state machine state and reset back to MSG_FLOW_UNINITED
  */
+void ossl_statem_clear(SSL_CONNECTION *s)
+{
+    if (s == NULL) return;
+    s->orig_s.statem.state = MSG_FLOW_UNINITED;
+    s->orig_s.statem.hand_state = TLS_ST_BEFORE;
+    s->orig_s.statem.in_init = 1;
+    s->orig_s.statem.no_cert_verify = 0;
+}
+#elif defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
 void ossl_statem_clear(SSL *s)
 {
     if (s == NULL) return;
@@ -9890,7 +9904,7 @@ void ossl_statem_clear(SSL *s)
 }
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static sbyte4 OSSL_psk_get_session_callback(sbyte4 connectionInstance, ubyte *pPskIdentity,
                                              ubyte4 pskIdentityLength, ubyte **ppPsk, ubyte4 *pPskLen,
                                              intBoolean *pFreeMemory);
@@ -10192,7 +10206,7 @@ SSL_METHOD *SSLv23_method(void)
     return &sslv23_method;
 }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 extern const
 SSL_METHOD *TLS_client_method(void)
 {
@@ -10206,7 +10220,7 @@ SSL_METHOD *TLS_server_method(void)
 }
 #endif
 
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 /*------------------------------------------------------------------*/
 
@@ -10333,6 +10347,12 @@ static void writeLogErrorToFile(sbyte4 instance, MSTATUS mocError, int error, in
 static void convertMocStatus(
     SSL *pSsl, MSTATUS status, int defaultErr, int defaultReason, int *pError, int *pErrReason)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
     int error  = 0;
     int reason = 0;
 
@@ -10366,7 +10386,7 @@ static void convertMocStatus(
             break;
 
         case ERR_SSL_NO_CIPHER_MATCH:
-            if (SSL_SERVER_FLAG == pSsl->clientServerFlag)
+            if (SSL_SERVER_FLAG == pS->clientServerFlag)
             {
                 error  = SSL_F_SSL3_GET_CLIENT_HELLO;
                 reason = SSL_R_NO_SHARED_CIPHER;
@@ -10384,7 +10404,7 @@ static void convertMocStatus(
             break;
 
         case ERR_SSL_UNSUPPORTED_CURVE:
-            if (SSL_CLIENT_FLAG == pSsl->clientServerFlag)
+            if (SSL_CLIENT_FLAG == pS->clientServerFlag)
             {
                 error = SSL_F_SSL3_CONNECT;
                 reason = SSL_R_UNSUPPORTED_ELLIPTIC_CURVE;
@@ -10400,7 +10420,7 @@ static void convertMocStatus(
         case ERR_CERT_CHAIN_NO_TRUST_ANCHOR:
         case ERR_CERT_REVOKED:
         case ERR_CERT_EXPIRED:
-            if (SSL_SERVER_FLAG == pSsl->clientServerFlag)
+            if (SSL_SERVER_FLAG == pS->clientServerFlag)
             {
             error  = SSL_F_SSL3_GET_CLIENT_CERTIFICATE;
             reason = SSL_R_CERTIFICATE_VERIFY_FAILED;
@@ -10418,7 +10438,7 @@ static void convertMocStatus(
             break;
 
         case ERR_SSL_INVALID_SIGNATURE:
-            if (SSL_SERVER_FLAG == pSsl->clientServerFlag)
+            if (SSL_SERVER_FLAG == pS->clientServerFlag)
             {
             error  = SSL_F_SSL3_GET_CERT_VERIFY;
             reason = SSL_R_BAD_SIGNATURE;
@@ -10447,7 +10467,7 @@ static void convertMocStatus(
     }
 
 #if defined(__ENABLE_DIGICERT_OSSL_LOGGING__)
-    writeLogErrorToFile(pSsl->instance, status, error, reason);
+    writeLogErrorToFile(pS->instance, status, error, reason);
 #endif
 
     *pError = error;
@@ -10471,14 +10491,20 @@ static void convertMocStatusToSslErr(
 static int asyncSendDataBio(
     SSL *pSsl, const void *pDataBuf, int dataLen, int *pSent)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
     int i = 0;
     char *pData = (char *) pDataBuf;
 
     if (NULL != pSent)
         *pSent = 0;
 
-    pSsl->io_state = OSSL_IN_WRITE;
-    pSsl->orig_s.rwstate = SSL_WRITING;
+    pS->io_state = OSSL_IN_WRITE;
+    pS->orig_s.rwstate = SSL_WRITING;
 
     /* Loop until all the data is sent.
      *
@@ -10489,15 +10515,15 @@ static int asyncSendDataBio(
      */
     while (dataLen > 0)
     {
-        while (0 >= (i = BIO_write(pSsl->wbio, pData, dataLen)))
+        while (0 >= (i = BIO_write(pS->wbio, pData, dataLen)))
         {
-            if ((0 > i) || (!BIO_should_retry(pSsl->wbio)))
+            if ((0 > i) || (!BIO_should_retry(pS->wbio)))
             {
                 goto exit;
             }
         }
 
-        (void) BIO_flush(pSsl->wbio);
+        (void) BIO_flush(pS->wbio);
 
         dataLen -= i;
         pData += i;
@@ -10506,8 +10532,8 @@ static int asyncSendDataBio(
             *pSent += i;
     }
 
-    pSsl->io_state = 0;
-    pSsl->orig_s.rwstate = SSL_NOTHING;
+    pS->io_state = 0;
+    pS->orig_s.rwstate = SSL_NOTHING;
 
 exit:
 
@@ -10521,8 +10547,14 @@ MSTATUS OSSL_sessionAcquireMutex(SSL *s)
     if (NULL == s)
         return -1;
 
-    if (NULL != s->session_mutex)
-        return moc_mutexWait(s->session_mutex);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL != pS->session_mutex)
+        return moc_mutexWait(pS->session_mutex);
     else
         return -1;
 }
@@ -10537,7 +10569,13 @@ static sbyte4 asyncSendPendingData(SSL *pSsl)
     int mutexAcquired = 0;
 #endif
 
-    mySendBufLen = pSsl->szTxHoldingBuf;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    mySendBufLen = pS->szTxHoldingBuf;
     while (OK == status)
     {
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -10548,7 +10586,7 @@ static sbyte4 asyncSendPendingData(SSL *pSsl)
                 mutexAcquired = 1;
         }
 #endif
-        status = NSSL_CHK_CALL(getPreparedSslRec, pSsl->instance, pSsl->pTxHoldingBuf, &mySendBufLen);
+        status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
             {
@@ -10559,17 +10597,17 @@ static sbyte4 asyncSendPendingData(SSL *pSsl)
         if (OK > status)
             break;
 
-        i = asyncSendDataBio(pSsl, pSsl->pTxHoldingBuf, mySendBufLen, &bytesSent);
+        i = asyncSendDataBio(pSsl, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
         if (0 >= i)
         {
-            pSsl->bytesSentRemaining = mySendBufLen - bytesSent;
-            pSsl->txHoldingBufOffset = bytesSent;
+            pS->bytesSentRemaining = mySendBufLen - bytesSent;
+            pS->txHoldingBufOffset = bytesSent;
             status = 0;
             goto exit;
         }
 
-        pSsl->orig_s.rwstate = SSL_READING;
-        mySendBufLen    = pSsl->szTxHoldingBuf;
+        pS->orig_s.rwstate = SSL_READING;
+        mySendBufLen    = pS->szTxHoldingBuf;
     }
 
 exit:
@@ -10638,7 +10676,7 @@ mocNetNameToIpaddr(MOC_IP_ADDRESS_S * destAddr, ubyte * name)
 }
 #endif /* __ENABLE_DIGICERT_IPV6__ */
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 /* Return values:
  * < 0 - Fatal Error
  * = 0 - HelloVerifyRequest was sent; This is handled by stack and 0 return value is ignored
@@ -10663,6 +10701,12 @@ int DTLSv1_listen(SSL *s, BIO_ADDR *peer)
      ubyte *peerAddr = (ubyte *)"1.1.1.1";
 #endif /* (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__)) */
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
+
     if (NULL == s)
     {
         /* Error File may not be SSL3. Check*/
@@ -10670,9 +10714,15 @@ int DTLSv1_listen(SSL *s, BIO_ADDR *peer)
         return -1;
     }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)s;
+#else
+    pS = s;
+#endif
+
     ERR_clear_error();
 
-    if (!s->rbio || !s->wbio) {
+    if (!pS->rbio || !pS->wbio) {
         return -1;
     }
 
@@ -10684,11 +10734,11 @@ int DTLSv1_listen(SSL *s, BIO_ADDR *peer)
     }
     inBufferLen = OSSL_MAX_SSL_RX_MSG_SZ;
 
-    s->io_state       = OSSL_IN_READ;
-    s->orig_s.rwstate = SSL_READING;
-    while( 0 >= (i = BIO_read(s->rbio, pInBuffer, inBufferLen)))
+    pS->io_state       = OSSL_IN_READ;
+    pS->orig_s.rwstate = SSL_READING;
+    while( 0 >= (i = BIO_read(pS->rbio, pInBuffer, inBufferLen)))
     {
-        if ((i < 0)||(!BIO_should_retry(s->rbio) || (SSL_pending(s) <= 0)))
+        if ((i < 0)||(!BIO_should_retry(pS->rbio) || (SSL_pending(s) <= 0)))
         {
             goto exit;
         }
@@ -10712,15 +10762,15 @@ int DTLSv1_listen(SSL *s, BIO_ADDR *peer)
         goto exit;
     }
 
-    s->pHoldingBuf          = pInBuffer;
-    s->szHoldingBuf         = inBufferLen;
-    s->bytesRcvdRemaining   = bytesRead;
-    s->pFirstRcvdUnreadByte = s->pHoldingBuf;
+    pS->pHoldingBuf          = pInBuffer;
+    pS->szHoldingBuf         = inBufferLen;
+    pS->bytesRcvdRemaining   = bytesRead;
+    pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
 
     SSL_set_options (s, SSL_OP_COOKIE_EXCHANGE);
 
     (void) BIO_dgram_get_peer(SSL_get_rbio(s), peer);
-    ret = s->hello_verify_done = 1;
+    ret = pS->hello_verify_done = 1;
 exit:
     if (ret < 1)
         OSSL_FREE(pInBuffer);
@@ -10750,6 +10800,11 @@ static sbyte4 OSSL_DTLS_handleTimeout(SSL *s)
     ubyte4  numBytes = OSSL_MAX_SSL_MSG_SZ;
     sbyte4 status = OK;
     int i;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
     pSendBuffer = OSSL_MALLOC(numBytes);
     if (NULL == pSendBuffer)
@@ -10758,13 +10813,13 @@ static sbyte4 OSSL_DTLS_handleTimeout(SSL *s)
         goto exit;
     }
 
-    status = NSSL_CHK_CALL(dtlsHandleTimeout, s->instance);
+    status = NSSL_CHK_CALL(dtlsHandleTimeout, pS->instance);
     if(OK > status)
         goto exit;
 
-    s->io_state = OSSL_IN_WRITE;
+    pS->io_state = OSSL_IN_WRITE;
 
-    while (OK == (status = NSSL_CHK_CALL(dtlsGetSendBuffer,s->instance, pSendBuffer, &numBytes)))
+    while (OK == (status = NSSL_CHK_CALL(dtlsGetSendBuffer,pS->instance, pSendBuffer, &numBytes)))
     {
         i = asyncSendDataBio(s, pSendBuffer, numBytes, NULL);
         if (0 >= i)
@@ -10789,29 +10844,34 @@ exit:
 sbyte4 DTLS_ctrl(SSL *s, int cmd, long larg, void *parg)
 {
     sbyte4 status = 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
     switch(cmd)
     {
     case DTLS_CTRL_GET_TIMEOUT:
         if (s == NULL) {
             status = ERR_SSL_BAD_ID;
         } else {
-            status = NSSL_CHK_CALL(dtlsGetTimeout, s->instance, parg);
+            status = NSSL_CHK_CALL(dtlsGetTimeout, pS->instance, parg);
         }
         break;
     case DTLS_CTRL_HANDLE_TIMEOUT:
         status = OSSL_DTLS_handleTimeout(s);
         break;
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     case DTLS_CTRL_LISTEN:
         status = OSSL_DTLS_listen(s, parg);
         break;
 #endif
     case SSL_CTRL_CHECK_PROTO_VERSION:
-        if (s == NULL) 
+        if (pS == NULL) 
         {
             status = 0;
         }
-        else if(s->version == s->ssl_ctx->ssl_method->version)
+        else if(pS->version == pS->ssl_ctx->ssl_method->version)
         {
             status = 1;
         }
@@ -10821,10 +10881,10 @@ sbyte4 DTLS_ctrl(SSL *s, int cmd, long larg, void *parg)
         }
         break;
     case SSL_CTRL_SET_MTU:
-        if (s == NULL) {
+        if (pS == NULL) {
             status = ERR_SSL_BAD_ID;
         } else {
-            status = NSSL_CHK_CALL(dtlsIoctl, s->instance, DTLS_SET_PMTU, parg);
+            status = NSSL_CHK_CALL(dtlsIoctl, pS->instance, DTLS_SET_PMTU, parg);
         }
         break;
     default:
@@ -10877,15 +10937,32 @@ static sbyte4 OSSL_srtpInitCallback(sbyte4 connectionInstance, void *pChannelDes
 {
     SSL *pSsl = NULL;
     OSSL_SrtpProfileInfo *pProfile = (OSSL_SrtpProfileInfo*) pProfileAux;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
+
     pSsl = (SSL *) findSSLFromInstance(connectionInstance);
-    if ((NULL == pSsl) || (NULL == pSsl->ssl_ctx) || (NULL == pProfile))
+    if (NULL == pSsl)
     {
         return -1;
     }
 
-    if (pSsl->numSrtpProfileIds > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)pSsl;
+#else
+    pS = pSsl;
+#endif
+
+    if ((NULL == pS->ssl_ctx) || (NULL == pProfile))
     {
-        pSsl->selectedSrtpId = pProfile->profileId;
+        return -1;
+    }
+
+    if (pS->numSrtpProfileIds > 0)
+    {
+        pS->selectedSrtpId = pProfile->profileId;
     }
 
     return OK;
@@ -11039,8 +11116,14 @@ int SSL_set_tlsext_use_srtp(SSL *s, const char *profiles)
     if (s == NULL)
         return 1;
 
-    rVal = ssl_ctx_make_profiles(profiles, &s->orig_s.srtp_profiles,
-                                 (ubyte2 **)&s->srtpProfileIds, &s->numSrtpProfileIds);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    rVal = ssl_ctx_make_profiles(profiles, &pS->orig_s.srtp_profiles,
+                                 (ubyte2 **)&pS->srtpProfileIds, &pS->numSrtpProfileIds);
     if (0 == rVal)
     {
         OSSL_setSrtpInitCallBack();
@@ -11050,15 +11133,27 @@ int SSL_set_tlsext_use_srtp(SSL *s, const char *profiles)
 
 STACK_OF(SRTP_PROTECTION_PROFILE) *SSL_get_srtp_profiles(SSL *s)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
+
     if (s != NULL)
     {
-        if (s->orig_s.srtp_profiles != NULL)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS = (SSL_CONNECTION *)s;
+#else
+        pS = s;
+#endif
+
+        if (pS->orig_s.srtp_profiles != NULL)
         {
-            return s->orig_s.srtp_profiles;
+            return pS->orig_s.srtp_profiles;
         }
-        else if ((s->ssl_ctx != NULL) && (s->ssl_ctx->orig_ssl_ctx.srtp_profiles != NULL))
+        else if ((pS->ssl_ctx != NULL) && (pS->ssl_ctx->orig_ssl_ctx.srtp_profiles != NULL))
         {
-            return s->ssl_ctx->orig_ssl_ctx.srtp_profiles;
+            return pS->ssl_ctx->orig_ssl_ctx.srtp_profiles;
         }
     }
 
@@ -11068,12 +11163,24 @@ STACK_OF(SRTP_PROTECTION_PROFILE) *SSL_get_srtp_profiles(SSL *s)
 SRTP_PROTECTION_PROFILE *SSL_get_selected_srtp_profile(SSL *s)
 {
     SRTP_PROTECTION_PROFILE *pProfile = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
+
     if (NULL == s)
     {
         return pProfile;
     }
 
-    find_profile_by_id(s->selectedSrtpId, &pProfile);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)s;
+#else
+    pS = s;
+#endif
+
+    find_profile_by_id(pS->selectedSrtpId, &pProfile);
     return pProfile;
 }
 
@@ -11147,18 +11254,29 @@ void *SSL_get_ex_data(const SSL *s, int idx)
     if (NULL == s)
         return NULL;
 
-    if (NULL != s->ex_data.sk)
-        return (CRYPTO_get_ex_data(&s->ex_data, idx));
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = (SSL *)s;
+#endif
 
-    if (NULL != s->orig_s.ex_data.sk)
-        return (CRYPTO_get_ex_data(&s->orig_s.ex_data, idx));
+    if (NULL != pS->ex_data.sk)
+        return (CRYPTO_get_ex_data(&pS->ex_data, idx));
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (NULL != pS->orig_s.ssl.ex_data.sk)
+        return (CRYPTO_get_ex_data(&pS->orig_s.ssl.ex_data, idx));
+#else
+    if (NULL != pS->orig_s.ex_data.sk)
+        return (CRYPTO_get_ex_data(&pS->orig_s.ex_data, idx));
+#endif
 
     return NULL;
 }
 
 /*------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 /* Not implemented yet.
  */
@@ -11168,7 +11286,13 @@ int SSL_session_reused(SSL *s)
     if (s == NULL)
         return 0;
 
-    if (OK == NSSL_CHK_CALL(isSessionResumed, s->instance, &isResumed))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (OK == NSSL_CHK_CALL(isSessionResumed, pS->instance, &isResumed))
     {
         return (int) isResumed;
     }
@@ -11176,7 +11300,7 @@ int SSL_session_reused(SSL *s)
     return 0;
 }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /*------------------------------------------------------------------*/
 
@@ -11395,7 +11519,7 @@ X509 *SSL_CTX_get0_certificate(const SSL_CTX *ctx)
 void DIGI_PKEY_EX_DATA_free(void *pParent, void *pData, CRYPTO_EX_DATA *pAd,
                        int idx, long argl, void *pArgp)
 {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && defined(__ENABLE_DIGICERT_TAP__)
+#if (defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)) && defined(__ENABLE_DIGICERT_TAP__)
     MOC_EVP_KEY_DATA *pExData = (MOC_EVP_KEY_DATA *)pData;
     if (NULL != pExData->pContents)
     {
@@ -11460,7 +11584,7 @@ SSL_CTX_clear(SSL_CTX *ctx)
 
            if (ctx->privatekey[i]->type == EVP_PKEY_RSA)
            {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                exData = RSA_get_ex_data(pkey->keydata, moc_get_rsa_ex_app_data());
 #else
                exData = RSA_get_ex_data(pkey->pkey.rsa, rsaExAppDataIndex);
@@ -11469,7 +11593,7 @@ SSL_CTX_clear(SSL_CTX *ctx)
 #if (defined(__ENABLE_DIGICERT_ECC__))
            else if (ctx->privatekey[i]->type == EVP_PKEY_EC)
            {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                exData = EC_KEY_get_ex_data(pkey->keydata, moc_get_ecc_ex_app_data());
 #elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__)
                exData = EC_KEY_get_ex_data(pkey->pkey.ec, eccExAppDataIndex);
@@ -11489,7 +11613,7 @@ SSL_CTX_clear(SSL_CTX *ctx)
      if (NULL != ctx->pCertStore) {
       NSSL_CHK_CALL(releaseCertStore, &ctx->pCertStore);
      }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && defined(__ENABLE_DIGICERT_TAP__)
+#if (defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)) && defined(__ENABLE_DIGICERT_TAP__)
      ossl_clearCredentials();
 #endif
 
@@ -11515,7 +11639,7 @@ SSL_CTX_clear(SSL_CTX *ctx)
         sk_SSL_CIPHER_free(ctx->cipher_list_by_id);
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (ctx->tls13_ciphersuites != NULL)
     {
         sk_SSL_CIPHER_free(ctx->tls13_ciphersuites);
@@ -11555,11 +11679,11 @@ SSL_CTX_clear(SSL_CTX *ctx)
     }
     ctx->cert_x509_list.count = 0;
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     CRYPTO_THREAD_lock_free(ctx->orig_ssl_ctx.lock);
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (ctx->tls13_ciphersuites != NULL)
     {
         sk_SSL_CIPHER_free(ctx->tls13_ciphersuites);
@@ -11567,7 +11691,7 @@ SSL_CTX_clear(SSL_CTX *ctx)
     }
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (NULL != ctx->verify_store)
     {
         X509_STORE_free(ctx->verify_store);
@@ -11591,7 +11715,7 @@ SSL_CTX_free(SSL_CTX *ctx)
          * OpenLDAP increments the counter directly, need to use
          * original attribute
          */
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         CRYPTO_atomic_add(&ctx->orig_ssl_ctx.references, -1, &i, ctx->orig_ssl_ctx.lock);
 #else
         i = CRYPTO_add(&ctx->orig_ssl_ctx.references, -1, CRYPTO_LOCK_SSL_CTX);
@@ -11633,8 +11757,14 @@ extern
 const COMP_METHOD *SSL_get_current_compression(SSL *s)
 {
     if (s == NULL) return NULL;
-    if (s->compress != NULL)
-        return (s->compress->meth);
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+    if (pS->compress != NULL)
+        return (pS->compress->meth);
     return NULL;
 }
 
@@ -11650,8 +11780,13 @@ void SSL_get0_alpn_selected(const SSL *ssl, const unsigned char **data,
                             unsigned *len)
 {
     ubyte4 alpn_len = 0;
-    if(NULL != ssl){
-        NSSL_CHK_CALL(get_alpn_selected, ssl->instance, data, &alpn_len);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+    if(NULL != pS){
+        NSSL_CHK_CALL(get_alpn_selected, pS->instance, data, &alpn_len);
        *len = (unsigned)alpn_len;
     }
 }
@@ -11666,11 +11801,18 @@ size_t SSL_get_peer_finished(const SSL *s, void *buf, size_t count)
     if(NULL == s)
         return (size_t) 0;
 
-    if (NULL != s->s3 ) {
-        ret = s->s3->tmp.peer_finish_md_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
+
+
+    if (NULL != pS->s3 ) {
+        ret = pS->s3->tmp.peer_finish_md_len;
         if (count > ret)
             count = ret;
-        memcpy(buf, s->s3->tmp.peer_finish_md, count);
+        memcpy(buf, pS->s3->tmp.peer_finish_md, count);
     }
     return ret;
 }
@@ -11684,11 +11826,17 @@ size_t SSL_get_finished(const SSL *s, void *buf, size_t count)
     if(s == NULL)
         return (size_t) 0;
 
-    if (s->s3 != NULL) {
-        ret = s->s3->tmp.finish_md_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
+
+    if (pS->s3 != NULL) {
+        ret = pS->s3->tmp.finish_md_len;
         if (count > ret)
             count = ret;
-        memcpy(buf, s->s3->tmp.finish_md, count);
+        memcpy(buf, pS->s3->tmp.finish_md, count);
     }
     return ret;
 }
@@ -11728,6 +11876,12 @@ int SSL_set_alpn_protos(SSL *ssl, const unsigned char *protos,
         status = SSL_R_UNINITIALIZED;
         goto exit;
     }
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
 
     if ((!protos) || (protos_len < 1))
     {
@@ -11788,7 +11942,7 @@ int SSL_set_alpn_protos(SSL *ssl, const unsigned char *protos,
       i = i+curProtoLen+1; /* Get to the right pointer which has string length */
       curProto++;
     }
-    NSSL_CHK_CALL(set_alpn_protos, ssl->instance, numProtos, (const char **)protoList);
+    NSSL_CHK_CALL(set_alpn_protos, pS->instance, numProtos, (const char **)protoList);
 
     /*set_alpn_protos is allocating new protolist. So, protolist here can be free'ed*/
     i= 0;
@@ -12101,13 +12255,19 @@ static void resetVersionOptions(SSL *s)
 
     unsigned long version_options;
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
     if (NULL != (pMaxVersion = getenv("OPENSSL_MAX_TLS_VERSION")))
     {
         OSSL_get_proto_version(pMaxVersion, (ubyte4*)&max_version);
     }
     else
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         max_version = TLS1_3_VERSION;
 #else
         max_version = TLS1_2_VERSION;
@@ -12137,14 +12297,14 @@ static void resetVersionOptions(SSL *s)
 
     version_options = OSSL_set_version_options(min_version_index, max_version_index, osslMapVersion);
     version_options = version_options << 24;
-    if (s == NULL) return;
-    s->options &= 0xC0FFFFFFL;
-    s->options |= version_options;
+    if (pS == NULL) return;
+    pS->options &= 0xC0FFFFFFL;
+    pS->options |= version_options;
 }
 
 /*------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 unsigned long SSL_CTX_set_options(SSL_CTX *ctx, unsigned long op)
 {
@@ -12165,9 +12325,14 @@ unsigned long SSL_CTX_clear_options(SSL_CTX *ctx, unsigned long op)
 /*------------------------------------------------------------------*/
 unsigned long SSL_clear_options(SSL *s, unsigned long op)
 {
-    if (s == NULL) return 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+    if (pS == NULL) return 0;
     resetVersionOptions(s);
-    return (s->options &= ~op);
+    return (pS->options &= ~op);
 }
 
 /*------------------------------------------------------------------*/
@@ -12197,23 +12362,31 @@ int SSL_in_init(SSL *s)
 
 unsigned long SSL_get_options(SSL *s)
 {
-    if (NULL == s)
-        return 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+    if (pS == NULL) return 0;
 
-    return s->options;
+    return pS->options;
 }
 
 /*------------------------------------------------------------------*/
 
 unsigned long SSL_set_options(SSL *s, unsigned long op)
 {
-    if (NULL == s)
-        return 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+    if (pS == NULL) return 0;
 
-    return s->options |= op;
+    return pS->options |= op;
 }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__|| __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__|| __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /*------------------------------------------------------------------*/
 
@@ -12457,7 +12630,7 @@ SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile,
 
 /*------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 int SSL_CTX_up_ref(SSL_CTX *ctx)
 {
@@ -12471,7 +12644,7 @@ int SSL_CTX_up_ref(SSL_CTX *ctx)
     return ((i > 1) ? 1 : 0);
 }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /*------------------------------------------------------------------*/
 
@@ -12559,7 +12732,7 @@ OSSL_MocCertChainToX509sk(certChainPtr pCertChain, STACK_OF(X509) * sk)
 
 /*------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 DEFINE_RUN_ONCE_STATIC(ssl_x509_store_ctx_init)
 {
     ssl_x509_store_ctx_idx = X509_STORE_CTX_get_ex_new_index(0,
@@ -12571,7 +12744,7 @@ DEFINE_RUN_ONCE_STATIC(ssl_x509_store_ctx_init)
 
 int SSL_get_ex_data_X509_STORE_CTX_idx(void)
 {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (!RUN_ONCE(&ssl_x509_store_ctx_once, ssl_x509_store_ctx_init))
         return -1;
     return ssl_x509_store_ctx_idx;
@@ -12670,7 +12843,7 @@ OSSL_shimAppVerifyCert(certChainPtr pCertChain, void *arg)
 
 /*------------------------------------------------------------------*/
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 int ssl_undefined_function(SSL *s)
 {
@@ -12743,7 +12916,7 @@ void ssl_ctx_system_config(SSL_CTX *ctx)
     ssl_do_config(NULL, ctx, NULL, 1);
 }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /**
  * Creates a new SSL_CTX object as framework to establish TLS/SSL enabled connections.
@@ -12767,7 +12940,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
          return (NULL);
      }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (!OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL))
         return NULL;
 #else
@@ -12776,7 +12949,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
     if (!register_pem_bio_handler())
         return NULL;
 #endif /* __ENABLE_DIGICERT_SSL_PEM_READ_BIO_REDEFINE__ */
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
      if (NULL== (ctx = OSSL_MALLOC(sizeof(*ctx))))
      {
@@ -12795,7 +12968,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
     {
         g_FIPSInitialized = 1;
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         /* returns 1 if the 'fips=yes' default property is set for the given
            libctx, otherwise it returns 0. */
         isFIPSEnabled = EVP_default_properties_is_fips_enabled(NULL);
@@ -12834,7 +13007,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
       ctx->orig_ssl_ctx.read_ahead = OSSL_DEFAULT_READ_AHEAD;
 
      ctx->orig_ssl_ctx.references = 1;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      ctx->orig_ssl_ctx.lock = CRYPTO_THREAD_lock_new();
      if (NULL == ctx->orig_ssl_ctx.lock)
      {
@@ -12842,9 +13015,9 @@ SSL_CTX_new(const SSL_METHOD *meth)
         OSSL_FREE(ctx);
         return NULL;
      }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     /*
      * We cannot usefully set a default max_early_data here (which gets
      * propagated in SSL_new(), for the following reason: setting the
@@ -12875,7 +13048,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
 
     /* By default we send two session tickets automatically in TLSv1.3 */
     ctx->orig_ssl_ctx.num_tickets = 2;
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
      if (NULL != ctx->orig_ssl_ctx.cert)
      {
@@ -12887,7 +13060,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
      /* SSL_CTX does not contain OCSP status for OpenSSL 1.0.2 */
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__)
      ctx->orig_ssl_ctx.tlsext_status_type = TLSEXT_STATUSTYPE_nothing;
-#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      ctx->tlsext_status_type = TLSEXT_STATUSTYPE_nothing;
 #endif
 
@@ -12897,7 +13070,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
      status = OK;
 
      /* Successfully created the context; Load the default ciphers */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (!SSL_CTX_set_ciphersuites(ctx, TLS_DEFAULT_CIPHERSUITES))
         goto exit;
 
@@ -12928,9 +13101,9 @@ SSL_CTX_new(const SSL_METHOD *meth)
         goto exit;
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     ssl_ctx_system_config(ctx);
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
     if (OK > status1)
     {
@@ -12995,7 +13168,7 @@ static void ssl_cipher_apply_rule(unsigned long cipher_id,
                                   unsigned long alg_auth,
                                   unsigned long alg_enc,
                                   unsigned long alg_mac,
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                                   int min_tls,
 #else
                                   unsigned long alg_ssl,
@@ -13052,7 +13225,7 @@ static void ssl_cipher_apply_rule(unsigned long cipher_id,
                 continue;
             if (alg_mac && !(alg_mac & cp->algorithm_mac))
                 continue;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             if (min_tls && (min_tls != cp->min_tls))
                 continue;
 #else
@@ -13178,7 +13351,7 @@ static int ssl_cipher_process_rulestr(const char *rule_str,
 {
     unsigned long alg_mkey, alg_auth, alg_enc, alg_mac,
                 algo_strength;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     int min_tls;
 #else
     unsigned long alg_ssl;
@@ -13224,7 +13397,7 @@ static int ssl_cipher_process_rulestr(const char *rule_str,
         alg_auth = 0;
         alg_enc = 0;
         alg_mac = 0;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         min_tls = 0;
 #else
         alg_ssl = 0;
@@ -13386,7 +13559,7 @@ static int ssl_cipher_process_rulestr(const char *rule_str,
                      * not an explicit ciphersuite; only in this case, the
                      * protocol version is considered part of the search pattern
                      */
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                     if (ca_list[j]->min_tls) {
                         if (min_tls != 0 && min_tls != ca_list[j]->min_tls) {
                             found = 0;
@@ -13445,7 +13618,7 @@ static int ssl_cipher_process_rulestr(const char *rule_str,
         } else if (found) {
             ssl_cipher_apply_rule(cipher_id,
                                   alg_mkey, alg_auth, alg_enc, alg_mac,
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                                   min_tls,
 #else
                                   alg_ssl,
@@ -13478,7 +13651,7 @@ SSL_CIPHER *OSSL_convert_cipher_list(int index)
  * functionality.
  */
 
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 static void ssl_cipher_get_disabled(unsigned long *mkey, unsigned long *auth,
                                     unsigned long *enc, unsigned long *mac,
@@ -13671,7 +13844,7 @@ static void ssl_cipher_collect_aliases(const SSL_CIPHER **ca_list,
     unsigned long mask_auth = ~disabled_auth;
     unsigned long mask_enc = ~disabled_enc;
     unsigned long mask_mac = ~disabled_mac;
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     unsigned long mask_ssl = ~disabled_ssl;
 #endif
 
@@ -13697,7 +13870,7 @@ static void ssl_cipher_collect_aliases(const SSL_CIPHER **ca_list,
         unsigned long algorithm_auth = cipher_aliases[i].algorithm_auth;
         unsigned long algorithm_enc = cipher_aliases[i].algorithm_enc;
         unsigned long algorithm_mac = cipher_aliases[i].algorithm_mac;
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         unsigned long algorithm_ssl = cipher_aliases[i].algorithm_ssl;
 #endif
 
@@ -13717,7 +13890,7 @@ static void ssl_cipher_collect_aliases(const SSL_CIPHER **ca_list,
             if ((algorithm_mac & mask_mac) == 0)
                 continue;
 
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         if (algorithm_ssl)
             if ((algorithm_ssl & mask_ssl) == 0)
                 continue;
@@ -13778,7 +13951,7 @@ static int check_suiteb_cipher_list(const char **prule_str)
 
 /*----------------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 static int cipher_compare(const void *a, const void *b)
 {
@@ -14156,7 +14329,7 @@ void ssl_load_ciphers(void)
 extern
 STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
                                          const char *rule_str,
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                             STACK_OF(SSL_CIPHER) *tls13_ciphersuites,
 #endif
                             STACK_OF(SSL_CIPHER) **cipher_list,
@@ -14179,7 +14352,7 @@ STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
     ssl_load_ciphers();
 
     disabled_ssl = 0;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     disabled_mkey = disabled_mkey_mask;
     disabled_auth = disabled_auth_mask;
     disabled_enc = disabled_enc_mask;
@@ -14203,7 +14376,7 @@ STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
                                  disabled_mac, disabled_ssl, co_list, &head,
                                  &tail);
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) 
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     ssl_cipher_apply_rule(0, SSL_kECDHE, SSL_aECDSA, 0, 0, 0, 0, CIPHER_ADD,
                           -1, &head, &tail);
     ssl_cipher_apply_rule(0, SSL_kECDHE, 0, 0, 0, 0, 0, CIPHER_ADD, -1, &head,
@@ -14252,7 +14425,7 @@ STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
     ssl_cipher_apply_rule(0, 0, SSL_aNULL, 0, 0, 0, 0, CIPHER_ORD, -1, &head,
                           &tail);
 
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     /* Move ciphers without forward secrecy to the end */
     ssl_cipher_apply_rule(0, 0, SSL_aECDH, 0, 0, 0, 0, CIPHER_ORD, -1, &head,
                           &tail);
@@ -14265,7 +14438,7 @@ STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
                           &tail);
     ssl_cipher_apply_rule(0, SSL_kPSK, 0, 0, 0, 0, 0, CIPHER_ORD, -1, &head,
                           &tail);
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     ssl_cipher_apply_rule(0, SSL_kKRB5, 0, 0, 0, 0, 0, CIPHER_ORD, -1, &head,
                           &tail);
 #endif
@@ -14284,7 +14457,7 @@ STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
     }
 
     /* Now disable everything (maintaining the ordering!) */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     /*
      * Partially overrule strength sort to prefer TLS 1.2 ciphers/PRFs.
      * (openssl-team): is there an easier way to accomplish all this?
@@ -14368,7 +14541,7 @@ STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
           return (NULL);
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     /* Add TLSv1.3 ciphers first - we always prefer those if possible */
     for (i = 0; i < sk_SSL_CIPHER_num(tls13_ciphersuites); i++) {
         if (!sk_SSL_CIPHER_push(cipherstack,
@@ -14424,7 +14597,7 @@ STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
 
 /*------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 STACK_OF(SSL_CIPHER) *SSL_CTX_get_ciphers(const SSL_CTX *ctx)
 {
@@ -14438,7 +14611,7 @@ STACK_OF(SSL_CIPHER) *SSL_CTX_get_ciphers(const SSL_CTX *ctx)
     return NULL;
 }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /*------------------------------------------------------------------*/
 
@@ -14457,7 +14630,7 @@ SSL_CTX_set_cipher_list(SSL_CTX *ctx, const char *str)
      if (ctx == NULL)
         return 0;
     sk = OSSL_sslCreateCipherList(ctx->ssl_method,str,
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                                   ctx->tls13_ciphersuites,
 #endif
                                   &ctx->cipher_list,
@@ -14488,19 +14661,33 @@ const SSL_CIPHER *SSL_get_current_cipher(const SSL *s)
      sbyte4 status;
      ubyte4 i;
      STACK_OF(SSL_CIPHER) *sk;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     const SSL_CONNECTION *pS = NULL;
+#else
+     const SSL *pS = NULL;
+#endif
 
-     if((NULL != s) && (NULL != s->ssl_ctx))
+     if(NULL == s)
+         goto exit;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     pS = (const SSL_CONNECTION *)s;
+#else
+     pS = s;
+#endif
+
+     if(NULL != pS->ssl_ctx)
      {
-        sk = s->ssl_ctx->cipher_list_by_id;
+        sk = pS->ssl_ctx->cipher_list_by_id;
 
         if(NULL == sk)
             goto exit;
 
         numCipherIds = (sk_SSL_CIPHER_num(sk));
 
-        if ((s->session != NULL))
+        if ((pS->session != NULL))
         {
-            status = NSSL_CHK_CALL(getCipherInfo, s->instance,
+            status = NSSL_CHK_CALL(getCipherInfo, pS->instance,
                                    &selectedCipherId, &peerEcCurves);
 
             if(OK > status)
@@ -14511,11 +14698,11 @@ const SSL_CIPHER *SSL_get_current_cipher(const SSL *s)
                 cipherId = (ubyte2)(((SSL_CIPHER *)sk_SSL_CIPHER_value(sk,i))->id) & 0xFFFF;
                 if(cipherId == selectedCipherId)
                 {
-                    s->session->cipher = (((SSL_CIPHER *)sk_SSL_CIPHER_value(sk,i)));
+                    pS->session->cipher = (((SSL_CIPHER *)sk_SSL_CIPHER_value(sk,i)));
                     break;
                 }
             }
-            return (s->session->cipher);
+            return (pS->session->cipher);
         }
      }
 exit:
@@ -14526,19 +14713,31 @@ exit:
 
 STACK_OF(SSL_CIPHER) *SSL_get_ciphers(const SSL *s)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     const SSL_CONNECTION *pS = NULL;
+#else
+     const SSL *pS = NULL;
+#endif
+
      if (s != NULL)
      {
-        if (s->cipher_list != NULL) {
-            return (s->cipher_list);
-        } else if ((s->ssl_ctx != NULL) && (s->ssl_ctx->cipher_list != NULL)) {
-            return (s->ssl_ctx->cipher_list);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS = (const SSL_CONNECTION *)s;
+#else
+        pS = s;
+#endif
+
+        if (pS->cipher_list != NULL) {
+            return (pS->cipher_list);
+        } else if ((pS->ssl_ctx != NULL) && (pS->ssl_ctx->cipher_list != NULL)) {
+            return (pS->ssl_ctx->cipher_list);
         }
      }
     return NULL;
 }
 
 /*------------------------------------------------------------------*/
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 pem_password_cb *SSL_CTX_get_default_passwd_cb(SSL_CTX *ctx)
 {
@@ -14669,15 +14868,25 @@ long dtls1_default_timeout(void)
 /* Calls made by MOD_SSL in the I/O Path are below */
 void SSL_set_bio(SSL *s, BIO *rbio, BIO *wbio)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
     /*
      * If the output buffering BIO is still in place, remove it
      */
     if(NULL != s)
     {
-        if (s->bbio != NULL) {
-            if (s->wbio == s->bbio) {
-                s->wbio = s->wbio->next_bio;
-                s->bbio->next_bio = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+        SSL *pS = s;
+#endif
+        if (pS->bbio != NULL) {
+            if (pS->wbio == pS->bbio) {
+                pS->wbio = pS->wbio->next_bio;
+                pS->bbio->next_bio = NULL;
             }
         }
         /*
@@ -14685,16 +14894,16 @@ void SSL_set_bio(SSL *s, BIO *rbio, BIO *wbio)
          */
         if (rbio != NULL && rbio == wbio)
             BIO_up_ref(rbio);
-        if ((s->rbio != NULL) && (s->rbio != rbio))
-            BIO_free_all(s->rbio);
-        if ((s->wbio != NULL) && (s->wbio != wbio) && (s->rbio != s->wbio))
-            BIO_free_all(s->wbio);
+        if ((pS->rbio != NULL) && (pS->rbio != rbio))
+            BIO_free_all(pS->rbio);
+        if ((pS->wbio != NULL) && (pS->wbio != wbio) && (pS->rbio != pS->wbio))
+            BIO_free_all(pS->wbio);
 
-        s->rbio        = rbio;
-        s->wbio        = wbio;
-        s->orig_s.rbio = s->rbio;
-        s->orig_s.wbio = s->wbio;
-        s->orig_s.bbio = s->bbio;
+        pS->rbio        = rbio;
+        pS->wbio        = wbio;
+        pS->orig_s.rbio = pS->rbio;
+        pS->orig_s.wbio = pS->wbio;
+        pS->orig_s.bbio = pS->bbio;
     }
 }
 
@@ -14702,8 +14911,13 @@ void SSL_set_bio(SSL *s, BIO *rbio, BIO *wbio)
 
 BIO *SSL_get_rbio(const SSL *s)
 {
-    if(NULL != s)
-        return (s->rbio);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
+    if(NULL != pS)
+        return (pS->rbio);
     return NULL;
 }
 
@@ -14711,8 +14925,13 @@ BIO *SSL_get_rbio(const SSL *s)
 
 BIO *SSL_get_wbio(const SSL *s)
 {
-    if(NULL != s)
-        return (s->wbio);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
+    if(NULL != pS)
+        return (pS->wbio);
 
     return NULL;
 }
@@ -14732,13 +14951,18 @@ int SSL_set_fd(SSL *s, int fd)
 {
     int ret = 0;
     BIO *bio = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
-    if(s == NULL) {
+    if(pS == NULL) {
         SSLerr(SSL_F_SSL_SET_FD,SSL_R_UNINITIALIZED);
         goto err;
     }
     bio = BIO_new(BIO_s_socket());
-    s->fd = fd;
+    pS->fd = fd;
 
     if (bio == NULL) {
         SSLerr(SSL_F_SSL_SET_FD, ERR_R_BUF_LIB);
@@ -14757,15 +14981,20 @@ int SSL_set_wfd(SSL *s, int fd)
 {
     int ret = 0;
     BIO *bio = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
-    if(s == NULL) {
+    if(pS == NULL) {
         SSLerr(SSL_F_SSL_SET_WFD,SSL_R_UNINITIALIZED);
         goto err;
     }
-    s->wfd = fd;
+    pS->wfd = fd;
 
-    if ((s->rbio == NULL) || (BIO_method_type(s->rbio) != BIO_TYPE_SOCKET)
-        || ((int)BIO_get_fd(s->rbio, NULL) != fd)) {
+    if ((pS->rbio == NULL) || (BIO_method_type(pS->rbio) != BIO_TYPE_SOCKET)
+        || ((int)BIO_get_fd(pS->rbio, NULL) != fd)) {
         bio = BIO_new(BIO_s_socket());
 
         if (bio == NULL) {
@@ -14787,14 +15016,19 @@ int SSL_set_rfd(SSL *s, int fd)
 {
     int ret = 0;
     BIO *bio = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
-    if(s == NULL) {
+    if(pS == NULL) {
         SSLerr(SSL_F_SSL_SET_RFD, ERR_R_BUF_LIB);
         goto err;
     }
-    s->rfd = fd;
-    if ((s->wbio == NULL) || (BIO_method_type(s->wbio) != BIO_TYPE_SOCKET)
-        || ((int)BIO_get_fd(s->wbio, NULL) != fd)) {
+    pS->rfd = fd;
+    if ((pS->wbio == NULL) || (BIO_method_type(pS->wbio) != BIO_TYPE_SOCKET)
+        || ((int)BIO_get_fd(pS->wbio, NULL) != fd)) {
         bio = BIO_new(BIO_s_socket());
 
         if (bio == NULL) {
@@ -14814,11 +15048,25 @@ int SSL_set_rfd(SSL *s, int fd)
 
 void SSL_set_read_ahead(SSL *s, int yes)
 {
-    if(NULL != s)
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        s->orig_s.rlayer.read_ahead = yes;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
 #else
-        s->orig_s.read_ahead = yes;
+    SSL *pS = NULL;
+#endif
+
+    if(NULL == s)
+        return;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)s;
+#else
+    pS = s;
+#endif
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS->orig_s.rlayer.read_ahead = yes;
+#else
+    pS->orig_s.read_ahead = yes;
 #endif
 }
 
@@ -14837,11 +15085,22 @@ int SSL_CTX_set_default_verify_paths(SSL_CTX *ctx)
 const char *SSL_get_version(const SSL *s)
 {
     int version = -1;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = NULL;
+#else
+    const SSL *pS = NULL;
+#endif
 
     if (NULL == s)
       return ("unknown");
 
-    version = NSSL_CHK_CALL(sslGetVersion, s->instance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (const SSL_CONNECTION *)s;
+#else
+    pS = s;
+#endif
+
+    version = NSSL_CHK_CALL(sslGetVersion, pS->instance);
 
     if (version == SSL3_MINORVERSION)
     {
@@ -14869,7 +15128,7 @@ const char *SSL_get_version(const SSL *s)
     }
 }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 /* Return values :
  *  0 - Error
@@ -14886,7 +15145,13 @@ static int SSL_verify_version(const SSL *pSsl, int verifyVersion)
         goto exit;
     }
 
-    nanoSslversion = NSSL_CHK_CALL(sslGetVersion, pSsl->instance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)pSsl;
+#else
+    const SSL *pS = pSsl;
+#endif
+
+    nanoSslversion = NSSL_CHK_CALL(sslGetVersion, pS->instance);
 
     /* Only versions TLS 1.0 to TLS 1.3 are supported */
     if ((nanoSslversion > SSL3_VERSION_MINOR) || (verifyVersion <= TLS1_3_VERSION_MINOR))
@@ -14903,7 +15168,7 @@ exit:
     return rval;
 }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /*------------------------------------------------------------------*/
 
@@ -15016,7 +15281,13 @@ SSL_do_handshake(SSL *s)
         goto err;
     }
 
-    if (s->clientServerFlag == SSL_CLIENT_FLAG)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (pS->clientServerFlag == SSL_CLIENT_FLAG)
     {
         status = SSL_connect(s);
         if(ERR_SSL_PROTOCOL_PROCESS_CERTIFICATE == status){
@@ -15054,19 +15325,25 @@ extern int SSL_renegotiate(SSL *s)
         return 0;
     }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
     /* Handshake status callback */
-    if (s->info_callback != NULL)
+    if (pS->info_callback != NULL)
     {
-        cb = s->info_callback;
+        cb = pS->info_callback;
     }
-    else if (s->ssl_ctx->info_callback != NULL)
+    else if (pS->ssl_ctx->info_callback != NULL)
     {
-        cb = s->ssl_ctx->info_callback;
+        cb = pS->ssl_ctx->info_callback;
     }
 
-    if (SSL_SERVER_FLAG == s->clientServerFlag)
+    if (SSL_SERVER_FLAG == pS->clientServerFlag)
     {
-        if((s->orig_s.verify_mode & SSL_VERIFY_PEER) || (s->ssl_ctx->verify_mode & SSL_VERIFY_PEER))
+        if((pS->orig_s.verify_mode & SSL_VERIFY_PEER) || (pS->ssl_ctx->verify_mode & SSL_VERIFY_PEER))
         {
             /* allow mutual auth */
            authModeFlag = SSL_FLAG_REQUIRE_MUTUAL_AUTH;
@@ -15078,15 +15355,15 @@ extern int SSL_renegotiate(SSL *s)
     }
     else
     {
-        if ((s->orig_s.verify_mode   == SSL_VERIFY_NONE) &&
-            (s->ssl_ctx->verify_mode == SSL_VERIFY_NONE) &&
+        if ((pS->orig_s.verify_mode   == SSL_VERIFY_NONE) &&
+            (pS->ssl_ctx->verify_mode == SSL_VERIFY_NONE) &&
             (NULL == SSL_get_privatekey(s)))
         {
             authModeFlag = SSL_FLAG_NO_MUTUAL_AUTH_REPLY;
         }
     }
 
-    if (OK > (status = NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags)))
+    if (OK > (status = NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags)))
     {
          return -1;
     }
@@ -15096,13 +15373,13 @@ extern int SSL_renegotiate(SSL *s)
     sslFlags &= ~(SSL_FLAG_REQUIRE_MUTUAL_AUTH);
 
     /* SSL_setSession flags resets the flags; So first get the flag value to preserve the previously set flags */
-    if (OK > (status = NSSL_CHK_CALL(setSessionFlags, s->instance, (sslFlags) | (authModeFlag))))
+    if (OK > (status = NSSL_CHK_CALL(setSessionFlags, pS->instance, (sslFlags) | (authModeFlag))))
     {
          return -1;
     }
 
 #ifdef __ENABLE_DIGICERT_SSL_REHANDSHAKE__
-    status = NSSL_CHK_CALL(initiateRehandshake, s->instance);
+    status = NSSL_CHK_CALL(initiateRehandshake, pS->instance);
     if (OK > status)
     {
         goto exit;
@@ -15120,10 +15397,10 @@ extern int SSL_renegotiate(SSL *s)
             status = OK;
         }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        s->orig_state = SSL_ST_RENEGOTIATE;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS->orig_state = SSL_ST_RENEGOTIATE;
 #else
-        s->orig_s.state = SSL_ST_RENEGOTIATE;
+        pS->orig_s.state = SSL_ST_RENEGOTIATE;
 #endif
         /* Notify that handshake is done*/
         if (cb != NULL)
@@ -15132,7 +15409,7 @@ extern int SSL_renegotiate(SSL *s)
         }
     }
 #else
-    if (SSL_SERVER_FLAG == s->clientServerFlag){
+    if (SSL_SERVER_FLAG == pS->clientServerFlag){
         SSLerr(SSL_R_NO_RENEGOTIATION, ERR_R_DISABLED);
         return 0;
     }else {
@@ -15153,7 +15430,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 void SSL_set_state(SSL *ssl, int state)
 {
     if(NULL != ssl)
@@ -15174,15 +15451,26 @@ void SSL_set_state(SSL *ssl, int state)
 extern void
 SSL_set_accept_state(SSL *s)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
+
     if (NULL != s)
     {
-        s->clientServerFlag = SSL_SERVER_FLAG;
-        s->orig_s.shutdown = 0;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        ossl_statem_clear(s);
-        s->orig_state = SSL_ST_ACCEPT | SSL_ST_BEFORE;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS = (SSL_CONNECTION *)s;
 #else
-        s->orig_s.state = SSL_ST_ACCEPT | SSL_ST_BEFORE;
+        pS = s;
+#endif
+        pS->clientServerFlag = SSL_SERVER_FLAG;
+        pS->orig_s.shutdown = 0;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        ossl_statem_clear(pS);
+        pS->orig_state = SSL_ST_ACCEPT | SSL_ST_BEFORE;
+#else
+        pS->orig_s.state = SSL_ST_ACCEPT | SSL_ST_BEFORE;
 #endif
     }
 }
@@ -15197,21 +15485,27 @@ SSL_CTX *SSL_set_SSL_CTX(SSL *ssl, SSL_CTX *ctx)
      * (ssl->ctx == ctx ) for it. For nanossl, case is different.
      */
 
-     if(ssl->ssl_ctx == ctx)
-        return ssl->ssl_ctx;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+
+     if(pS->ssl_ctx == ctx)
+        return pS->ssl_ctx;
      if(NULL != ctx)
      {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         SSL_CTX_up_ref(ctx);
 #else
         (void) CRYPTO_add(&ctx->orig_ssl_ctx.references, 1, CRYPTO_LOCK_SSL_CTX);
 #endif
-        if (ssl->ssl_ctx != NULL)
-            SSL_CTX_free(ssl->ssl_ctx);
+        if (pS->ssl_ctx != NULL)
+            SSL_CTX_free(pS->ssl_ctx);
 
-        ssl->ssl_ctx = ctx;
+        pS->ssl_ctx = ctx;
      }
-        return ssl->ssl_ctx;
+        return pS->ssl_ctx;
 #if 0
 CERT *ocert = ssl->cert;
     if (ssl->ctx == ctx)
@@ -15275,7 +15569,13 @@ extern SSL_CTX *SSL_get_SSL_CTX(const SSL *ssl)
     if (NULL == ssl)
         return NULL;
 
-    return (ssl->ssl_ctx);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+
+    return (pS->ssl_ctx);
 }
 
 /*------------------------------------------------------------------*/
@@ -15288,7 +15588,13 @@ SSL_is_init_finished(SSL *s)
      if (NULL == s)
         return 0;
 
-    retValue = NSSL_CHK_CALL(isEstablished, s->instance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
     if (1 == retValue)
     {
         return 1;
@@ -15298,10 +15604,10 @@ SSL_is_init_finished(SSL *s)
         /* TODO: OpenSSL 3.0 does not have "state", uses "statem" instead,
                  same goes for OpenSSL 1.1.1c */
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if ((s->orig_state == SSL_ST_OK) || (s->orig_state == SSL_ST_RENEGOTIATE))
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if ((pS->orig_state == SSL_ST_OK) || (pS->orig_state == SSL_ST_RENEGOTIATE))
 #else
-        if ((s->orig_s.state == SSL_ST_OK) || (s->orig_s.state == SSL_ST_RENEGOTIATE))
+        if ((pS->orig_s.state == SSL_ST_OK) || (pS->orig_s.state == SSL_ST_RENEGOTIATE))
 #endif
         {
             return 1;
@@ -15349,17 +15655,33 @@ SSL_SESSION *SSL_get_session(const SSL *s)
     char *pHostname = NULL;
     ubyte4 size;
 
-    if ((s == NULL) || (s->session == NULL))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = NULL;
+#else
+    const SSL *pS = NULL;
+#endif
+
+
+    if ((s == NULL))
+        return NULL;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (const SSL_CONNECTION *)s;
+#else
+    pS = s;
+#endif
+
+    if (pS->session == NULL)
         return NULL;
 
     /* Only the client can get the session ID.
      */
-    if (SSL_CLIENT_FLAG == s->clientServerFlag)
+    if (SSL_CLIENT_FLAG == pS->clientServerFlag)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        pHostname = s->session->ext.hostname;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pHostname = pS->session->ext.hostname;
 #else
-        pHostname = s->session->tlsext_hostname;
+        pHostname = pS->session->tlsext_hostname;
 #endif
 
         if (NULL != pHostname)
@@ -15368,36 +15690,36 @@ SSL_SESSION *SSL_get_session(const SSL *s)
             pHostname = NULL;
         }
 
-        if (s->tlsext_hostname)
+        if (pS->tlsext_hostname)
         {
-            size = strlen(s->tlsext_hostname);
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-            s->session->ext.hostname = OSSL_MALLOC(size + 1);
-            if (NULL == s->session->ext.hostname)
+            size = strlen(pS->tlsext_hostname);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+            pS->session->ext.hostname = OSSL_MALLOC(size + 1);
+            if (NULL == pS->session->ext.hostname)
             {
                 return NULL;
             }
-            memcpy(s->session->ext.hostname, s->tlsext_hostname, size);
-            s->session->ext.hostname[size] = '\0';
+            memcpy(pS->session->ext.hostname, pS->tlsext_hostname, size);
+            pS->session->ext.hostname[size] = '\0';
 #else
-            s->session->tlsext_hostname = OSSL_MALLOC(size + 1);
-            if (NULL == s->session->tlsext_hostname)
+            pS->session->tlsext_hostname = OSSL_MALLOC(size + 1);
+            if (NULL == pS->session->tlsext_hostname)
             {
                 return NULL;
             }
-            memcpy(s->session->tlsext_hostname, s->tlsext_hostname, size);
-            s->session->tlsext_hostname[size] = '\0';
+            memcpy(pS->session->tlsext_hostname, pS->tlsext_hostname, size);
+            pS->session->tlsext_hostname[size] = '\0';
 #endif
         }
 
         status = NSSL_CHK_CALL(
-            getClientSessionInfo, s->instance, &sessionIdLen, s->session->session_id,
-            s->session->master_key);
+            getClientSessionInfo, pS->instance, &sessionIdLen, pS->session->session_id,
+            pS->session->master_key);
         if (OK > status)
             goto exit;
 
         if (0 != sessionIdLen)
-            s->session->session_id_length = sessionIdLen;
+            pS->session->session_id_length = sessionIdLen;
     }
     else
     {
@@ -15410,14 +15732,14 @@ SSL_SESSION *SSL_get_session(const SSL *s)
          */
         ubyte *pSessionId = NULL;
         status = NSSL_CHK_CALL(
-            getTlsUnique, s->instance, &tlsUniqueLen, &pSessionId);
+            getTlsUnique, pS->instance, &tlsUniqueLen, &pSessionId);
         if (OK > status)
             return NULL;
 
         if (tlsUniqueLen > 0)
         {
-            s->session->session_id_length = tlsUniqueLen;
-            memcpy(s->session->session_id, pSessionId, tlsUniqueLen);
+            pS->session->session_id_length = tlsUniqueLen;
+            memcpy(pS->session->session_id, pSessionId, tlsUniqueLen);
         }
 
         if (pSessionId != NULL)
@@ -15429,42 +15751,42 @@ SSL_SESSION *SSL_get_session(const SSL *s)
 #endif /* __ENABLE_DIGICERT_SSL_SERVER_TLS_UNIQUE__ */
     }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
-    if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_GET_MAX_EARLY_DATA, &s->session->ext.max_early_data))
+    if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_GET_MAX_EARLY_DATA, &pS->session->ext.max_early_data))
     {
         goto exit;
     }
 #endif
 
     status = NSSL_CHK_CALL(
-        sslIoctl, s->instance, SSL_GET_CLIENT_RANDOM, s->s3->client_random);
+        sslIoctl, pS->instance, SSL_GET_CLIENT_RANDOM, pS->s3->client_random);
     if (OK > status)
         goto exit;
 
     status = NSSL_CHK_CALL(
-        sslIoctl, s->instance, SSL_GET_SERVER_RANDOM, s->s3->server_random);
+        sslIoctl, pS->instance, SSL_GET_SERVER_RANDOM, pS->s3->server_random);
 exit:
     if (OK > status)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (NULL != s->session->ext.hostname)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (NULL != pS->session->ext.hostname)
         {
-            OSSL_FREE(s->session->ext.hostname);
-            s->session->ext.hostname = NULL;
+            OSSL_FREE(pS->session->ext.hostname);
+            pS->session->ext.hostname = NULL;
         }
 #else
-        if (s->session->tlsext_hostname != NULL)
+        if (pS->session->tlsext_hostname != NULL)
         {
-            OSSL_FREE(s->session->tlsext_hostname);
-            s->session->tlsext_hostname = NULL;
+            OSSL_FREE(pS->session->tlsext_hostname);
+            pS->session->tlsext_hostname = NULL;
         }
 #endif
         return NULL;
     }
     else
     {
-        return (s->session);
+        return (pS->session);
     }
 }
 
@@ -15474,7 +15796,14 @@ void SSL_set_shutdown(SSL *s, int mode)
 {
     /*Openssl has no error code*/
     if(NULL != s)
-        s->orig_s.shutdown = mode;
+    {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+        SSL *pS = s;
+#endif
+        pS->orig_s.shutdown = mode;
+    }
 }
 
 /*------------------------------------------------------------------*/
@@ -15482,7 +15811,14 @@ void SSL_set_shutdown(SSL *s, int mode)
 int SSL_get_shutdown(const SSL *s)
 {
     if(NULL != s)
-        return (s->orig_s.shutdown);
+    {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+        const SSL *pS = s;
+#endif
+        return (pS->orig_s.shutdown);
+    }
     return 0; /* No shutdown setting */
 }
 
@@ -15524,12 +15860,21 @@ static MSTATUS OSSL_certCallback(
         goto exit;
 
     pSsl = (SSL *) findSSLFromInstance(connectionInstance);
-    if ( (NULL == pSsl) || (NULL == pSsl->ssl_ctx) )
+    if (NULL == pSsl)
+        goto exit;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    if (NULL == pS->ssl_ctx)
         goto exit;
 
     /* Default error codes in case anything goes wrong.
      */
-    pSsl->verify_result = X509_V_ERR_UNSPECIFIED;
+    pS->verify_result = X509_V_ERR_UNSPECIFIED;
     status = ERR_SSL_CERT_VALIDATION_FAILED;
 
     /* If there are no certificates in the certificate chain then return an
@@ -15564,24 +15909,24 @@ static MSTATUS OSSL_certCallback(
             goto exit;
     }
 
-    if (pSsl->session != NULL)
+    if (pS->session != NULL)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (NULL != pSsl->session->peer_chain)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (NULL != pS->session->peer_chain)
         {
-            sk_X509_pop_free(pSsl->session->peer_chain, X509_free);
+            sk_X509_pop_free(pS->session->peer_chain, X509_free);
         }
 
-        pSsl->session->peer_chain = pStack;
+        pS->session->peer_chain = pStack;
 #else
-        if (NULL != pSsl->session->sess_cert)
+        if (NULL != pS->session->sess_cert)
         {
-            if (NULL != pSsl->session->sess_cert->cert_chain)
+            if (NULL != pS->session->sess_cert->cert_chain)
             {
-                sk_X509_pop_free(pSsl->session->sess_cert->cert_chain, X509_free);
+                sk_X509_pop_free(pS->session->sess_cert->cert_chain, X509_free);
             }
 
-            pSsl->session->sess_cert->cert_chain = pStack;
+            pS->session->sess_cert->cert_chain = pStack;
         }
 #endif
 
@@ -15605,7 +15950,7 @@ static MSTATUS OSSL_certCallback(
      * will effectively be the certificate chain that will be verified.
      */
     osslStatus = X509_STORE_CTX_init(
-        pStoreCtx, pSsl->ssl_ctx->cert_store, pCert, pStack);
+        pStoreCtx, pS->ssl_ctx->cert_store, pCert, pStack);
     if (1 != osslStatus)
         goto exit;
 
@@ -15615,7 +15960,7 @@ static MSTATUS OSSL_certCallback(
     /* Apply verify parameters set in SSL structure.
      */
     X509_VERIFY_PARAM_set1(
-        X509_STORE_CTX_get0_param(pStoreCtx), pSsl->orig_s.param);
+        X509_STORE_CTX_get0_param(pStoreCtx), pS->orig_s.param);
 
     /* Verify the certificate chain. If the chain verifies then return the
      * status that NanoSSL produced regardless of whether it passed or failed,
@@ -15625,28 +15970,28 @@ static MSTATUS OSSL_certCallback(
      * struct. Depending on which flags are set, the function may also allow
      * a self-signed certificate to be allowed.
      */
-    if (pSsl->orig_s.verify_callback)
+    if (pS->orig_s.verify_callback)
     {
-        X509_STORE_CTX_set_verify_cb(pStoreCtx, pSsl->orig_s.verify_callback);
+        X509_STORE_CTX_set_verify_cb(pStoreCtx, pS->orig_s.verify_callback);
     }
 
-    if (pSsl->ssl_ctx->app_verify_callback)
+    if (pS->ssl_ctx->app_verify_callback)
     {
-        osslStatus = pSsl->ssl_ctx->app_verify_callback(
-            pStoreCtx, pSsl->ssl_ctx->app_verify_arg);
+        osslStatus = pS->ssl_ctx->app_verify_callback(
+            pStoreCtx, pS->ssl_ctx->app_verify_arg);
     }
     else
     {
         osslStatus = X509_verify_cert(pStoreCtx);
     }
 
-    pSsl->verify_result = pStoreCtx->error;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    sk_X509_pop_free(pSsl->verified_chain, X509_free);
-    pSsl->verified_chain = NULL;
+    pS->verify_result = pStoreCtx->error;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    sk_X509_pop_free(pS->verified_chain, X509_free);
+    pS->verified_chain = NULL;
     if (X509_STORE_CTX_get0_chain(pStoreCtx) != NULL) {
-        pSsl->verified_chain = X509_STORE_CTX_get1_chain(pStoreCtx);
-        if (pSsl->verified_chain == NULL) {
+        pS->verified_chain = X509_STORE_CTX_get1_chain(pStoreCtx);
+        if (pS->verified_chain == NULL) {
             SSLerr(SSL_F_SSL_VERIFY_CERT_CHAIN, ERR_R_MALLOC_FAILURE);
             osslStatus = 0;
         }
@@ -15656,7 +16001,7 @@ static MSTATUS OSSL_certCallback(
 #ifdef __ENABLE_DIGICERT_SSL_NONTRUSTED_CERT__
     status = OK;
 #else
-    if ( (0 < osslStatus) || ((SSL_VERIFY_NONE == pSsl->ssl_ctx->verify_mode) && (SSL_VERIFY_NONE == pSsl->orig_s.verify_mode))
+    if ( (0 < osslStatus) || ((SSL_VERIFY_NONE == pS->ssl_ctx->verify_mode) && (SSL_VERIFY_NONE == pS->orig_s.verify_mode))
 #if defined(__ENABLE_DIGICERT_SSL_CERT_STATUS_OVERRIDE__)
          || (OK == nsslCertStatus)
 #endif
@@ -15665,7 +16010,7 @@ static MSTATUS OSSL_certCallback(
 #if defined(__ENABLE_DIGICERT_SSL_CERT_STATUS_OVERRIDE__)
         if (OK == nsslCertStatus)
         {
-            pSsl->verify_result = X509_V_OK;
+            pS->verify_result = X509_V_OK;
         }
 #endif
         status = OK;
@@ -15749,13 +16094,23 @@ static MSTATUS OSSL_clientCertAuthorityCallback(
     sbyte4 connectionInstance, SizedBuffer *pCertAuth, ubyte4 certAuthCount)
 {
     SSL *pSsl;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
     ubyte4 i;
     X509_NAME *pTemp = NULL;
     STACK_OF(X509_NAME) *pCAStack = NULL;
 
     /* Get SSL object based on connection instance */
     pSsl = (SSL *) findSSLFromInstance(connectionInstance);
-    if ( (NULL == pSsl) || (NULL == pSsl->ssl_ctx) )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)pSsl;
+#else
+    pS = pSsl;
+#endif
+    if ( (NULL == pSsl) || (NULL == pS->ssl_ctx) )
         goto exit;
 
     /* Create stack object to hold X509_NAMEs. The Certificate Authorities
@@ -15788,12 +16143,12 @@ static MSTATUS OSSL_clientCertAuthorityCallback(
     }
 
     /* Free the existing stack if one exists and set the new stack */
-    if (NULL != pSsl->s3->tmp.ca_names)
+    if (NULL != pS->s3->tmp.ca_names)
     {
-        sk_X509_NAME_pop_free(pSsl->s3->tmp.ca_names, X509_NAME_free);
+        sk_X509_NAME_pop_free(pS->s3->tmp.ca_names, X509_NAME_free);
     }
 
-    pSsl->s3->tmp.ca_names = pCAStack;
+    pS->s3->tmp.ca_names = pCAStack;
     return OK;
 
 exit:
@@ -15820,26 +16175,36 @@ static MSTATUS OSSL_clientCertCallback(sbyte4 connInstance,
                                       ubyte **ppRetCACert, ubyte4 *pRetNumCACerts)
 {
     SSL *pSSL = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
     X509 *pCert = NULL;
     EVP_PKEY *pKey = NULL;
     int retValue = 0;
     MSTATUS status = 0;
 
     pSSL = (SSL*) findSSLFromInstance(connInstance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)pSSL;
+#else
+    pS = pSSL;
+#endif
 
-    if((NULL == pSSL) || (NULL == pSSL->ssl_ctx))
+    if((NULL == pSSL) || (NULL == pS->ssl_ctx))
     {
         status = -1;
         goto exit;
     }
 
-    if (pSSL->ssl_ctx->client_cert_cb != NULL)
+    if (pS->ssl_ctx->client_cert_cb != NULL)
     {
         /* Return value of client_cert_cb will be 1 if there is a key and
          * certificate to send. Return value of 0 means an empty certificate
          * message should be sent.
          */
-        retValue = pSSL->ssl_ctx->client_cert_cb(pSSL, &pCert, &pKey);
+        retValue = pS->ssl_ctx->client_cert_cb(pSSL, &pCert, &pKey);
 
         if (0 > retValue)
         {
@@ -15859,9 +16224,9 @@ static MSTATUS OSSL_clientCertCallback(sbyte4 connInstance,
         if (*ppRetCert != NULL)
         {
             status = OK;
-            pSSL->pClientCert       = pCert;
+            pS->pClientCert       = pCert;
 
-            pSSL->pClientPrivateKey = pKey;
+            pS->pClientPrivateKey = pKey;
         }
     }
 exit:
@@ -15877,7 +16242,7 @@ exit:
 
 static EVP_MD_CTX *OSSL_createEvpMdCtx()
 {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     return EVP_MD_CTX_new();
 #else
     EVP_MD_CTX *pNewMdCtx = NULL;
@@ -15892,7 +16257,7 @@ static EVP_MD_CTX *OSSL_createEvpMdCtx()
 
 static void OSSL_freeEvpMdCtx(EVP_MD_CTX *pEvpMdCtx)
 {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (NULL != pEvpMdCtx)
     {
         EVP_MD_CTX_free(pEvpMdCtx);
@@ -15910,6 +16275,11 @@ static sbyte4 OSSL_CertVerifySignCallback(sbyte4 connInstance, const ubyte* pHas
                                           ubyte* pSignature, ubyte4 signatureLen)
 {
     SSL *pSSL = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
     X509 *pCert = NULL;
     EVP_PKEY *pKey = NULL;
     MSTATUS status = -1;
@@ -15931,15 +16301,20 @@ static sbyte4 OSSL_CertVerifySignCallback(sbyte4 connInstance, const ubyte* pHas
 #endif
 
     pSSL = (SSL*)findSSLFromInstance(connInstance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)pSSL;
+#else
+    pS = pSSL;
+#endif
 
-    if((NULL == pSSL) || (NULL == pSSL->ssl_ctx))
+    if((NULL == pSSL) || (NULL == pS->ssl_ctx))
     {
         status = -1;
         goto exit;
     }
 
-    pKey  = pSSL->pClientPrivateKey;
-    pCert = pSSL->pClientCert;
+    pKey  = pS->pClientPrivateKey;
+    pCert = pS->pClientCert;
 
     if (pKey != NULL)
     {
@@ -16179,10 +16554,15 @@ static sbyte4 OSSL_setCertVerifySignCb(SSL *ssl)
 
 static sbyte OSSL_setClientCertCallback(SSL *pSSL)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
     ClientCertCallback clientCertCb;
     clientCertCb = OSSL_clientCertCallback;
 
-    if (OK > NSSL_CHK_CALL(setClientCertCallback, pSSL->instance, clientCertCb))
+    if (OK > NSSL_CHK_CALL(setClientCertCallback, pS->instance, clientCertCb))
     {
         return -1;
     }
@@ -16193,11 +16573,21 @@ static sbyte4 OSSL_tlsExtStatusCallback(sbyte4 connectionInstance, const ubyte *
                                         ubyte* pOcspResp, ubyte4 ocspRespLen, sbyte4 ocspStatus)
 {
     SSL *pSSL = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
     pSSL = (SSL*) findSSLFromInstance(connectionInstance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)pSSL;
+#else
+    pS = pSSL;
+#endif
     int ret = 0;
     sbyte4 status = ocspStatus;
 
-    if((NULL == pSSL) || (NULL == pSSL->ssl_ctx))
+    if((NULL == pSSL) || (NULL == pS->ssl_ctx))
     {
         status = -1;
         goto exit;
@@ -16206,18 +16596,18 @@ static sbyte4 OSSL_tlsExtStatusCallback(sbyte4 connectionInstance, const ubyte *
     /* Deep copy OCSP response */
     if (NULL != pOcspResp)
     {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        pSSL->tlsext_ocsp_resp    = BUF_memdup(pOcspResp, ocspRespLen);
-        pSSL->tlsext_ocsp_resplen = ocspRespLen;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS->tlsext_ocsp_resp    = BUF_memdup(pOcspResp, ocspRespLen);
+        pS->tlsext_ocsp_resplen = ocspRespLen;
 #else
-        pSSL->orig_s.tlsext_ocsp_resp    = BUF_memdup(pOcspResp, ocspRespLen);
-        pSSL->orig_s.tlsext_ocsp_resplen = ocspRespLen;
+        pS->orig_s.tlsext_ocsp_resp    = BUF_memdup(pOcspResp, ocspRespLen);
+        pS->orig_s.tlsext_ocsp_resplen = ocspRespLen;
 #endif
     }
 
-    if (pSSL->ssl_ctx->tlsext_status_cb != NULL)
+    if (pS->ssl_ctx->tlsext_status_cb != NULL)
     {
-        ret = pSSL->ssl_ctx->tlsext_status_cb(pSSL, pSSL->ssl_ctx->tlsext_status_arg);
+        ret = pS->ssl_ctx->tlsext_status_cb(pSSL, pS->ssl_ctx->tlsext_status_arg);
         if (0 == ret)
         {
             status = ERR_SSL_EXTENSION_CERTIFICATE_STATUS_RESPONSE;
@@ -16329,16 +16719,26 @@ static sbyte4 OSSL_AlpnCallback(sbyte4 connectionInstance,
 {
     sbyte4 status = 0;
     SSL *ssl;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
     ubyte numProtos = 0;
     const unsigned char *protos=NULL;
     unsigned char protos_len = 0;
 
     ssl = (SSL*) findSSLFromInstance(connectionInstance);
-    if((NULL == ssl) || (NULL == ssl->ssl_ctx))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)ssl;
+#else
+    pS = ssl;
+#endif
+    if((NULL == ssl) || (NULL == pS->ssl_ctx))
         goto exit;
-    if(ssl->ssl_ctx->alpn_select_cb)
-        ssl->ssl_ctx->alpn_select_cb(ssl,&protos,&protos_len,in,inlen,
-            ssl->ssl_ctx->alpn_select_cb_arg);
+    if(pS->ssl_ctx->alpn_select_cb)
+        pS->ssl_ctx->alpn_select_cb(ssl,&protos,&protos_len,in,inlen,
+            pS->ssl_ctx->alpn_select_cb_arg);
 
     if ((!protos) || (protos_len < 1))
     {
@@ -16350,21 +16750,21 @@ static sbyte4 OSSL_AlpnCallback(sbyte4 connectionInstance,
 
     numProtos = 1;
 
-    if (ssl->mocAlpnList != NULL)
+    if (pS->mocAlpnList != NULL)
     {
-        OSSL_FREE(ssl->mocAlpnList);
+        OSSL_FREE(pS->mocAlpnList);
     }
 
     /* Add 1 for terminating null */
-    if (NULL == (ssl->mocAlpnList = OSSL_CALLOC((protos_len + 1), sizeof(char))))
+    if (NULL == (pS->mocAlpnList = OSSL_CALLOC((protos_len + 1), sizeof(char))))
     {
        status = -1;
        goto exit;
     }
 
-    memcpy(ssl->mocAlpnList, protos, protos_len);
+    memcpy(pS->mocAlpnList, protos, protos_len);
 
-    *out = &(ssl->mocAlpnList);
+    *out = &(pS->mocAlpnList);
     *outlen = numProtos;
 
 exit:
@@ -16379,9 +16779,14 @@ exit:
 
 static sbyte4 SSL_set_alpn_select_cb(SSL *ssl)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
      ALPN_CALLBACK alpn_callback;
      alpn_callback = OSSL_AlpnCallback;
-     if (OK > NSSL_CHK_CALL(set_alpn_callback,ssl->instance,alpn_callback))
+     if (OK > NSSL_CHK_CALL(set_alpn_callback,pS->instance,alpn_callback))
         return -1;
      return 0;
 }
@@ -16393,6 +16798,11 @@ OSSL_AlertCallback(sbyte4 connectionInstance, sbyte4 alertId, sbyte4 alertClass)
 {
     MSTATUS status = OK;
     SSL *ssl;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
 #if defined(__ENABLE_DIGICERT_OSSL_LOGGING__)
     sbyte4 errorCode;
     int error;
@@ -16405,13 +16815,18 @@ OSSL_AlertCallback(sbyte4 connectionInstance, sbyte4 alertId, sbyte4 alertClass)
     alertClass &= ~SSL_ALERT_DIRECTION_BIT;
 
     ssl = (SSL*) findSSLFromInstance(connectionInstance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)ssl;
+#else
+    pS = ssl;
+#endif
     if (NULL == ssl)
     {
         status = ERR_NULL_POINTER;
         goto exit;
     }
 
-    version = NSSL_CHK_CALL(sslGetVersion, ssl->instance);
+    version = NSSL_CHK_CALL(sslGetVersion, pS->instance);
 
     if (version == SSL3_MINORVERSION)
     {
@@ -16455,17 +16870,17 @@ OSSL_AlertCallback(sbyte4 connectionInstance, sbyte4 alertId, sbyte4 alertClass)
     {
         if (direction)
         {
-            ssl->orig_s.shutdown |= SSL_SENT_SHUTDOWN;
+            pS->orig_s.shutdown |= SSL_SENT_SHUTDOWN;
         }
         else
         {
-            ssl->orig_s.shutdown |= SSL_RECEIVED_SHUTDOWN;
+            pS->orig_s.shutdown |= SSL_RECEIVED_SHUTDOWN;
         }
     }
 
     if (SSLALERTLEVEL_FATAL == alertClass)
     {
-        ssl->s3->fatal_alert = 1;
+        pS->s3->fatal_alert = 1;
 #if defined(__ENABLE_DIGICERT_OSSL_LOGGING__)
         status = NSSL_CHK_CALL(
             sslParseAlert, connectionInstance, alertId,
@@ -16477,8 +16892,8 @@ OSSL_AlertCallback(sbyte4 connectionInstance, sbyte4 alertId, sbyte4 alertClass)
 #endif
     }
 
-    if (ssl->msg_callback)
-        ssl->msg_callback (direction, version, SSL3_RT_ALERT, handshake_fragment, 2, ssl, ssl->msg_callback_arg);
+    if (pS->msg_callback)
+        pS->msg_callback (direction, version, SSL3_RT_ALERT, handshake_fragment, 2, ssl, pS->msg_callback_arg);
 exit:
     return status;
 }
@@ -16487,9 +16902,14 @@ exit:
 
 static sbyte4 OSSL_set_alert_cb(SSL *ssl)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
      ALERT_CALLBACK alert_callback;
      alert_callback = OSSL_AlertCallback;
-     if (OK > NSSL_CHK_CALL(set_alert_callback, ssl->instance, alert_callback))
+     if (OK > NSSL_CHK_CALL(set_alert_callback, pS->instance, alert_callback))
         return -1;
      return 0;
 }
@@ -16500,16 +16920,26 @@ static sbyte4 OSSL_set_alert_cb(SSL *ssl)
 
 static sbyte4 OSSL_setCertAndStatusCallBack(SSL *ssl)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
      CERTSTATUS_CALLBACK certAndStatusCallBack;
      certAndStatusCallBack = OSSL_certCallback;
-     if (OK > NSSL_CHK_CALL(setCertAndStatusCallBack, ssl->instance, certAndStatusCallBack))
+     if (OK > NSSL_CHK_CALL(setCertAndStatusCallBack, pS->instance, certAndStatusCallBack))
         return -1;
      return 0;
 }
 
 static sbyte4 OSSL_setClientCertAuthorityCallback(SSL *ssl)
 {
-    if (OK > NSSL_CHK_CALL(setClientCertAuthorityCallback, ssl->instance, OSSL_clientCertAuthorityCallback))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+    if (OK > NSSL_CHK_CALL(setClientCertAuthorityCallback, pS->instance, OSSL_clientCertAuthorityCallback))
     {
         return -1;
     }
@@ -16523,6 +16953,11 @@ static sbyte4 OSSL_setClientCertAuthorityCallback(SSL *ssl)
 #ifdef __ENABLE_DIGICERT_SSL_VERSION_LOG_CALLBACK__
 static sbyte4 OSSL_setVersionCallback(SSL *ssl)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
     VersionCallback versionCallback;
     char* pPrintTLSVersion  = NULL;
     pPrintTLSVersion = getenv("OPENSSL_ENABLE_VERSION_LOGGING");
@@ -16533,7 +16968,7 @@ static sbyte4 OSSL_setVersionCallback(SSL *ssl)
         if ((1 == DIGI_STRLEN(pPrintTLSVersion)) && (0 == DIGI_STRCMP(pPrintTLSVersion, "1")))
         {
             versionCallback = OSSL_versionCallback;
-            if (OK > NSSL_CHK_CALL(setVersionCallback, ssl->instance, versionCallback))
+            if (OK > NSSL_CHK_CALL(setVersionCallback, pS->instance, versionCallback))
             {
                 return -1;
             }
@@ -16661,6 +17096,11 @@ SSL_CTX_load_default_certs(SSL_CTX *ctx)
 
 static void OSSL_checkSha1CipherSupport(SSL *s)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
     char *pSha1CipherSupport;
 
     pSha1CipherSupport = getenv("SSL_SHA1_CIPHER_SUPPORT");
@@ -16675,13 +17115,18 @@ static void OSSL_checkSha1CipherSupport(SSL *s)
              (0 == strcmp(pSha1CipherSupport, "0")) )
         {
             NSSL_CHK_CALL(
-                disableCipherHash, s->instance, OSSL_TLS_SHA1);
+                disableCipherHash, pS->instance, OSSL_TLS_SHA1);
         }
     }
 }
 
 static void OSSL_checkDSACipherSupport(SSL *s)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
     char *pDSACiphers = NULL;
 
     pDSACiphers = getenv("SSL_DSA_CIPHER_SUPPORT");
@@ -16690,14 +17135,14 @@ static void OSSL_checkDSACipherSupport(SSL *s)
     {
         if ((0 == strcmp(pDSACiphers , "0")) || (0 == strcmp(pDSACiphers, "1")))
         {
-            NSSL_CHK_CALL(setDSACiphers, s->instance, atoi(pDSACiphers));
+            NSSL_CHK_CALL(setDSACiphers, pS->instance, atoi(pDSACiphers));
         }
     }
     else
     {
         /* By default disable the DSA ciphers if no env variable is specified */
         ubyte defaultDSA = 0;
-        NSSL_CHK_CALL(setDSACiphers, s->instance, defaultDSA);
+        NSSL_CHK_CALL(setDSACiphers, pS->instance, defaultDSA);
     }
 }
 /*------------------------------------------------------------------*/
@@ -16708,28 +17153,33 @@ static void OSSL_checkDSACipherSupport(SSL *s)
  *  SSL_CLIENT_HELLO_ERROR      on failure
  *  SSL_CLIENT_HELLO_RETRY      to suspend processing
  */
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static int getClientHelloData(struct ClientHelloData * pHelloData, void *pCtx)
 {
     int ret;
     SSL *ssl = (SSL *)pCtx;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
     int alertDescr;
 
-    ssl->client_hello_data = pHelloData;
-    ret = ssl->ssl_ctx->orig_ssl_ctx.client_hello_cb(ssl, &alertDescr,
-                                    ssl->ssl_ctx->orig_ssl_ctx.client_hello_cb_arg);
+    pS->client_hello_data = pHelloData;
+    ret = pS->ssl_ctx->orig_ssl_ctx.client_hello_cb(ssl, &alertDescr,
+                                    pS->ssl_ctx->orig_ssl_ctx.client_hello_cb_arg);
 
     /* only used for the duration of client_hello_cb call */
-    ssl->client_hello_data = NULL; 
+    pS->client_hello_data = NULL; 
 
     if (ret == 0)
     {
         /* send alert */
-        (void)NSSL_CHK_CALL(sslSendAlert, ssl->instance, alertDescr, SSLALERTLEVEL_FATAL);
+        (void)NSSL_CHK_CALL(sslSendAlert, pS->instance, alertDescr, SSLALERTLEVEL_FATAL);
     }
     else if (ret < 0)
     {
-        ssl->orig_s.rwstate = SSL_CLIENT_HELLO_CB;
+        pS->orig_s.rwstate = SSL_CLIENT_HELLO_CB;
     }
 
     /* ret == -1 or ret == 1 is success  */
@@ -16753,6 +17203,11 @@ extern int SSL_accept(SSL *s)
      ubyte4 sslFlags  = 0;
      int authModeFlag = 0;
      void (*cb) (const SSL *ssl, int type, int val) = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     SSL_CONNECTION *pS = NULL;
+#else
+     SSL *pS = NULL;
+#endif
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
      peerDescr myPeerDescr = {0};
      ubyte *srcAddr  = (ubyte *)"0.0.0.0";
@@ -16769,32 +17224,38 @@ extern int SSL_accept(SSL *s)
         return -1;
     }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)s;
+#else
+    pS = s;
+#endif
+
     ERR_clear_error();
     clear_sys_error();
 
     /* If a shutdown notification was received then don't send or process any data. */
-    if (SSL_RECEIVED_SHUTDOWN & s->orig_s.shutdown)
+    if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
     {
         SSLerr(SSL_F_SSL3_ACCEPT, SSL_R_PROTOCOL_IS_SHUTDOWN);
         return -1;
     }
 
     /* Reset the flag */
-    s->state &= ~(SSL_ST_ACCEPT_NEGOTIATING);
+    pS->state &= ~(SSL_ST_ACCEPT_NEGOTIATING);
 
      /* Initialize myPeerDescr for DTLS */
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-     if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+     if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
      {
         myPeerDescr.pUdpDescr = NULL;
         mocNetNameToIpaddr(&(myPeerDescr.srcAddr), srcAddr);
-        myPeerDescr.srcPort   = s->appId;
+        myPeerDescr.srcPort   = pS->appId;
         mocNetNameToIpaddr(&(myPeerDescr.peerAddr), peerAddr);
-        myPeerDescr.peerPort  = s->appId;
+        myPeerDescr.peerPort  = pS->appId;
      }
 #endif
 
-     ctx    = s->ssl_ctx;
+     ctx    = pS->ssl_ctx;
 
     if(TRUE == setTlsPfsCiphersOnly)
     {
@@ -16808,12 +17269,12 @@ extern int SSL_accept(SSL *s)
     /* Application loads the cert and key at the time of connection instead of init with this callback;
      * For a given context we go to the application only once
      */
-    if (s->ssl_ctx->isCertInitialized == 0)
+    if (pS->ssl_ctx->isCertInitialized == 0)
     {
-        if ((s->ssl_ctx->orig_ssl_ctx.cert != NULL) &&
-            (s->ssl_ctx->orig_ssl_ctx.cert->cert_cb != NULL))
+        if ((pS->ssl_ctx->orig_ssl_ctx.cert != NULL) &&
+            (pS->ssl_ctx->orig_ssl_ctx.cert->cert_cb != NULL))
         {
-            certCbReturn = s->ssl_ctx->orig_ssl_ctx.cert->cert_cb(s, s->ssl_ctx->orig_ssl_ctx.cert->cert_cb_arg);
+            certCbReturn = pS->ssl_ctx->orig_ssl_ctx.cert->cert_cb(s, pS->ssl_ctx->orig_ssl_ctx.cert->cert_cb_arg);
         }
 
         if (0 == certCbReturn)
@@ -16824,19 +17285,19 @@ extern int SSL_accept(SSL *s)
         else if (0 > certCbReturn)
         {
             /* This will return SSL_ERROR_WANT_X509_LOOKUP when application calls SSL_get_error */
-            s->io_state = OSSL_X509_LOOKUP;
+            pS->io_state = OSSL_X509_LOOKUP;
             return -1;
         }
         else
         {
             /* The callback successfully initialized the cert and key */
-            s->ssl_ctx->isCertInitialized = 1;
+            pS->ssl_ctx->isCertInitialized = 1;
         }
     }
 
     /* Nano SSL stack Uses the socket to correlate the connectionInstance
        to SSL Socket Session */
-    if((s->orig_s.verify_mode & SSL_VERIFY_PEER) || (ctx->verify_mode & SSL_VERIFY_PEER)){
+    if((pS->orig_s.verify_mode & SSL_VERIFY_PEER) || (ctx->verify_mode & SSL_VERIFY_PEER)){
         /* allow mutual auth */
         authModeFlag = SSL_FLAG_REQUIRE_MUTUAL_AUTH;
     } else {
@@ -16844,35 +17305,35 @@ extern int SSL_accept(SSL *s)
     }
 
     /* Handshake status callback */
-    if (s->info_callback != NULL)
-        cb = s->info_callback;
-    else if (s->ssl_ctx->info_callback != NULL)
-        cb = s->ssl_ctx->info_callback;
+    if (pS->info_callback != NULL)
+        cb = pS->info_callback;
+    else if (pS->ssl_ctx->info_callback != NULL)
+        cb = pS->ssl_ctx->info_callback;
 
-     if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == s->instance)
+     if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance)
      {
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            s->instance = NSSL_CHK_CALL(dtlsAccept, &myPeerDescr, ctx->pCertStore);
+            pS->instance = NSSL_CHK_CALL(dtlsAccept, &myPeerDescr, ctx->pCertStore);
         }
         else
 #endif
         {
-            s->instance = NSSL_CHK_CALL(accept, s->appId, ctx->pCertStore);
+            pS->instance = NSSL_CHK_CALL(accept, pS->appId, ctx->pCertStore);
         }
 
-        if (OK > s->instance)
+        if (OK > pS->instance)
         {
            return -1;
         }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (s->ssl_ctx->orig_ssl_ctx.client_hello_cb)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (pS->ssl_ctx->orig_ssl_ctx.client_hello_cb)
         {
             /* Register function to get client hello data back
              * from NanoSSL stack */
-            status = NSSL_CHK_CALL(setClientHelloCallback, s->instance,
+            status = NSSL_CHK_CALL(setClientHelloCallback, pS->instance,
                                    getClientHelloData, (void *)s);
             if (OK > status)
             {
@@ -16888,7 +17349,7 @@ extern int SSL_accept(SSL *s)
             return -1;
         }
 
-        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, s->instance,(SSL*)s);
+        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, pS->instance,(SSL*)s);
 
         if (OK > (status = moc_mutexRelease(m_hashTableMutex)))
         {
@@ -16900,9 +17361,9 @@ extern int SSL_accept(SSL *s)
 
         OSSL_checkDSACipherSupport(s);
 
-        if (s->numCipherIds > 0)
+        if (pS->numCipherIds > 0)
         {
-            if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, s->cipherIds, s->numCipherIds)))
+            if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, pS->cipherIds, pS->numCipherIds)))
             {
                 return -1;
             }
@@ -16915,16 +17376,16 @@ extern int SSL_accept(SSL *s)
                 (void) SSL_CTX_set_cipher_list(ctx, SSL_DEFAULT_CIPHER_LIST);
             }
 
-            if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, ctx->cipherIds, ctx->numCipherIds)))
+            if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, ctx->cipherIds, ctx->numCipherIds)))
             {
                 return -1;
             }
         }
 
-        if (s->numEccCurves > 0)
+        if (pS->numEccCurves > 0)
         {
             ubyte4 i = 0;
-            ubyte4 numCurves = s->numEccCurves;
+            ubyte4 numCurves = pS->numEccCurves;
             OSSL_tlsExtNamedCurves *curvesList = OSSL_MALLOC(numCurves * sizeof(OSSL_tlsExtNamedCurves));
             if (NULL == curvesList)
             {
@@ -16932,10 +17393,10 @@ extern int SSL_accept(SSL *s)
             }
             for (i = 0; i < numCurves; i++)
             {
-                curvesList[i] = s->pEccCurves[i];
+                curvesList[i] = pS->pEccCurves[i];
             }
 
-            NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+            NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
             OSSL_FREE(curvesList);
         }
         else if (ctx->numEccCurves > 0)
@@ -16952,28 +17413,28 @@ extern int SSL_accept(SSL *s)
                 curvesList[i] = ctx->pEccCurves[i];
             }
 
-            NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+            NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
             OSSL_FREE(curvesList);
         }
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            if (s->numSrtpProfileIds > 0)
+            if (pS->numSrtpProfileIds > 0)
             {
-                NSSL_CHK_CALL(setSrtpProfiles, s->instance, s->srtpProfileIds, s->numSrtpProfileIds);
+                NSSL_CHK_CALL(setSrtpProfiles, pS->instance, pS->srtpProfileIds, pS->numSrtpProfileIds);
             }
             else
             {
                 if (ctx->numSrtpProfileIds > 0)
                 {
-                    NSSL_CHK_CALL(setSrtpProfiles, s->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
+                    NSSL_CHK_CALL(setSrtpProfiles, pS->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
                 }
             }
         }
 #endif
 
-        if (OK > (status = NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags)))
+        if (OK > (status = NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags)))
         {
             return -1;
         }
@@ -16982,16 +17443,16 @@ extern int SSL_accept(SSL *s)
         sslFlags &= ~(SSL_FLAG_NO_MUTUAL_AUTH_REQUEST);
         sslFlags &= ~(SSL_FLAG_REQUIRE_MUTUAL_AUTH);
 
-        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, s->instance, (sslFlags) | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
+        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, pS->instance, (sslFlags) | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
         {
             return -1;
         }
 
 
-        if ((NULL != s->ssl_ctx->orig_ssl_ctx.cert) && (NULL != s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
+        if ((NULL != pS->ssl_ctx->orig_ssl_ctx.cert) && (NULL != pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
         {
-            if (OK > (status = NSSL_CHK_CALL(setCipherAlgorithm, s->instance, s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
-                                   (ubyte4) s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */)))
+            if (OK > (status = NSSL_CHK_CALL(setCipherAlgorithm, pS->instance, pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
+                                   (ubyte4) pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */)))
             {
                 return -1;
             }
@@ -16999,32 +17460,32 @@ extern int SSL_accept(SSL *s)
 
 #if defined(__ENABLE_DIGICERT_EXTENDED_MASTERSECRET_RFC7627__)
          /* Extended master secret is enabled by default */
-        if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
         {
             return -1;
         }
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         if (0 != ctx->orig_ssl_ctx.num_tickets)
         {
-            if (OK == NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_NUM_TICKETS, (void*)((OSSL_UINT_PTR)ctx->orig_ssl_ctx.num_tickets)))
+            if (OK == NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_NUM_TICKETS, (void*)((OSSL_UINT_PTR)ctx->orig_ssl_ctx.num_tickets)))
             {
                 status = 1;
             }
         }
 
-        if (s->orig_s.max_early_data)
+        if (pS->orig_s.max_early_data)
         {
-            if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)s->orig_s.max_early_data)))
+            if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)pS->orig_s.max_early_data)))
             {
                 return 0;
             }
         }
 
-        if (s->orig_s.recv_max_early_data)
+        if (pS->orig_s.recv_max_early_data)
         {
-            if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)s->orig_s.recv_max_early_data)))
+            if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)pS->orig_s.recv_max_early_data)))
             {
                 return 0;
             }
@@ -17033,7 +17494,7 @@ extern int SSL_accept(SSL *s)
         /* Saving PSK on Server */
         SSL_set_server_psk_save_session_callback(s);
 
-        if (s->ssl_ctx->get_session_cb != NULL)
+        if (pS->ssl_ctx->get_session_cb != NULL)
         {
             pskFindSessionCallbackFuncPtr  psk_find_session_callback;
             psk_find_session_callback  = OSSL_psk_get_session_callback;
@@ -17042,7 +17503,7 @@ extern int SSL_accept(SSL *s)
         }
 #endif
 
-      if(s->ssl_ctx->alpn_select_cb)
+      if(pS->ssl_ctx->alpn_select_cb)
         (void) SSL_set_alpn_select_cb(s);
 
 #ifndef __DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
@@ -17060,20 +17521,20 @@ extern int SSL_accept(SSL *s)
      }
      else
      {
-        /* EIPTEST MOC_SSL_CONN_INSTANCE_UNASSIGNED != s->instance condition */
-        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, s->instance, (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
+        /* EIPTEST MOC_SSL_CONN_INSTANCE_UNASSIGNED != pS->instance condition */
+        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, pS->instance, (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
         {
             return -1; /* XXX: cleanup instance */
         }
      }
-     s->clientServerFlag    = SSL_SERVER_FLAG;
-    retValue = NSSL_CHK_CALL(isEstablished, s->instance);
+     pS->clientServerFlag    = SSL_SERVER_FLAG;
+    retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
     if (1 == retValue)
     {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        s->orig_state = SSL_ST_OK;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS->orig_state = SSL_ST_OK;
 #else
-        s->orig_s.state = SSL_ST_OK;
+        pS->orig_s.state = SSL_ST_OK;
 #endif
         return 1;
     }
@@ -17083,61 +17544,61 @@ extern int SSL_accept(SSL *s)
         return -1;
     }
 
-     if (NULL == s->pHoldingBuf)
+     if (NULL == pS->pHoldingBuf)
      {
-        s->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
-        if (NULL == s->pHoldingBuf)
+        pS->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
+        if (NULL == pS->pHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             return -1;
         }
-        s->szHoldingBuf         = OSSL_MAX_SSL_RX_MSG_SZ;
-        s->bytesRcvdRemaining   = 0;
-        s->pFirstRcvdUnreadByte = s->pHoldingBuf;
+        pS->szHoldingBuf         = OSSL_MAX_SSL_RX_MSG_SZ;
+        pS->bytesRcvdRemaining   = 0;
+        pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
      }
 
-     if (NULL == s->pTxHoldingBuf)
+     if (NULL == pS->pTxHoldingBuf)
      {
-        s->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
-        if (NULL == s->pTxHoldingBuf)
+        pS->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
+        if (NULL == pS->pTxHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             return -1;
         }
-        s->szTxHoldingBuf    = OSSL_MAX_SSL_MSG_SZ;
-        s->bytesSentRemaining = 0;
-        s->txHoldingBufOffset = 0;
+        pS->szTxHoldingBuf    = OSSL_MAX_SSL_MSG_SZ;
+        pS->bytesSentRemaining = 0;
+        pS->txHoldingBufOffset = 0;
      }
 #if 0
      if (ctx->app_verify_callback)
      {
-      int rval = NSSL_CHK_CALL(setAppCertVrfyCB, s->instance, OSSL_shimAppVerifyCert, (void *)s);
+      int rval = NSSL_CHK_CALL(setAppCertVrfyCB, pS->instance, OSSL_shimAppVerifyCert, (void *)s);
       if (rval < 0)
            return -1;
      }
 #endif
-     while (0 == (retValue = NSSL_CHK_CALL(isEstablished, s->instance))) {
+     while (0 == (retValue = NSSL_CHK_CALL(isEstablished, pS->instance))) {
 
-      if (s->bytesSentRemaining > 0)
+      if (pS->bytesSentRemaining > 0)
       {
           i = asyncSendDataBio(
-            s, s->pTxHoldingBuf + s->txHoldingBufOffset, s->bytesSentRemaining,
+            s, pS->pTxHoldingBuf + pS->txHoldingBufOffset, pS->bytesSentRemaining,
             &bytesSent);
           if (0 >= i)
           {
-            s->bytesSentRemaining -= bytesSent;
-            s->txHoldingBufOffset += bytesSent;
+            pS->bytesSentRemaining -= bytesSent;
+            pS->txHoldingBufOffset += bytesSent;
             return i;
           }
 
-          s->bytesSentRemaining = 0;
-          s->txHoldingBufOffset = 0;
+          pS->bytesSentRemaining = 0;
+          pS->txHoldingBufOffset = 0;
       }
 
-      if (0 == s->bytesRcvdRemaining) {
-          s->io_state        = OSSL_IN_READ;
-          s->orig_s.rwstate = SSL_READING;
-          while( 0 >= (i = BIO_read(s->rbio, s->pHoldingBuf, s->szHoldingBuf)))
+      if (0 == pS->bytesRcvdRemaining) {
+          pS->io_state        = OSSL_IN_READ;
+          pS->orig_s.rwstate = SSL_READING;
+          while( 0 >= (i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf)))
           {
             /* XXX: check errors
              *
@@ -17145,23 +17606,23 @@ extern int SSL_accept(SSL *s)
              * 0 or -1 does not necessarily indicate an error and that
              * BIO_should_retry should be checked.
              */
-             if ((i < 0)||(!BIO_should_retry(s->rbio) || (SSL_pending(s) <= 0)))
+             if ((i < 0)||(!BIO_should_retry(pS->rbio) || (SSL_pending(s) <= 0)))
              {
                 return i;
              }
            }
-           s->io_state    = 0;
-           s->orig_s.rwstate = SSL_NOTHING;
-           s->pFirstRcvdUnreadByte     = s->pHoldingBuf;
-           s->bytesRcvdRemaining    = i;
+           pS->io_state    = 0;
+           pS->orig_s.rwstate = SSL_NOTHING;
+           pS->pFirstRcvdUnreadByte     = pS->pHoldingBuf;
+           pS->bytesRcvdRemaining    = i;
       }
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-      if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+      if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
       {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (s->hello_verify_done)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (pS->hello_verify_done)
         {
-            if (OK > NSSL_CHK_CALL(dtlsIoctl, s->instance, DTLS_SET_HELLO_VERIFIED, (void*)((OSSL_UINT_PTR)1))) {
+            if (OK > NSSL_CHK_CALL(dtlsIoctl, pS->instance, DTLS_SET_HELLO_VERIFIED, (void*)((OSSL_UINT_PTR)1))) {
                 asyncSendPendingData(s);
                 convertMocStatusToSslErr(s, status, SSL_F_DTLS1_ACCEPT, ERR_R_INTERNAL_ERROR);
                 return -1;
@@ -17175,7 +17636,7 @@ extern int SSL_accept(SSL *s)
         }
 #endif
 
-        status = NSSL_CHK_CALL(dtlsParseSslBuf,s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+        status = NSSL_CHK_CALL(dtlsParseSslBuf,pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                  &pFirstUnusedByte, &bytesRemaining);
         if (OK > status) {
             asyncSendPendingData(s);
@@ -17186,7 +17647,7 @@ extern int SSL_accept(SSL *s)
       else
 #endif
       {
-        status = NSSL_CHK_CALL(parseSslBuf, s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+        status = NSSL_CHK_CALL(parseSslBuf, pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                  &pFirstUnusedByte, &bytesRemaining);
         if (OK > status) {
             asyncSendPendingData(s);
@@ -17207,50 +17668,50 @@ extern int SSL_accept(SSL *s)
        */
       if (0 == status)
       {
-           s->pFirstRcvdUnreadByte   = s->pHoldingBuf;
-           s->bytesRcvdRemaining     = 0;
+           pS->pFirstRcvdUnreadByte   = pS->pHoldingBuf;
+           pS->bytesRcvdRemaining     = 0;
       } else {
            /* This should not happen; if it does, it means during Hshake some
         * other non-Hshake msg was received; most likely ALERT. Must harvest
         * and continue feeding bytes to Hshake.
         * XXX: Harvest Alerts here !!
         */
-           s->pFirstRcvdUnreadByte  = pFirstUnusedByte;
-           s->bytesRcvdRemaining    = bytesRemaining;
+           pS->pFirstRcvdUnreadByte  = pFirstUnusedByte;
+           pS->bytesRcvdRemaining    = bytesRemaining;
       }
       /* Now send any pending bytes */
-      mySendBufLen        = s->szTxHoldingBuf;
+      mySendBufLen        = pS->szTxHoldingBuf;
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-      if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+      if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
       {
-        while (OK == (status = NSSL_CHK_CALL(dtlsGetSendBuffer,s->instance, s->pTxHoldingBuf, &mySendBufLen))) {
+        while (OK == (status = NSSL_CHK_CALL(dtlsGetSendBuffer,pS->instance, pS->pTxHoldingBuf, &mySendBufLen))) {
 
-           i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+           i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
            if (0 >= i)
            {
-               s->bytesSentRemaining = mySendBufLen - bytesSent;
-               s->txHoldingBufOffset = bytesSent;
+               pS->bytesSentRemaining = mySendBufLen - bytesSent;
+               pS->txHoldingBufOffset = bytesSent;
                return i;
            }
 
-           mySendBufLen    = s->szTxHoldingBuf;
+           mySendBufLen    = pS->szTxHoldingBuf;
         }
       }
       else
 #endif
       {
-        while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf, &mySendBufLen))) {
+        while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen))) {
 
-           i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+           i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
            if (0 >= i)
            {
-               s->bytesSentRemaining = mySendBufLen - bytesSent;
-               s->txHoldingBufOffset = bytesSent;
+               pS->bytesSentRemaining = mySendBufLen - bytesSent;
+               pS->txHoldingBufOffset = bytesSent;
                return i;
            }
 
-           mySendBufLen    = s->szTxHoldingBuf;
+           mySendBufLen    = pS->szTxHoldingBuf;
 
            /* The above BIO_write is used to send the handshake packets.
             * The first packet sent will be ServerHello.
@@ -17263,11 +17724,11 @@ extern int SSL_accept(SSL *s)
             * SSL_read checks if session is established. If it is not it calls the SSL_do_handshake.
             * So the incomplete session is handled and the application data is also read and processed.
             */
-            retValue = NSSL_CHK_CALL(isEstablished, s->instance);
+            retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
             if (0 == retValue)
             {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                retValue = NSSL_CHK_CALL(getLocalState, s->instance, &localState);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                retValue = NSSL_CHK_CALL(getLocalState, pS->instance, &localState);
                 if (0 != retValue)
                     return -1;
 
@@ -17281,7 +17742,7 @@ extern int SSL_accept(SSL *s)
                  * attempt to negotiate. This new state flag is added to indicate
                  * the context of the negotiation to SSL_state.
                  */
-                s->state |= SSL_ST_ACCEPT_NEGOTIATING;
+                pS->state |= SSL_ST_ACCEPT_NEGOTIATING;
                 return 1;
             }
             else if (-1 == retValue)
@@ -17309,19 +17770,19 @@ exit:
       cb(s, SSL_CB_HANDSHAKE_DONE, 1);
 
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    s->orig_state = SSL_ST_OK;
-    s->orig_s.statem.state = MSG_FLOW_FINISHED;
-    s->orig_s.statem.hand_state = TLS_ST_OK;
-    s->orig_s.statem.in_init = 0;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS->orig_state = SSL_ST_OK;
+    pS->orig_s.statem.state = MSG_FLOW_FINISHED;
+    pS->orig_s.statem.hand_state = TLS_ST_OK;
+    pS->orig_s.statem.in_init = 0;
 #else
-    s->orig_s.state = SSL_ST_OK;
+    pS->orig_s.state = SSL_ST_OK;
 #endif
      return 1;
 }
 
 /*------------------------------------------------------------------*/
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 static MSTATUS checkRxBuffer(SSL *s, ubyte4 size);
 static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
@@ -17340,6 +17801,11 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
     int authModeFlag = 0;
     ubyte4 sslFlags  = 0;
     void (*cb) (const SSL *ssl, int type, int val) = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = NULL;
+#else
+    SSL *pS = NULL;
+#endif
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
     peerDescr myPeerDescr = {0};
     ubyte *srcAddr  = (ubyte *)"0.0.0.0";
@@ -17357,32 +17823,38 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
         return -1;
     }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS = (SSL_CONNECTION *)s;
+#else
+    pS = s;
+#endif
+
     ERR_clear_error();
     clear_sys_error();
 
     /* Initialize myPeerDescr for DTLS */
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-    if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+    if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
     {
         myPeerDescr.pUdpDescr = NULL;
         mocNetNameToIpaddr(&(myPeerDescr.srcAddr), srcAddr);
-        myPeerDescr.srcPort   = s->appId;
+        myPeerDescr.srcPort   = pS->appId;
         mocNetNameToIpaddr(&(myPeerDescr.peerAddr), peerAddr);
-        myPeerDescr.peerPort  = s->appId;
+        myPeerDescr.peerPort  = pS->appId;
     }
 #endif
 
-    ctx    = s->ssl_ctx;
+    ctx    = pS->ssl_ctx;
 
     /* Application loads the cert and key at the time of connection instead of init with this callback;
      * For a given context we go to the application only once
      */
-    if (s->ssl_ctx->isCertInitialized == 0)
+    if (pS->ssl_ctx->isCertInitialized == 0)
     {
-        if ((s->ssl_ctx->orig_ssl_ctx.cert != NULL) &&
-            (s->ssl_ctx->orig_ssl_ctx.cert->cert_cb != NULL))
+        if ((pS->ssl_ctx->orig_ssl_ctx.cert != NULL) &&
+            (pS->ssl_ctx->orig_ssl_ctx.cert->cert_cb != NULL))
         {
-            certCbReturn = s->ssl_ctx->orig_ssl_ctx.cert->cert_cb(s, s->ssl_ctx->orig_ssl_ctx.cert->cert_cb_arg);
+            certCbReturn = pS->ssl_ctx->orig_ssl_ctx.cert->cert_cb(s, pS->ssl_ctx->orig_ssl_ctx.cert->cert_cb_arg);
         }
 
         if (0 == certCbReturn)
@@ -17393,19 +17865,19 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
         else if (0 > certCbReturn)
         {
             /* This will return SSL_ERROR_WANT_X509_LOOKUP when application calls SSL_get_error */
-            s->io_state = OSSL_X509_LOOKUP;
+            pS->io_state = OSSL_X509_LOOKUP;
             return -1;
         }
         else
         {
             /* The callback successfully initialized the cert and key */
-            s->ssl_ctx->isCertInitialized = 1;
+            pS->ssl_ctx->isCertInitialized = 1;
         }
     }
 
     /* Nano SSL stack Uses the socket to correlate the connectionInstance
     to SSL Socket Session */
-    if((s->orig_s.verify_mode & SSL_VERIFY_PEER) || (ctx->verify_mode & SSL_VERIFY_PEER))
+    if((pS->orig_s.verify_mode & SSL_VERIFY_PEER) || (ctx->verify_mode & SSL_VERIFY_PEER))
     {
         /* allow mutual auth */
         authModeFlag = SSL_FLAG_REQUIRE_MUTUAL_AUTH;
@@ -17416,25 +17888,25 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
     }
 
     /* Handshake status callback */
-    if (s->info_callback != NULL)
-        cb = s->info_callback;
-    else if (s->ssl_ctx->info_callback != NULL)
-        cb = s->ssl_ctx->info_callback;
+    if (pS->info_callback != NULL)
+        cb = pS->info_callback;
+    else if (pS->ssl_ctx->info_callback != NULL)
+        cb = pS->ssl_ctx->info_callback;
 
-    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == s->instance)
+    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance)
     {
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            s->instance = NSSL_CHK_CALL(dtlsAccept, &myPeerDescr, ctx->pCertStore);
+            pS->instance = NSSL_CHK_CALL(dtlsAccept, &myPeerDescr, ctx->pCertStore);
         }
         else
 #endif
         {
-            s->instance = NSSL_CHK_CALL(accept, s->appId, ctx->pCertStore);
+            pS->instance = NSSL_CHK_CALL(accept, pS->appId, ctx->pCertStore);
         }
 
-        if (OK > s->instance)
+        if (OK > pS->instance)
         {
             return -1;
         }
@@ -17446,16 +17918,16 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
             return -1;
         }
 
-        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, s->instance,(SSL*)s);
+        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, pS->instance,(SSL*)s);
 
         if (OK > (status = moc_mutexRelease(m_hashTableMutex)))
         {
             /*PRINT("RTOS_mutexRelease() failed : %d\n", status);*/
             return -1;
         }
-        if (s->numCipherIds > 0)
+        if (pS->numCipherIds > 0)
         {
-            if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, s->cipherIds, s->numCipherIds)))
+            if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, pS->cipherIds, pS->numCipherIds)))
             {
                 return -1;
             }
@@ -17468,16 +17940,16 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
                 (void) SSL_CTX_set_cipher_list(ctx, SSL_DEFAULT_CIPHER_LIST);
             }
 
-            if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, ctx->cipherIds, ctx->numCipherIds)))
+            if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, ctx->cipherIds, ctx->numCipherIds)))
             {
                 return -1;
             }
         }
 
-        if (s->numEccCurves > 0)
+        if (pS->numEccCurves > 0)
         {
             ubyte4 i = 0;
-            ubyte4 numCurves = s->numEccCurves;
+            ubyte4 numCurves = pS->numEccCurves;
             OSSL_tlsExtNamedCurves *curvesList = OSSL_MALLOC(numCurves * sizeof(OSSL_tlsExtNamedCurves));
             if (NULL == curvesList)
             {
@@ -17485,10 +17957,10 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
             }
             for (i = 0; i < numCurves; i++)
             {
-                curvesList[i] = s->pEccCurves[i];
+                curvesList[i] = pS->pEccCurves[i];
             }
 
-            NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+            NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
             OSSL_FREE(curvesList);
         }
         else if (ctx->numEccCurves > 0)
@@ -17505,28 +17977,28 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
                 curvesList[i] = ctx->pEccCurves[i];
             }
 
-            NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+            NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
             OSSL_FREE(curvesList);
         }
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            if (s->numSrtpProfileIds > 0)
+            if (pS->numSrtpProfileIds > 0)
             {
-                NSSL_CHK_CALL(setSrtpProfiles, s->instance, s->srtpProfileIds, s->numSrtpProfileIds);
+                NSSL_CHK_CALL(setSrtpProfiles, pS->instance, pS->srtpProfileIds, pS->numSrtpProfileIds);
             }
             else
             {
                 if (ctx->numSrtpProfileIds > 0)
                 {
-                    NSSL_CHK_CALL(setSrtpProfiles, s->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
+                    NSSL_CHK_CALL(setSrtpProfiles, pS->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
                 }
             }
         }
 #endif
 
-        if (OK > (status = NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags)))
+        if (OK > (status = NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags)))
         {
             return -1;
         }
@@ -17536,16 +18008,16 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
         sslFlags &= ~(SSL_FLAG_REQUIRE_MUTUAL_AUTH);
 
         /* SSL_setSession flags resets the flags; So first get the flag value to preserve the previously set flags */
-        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, s->instance, (sslFlags) | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
+        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, pS->instance, (sslFlags) | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
         {
             return -1; /* XXX: cleanup instance */
         }
 
 
-        if ((NULL != s->ssl_ctx->orig_ssl_ctx.cert) && (NULL != s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
+        if ((NULL != pS->ssl_ctx->orig_ssl_ctx.cert) && (NULL != pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
         {
-            if (OK > NSSL_CHK_CALL(setCipherAlgorithm, s->instance, s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
-                                   (ubyte4) s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */))
+            if (OK > NSSL_CHK_CALL(setCipherAlgorithm, pS->instance, pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
+                                   (ubyte4) pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */))
             {
                 return -1;
             }
@@ -17553,32 +18025,32 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
 
 #if defined(__ENABLE_DIGICERT_EXTENDED_MASTERSECRET_RFC7627__)
          /* Extended master secret is enabled by default */
-        if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
         {
             return -1;
         }
 #endif
 
-#if defined ( __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined ( __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         if (0 != ctx->orig_ssl_ctx.num_tickets)
         {
-            if (OK == NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_NUM_TICKETS, (void*)((OSSL_UINT_PTR)ctx->orig_ssl_ctx.num_tickets)))
+            if (OK == NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_NUM_TICKETS, (void*)((OSSL_UINT_PTR)ctx->orig_ssl_ctx.num_tickets)))
             {
                 status = 1;
             }
         }
 
-        if (s->orig_s.max_early_data)
+        if (pS->orig_s.max_early_data)
         {
-            if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)s->orig_s.max_early_data)))
+            if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)pS->orig_s.max_early_data)))
             {
                 return 0;
             }
         }
 
-        if (s->orig_s.recv_max_early_data)
+        if (pS->orig_s.recv_max_early_data)
         {
-            if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)s->orig_s.recv_max_early_data)))
+            if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)pS->orig_s.recv_max_early_data)))
             {
                 return 0;
             }
@@ -17587,14 +18059,14 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
         /* Saving PSK on Server */
         SSL_set_server_psk_save_session_callback(s);
 
-        if (s->ssl_ctx->get_session_cb != NULL)
+        if (pS->ssl_ctx->get_session_cb != NULL)
         {
             pskFindSessionCallbackFuncPtr  psk_find_session_callback;
             psk_find_session_callback  = OSSL_psk_get_session_callback;
             NSSL_CHK_CALL(setPskFindSessionCb, psk_find_session_callback);
         }
 #endif
-        if(s->ssl_ctx->alpn_select_cb)
+        if(pS->ssl_ctx->alpn_select_cb)
             (void) SSL_set_alpn_select_cb(s);
 
 #ifndef __DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
@@ -17612,14 +18084,14 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
     else
     {
         /* EIPTEST MOC_SSL_CONN_INSTANCE_UNASSIGNED != s->instance condition */
-        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, s->instance, (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
+        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, pS->instance, (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
         {
             return -1;
         }
     }
 
-    s->clientServerFlag    = SSL_SERVER_FLAG;
-    retValue = NSSL_CHK_CALL(isEstablished, s->instance);
+    pS->clientServerFlag    = SSL_SERVER_FLAG;
+    retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
     if (1 == retValue)
     {
         return 1;
@@ -17630,76 +18102,76 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
         return -1;
     }
 
-    if (NULL == s->pHoldingBuf)
+    if (NULL == pS->pHoldingBuf)
     {
-        s->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
-        if (NULL == s->pHoldingBuf)
+        pS->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
+        if (NULL == pS->pHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             return -1;
         }
-        s->szHoldingBuf         = OSSL_MAX_SSL_RX_MSG_SZ;
-        s->bytesRcvdRemaining   = 0;
-        s->pFirstRcvdUnreadByte = s->pHoldingBuf;
+        pS->szHoldingBuf         = OSSL_MAX_SSL_RX_MSG_SZ;
+        pS->bytesRcvdRemaining   = 0;
+        pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
     }
 
-    if (NULL == s->pTxHoldingBuf)
+    if (NULL == pS->pTxHoldingBuf)
     {
-        s->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
-        if (NULL == s->pTxHoldingBuf)
+        pS->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
+        if (NULL == pS->pTxHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             return -1;
         }
-        s->szTxHoldingBuf     = OSSL_MAX_SSL_MSG_SZ;
-        s->bytesSentRemaining = 0;
-        s->txHoldingBufOffset = 0;
+        pS->szTxHoldingBuf     = OSSL_MAX_SSL_MSG_SZ;
+        pS->bytesSentRemaining = 0;
+        pS->txHoldingBufOffset = 0;
     }
 
-    while (0 == (retValue = NSSL_CHK_CALL(isEstablished, s->instance)))
+    while (0 == (retValue = NSSL_CHK_CALL(isEstablished, pS->instance)))
     {
 
-        if (s->bytesSentRemaining > 0)
+        if (pS->bytesSentRemaining > 0)
         {
             i = asyncSendDataBio(
-                s, s->pTxHoldingBuf + s->txHoldingBufOffset, s->bytesSentRemaining,
+                s, pS->pTxHoldingBuf + pS->txHoldingBufOffset, pS->bytesSentRemaining,
                 &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining -= bytesSent;
-                s->txHoldingBufOffset += bytesSent;
+                pS->bytesSentRemaining -= bytesSent;
+                pS->txHoldingBufOffset += bytesSent;
                 return i;
             }
     
-            s->bytesSentRemaining = 0;
-            s->txHoldingBufOffset = 0;
+            pS->bytesSentRemaining = 0;
+            pS->txHoldingBufOffset = 0;
         }
 
-        if (0 == s->bytesRcvdRemaining)
+        if (0 == pS->bytesRcvdRemaining)
         {
-            s->io_state       = OSSL_IN_READ;
-            s->orig_s.rwstate = SSL_READING;
-            if ( 0 >= (i = BIO_read(s->rbio, s->pHoldingBuf, s->szHoldingBuf)))
+            pS->io_state       = OSSL_IN_READ;
+            pS->orig_s.rwstate = SSL_READING;
+            if ( 0 >= (i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf)))
             {
                 /* XXX: check errors
                  * OpenSSL BIO_read documentation specifies that a return value of
                  * 0 or -1 does not necessarily indicate an error and that
                  * BIO_should_retry should be checked.
                  */
-                if ((i < -1)||(!BIO_should_retry(s->rbio) || (SSL_pending(s) <= 0)))
+                if ((i < -1)||(!BIO_should_retry(pS->rbio) || (SSL_pending(s) <= 0)))
                 {
                     return i;
                 }
             }
-            s->io_state             = 0;
-            s->orig_s.rwstate       = SSL_NOTHING;
-            s->pFirstRcvdUnreadByte = s->pHoldingBuf;
-            s->bytesRcvdRemaining   = i;
+            pS->io_state             = 0;
+            pS->orig_s.rwstate       = SSL_NOTHING;
+            pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
+            pS->bytesRcvdRemaining   = i;
         }
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            status = NSSL_CHK_CALL(dtlsParseSslBuf,s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+            status = NSSL_CHK_CALL(dtlsParseSslBuf,pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                                    &pFirstUnusedByte, &bytesRemaining);
             if (OK > status)
             {
@@ -17710,7 +18182,7 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
 
             if (0 < status)
             {
-                status = NSSL_CHK_CALL(dtlsReadSslRec, s->instance, (ubyte**)&pBuf, (ubyte4*)readBytes, NULL);
+                status = NSSL_CHK_CALL(dtlsReadSslRec, pS->instance, (ubyte**)&pBuf, (ubyte4*)readBytes, NULL);
                 if (OK > status)
                 {
                     asyncSendPendingData(s);
@@ -17722,7 +18194,7 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
         else
 #endif
         {
-            status = NSSL_CHK_CALL(parseSslBuf, s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+            status = NSSL_CHK_CALL(parseSslBuf, pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                                    &pFirstUnusedByte, &bytesRemaining);
             if (OK > status)
             {
@@ -17733,7 +18205,7 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
 
             if (0 < status)
             {
-                status = NSSL_CHK_CALL(readSslRec, s->instance, (ubyte**)&pBuf, (ubyte4*)readBytes, NULL);
+                status = NSSL_CHK_CALL(readSslRec, pS->instance, (ubyte**)&pBuf, (ubyte4*)readBytes, NULL);
                 if (OK > status)
                 {
                     asyncSendPendingData(s);
@@ -17752,8 +18224,8 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
             ubyte4    toKeep;
             toKeep    = (*readBytes - toCopy);
             checkRxBuffer(s, toKeep); /* Sets rxDatabufOffset to 0 if it allocates */
-            memcpy(s->pRxDataBuf + s->rxDataBufOffset + s->rxDataBufLen, pBuf + toCopy, toKeep);
-            s->rxDataBufLen        += toKeep;
+            memcpy(pS->pRxDataBuf + pS->rxDataBufOffset + pS->rxDataBufLen, pBuf + toCopy, toKeep);
+            pS->rxDataBufLen        += toKeep;
             *readBytes = toCopy;
         }
         /* While in the Handshake phase, recvMessage2 calls SSL_SOCK_receive in a loop
@@ -17768,8 +18240,8 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
          */
         if (0 == status)
         {
-            s->pFirstRcvdUnreadByte   = s->pHoldingBuf;
-            s->bytesRcvdRemaining     = 0;
+            pS->pFirstRcvdUnreadByte   = pS->pHoldingBuf;
+            pS->bytesRcvdRemaining     = 0;
         }
         else
         {
@@ -17778,8 +18250,8 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
              * and continue feeding bytes to Hshake.
              * OR this is the early application data in 0-RTT handshake flow
              */
-            s->pFirstRcvdUnreadByte  = pFirstUnusedByte;
-            s->bytesRcvdRemaining    = bytesRemaining;
+            pS->pFirstRcvdUnreadByte  = pFirstUnusedByte;
+            pS->bytesRcvdRemaining    = bytesRemaining;
             /* If the buffer provided is big enough, copy the data */
             if ((sbyte4) num > status)
             {
@@ -17795,38 +18267,38 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
             }
         }
         /* Now send any pending bytes */
-        mySendBufLen = s->szTxHoldingBuf;
+        mySendBufLen = pS->szTxHoldingBuf;
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            while (OK == (status = NSSL_CHK_CALL(dtlsGetSendBuffer,s->instance, s->pTxHoldingBuf, &mySendBufLen)))
+            while (OK == (status = NSSL_CHK_CALL(dtlsGetSendBuffer,pS->instance, pS->pTxHoldingBuf, &mySendBufLen)))
             {
-                i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+                i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining = mySendBufLen - bytesSent;
-                    s->txHoldingBufOffset = bytesSent;
+                    pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                    pS->txHoldingBufOffset = bytesSent;
                     return i;
                 }
 
-                mySendBufLen      = s->szTxHoldingBuf;
+                mySendBufLen      = pS->szTxHoldingBuf;
             }
         }
         else
 #endif
         {
-            while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf, &mySendBufLen)))
+            while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen)))
             {
-                i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+                i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining = mySendBufLen - bytesSent;
-                    s->txHoldingBufOffset = bytesSent;
+                    pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                    pS->txHoldingBufOffset = bytesSent;
                     return i;
                 }
 
-                mySendBufLen    = s->szTxHoldingBuf;
+                mySendBufLen    = pS->szTxHoldingBuf;
 
                 /* The above BIO_write is used to send the handshake packets.
                 * The first packet sent will be ServerHello.
@@ -17850,19 +18322,19 @@ static int SSL_acceptEx(SSL *s, void *buf, size_t num, size_t *readBytes)
         return -1;
     }
 
-    (void) BIO_flush(s->wbio);
+    (void) BIO_flush(pS->wbio);
     /* Notify that handshake is done*/
     if (cb != NULL)
     cb(s, SSL_CB_HANDSHAKE_DONE, 1);
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    s->orig_state = SSL_ST_OK;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS->orig_state = SSL_ST_OK;
 #else
-    s->orig_s.state = SSL_ST_OK;
+    pS->orig_s.state = SSL_ST_OK;
 #endif
     return 1;
 }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /*------------------------------------------------------------------*/
 
@@ -17873,23 +18345,29 @@ int OSSL_getNewSession(SSL *s)
     if ((ss = SSL_SESSION_new()) == NULL)
           return (0);
 
-    if (s->session != NULL) {
-          SSL_SESSION_free(s->session);
-          s->session = NULL;
-    }
-    s->session = ss;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+        SSL *pS = s;
+#endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    s->session->peer_chain = NULL;
+    if (pS->session != NULL) {
+          SSL_SESSION_free(pS->session);
+          pS->session = NULL;
+    }
+    pS->session = ss;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS->session->peer_chain = NULL;
 #if OPENSSL_VERSION_NUMBER < 0x0101010bf
-    s->session->peer_type = 0;
+    pS->session->peer_type = 0;
 #endif
 #else
-    s->session->sess_cert = (SESS_CERT*) OSSL_CALLOC(1, sizeof(SESS_CERT));
-    if (s->session->sess_cert)
+    pS->session->sess_cert = (SESS_CERT*) OSSL_CALLOC(1, sizeof(SESS_CERT));
+    if (pS->session->sess_cert)
     {
-        s->session->sess_cert->cert_chain     = NULL;
-        s->session->sess_cert->peer_cert_type = 0;
+        pS->session->sess_cert->cert_chain     = NULL;
+        pS->session->sess_cert->peer_cert_type = 0;
     }
 #endif
 
@@ -17907,10 +18385,15 @@ long SSL_get_verify_result(const SSL *s)
 {
      if(NULL == s)
         return -1;
-     if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == s->instance)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+     const SSL *pS = s;
+#endif
+     if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance)
         return -1;
 
-     return s->verify_result;
+     return pS->verify_result;
 }
 
 /*------------------------------------------------------------------*/
@@ -17919,7 +18402,12 @@ void SSL_set_verify_result(SSL *ssl, long arg)
 {
     if (NULL != ssl)
     {
-        ssl->verify_result = arg;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+        SSL *pS = ssl;
+#endif
+        pS->verify_result = arg;
     }
 }
 
@@ -17932,7 +18420,14 @@ getSharedSignatureAlgorithms(SSL *pSsl, int idx,
 {
     ubyte2 sigAlgo;
     sbyte4 status;
-    if (OK > (status = NSSL_CHK_CALL(getSharedSignatureAlgorithm, pSsl->instance, idx, &sigAlgo, isPeer)))
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    if (OK > (status = NSSL_CHK_CALL(getSharedSignatureAlgorithm, pS->instance, idx, &sigAlgo, isPeer)))
     {
         return 0;
     }
@@ -18154,7 +18649,7 @@ getSharedSignatureAlgorithms(SSL *pSsl, int idx,
                 *phash = NID_sha512;
             }
             break;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         case OSSL_TLS_EDDSA25519:
             if (psignhash != NULL)
             {
@@ -18202,17 +18697,22 @@ OSSL_saveSessionTicket(sbyte4 connInstance, sbyte *pServerInfo, ubyte4 serverInf
     OSSL_sessionTicket *pTicketData = NULL;
 
     s = (SSL *) findSSLFromInstance(connInstance);
-    if ((NULL == s) || (NULL == s->session))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+    if ((NULL == pS) || (NULL == pS->session))
     {
         goto exit;
     }
 
-    session = s->session;
+    session = pS->session;
 
     /* Delete any old tickets */
     session->cipher_id = 0;
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (session->ext.tick)
     {
         OSSL_FREE(session->ext.tick);
@@ -18244,7 +18744,7 @@ OSSL_saveSessionTicket(sbyte4 connInstance, sbyte *pServerInfo, ubyte4 serverInf
 
     /* Store ticket values in OpenSSL session structure */
     session->cipher_id = pTicketData->cipherId;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     session->ext.tick = OSSL_MALLOC(ticketLen);
     if (NULL == session->ext.tick)
     {
@@ -18292,7 +18792,13 @@ OSSL_retrieveSessionTicket(sbyte4 connInstance, sbyte *pServerInfo, ubyte4 serve
 
     pSSL = (SSL*)findSSLFromInstance(connInstance);
 
-    if ((NULL == pSSL) || (NULL == pFreeMemory))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
+    if ((NULL == pS) || (NULL == pFreeMemory))
     {
         status = ERR_NULL_POINTER;
         goto exit;
@@ -18302,11 +18808,11 @@ OSSL_retrieveSessionTicket(sbyte4 connInstance, sbyte *pServerInfo, ubyte4 serve
     *ppTicket    = NULL;
     *pTicketLen  = 0;
 
-    pSess = pSSL->session;
+    pSess = pS->session;
 
     if (pSess != NULL)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         pTicket      = (char *) pSess->ext.tick;
         ticketLength = pSess->ext.ticklen;
 #else
@@ -18324,7 +18830,7 @@ exit:
 }
 
 #endif
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 static size_t getRandom(const SSL *ssl, unsigned char *out, size_t outlen, ubyte isClient)
 {
@@ -18334,6 +18840,12 @@ static size_t getRandom(const SSL *ssl, unsigned char *out, size_t outlen, ubyte
 
     if (NULL == ssl)
         goto exit;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
 
     /* If outlen is 0, these functions return the maximum number of bytes they would copy
      * i.e, the length of the underlying field.
@@ -18348,11 +18860,11 @@ static size_t getRandom(const SSL *ssl, unsigned char *out, size_t outlen, ubyte
 
     if (isClient)
     {
-        status = NSSL_CHK_CALL(sslIoctl, ssl->instance, SSL_GET_CLIENT_RANDOM, random);
+        status = NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_GET_CLIENT_RANDOM, random);
     }
     else
     {
-        status = NSSL_CHK_CALL(sslIoctl, ssl->instance, SSL_GET_SERVER_RANDOM, random);
+        status = NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_GET_SERVER_RANDOM, random);
     }
 
     if (OK > status)
@@ -18402,50 +18914,92 @@ void SSL_set_security_level(SSL *s, int level)
 }
 #endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ */
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 size_t SSL_client_hello_get0_ciphers(SSL *s, const unsigned char **out)
 {
-    if ((NULL == s) || (NULL == out) || (NULL == s->client_hello_data))
+    if ((NULL == s) || (NULL == out))
     {
         return 0;
     }
 
-    *out = s->client_hello_data->ciphers;
-    return s->client_hello_data->ciphers_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL == pS->client_hello_data)
+        return 0;
+
+    *out = pS->client_hello_data->ciphers;
+    return pS->client_hello_data->ciphers_len;
 }
 
 size_t SSL_client_hello_get0_random(SSL *s, const unsigned char **out)
 {
-    if ((NULL == s) || (NULL == out) || (NULL == s->client_hello_data))
+    if ((NULL == s) || (NULL == out))
     {
         return 0;
     }
 
-    *out = s->client_hello_data->random;
-    return s->client_hello_data->random_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL == pS->client_hello_data)
+    {
+        return 0;
+    }
+
+    *out = pS->client_hello_data->random;
+    return pS->client_hello_data->random_len;
 }
 
 size_t SSL_client_hello_get0_compression_methods(SSL *s, const unsigned char **out)
 {
-    if ((NULL == s) || (NULL == out) || (NULL == s->client_hello_data))
+    if ((NULL == s) || (NULL == out))
     {
         return 0;
     }
 
-    *out = s->client_hello_data->compression_methods;
-    return s->client_hello_data->compression_methods_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL == pS->client_hello_data)
+    {
+        return 0;
+    }
+
+    *out = pS->client_hello_data->compression_methods;
+    return pS->client_hello_data->compression_methods_len;
 }
 
 size_t SSL_client_hello_get0_session_id(SSL *s, const unsigned char **out)
 {
-    if ((NULL == s) || (NULL == out) || (NULL == s->client_hello_data))
+    if ((NULL == s) || (NULL == out))
     {
         return 0;
     }
 
-    *out = s->client_hello_data->session_id;
-    return s->client_hello_data->session_id_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL == pS->client_hello_data)
+    {
+        return 0;
+    }
+
+    *out = pS->client_hello_data->session_id;
+    return pS->client_hello_data->session_id_len;
 }
 
 int SSL_client_hello_get0_ext(SSL *s, unsigned int type, const unsigned char **out,
@@ -18457,13 +19011,24 @@ int SSL_client_hello_get0_ext(SSL *s, unsigned int type, const unsigned char **o
     int ext_type;
     int ext_len;
 
-    if ( (NULL == s) || (NULL == out) || (NULL == outlen) || (NULL == s->client_hello_data))
+    if ( (NULL == s) || (NULL == out) || (NULL == outlen))
     {
         return 0;
     }
 
-    exts = s->client_hello_data->extensions;
-    exts_len = s->client_hello_data->extensions_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL == pS->client_hello_data)
+    {
+        return 0;
+    }
+
+    exts = pS->client_hello_data->extensions;
+    exts_len = pS->client_hello_data->extensions_len;
 
     len = 0;
 
@@ -18491,12 +19056,18 @@ int SSL_client_hello_get0_ext(SSL *s, unsigned int type, const unsigned char **o
 
 unsigned int SSL_client_hello_get0_legacy_version(SSL *s)
 {
-    if ((NULL == s) || (NULL == s->client_hello_data))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if ((NULL == pS) || (NULL == pS->client_hello_data))
     {
         return 0;
     }
 
-    return s->client_hello_data->legacy_version;
+    return pS->client_hello_data->legacy_version;
 }
 
 int SSL_client_hello_get1_extensions_present(SSL *s, int **out, size_t *outlen)
@@ -18510,11 +19081,20 @@ int SSL_client_hello_get1_extensions_present(SSL *s, int **out, size_t *outlen)
     int ext_type;
     int ext_len;
 
-    if ( (NULL == s) || (NULL == out) || (NULL == outlen) || (NULL == s->client_hello_data))
+    if ( (NULL == s) || (NULL == out) || (NULL == outlen))
         return 0;
 
-    exts = s->client_hello_data->extensions;
-    exts_len = s->client_hello_data->extensions_len;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL == pS->client_hello_data)
+        return 0;
+
+    exts = pS->client_hello_data->extensions;
+    exts_len = pS->client_hello_data->extensions_len;
 
     count = 0;
     len = 0;
@@ -18538,7 +19118,7 @@ int SSL_client_hello_get1_extensions_present(SSL *s, int **out, size_t *outlen)
     if (NULL == ext_names)
         return 0;
 
-    exts = s->client_hello_data->extensions;
+    exts = pS->client_hello_data->extensions;
     ext_names_len = len = 0;
     while (len < exts_len)
     {
@@ -18604,7 +19184,7 @@ SSL_SESSION *ssl_session_dup(SSL_SESSION *src, int ticket)
     dest->psk_identity = NULL;
 
     dest->ext.hostname = NULL;
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     dest->ext.ecpointformats = NULL;
     dest->ext.supportedgroups = NULL;
 #endif
@@ -18624,11 +19204,19 @@ SSL_SESSION *ssl_session_dup(SSL_SESSION *src, int ticket)
     /*  don't copy the prev and next pointers */
     dest->prev = NULL;
     dest->next = NULL;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (!CRYPTO_NEW_REF(&dest->references, 1))
+    {
+        goto err;
+    }
+#else
     dest->references = 1;
 
     dest->lock = CRYPTO_THREAD_lock_new();
     if (dest->lock == NULL)
         goto err;
+#endif
 
     dest->ssl_version = src->ssl_version;
     dest->master_key_length = src->master_key_length;
@@ -18694,7 +19282,7 @@ SSL_SESSION *ssl_session_dup(SSL_SESSION *src, int ticket)
     dest->timeout       = src->timeout;
     dest->time          = src->time;
     dest->compress_meth = src->compress_meth;
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     dest->cipher        = src->cipher;
 #endif
     dest->cipher_id     = src->cipher_id;
@@ -18731,7 +19319,7 @@ SSL_SESSION *ssl_session_dup(SSL_SESSION *src, int ticket)
         dest->ext.hostname[size] = '\0';
     }
 
-#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     dest->ext.supportedgroups_len = src->ext.supportedgroups_len;
     if (src->ext.ecpointformats)
     {
@@ -19142,9 +19730,15 @@ int SSL_get_early_data_status(const SSL *pSsl)
     if (NULL == pSsl)
         return SSL_EARLY_DATA_NOT_SENT;
 
-    if (pSsl->instance > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     const SSL_CONNECTION *pS = (const SSL_CONNECTION *)pSsl;
+#else
+     const SSL *pS = pSsl;
+#endif
+
+    if (pS->instance > 0)
     {
-        if (OK == NSSL_CHK_CALL(sslIoctl, pSsl->instance, SSL_GET_EARLY_DATA_STATUS, &earlyDataStatus))
+        if (OK == NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_GET_EARLY_DATA_STATUS, &earlyDataStatus))
         {
            if (1 == earlyDataStatus)
            {
@@ -19182,7 +19776,13 @@ int SSL_get_key_update_type(const SSL *pSsl)
     if (NULL == pSsl)
         return SSL_KEY_UPDATE_NONE;
 
-    if (OK == NSSL_CHK_CALL(sslIoctl, pSsl->instance, SSL_GET_KEY_UPDATE_DATA_TYPE, &keyUpdateType))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     const SSL_CONNECTION *pS = (const SSL_CONNECTION *)pSsl;
+#else
+     const SSL *pS = pSsl;
+#endif
+
+    if (OK == NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_GET_KEY_UPDATE_DATA_TYPE, &keyUpdateType))
     {
         /* In NanoSSL, this is stored as ubyte */
         if (255 == keyUpdateType)
@@ -19210,9 +19810,15 @@ uint32_t SSL_get_max_early_data(const SSL *pSsl)
     if (NULL == pSsl)
         return 0;
 
-    if (pSsl->instance > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     const SSL_CONNECTION *pS = (const SSL_CONNECTION *)pSsl;
+#else
+     const SSL *pS = pSsl;
+#endif
+
+    if (pS->instance > 0)
     {
-        if (OK == NSSL_CHK_CALL(sslIoctl, pSsl->instance, SSL_GET_MAX_EARLY_DATA, &max_early_data))
+        if (OK == NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_GET_MAX_EARLY_DATA, &max_early_data))
         {
             return max_early_data; /* return max early data */
         }
@@ -19232,11 +19838,17 @@ int SSL_set_max_early_data(SSL *pSsl, uint32_t max_early_data)
     if (NULL == pSsl)
         return 0;
 
-    pSsl->orig_s.max_early_data = max_early_data;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
 
-    if (pSsl->instance > 0)
+    pS->orig_s.max_early_data = max_early_data;
+
+    if (pS->instance > 0)
     {
-        if (OK > NSSL_CHK_CALL(sslIoctl, pSsl->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)max_early_data)))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)max_early_data)))
         {
             return 0;
         }
@@ -19339,7 +19951,13 @@ int SSL_set_recv_max_early_data(SSL *pSsl, uint32_t recv_max_early_data)
     if (NULL == pSsl)
         goto exit;
 
-    pSsl->orig_s.recv_max_early_data = recv_max_early_data;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    pS->orig_s.recv_max_early_data = recv_max_early_data;
 
     if (OK == NSSL_CHK_CALL(sslSettingsIoctl, SSL_SETTINGS_SET_RECV_MAX_EARLY_DATA, (void*)((OSSL_UINT_PTR)recv_max_early_data)))
     {
@@ -19391,16 +20009,22 @@ int SSL_set_num_tickets(SSL *pSsl, size_t numTickets)
         goto exit;
     }
 
-    if (pSsl->instance > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    if (pS->instance > 0)
     {
-        if (OK > NSSL_CHK_CALL(sslIoctl, pSsl->instance, SSL_SET_NUM_TICKETS, (void*)((OSSL_UINT_PTR)numTickets)))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_NUM_TICKETS, (void*)((OSSL_UINT_PTR)numTickets)))
         {
             status = 0;
             goto exit;
         }
     }
 
-    pSsl->orig_s.num_tickets = numTickets;
+    pS->orig_s.num_tickets = numTickets;
 
 exit:
     /* return 1 for success or 0 for failure */
@@ -19423,9 +20047,15 @@ size_t SSL_get_num_tickets(const SSL *pSsl)
     if (NULL == pSsl)
         goto exit;
 
-    if (pSsl->instance > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)pSsl;
+#else
+    const SSL *pS = pSsl;
+#endif
+
+    if (pS->instance > 0)
     {
-        if (OK == NSSL_CHK_CALL(sslIoctl, pSsl->instance, SSL_GET_NUM_TICKETS, &numTickets))
+        if (OK == NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_GET_NUM_TICKETS, &numTickets))
         {
             return numTickets;
         }
@@ -19500,15 +20130,21 @@ void SSL_set_post_handshake_auth(SSL *pSsl, int postHandshakeAuth)
     if (NULL == pSsl)
         return;
 
-    if ((pSsl->instance > 0) && (postHandshakeAuth > 0))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    if ((pS->instance > 0) && (postHandshakeAuth > 0))
     {
-        NSSL_CHK_CALL(getSessionFlags, pSsl->instance, &sslFlags);
+        NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags);
 
       /* SSL_setSession flags resets the flags; So first get the flag value to preserve the previously set flags */
-        NSSL_CHK_CALL(setSessionFlags, pSsl->instance, (sslFlags | SSL_FLAG_ENABLE_POST_HANDSHAKE_AUTH));
+        NSSL_CHK_CALL(setSessionFlags, pS->instance, (sslFlags | SSL_FLAG_ENABLE_POST_HANDSHAKE_AUTH));
     }
 
-    pSsl->orig_s.pha_enabled = postHandshakeAuth;
+    pS->orig_s.pha_enabled = postHandshakeAuth;
 }
 
 /* psk_get_session_cb is a server side callback; This callback gives the identity to the application
@@ -19527,15 +20163,21 @@ static sbyte4 OSSL_psk_get_session_callback(sbyte4 connectionInstance, ubyte *pP
 
     pSSL = (SSL*) findSSLFromInstance(connectionInstance);
 
-    if ((NULL == pSSL) ||  ( NULL == pPskIdentity))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
+    if ((NULL == pS) ||  ( NULL == pPskIdentity))
     {
          status = ERR_NULL_POINTER;
          goto exit;
     }
 
-    if (pSSL->ssl_ctx->get_session_cb != NULL)
+    if (pS->ssl_ctx->get_session_cb != NULL)
     {
-        pSess = pSSL->ssl_ctx->get_session_cb(pSSL, pPskIdentity, pskIdentityLength, &copy);
+        pSess = pS->ssl_ctx->get_session_cb(pSSL, pPskIdentity, pskIdentityLength, &copy);
 
         /* Application defined callback returns 0 in case of failure */
         if (NULL == pSess)
@@ -19650,7 +20292,13 @@ static sbyte4 OSSL_psk_find_session_callback(sbyte4 connectionInstance, ubyte *p
 
     pSSL = (SSL*) findSSLFromInstance(connectionInstance);
 
-    if ((NULL == pSSL) ||  ( NULL == pPskIdentity) || (NULL == pFreeMemory))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
+    if ((NULL == pS) ||  ( NULL == pPskIdentity) || (NULL == pFreeMemory))
     {
          status = ERR_NULL_POINTER;
          goto exit;
@@ -19658,9 +20306,9 @@ static sbyte4 OSSL_psk_find_session_callback(sbyte4 connectionInstance, ubyte *p
 
     *pFreeMemory = 0;
 
-    if (pSSL->orig_s.psk_find_session_cb)
+    if (pS->orig_s.psk_find_session_cb)
     {
-        status = pSSL->orig_s.psk_find_session_cb(pSSL, pPskIdentity, pskIdentityLength, &pSess);
+        status = pS->orig_s.psk_find_session_cb(pSSL, pPskIdentity, pskIdentityLength, &pSess);
 
         /* Application defined callback returns 0 in case of failure */
         if ((NULL == pSess) || (0 == status))
@@ -19768,9 +20416,15 @@ void SSL_set_psk_find_session_callback(SSL *pSSL, SSL_psk_find_session_cb_func c
     if ((NULL == pSSL) || (NULL == callbackFuncPtr))
         return;
 
-    pSSL->orig_s.psk_find_session_cb = callbackFuncPtr;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
 
-    if (pSSL->instance > 0)
+    pS->orig_s.psk_find_session_cb = callbackFuncPtr;
+
+    if (pS->instance > 0)
     {
         NSSL_CHK_CALL(setPskFindSessionCb, psk_find_session_callback);
     }
@@ -19802,6 +20456,12 @@ static sbyte4 OSSL_set_psk_use_session_callback(sbyte4 connectionInstance,
 
     pSSL = (SSL*)findSSLFromInstance(connectionInstance);
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
     if ((NULL == pSSL) || (NULL == pFreeMemory))
     {
         status = ERR_NULL_POINTER;
@@ -19810,14 +20470,14 @@ static sbyte4 OSSL_set_psk_use_session_callback(sbyte4 connectionInstance,
 
     *pFreeMemory = 0;
 
-    if (pSSL->orig_s.psk_use_session_cb)
+    if (pS->orig_s.psk_use_session_cb)
     {
         /* callback should return 1 on success or 0 on failure */
-        status = pSSL->orig_s.psk_use_session_cb(pSSL, pEvpmd, &pId, &idLen, &pSess);
+        status = pS->orig_s.psk_use_session_cb(pSSL, pEvpmd, &pId, &idLen, &pSess);
     }
-    else if (NULL != pSSL->session)
+    else if (NULL != pS->session)
     {
-        pSess  = pSSL->session;
+        pSess  = pS->session;
         pId    = pSess->session_id;
         idLen  = pSess->session_id_length;
         status = 1;
@@ -19928,10 +20588,16 @@ void SSL_set_psk_use_session_callback(SSL *pSSL, SSL_psk_use_session_cb_func ptr
     if (NULL == pSSL)
         return;
 
-    pSSL->orig_s.psk_use_session_cb = ptrCallbackFunc;
-    if (pSSL->instance > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
+    pS->orig_s.psk_use_session_cb = ptrCallbackFunc;
+    if (pS->instance > 0)
     {
-        NSSL_CHK_CALL(setPskUseSessionCb, pSSL->instance, psk_use_session_callback);
+        NSSL_CHK_CALL(setPskUseSessionCb, pS->instance, psk_use_session_callback);
     }
 }
 
@@ -19945,8 +20611,13 @@ static sbyte4 OSSL_set_psk_save_session_callback(sbyte4 connectionInstance,
     tls13PSK *pPsk = NULL;
 
     pSSL = (SSL*) findSSLFromInstance(connectionInstance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
 
-    if ((NULL == pSSL) || (NULL == pSSL->session))
+    if ((NULL == pSSL) || (NULL == pS->session))
     {
          status = ERR_NULL_POINTER;
          goto exit;
@@ -19963,7 +20634,7 @@ static sbyte4 OSSL_set_psk_save_session_callback(sbyte4 connectionInstance,
         goto exit;
     }
 
-    pSess = (SSL_SESSION *) pSSL->session;
+    pSess = (SSL_SESSION *) pS->session;
 
     /* Copy PSK */
     if (NULL != pSess->ext.tick)
@@ -20034,9 +20705,9 @@ static sbyte4 OSSL_set_psk_save_session_callback(sbyte4 connectionInstance,
     /*
      * Add the session to the external cache.
      */
-    if (pSSL->ssl_ctx->new_session_cb != NULL)
+    if (pS->ssl_ctx->new_session_cb != NULL)
     {
-        pSSL->ssl_ctx->new_session_cb(pSSL, pSess);
+        pS->ssl_ctx->new_session_cb(pSSL, pSess);
     }
 
 exit:
@@ -20056,9 +20727,15 @@ void SSL_set_psk_save_session_callback(SSL *pSSL)
     if (NULL == pSSL)
         return;
 
-    if (pSSL->instance > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
+    if (pS->instance > 0)
     {
-        NSSL_CHK_CALL(savePskSessionCb, pSSL->instance,
+        NSSL_CHK_CALL(savePskSessionCb, pS->instance,
             psk_save_session_callback);
     }
 }
@@ -20074,6 +20751,12 @@ static sbyte4 OSSL_set_server_psk_save_session_callback(sbyte4 connectionInstanc
     tls13PSK *pPsk = NULL;
 
     pSSL = (SSL*) findSSLFromInstance(connectionInstance);
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
 
     if ((NULL == pSSL) || (NULL == pIdentityPSK))
     {
@@ -20092,7 +20775,7 @@ static sbyte4 OSSL_set_server_psk_save_session_callback(sbyte4 connectionInstanc
         goto exit;
     }
 
-    pSess = (SSL_SESSION *)pSSL->session;
+    pSess = (SSL_SESSION *)pS->session;
 
     /* Copy PSK */
     pSess->ext.tick = OSSL_MALLOC(pPsk->pskTLS13Length);
@@ -20148,9 +20831,9 @@ static sbyte4 OSSL_set_server_psk_save_session_callback(sbyte4 connectionInstanc
     /*
      * Add the session to the external cache.
      */
-    if (pSSL->ssl_ctx->new_session_cb != NULL)
+    if (pS->ssl_ctx->new_session_cb != NULL)
     {
-        pSSL->ssl_ctx->new_session_cb(pSSL, pSess);
+        pS->ssl_ctx->new_session_cb(pSSL, pSess);
     }
 
 exit:
@@ -20190,7 +20873,13 @@ static void SSL_set_server_psk_save_session_callback(SSL *pSSL)
     if (NULL == pSSL)
         return;
 
-    if (pSSL->instance > 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
+    if (pS->instance > 0)
     {
         NSSL_CHK_CALL(saveServerPskSessionCb, server_psk_save_session_callback);
     }
@@ -20331,7 +21020,11 @@ const SSL_CIPHER *SSL_get_pending_cipher(const SSL *pSSL)
 /*
  * Flush the write BIO
  */
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+int statem_flush(SSL_CONNECTION *pSsl)
+#else
 int statem_flush(SSL *pSsl)
+#endif
 {
     if (BIO_flush(pSsl->wbio) <= 0) {
         return 0;
@@ -20388,18 +21081,24 @@ int SSL_write_early_data(SSL *pSsl, const void *buf, size_t num, size_t *written
         return 0;
     }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
     /* If a shutdown notification was sent by us then don't send any data */
-    if (SSL_SENT_SHUTDOWN & pSsl->orig_s.shutdown)
+    if (SSL_SENT_SHUTDOWN & pS->orig_s.shutdown)
     {
         SSLerr(SSL_F_SSL_WRITE, SSL_R_PROTOCOL_IS_SHUTDOWN);
         return 0;
     }
 
-    pSsl->orig_s.ext.early_data = 1;
+    pS->orig_s.ext.early_data = 1;
 
-    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pSsl->instance)
+    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance)
     {
-        if (pSsl->clientServerFlag == SSL_CLIENT_FLAG)
+        if (pS->clientServerFlag == SSL_CLIENT_FLAG)
         {
             status = SSL_connectEx(pSsl, (ubyte *) buf, (ubyte4) num, (ubyte4 *) written);
 
@@ -20423,23 +21122,23 @@ int SSL_write_early_data(SSL *pSsl, const void *buf, size_t num, size_t *written
     }
     else
     {
-        if (OK > NSSL_CHK_CALL(sslIoctl, pSsl->instance, SSL_SET_SEND_EARLY_DATA, &sendEarlyData))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_SEND_EARLY_DATA, &sendEarlyData))
         {
             return 0;
         }
 
-        if (OK > NSSL_CHK_CALL(getSessionStatus, pSsl->instance, &connState))
+        if (OK > NSSL_CHK_CALL(getSessionStatus, pS->instance, &connState))
         {
             return 0;
         }
 
-        retValue = NSSL_CHK_CALL(isEstablished, pSsl->instance);
+        retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
         if (1 == retValue)
         {
             /* The connection is established;
              * Write the data using SSL_write_ex
              */
-            pSsl->orig_s.early_data_state = SSL_EARLY_DATA_WRITE_RETRY;
+            pS->orig_s.early_data_state = SSL_EARLY_DATA_WRITE_RETRY;
             return SSL_write_ex(pSsl, buf, num, written);
         }
         else if (-1 == retValue)
@@ -20448,7 +21147,7 @@ int SSL_write_early_data(SSL *pSsl, const void *buf, size_t num, size_t *written
             return -1;
         }
 
-        pSsl->orig_s.early_data_state = SSL_EARLY_DATA_CONNECT_RETRY;
+        pS->orig_s.early_data_state = SSL_EARLY_DATA_CONNECT_RETRY;
     }
         return 0;
 }
@@ -20498,6 +21197,7 @@ static int earlyDataBitMapToOsslEnum(ubyte4 bitMap)
 
 int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
 {
+
     int ret = 0, i = 0, bytesSent = 0;
     int retValue = 0;
     sbyte4 status           = -1;
@@ -20511,17 +21211,23 @@ int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
         return ERR_NULL_POINTER;
     }
 
-    if (SSL_SERVER_FLAG != pSsl->clientServerFlag)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    if (SSL_SERVER_FLAG != pS->clientServerFlag)
     {
         SSLerr(SSL_F_SSL_READ_EARLY_DATA, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
         return SSL_READ_EARLY_DATA_ERROR;
     }
 
-    switch(pSsl->orig_s.early_data_state)
+    switch(pS->orig_s.early_data_state)
     {
         case SSL_EARLY_DATA_NONE:
         case SSL_EARLY_DATA_ACCEPT_RETRY:
-            retValue = NSSL_CHK_CALL(isEstablished, pSsl->instance);
+            retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
             if (0 == retValue)
             {
                 ret = SSL_acceptEx(pSsl, buf, num, readBytes);
@@ -20531,63 +21237,63 @@ int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
                     return SSL_READ_EARLY_DATA_ERROR;
                 }
 
-                pSsl->bytesRcvdRemaining = 0;
-                pSsl->szTxHoldingBuf     = OSSL_MAX_SSL_MSG_SZ;
-                mySendBufLen             = pSsl->szTxHoldingBuf;
+                pS->bytesRcvdRemaining = 0;
+                pS->szTxHoldingBuf     = OSSL_MAX_SSL_MSG_SZ;
+                mySendBufLen             = pS->szTxHoldingBuf;
                 /* If the connection is not established, after reading early data,
                  * write the outgoing handshake packets
                  */
-                while (0 == (retValue = NSSL_CHK_CALL(isEstablished, pSsl->instance)))
+                while (0 == (retValue = NSSL_CHK_CALL(isEstablished, pS->instance)))
                 {
-                    if (pSsl->bytesSentRemaining > 0)
+                    if (pS->bytesSentRemaining > 0)
                     {
                         i = asyncSendDataBio(
-                            pSsl, pSsl->pTxHoldingBuf + pSsl->txHoldingBufOffset, pSsl->bytesSentRemaining,
+                            pSsl, pS->pTxHoldingBuf + pS->txHoldingBufOffset, pS->bytesSentRemaining,
                             &bytesSent);
                         if (0 >= i)
                         {
-                            pSsl->bytesSentRemaining -= bytesSent;
-                            pSsl->txHoldingBufOffset += bytesSent;
+                            pS->bytesSentRemaining -= bytesSent;
+                            pS->txHoldingBufOffset += bytesSent;
                             return i;
                         }
 
-                        pSsl->bytesSentRemaining = 0;
-                        pSsl->txHoldingBufOffset = 0;
+                        pS->bytesSentRemaining = 0;
+                        pS->txHoldingBufOffset = 0;
                     }
                     /* write the handshake packets */
-                    while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pSsl->instance, pSsl->pTxHoldingBuf, &mySendBufLen)))
+                    while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen)))
                     {
-                        i = asyncSendDataBio(pSsl, pSsl->pTxHoldingBuf, mySendBufLen, &bytesSent);
+                        i = asyncSendDataBio(pSsl, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
                         if (0 >= i)
                         {
-                            pSsl->bytesSentRemaining = mySendBufLen - bytesSent;
-                            pSsl->txHoldingBufOffset = bytesSent;
+                            pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                            pS->txHoldingBufOffset = bytesSent;
                             return i;
                         }
 
-                        mySendBufLen         = pSsl->szTxHoldingBuf;
+                        mySendBufLen         = pS->szTxHoldingBuf;
                     }
 
                     /* read the incoming handshake packets */
-                    if (0 == pSsl->bytesRcvdRemaining)
+                    if (0 == pS->bytesRcvdRemaining)
                     {
-                        pSsl->io_state       = OSSL_IN_READ;
-                        pSsl->orig_s.rwstate = SSL_READING;
-                        while( 0 >= (i = BIO_read(pSsl->rbio, pSsl->pHoldingBuf, pSsl->szHoldingBuf)))
+                        pS->io_state       = OSSL_IN_READ;
+                        pS->orig_s.rwstate = SSL_READING;
+                        while( 0 >= (i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf)))
                         {
                             /* XXX: check errors */
-                            if ((i<0)||(!BIO_should_retry(pSsl->rbio) || (SSL_pending(pSsl) <= 0)))
+                            if ((i<0)||(!BIO_should_retry(pS->rbio) || (SSL_pending(pSsl) <= 0)))
                             {
                                 return i;
                             }
                         }
-                        pSsl->io_state             = 0;
-                        pSsl->orig_s.rwstate       = SSL_NOTHING;
-                        pSsl->pFirstRcvdUnreadByte = pSsl->pHoldingBuf;
-                        pSsl->bytesRcvdRemaining   = i;
+                        pS->io_state             = 0;
+                        pS->orig_s.rwstate       = SSL_NOTHING;
+                        pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
+                        pS->bytesRcvdRemaining   = i;
                     }
 
-                    status = NSSL_CHK_CALL(parseSslBuf, pSsl->instance, pSsl->pFirstRcvdUnreadByte, pSsl->bytesRcvdRemaining,
+                    status = NSSL_CHK_CALL(parseSslBuf, pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                                            &pFirstUnusedByte, &bytesRemaining);
 
                     if (OK > status)
@@ -20607,16 +21313,16 @@ int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
                     */
                     if (0 == status)
                     {
-                        pSsl->pFirstRcvdUnreadByte   = pSsl->pHoldingBuf;
-                        pSsl->bytesRcvdRemaining     = 0;
+                        pS->pFirstRcvdUnreadByte   = pS->pHoldingBuf;
+                        pS->bytesRcvdRemaining     = 0;
                     }
                     else
                     {
                         /* During Handshake some other non-Handshake msg was received;
                          * most likely ALERT. Must harvest and continue feeding bytes to Handshake.
                          */
-                        pSsl->pFirstRcvdUnreadByte  = pFirstUnusedByte;
-                        pSsl->bytesRcvdRemaining    = bytesRemaining;
+                        pS->pFirstRcvdUnreadByte  = pFirstUnusedByte;
+                        pS->bytesRcvdRemaining    = bytesRemaining;
                     }
                 }
                 if (-1 == retValue)
@@ -20627,7 +21333,7 @@ int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
                 if (ret > 0)
                 {
                     /* Read the early data and connection is established */
-                    if (0 > NSSL_CHK_CALL(getEarlyDataState, pSsl->instance, &state))
+                    if (0 > NSSL_CHK_CALL(getEarlyDataState, pS->instance, &state))
                     {
                         SSLerr(SSL_F_SSL_READ_EARLY_DATA, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
                         return SSL_READ_EARLY_DATA_ERROR;
@@ -20635,15 +21341,15 @@ int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
 
                     if (SSL_EARLY_DATA_FINISHED_READING == earlyDataBitMapToOsslEnum(state))
                     {
-                        if (pSsl->rxDataBufLen > 0)
+                        if (pS->rxDataBufLen > 0)
                         {
-                            pSsl->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
+                            pS->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
                             return SSL_READ_EARLY_DATA_SUCCESS;
                         }
-                        pSsl->orig_s.early_data_state = SSL_EARLY_DATA_FINISHED_READING;
+                        pS->orig_s.early_data_state = SSL_EARLY_DATA_FINISHED_READING;
                         return SSL_READ_EARLY_DATA_FINISH;
                     }
-                    pSsl->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
+                    pS->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
                     return SSL_READ_EARLY_DATA_SUCCESS;
                 }
             }
@@ -20652,21 +21358,21 @@ int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
                 ret = SSL_read_ex(pSsl, buf, num, readBytes);
                 if (ret >= 0)
                 {
-                    if (0 > NSSL_CHK_CALL(getEarlyDataState, pSsl->instance, &state))
+                    if (0 > NSSL_CHK_CALL(getEarlyDataState, pS->instance, &state))
                     {
                         SSLerr(SSL_F_SSL_READ_EARLY_DATA, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
                         return SSL_READ_EARLY_DATA_ERROR;
                     }
                     if (SSL_EARLY_DATA_FINISHED_READING == earlyDataBitMapToOsslEnum(state))
                     {
-                        if (pSsl->rxDataBufLen > 0)
+                        if (pS->rxDataBufLen > 0)
                         {
-                            pSsl->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
+                            pS->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
                             return SSL_READ_EARLY_DATA_SUCCESS;
                         }
                         return SSL_READ_EARLY_DATA_FINISH;
                     }
-                    pSsl->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY; 
+                    pS->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY; 
                     return SSL_READ_EARLY_DATA_SUCCESS;
                 }
             }
@@ -20680,21 +21386,21 @@ int SSL_read_early_data(SSL *pSsl, void *buf, size_t num, size_t *readBytes)
             ret = SSL_read_ex(pSsl, buf, num, readBytes);
             if (ret >= 0)
             {
-                if (0 > NSSL_CHK_CALL(getEarlyDataState, pSsl->instance, &state))
+                if (0 > NSSL_CHK_CALL(getEarlyDataState, pS->instance, &state))
                 {
                     SSLerr(SSL_F_SSL_READ_EARLY_DATA, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
                     return SSL_READ_EARLY_DATA_ERROR;
                 }
                 if (SSL_EARLY_DATA_FINISHED_READING == earlyDataBitMapToOsslEnum(state))
                 {
-                    if (pSsl->rxDataBufLen > 0)
+                    if (pS->rxDataBufLen > 0)
                     {
-                        pSsl->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
+                        pS->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY;
                         return SSL_READ_EARLY_DATA_SUCCESS;
                     }
                     return SSL_READ_EARLY_DATA_FINISH;
                 }
-                pSsl->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY; 
+                pS->orig_s.early_data_state = SSL_EARLY_DATA_READ_RETRY; 
                 return SSL_READ_EARLY_DATA_SUCCESS;
             }
             break;
@@ -20736,6 +21442,12 @@ int SSL_verify_client_post_handshake(SSL *pSsl)
     int    i = 0, bytesSent = 0;
     sbyte4 status = 0;
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
     if (0 == SSL_verify_version(pSsl, TLS1_3_VERSION))
     {
         SSLerr(SSL_F_SSL_VERIFY_CLIENT_POST_HANDSHAKE, SSL_R_WRONG_SSL_VERSION);
@@ -20743,7 +21455,7 @@ int SSL_verify_client_post_handshake(SSL *pSsl)
         goto exit;
     }
 
-    if (SSL_CLIENT_FLAG == pSsl->clientServerFlag)
+    if (SSL_CLIENT_FLAG == pS->clientServerFlag)
     {
         SSLerr(SSL_F_SSL_VERIFY_CLIENT_POST_HANDSHAKE, SSL_R_NOT_SERVER);
         status = 0;
@@ -20757,7 +21469,7 @@ int SSL_verify_client_post_handshake(SSL *pSsl)
         goto exit;
     }
 
-    status = NSSL_CHK_CALL(sendPostHandshakeAuthCertRequest, pSsl->instance);
+    status = NSSL_CHK_CALL(sendPostHandshakeAuthCertRequest, pS->instance);
     if (0 > status)
     {
         /* 0 is failure */
@@ -20765,42 +21477,42 @@ int SSL_verify_client_post_handshake(SSL *pSsl)
         goto exit;
     }
 
-    mySendBufLen    = pSsl->szTxHoldingBuf;
+    mySendBufLen    = pS->szTxHoldingBuf;
 
-    if (pSsl->bytesSentRemaining > 0)
+    if (pS->bytesSentRemaining > 0)
     {
         i = asyncSendDataBio(
-            pSsl, pSsl->pTxHoldingBuf + pSsl->txHoldingBufOffset, pSsl->bytesSentRemaining,
+            pSsl, pS->pTxHoldingBuf + pS->txHoldingBufOffset, pS->bytesSentRemaining,
             &bytesSent);
         if (0 >= i)
         {
-            pSsl->bytesSentRemaining -= bytesSent;
-            pSsl->txHoldingBufOffset += bytesSent;
+            pS->bytesSentRemaining -= bytesSent;
+            pS->txHoldingBufOffset += bytesSent;
             return i;
         }
 
-        pSsl->bytesSentRemaining = 0;
-        pSsl->txHoldingBufOffset = 0;
+        pS->bytesSentRemaining = 0;
+        pS->txHoldingBufOffset = 0;
     }
 
     /* Get the encrypted buffer */
-    while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pSsl->instance, pSsl->pTxHoldingBuf, &mySendBufLen)))
+    while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen)))
     {
-        i = asyncSendDataBio(pSsl, pSsl->pTxHoldingBuf, mySendBufLen, NULL);
+        i = asyncSendDataBio(pSsl, pS->pTxHoldingBuf, mySendBufLen, NULL);
         if (0 >= i)
         {
-            pSsl->bytesSentRemaining = mySendBufLen - bytesSent;
-            pSsl->txHoldingBufOffset = bytesSent;
+            pS->bytesSentRemaining = mySendBufLen - bytesSent;
+            pS->txHoldingBufOffset = bytesSent;
             status = 0;
             goto exit;
         }
 
-        pSsl->orig_s.rwstate = SSL_READING;
-        mySendBufLen    = pSsl->szTxHoldingBuf;
+        pS->orig_s.rwstate = SSL_READING;
+        mySendBufLen    = pS->szTxHoldingBuf;
     }
 
     /* 1 is success */
-    pSsl->orig_s.post_handshake_auth = SSL_PHA_REQUESTED;
+    pS->orig_s.post_handshake_auth = SSL_PHA_REQUESTED;
     status = 1;
 
 exit:
@@ -20884,6 +21596,12 @@ int SSL_key_update(SSL *pSsl, int updateType)
     int    i = 0, bytesSent = 0;
     sbyte4 status = 1;
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
     if (0 == SSL_verify_version(pSsl, TLS1_3_VERSION))
     {
         SSLerr(SSL_F_SSL_KEY_UPDATE, SSL_R_WRONG_SSL_VERSION);
@@ -20906,49 +21624,49 @@ int SSL_key_update(SSL *pSsl, int updateType)
         goto exit;
     }
 
-    if (pSsl->instance > 0)
+    if (pS->instance > 0)
     {
-        if (OK > NSSL_CHK_CALL(sendKeyUpdate, pSsl->instance, updateType))
+        if (OK > NSSL_CHK_CALL(sendKeyUpdate, pS->instance, updateType))
         {
             status = 0;
             goto exit;
         }
     }
 
-    pSsl->orig_s.key_update = updateType;
+    pS->orig_s.key_update = updateType;
 
 
-    mySendBufLen    = pSsl->szTxHoldingBuf;
+    mySendBufLen    = pS->szTxHoldingBuf;
 
-    if (pSsl->bytesSentRemaining > 0)
+    if (pS->bytesSentRemaining > 0)
     {
         i = asyncSendDataBio(
-            pSsl, pSsl->pTxHoldingBuf + pSsl->txHoldingBufOffset, pSsl->bytesSentRemaining,
+            pSsl, pS->pTxHoldingBuf + pS->txHoldingBufOffset, pS->bytesSentRemaining,
             &bytesSent);
         if (0 >= i)
         {
-            pSsl->bytesSentRemaining -= bytesSent;
-            pSsl->txHoldingBufOffset += bytesSent;
+            pS->bytesSentRemaining -= bytesSent;
+            pS->txHoldingBufOffset += bytesSent;
             return i;
         }
 
-        pSsl->bytesSentRemaining = 0;
-        pSsl->txHoldingBufOffset = 0;
+        pS->bytesSentRemaining = 0;
+        pS->txHoldingBufOffset = 0;
     }
 
-    while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pSsl->instance, pSsl->pTxHoldingBuf, &mySendBufLen)))
+    while (OK == (status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen)))
     {
-        i = asyncSendDataBio(pSsl, pSsl->pTxHoldingBuf, mySendBufLen, &bytesSent);
+        i = asyncSendDataBio(pSsl, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
         if (0 >= i)
         {
-            pSsl->bytesSentRemaining = mySendBufLen - bytesSent;
-            pSsl->txHoldingBufOffset = bytesSent;
+            pS->bytesSentRemaining = mySendBufLen - bytesSent;
+            pS->txHoldingBufOffset = bytesSent;
             status = 0;
             goto exit;
         }
 
-        pSsl->orig_s.rwstate = SSL_READING;
-        mySendBufLen    = pSsl->szTxHoldingBuf;
+        pS->orig_s.rwstate = SSL_READING;
+        mySendBufLen    = pS->szTxHoldingBuf;
     }
 
 exit:
@@ -20999,7 +21717,7 @@ static int update_cipher_list(STACK_OF(SSL_CIPHER) **cipher_list,
      * Delete any existing TLSv1.3 ciphersuites. These are always first in the
      * list.
      */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     while (sk_SSL_CIPHER_num(tmp_cipher_list) > 0
            && ((SSL_CIPHER *)sk_SSL_CIPHER_value(tmp_cipher_list, 0))->min_tls
               == TLS1_3_VERSION)
@@ -21421,70 +22139,76 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
         goto exit;
     }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
     ERR_clear_error();
     clear_sys_error();
 
     /* Initialize myPeerDescr for DTLS */
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-    if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+    if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
     {
         myPeerDescr.pUdpDescr = NULL;
         mocNetNameToIpaddr(&(myPeerDescr.srcAddr), srcAddr);
-        myPeerDescr.srcPort   = s->appId;
+        myPeerDescr.srcPort   = pS->appId;
         mocNetNameToIpaddr(&(myPeerDescr.peerAddr), peerAddr);
-        myPeerDescr.peerPort  = s->appId;
+        myPeerDescr.peerPort  = pS->appId;
     }
 #endif
 
-    ctx    = s->ssl_ctx;
+    ctx    = pS->ssl_ctx;
     /* NanoSSL stack Uses the socket to correlate the connectionInstance
      * to SSL Socket Session
      */
 
-    if((s->orig_s.verify_mode == SSL_VERIFY_NONE) && (ctx->verify_mode == SSL_VERIFY_NONE) &&
+    if((pS->orig_s.verify_mode == SSL_VERIFY_NONE) && (ctx->verify_mode == SSL_VERIFY_NONE) &&
        (NULL == SSL_get_privatekey(s)))
     {
         authModeFlag = SSL_FLAG_NO_MUTUAL_AUTH_REPLY;
     }
 
     /* Handshake status callback */
-    if (s->info_callback != NULL)
+    if (pS->info_callback != NULL)
     {
-        cb = s->info_callback;
+        cb = pS->info_callback;
     }
-    else if (s->ssl_ctx->info_callback != NULL)
+    else if (pS->ssl_ctx->info_callback != NULL)
     {
-        cb = s->ssl_ctx->info_callback;
+        cb = pS->ssl_ctx->info_callback;
     }
 
-    if (s->session)
+    if (pS->session)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        pHostname = s->session->ext.hostname;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pHostname = pS->session->ext.hostname;
 #else
-        pHostname = s->session->tlsext_hostname;
+        pHostname = pS->session->tlsext_hostname;
 #endif
     }
 
-    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == s->instance)
+    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance)
     {
-        if ((s->session) && (s->session->session_id_length > 0))
+        if ((pS->session) && (pS->session->session_id_length > 0))
         {
 
             /* @Note:Currently handling DTLSv1.1. If DTLSv1.2 handling is required,
              * then add methods for the same with version number being 0xFEFD.
              */
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-            if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+            if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
             {
-                s->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,
-                              s->session->session_id_length, s->session->session_id,
-                              s->session->master_key, (const sbyte *)pHostname,
+                pS->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,
+                              pS->session->session_id_length, pS->session->session_id,
+                              pS->session->master_key, (const sbyte *)pHostname,
                               ctx->pCertStore);
-                if (OK > s->instance)
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
                     status = -1;
                     goto exit;
                 }
@@ -21492,13 +22216,13 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             else
 #endif
             {
-                s->instance = NSSL_CHK_CALL(connect, (ubyte4) s->appId, (ubyte) s->session->session_id_length,
-                                            s->session->session_id, s->session->master_key,
+                pS->instance = NSSL_CHK_CALL(connect, (ubyte4) pS->appId, (ubyte) pS->session->session_id_length,
+                                            pS->session->session_id, pS->session->master_key,
                                             (const sbyte *)pHostname, ctx->pCertStore);
-                if (OK > s->instance)
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
                     status = -1;
                     goto exit;
                 }
@@ -21507,14 +22231,14 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
         else
         {
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-            if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+            if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
             {
-                s->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,0, NULL, NULL,
-                              (const sbyte *)s->tlsext_hostname,ctx->pCertStore);
-                if (OK > s->instance)
+                pS->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,0, NULL, NULL,
+                              (const sbyte *)pS->tlsext_hostname,ctx->pCertStore);
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
                     status = -1;
                     goto exit;
                 }
@@ -21522,12 +22246,12 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             else
 #endif
             {
-                s->instance = NSSL_CHK_CALL(connect, s->appId, 0, NULL, NULL,
-                              (const sbyte *)s->tlsext_hostname, ctx->pCertStore);
-                if (OK > s->instance)
+                pS->instance = NSSL_CHK_CALL(connect, pS->appId, 0, NULL, NULL,
+                              (const sbyte *)pS->tlsext_hostname, ctx->pCertStore);
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
                     status = -1;
                     goto exit;
                 }
@@ -21537,17 +22261,17 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
         /* Session instance created. Create the OpenSSL client mutex if it
          * hasn't been created */
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
-        if (NULL == s->session_mutex)
+        if (NULL == pS->session_mutex)
         {
-            if (OK > moc_mutexCreate(&(s->session_mutex), 0, 0))
+            if (OK > moc_mutexCreate(&(pS->session_mutex), 0, 0))
                 return -1;
         }
 #endif
 
-        if ((NULL != s->ssl_ctx->orig_ssl_ctx.cert) && (NULL != s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
+        if ((NULL != pS->ssl_ctx->orig_ssl_ctx.cert) && (NULL != pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
         {
-            if (OK > NSSL_CHK_CALL(setCipherAlgorithm, s->instance, s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
-                                   (ubyte4) s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */))
+            if (OK > NSSL_CHK_CALL(setCipherAlgorithm, pS->instance, pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
+                                   (ubyte4) pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */))
             {
                 status = -1;
                 goto exit;
@@ -21556,18 +22280,18 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
 
 #if defined(__ENABLE_DIGICERT_EXTENDED_MASTERSECRET_RFC7627__)
          /* Extended master secret is enabled by default */
-        if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
         {
             status = -1;
             goto exit;
         }
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         /* Don't use RFC4507 ticket extension */
-        if (!(s->ssl_ctx->options & SSL_OP_NO_TICKET))
+        if (!(pS->ssl_ctx->options & SSL_OP_NO_TICKET))
         {
-            if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_REQUEST_SESSION_TICKET, &requestTicket))
+            if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_REQUEST_SESSION_TICKET, &requestTicket))
             {
                 status = -1;
                 goto exit;
@@ -21577,60 +22301,60 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             SSL_set_psk_save_session_callback(s);
         }
 
-        if ((NULL != s->orig_s.psk_use_session_cb) || (1 == s->registerRetrievePSK))
+        if ((NULL != pS->orig_s.psk_use_session_cb) || (1 == pS->registerRetrievePSK))
         {
-            SSL_set_psk_use_session_callback(s, s->orig_s.psk_use_session_cb);
+            SSL_set_psk_use_session_callback(s, pS->orig_s.psk_use_session_cb);
         }
 
-        if (s->session != NULL)
+        if (pS->session != NULL)
         {
             if (pHostname)
             {
                 /* Set TLS ServerName Extension */
-                status = NSSL_CHK_CALL(setServerNameExtension, s->instance,(const char *)pHostname);
+                status = NSSL_CHK_CALL(setServerNameExtension, pS->instance,(const char *)pHostname);
             }
 
-            if ((s->session->ext.alpn_selected) && (s->session->ext.alpn_selected_len > 0 ))
+            if ((pS->session->ext.alpn_selected) && (pS->session->ext.alpn_selected_len > 0 ))
             {
-                if ((OK != SSL_set_alpn_protos(s, s->session->ext.alpn_selected, (unsigned int) s->session->ext.alpn_selected_len)))
+                if ((OK != SSL_set_alpn_protos(s, pS->session->ext.alpn_selected, (unsigned int) pS->session->ext.alpn_selected_len)))
                 {
                     status = -1;
                     goto exit;
                 }
             }
 
-            if (s->session->ssl_version)
+            if (pS->session->ssl_version)
             {
                 /* Set version */
-                status = NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_VERSION, (void*)((OSSL_UINT_PTR) OSSL_convert_minor_version_from_ossl(s->session->ssl_version)));
+                status = NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_VERSION, (void*)((OSSL_UINT_PTR) OSSL_convert_minor_version_from_ossl(pS->session->ssl_version)));
             }
         }
 
         if ((NULL != pEarlyData) || (0 != earlyDataLen))
         {
             ubyte4 sendEarlyData = 1;
-            if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_SEND_EARLY_DATA, &sendEarlyData))
+            if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_SEND_EARLY_DATA, &sendEarlyData))
             {
                 status = -1;
                 goto exit;
             }
 
-            if (OK > (NSSL_CHK_CALL(setEarlyData, s->instance, pEarlyData, earlyDataLen)))
+            if (OK > (NSSL_CHK_CALL(setEarlyData, pS->instance, pEarlyData, earlyDataLen)))
             {
                 status = -1;
                 goto exit;
             }
         }
 
-        if (s->orig_s.pha_enabled)
+        if (pS->orig_s.pha_enabled)
         {
-            NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags);
+            NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags);
 
             /* SSL_setSession flags resets the flags; So first get the flag value to preserve the previously set flags */
-            NSSL_CHK_CALL(setSessionFlags, s->instance, SSL_FLAG_ENABLE_POST_HANDSHAKE_AUTH);
+            NSSL_CHK_CALL(setSessionFlags, pS->instance, SSL_FLAG_ENABLE_POST_HANDSHAKE_AUTH);
         }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 #ifndef __DISABLE_DIGICERT_SSL_CERTIFICATE_CALLBACK__
         OSSL_setCertAndStatusCallBack(s);
@@ -21667,7 +22391,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             goto exit;
         }
 
-        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, s->instance,(SSL*)s);
+        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, pS->instance,(SSL*)pS);
 
         if (OK > (status = moc_mutexRelease(m_hashTableMutex)))
         {
@@ -21676,22 +22400,22 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             goto exit;
         }
 
-        if (NULL != s->tlsext_hostname)
+        if (NULL != pS->tlsext_hostname)
         {
             /* Set TLS ServerName Extension */
-            status = NSSL_CHK_CALL(setServerNameExtension, s->instance,(const char *)s->tlsext_hostname);
+            status = NSSL_CHK_CALL(setServerNameExtension, pS->instance,(const char *)pS->tlsext_hostname);
         }
 
-        if((s->ssl_ctx->alpn_client_proto_list) && (s->ssl_ctx->alpn_client_proto_list_len > 0 ))
+        if((pS->ssl_ctx->alpn_client_proto_list) && (pS->ssl_ctx->alpn_client_proto_list_len > 0 ))
         {
-            if ((OK != SSL_set_alpn_protos(s,s->ssl_ctx->alpn_client_proto_list,s->ssl_ctx->alpn_client_proto_list_len)))
+            if ((OK != SSL_set_alpn_protos(s,pS->ssl_ctx->alpn_client_proto_list,pS->ssl_ctx->alpn_client_proto_list_len)))
             {
                 status = -1;
                 goto exit;
             }
         }
 
-        NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags);
+        NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags);
 
         /* Reset the flags before setting */
         sslFlags &= ~(SSL_FLAG_NO_MUTUAL_AUTH_REQUEST);
@@ -21699,7 +22423,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
 
         /* SSL_setSession flags resets the flags; So first get the flag value to preserve the previously set flags */
         /* @Note: verify the client enforces auth requirement from server */
-        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, s->instance, sslFlags | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
+        if (OK > (status = NSSL_CHK_CALL(setSessionFlags, pS->instance, sslFlags | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
         {
             status = -1;
             goto exit;
@@ -21716,9 +22440,9 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             OSSL_CTX_load_x509_store(ctx);
         }
 
-        if (s->numCipherIds > 0)
+        if (pS->numCipherIds > 0)
         {
-            if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, s->cipherIds, s->numCipherIds)))
+            if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, pS->cipherIds, pS->numCipherIds)))
             {
                 status = -1;
                 goto exit;
@@ -21733,7 +22457,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             }
             if (ctx->numCipherIds > 0)
             {
-                if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, ctx->cipherIds, ctx->numCipherIds)))
+                if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, ctx->cipherIds, ctx->numCipherIds)))
                 {
                     status = -1;
                     goto exit;
@@ -21746,10 +22470,10 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
                 goto exit;
             }
         }
-        if (s->numEccCurves > 0)
+        if (pS->numEccCurves > 0)
         {
             ubyte4 i = 0;
-            ubyte4 numCurves = s->numEccCurves;
+            ubyte4 numCurves = pS->numEccCurves;
             OSSL_tlsExtNamedCurves *curvesList = OSSL_MALLOC(numCurves * sizeof(OSSL_tlsExtNamedCurves));
             if (NULL == curvesList)
             {
@@ -21758,10 +22482,10 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             }
             for (i = 0; i < numCurves; i++)
             {
-                curvesList[i] = s->pEccCurves[i];
+                curvesList[i] = pS->pEccCurves[i];
             }
 
-            NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+            NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
             OSSL_FREE(curvesList);
         }
         else if (ctx->numEccCurves > 0)
@@ -21779,34 +22503,34 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
                 curvesList[i] = ctx->pEccCurves[i];
             }
 
-            NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+            NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
             OSSL_FREE(curvesList);
         }
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            if (s->numSrtpProfileIds > 0)
+            if (pS->numSrtpProfileIds > 0)
             {
-                NSSL_CHK_CALL(setSrtpProfiles, s->instance, s->srtpProfileIds, s->numSrtpProfileIds);
+                NSSL_CHK_CALL(setSrtpProfiles, pS->instance, pS->srtpProfileIds, pS->numSrtpProfileIds);
             }
             else
             {
                 if (ctx->numSrtpProfileIds > 0)
                 {
-                    NSSL_CHK_CALL(setSrtpProfiles, s->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
+                    NSSL_CHK_CALL(setSrtpProfiles, pS->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
                 }
             }
         }
 #endif
 
-        s->clientServerFlag = SSL_CLIENT_FLAG;
+        pS->clientServerFlag = SSL_CLIENT_FLAG;
     }
 
-    retValue = NSSL_CHK_CALL(isEstablished, s->instance);
+    retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
     if (1 == retValue)
     {
-        s->sent_client_hello = 0;
+        pS->sent_client_hello = 0;
         status = 1;
         goto exit;
     }
@@ -21818,32 +22542,32 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
     }
 
 
-    if (NULL == s->pHoldingBuf)
+    if (NULL == pS->pHoldingBuf)
     {
-        s->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
-        if (NULL == s->pHoldingBuf)
+        pS->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
+        if (NULL == pS->pHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             status = -1;
             goto exit;
         }
-        s->szHoldingBuf        = OSSL_MAX_SSL_RX_MSG_SZ;
-        s->bytesRcvdRemaining  = 0;
-        s->pFirstRcvdUnreadByte = s->pHoldingBuf;
+        pS->szHoldingBuf        = OSSL_MAX_SSL_RX_MSG_SZ;
+        pS->bytesRcvdRemaining  = 0;
+        pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
     }
 
-    if (NULL == s->pTxHoldingBuf)
+    if (NULL == pS->pTxHoldingBuf)
     {
-        s->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
-        if (NULL == s->pTxHoldingBuf)
+        pS->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
+        if (NULL == pS->pTxHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             status = -1;
             goto exit;
         }
-        s->szTxHoldingBuf     = OSSL_MAX_SSL_MSG_SZ;
-        s->bytesSentRemaining = 0;
-        s->txHoldingBufOffset = 0;
+        pS->szTxHoldingBuf     = OSSL_MAX_SSL_MSG_SZ;
+        pS->bytesSentRemaining = 0;
+        pS->txHoldingBufOffset = 0;
     }
 
      /* In case of rehandshake, ClientHello is sent without explicitly invocation of triggerHello
@@ -21852,10 +22576,10 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
       * beginning of th econnection.
       * State is SSL_ST_OK once the initial connection is established.
       */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (!s->sent_client_hello && (s->orig_state != SSL_ST_OK))
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (!pS->sent_client_hello && (pS->orig_state != SSL_ST_OK))
 #else
-    if (!s->sent_client_hello && (s->orig_s.state != SSL_ST_OK))
+    if (!pS->sent_client_hello && (pS->orig_s.state != SSL_ST_OK))
 #endif
     {
         /*Notify that handshake is started*/
@@ -21874,9 +22598,9 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
 #endif
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            status = NSSL_CHK_CALL(triggerDtlsHello, s->instance);
+            status = NSSL_CHK_CALL(triggerDtlsHello, pS->instance);
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
@@ -21894,7 +22618,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
         else
 #endif
         {
-            status = NSSL_CHK_CALL(triggerHello, s->instance);
+            status = NSSL_CHK_CALL(triggerHello, pS->instance);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
             {
@@ -21909,7 +22633,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             }
         }
         /* This returns ERR_SSL_NO_DATA_TO_SEND when there is nothing pending to be sent */
-        mySendBufLen    = s->szTxHoldingBuf;
+        mySendBufLen    = pS->szTxHoldingBuf;
 
         status = OK;
         while (OK == status)
@@ -21922,7 +22646,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
                     mutexAcquired = 1;
             }
 #endif
-            status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf, &mySendBufLen);
+            status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
             {
@@ -21933,17 +22657,17 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             if (OK > status)
                 break;
 
-            i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+            i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining = mySendBufLen - bytesSent;
-                s->txHoldingBufOffset = bytesSent;
+                pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                pS->txHoldingBufOffset = bytesSent;
                 status = i;
                 goto exit;
             }
 
-            s->sent_client_hello = 1;
-            mySendBufLen         = s->szTxHoldingBuf;
+            pS->sent_client_hello = 1;
+            mySendBufLen         = pS->szTxHoldingBuf;
         }
 
         /* Sent all the earlyData */
@@ -21956,26 +22680,26 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
         }
     }
 
-    while ( 0 == (retValue = NSSL_CHK_CALL(isEstablished, s->instance)))
+    while ( 0 == (retValue = NSSL_CHK_CALL(isEstablished, pS->instance)))
     {
-        if (0 == s->bytesRcvdRemaining)
+        if (0 == pS->bytesRcvdRemaining)
         {
-            s->io_state       = OSSL_IN_READ;
-            s->orig_s.rwstate = SSL_READING;
+            pS->io_state       = OSSL_IN_READ;
+            pS->orig_s.rwstate = SSL_READING;
 
-            while( 0 >= (i = BIO_read(s->rbio, s->pHoldingBuf, s->szHoldingBuf)))
+            while( 0 >= (i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf)))
             {
                 /* check errors */
-                if ((i < 0) || (!BIO_should_retry(s->rbio) || (SSL_pending(s) <= 0)))
+                if ((i < 0) || (!BIO_should_retry(pS->rbio) || (SSL_pending(s) <= 0)))
                 {
                     status = i;
                     goto exit;
                 }
             }
-            s->io_state             = 0;
-            s->orig_s.rwstate       = SSL_NOTHING;
-            s->pFirstRcvdUnreadByte = s->pHoldingBuf;
-            s->bytesRcvdRemaining   = i;
+            pS->io_state             = 0;
+            pS->orig_s.rwstate       = SSL_NOTHING;
+            pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
+            pS->bytesRcvdRemaining   = i;
         }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -21986,7 +22710,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
                 mutexAcquired = 1;
         }
 #endif
-        status = NSSL_CHK_CALL(parseSslBuf, s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+        status = NSSL_CHK_CALL(parseSslBuf, pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
              &pFirstUnusedByte, &bytesRemaining);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
         if (1 == mutexAcquired)
@@ -22006,32 +22730,32 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
 
         if (0 == status)
         {
-            s->pFirstRcvdUnreadByte     = s->pHoldingBuf;
-            s->bytesRcvdRemaining     = 0;
+            pS->pFirstRcvdUnreadByte     = pS->pHoldingBuf;
+            pS->bytesRcvdRemaining     = 0;
         }
         else
         {
-            s->pFirstRcvdUnreadByte    = pFirstUnusedByte;
-            s->bytesRcvdRemaining    = bytesRemaining;
+            pS->pFirstRcvdUnreadByte    = pFirstUnusedByte;
+            pS->bytesRcvdRemaining    = bytesRemaining;
         }
 
-        if (s->bytesSentRemaining > 0)
+        if (pS->bytesSentRemaining > 0)
         {
-            i = asyncSendDataBio(s, s->pTxHoldingBuf + s->txHoldingBufOffset,
-                                 s->bytesSentRemaining, &bytesSent);
+            i = asyncSendDataBio(s, pS->pTxHoldingBuf + pS->txHoldingBufOffset,
+                                 pS->bytesSentRemaining, &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining -= bytesSent;
-                s->txHoldingBufOffset += bytesSent;
+                pS->bytesSentRemaining -= bytesSent;
+                pS->txHoldingBufOffset += bytesSent;
                 return i;
             }
 
-            s->bytesSentRemaining = 0;
-            s->txHoldingBufOffset = 0;
+            pS->bytesSentRemaining = 0;
+            pS->txHoldingBufOffset = 0;
         }
 
         /* Now send any pending bytes */
-        mySendBufLen = s->szTxHoldingBuf;
+        mySendBufLen = pS->szTxHoldingBuf;
 
         status = OK;
         while (OK == status)
@@ -22044,7 +22768,7 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
                     mutexAcquired = 1;
             }
 #endif
-            status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf, &mySendBufLen);
+            status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
             {
@@ -22056,16 +22780,16 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
             if (OK > status)
                 break;
 
-            i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+            i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining = mySendBufLen - bytesSent;
-                s->txHoldingBufOffset = bytesSent;
+                pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                pS->txHoldingBufOffset = bytesSent;
                 status = i;
                 goto exit;
             }
 
-            mySendBufLen        = s->szTxHoldingBuf;
+            mySendBufLen        = pS->szTxHoldingBuf;
         }
     }
     if (-1 == retValue)
@@ -22075,26 +22799,32 @@ static int SSL_connectEx(SSL *s, ubyte *pEarlyData, ubyte4 earlyDataLen, ubyte4 
         goto exit;
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    s->orig_state = SSL_ST_OK;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pS->orig_state = SSL_ST_OK;
 #else
-    s->orig_s.state = SSL_ST_OK;
+    pS->orig_s.state = SSL_ST_OK;
 #endif
-    s->sent_client_hello = 0; /* reset for next cycle */
+    pS->sent_client_hello = 0; /* reset for next cycle */
     status = 1;
 
 exit:
     return status;
 }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 /*-----------------------------------------------------------------*/
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
 MSTATUS OSSL_sessionReleaseMutex(SSL *s)
 {
-    if (NULL != s->session_mutex)
-        return moc_mutexRelease(s->session_mutex);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (NULL != pS->session_mutex)
+        return moc_mutexRelease(pS->session_mutex);
     else
         return -1;
 }
@@ -22127,7 +22857,7 @@ extern int SSL_connect(SSL *s)
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
     int mutexAcquired = 0;
 #endif
-#if (defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__))
+#if (defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) || defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__))
     ubyte requestTicket = 1;
 #endif
 
@@ -22141,12 +22871,17 @@ extern int SSL_connect(SSL *s)
         returnValue = -1;
         goto exit;
     }
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
     ERR_clear_error();
     clear_sys_error();
 
     /* If a shutdown notification was received then don't send or process any data. */
-    if (SSL_RECEIVED_SHUTDOWN & s->orig_s.shutdown)
+    if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
     {
         SSLerr(SSL_F_SSL3_ACCEPT, SSL_R_PROTOCOL_IS_SHUTDOWN);
         return -1;
@@ -22154,21 +22889,21 @@ extern int SSL_connect(SSL *s)
 
      /* Initialize myPeerDescr for DTLS */
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-     if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+     if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
      {
          myPeerDescr.pUdpDescr = NULL;
          mocNetNameToIpaddr(&(myPeerDescr.srcAddr), srcAddr);
-         myPeerDescr.srcPort   = s->appId;
+         myPeerDescr.srcPort   = pS->appId;
          mocNetNameToIpaddr(&(myPeerDescr.peerAddr), peerAddr);
-         myPeerDescr.peerPort  = s->appId;
+         myPeerDescr.peerPort  = pS->appId;
      }
 #endif
 
-    ctx    = s->ssl_ctx;
+    ctx    = pS->ssl_ctx;
     /* Nano SSL stack Uses the socket to correlate the connectionInstance
        to SSL Socket Session */
 
-    if((s->orig_s.verify_mode == SSL_VERIFY_NONE) && (ctx->verify_mode == SSL_VERIFY_NONE) &&
+    if((pS->orig_s.verify_mode == SSL_VERIFY_NONE) && (ctx->verify_mode == SSL_VERIFY_NONE) &&
         (NULL == SSL_get_privatekey(s))){
         authModeFlag = SSL_FLAG_NO_MUTUAL_AUTH_REPLY;
     }
@@ -22184,40 +22919,40 @@ extern int SSL_connect(SSL *s)
     }
 
     /* Handshake status callback */
-    if (s->info_callback != NULL)
-        cb = s->info_callback;
+    if (pS->info_callback != NULL)
+        cb = pS->info_callback;
     else if (ctx->info_callback != NULL)
         cb = ctx->info_callback;
 
-    if (s->session)
+    if (pS->session)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        pHostname = s->session->ext.hostname;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pHostname = pS->session->ext.hostname;
 #else
-        pHostname = s->session->tlsext_hostname;
+        pHostname = pS->session->tlsext_hostname;
 #endif
     }
 
-    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == s->instance)
+    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance)
     {
 
-        if ((s->session) && (s->session->session_id_length > 0))
+        if ((pS->session) && (pS->session->session_id_length > 0))
         {
 
             /* @Note:Currently handling DTLSv1.1. If DTLSv1.2 handling is required,
              * then add methods for the same with version number being 0xFEFD.
              */
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-            if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+            if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
             {
-                s->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,
-                              s->session->session_id_length, s->session->session_id,
-                              s->session->master_key, (const sbyte *)pHostname,
+                pS->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,
+                              pS->session->session_id_length, pS->session->session_id,
+                              pS->session->master_key, (const sbyte *)pHostname,
                               ctx->pCertStore);
-                if (OK > s->instance)
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
                     returnValue = -1;
                     goto exit;
                 }
@@ -22225,13 +22960,13 @@ extern int SSL_connect(SSL *s)
             else
 #endif
             {
-                s->instance = NSSL_CHK_CALL(connect, s->appId, (ubyte) s->session->session_id_length,
-                                            s->session->session_id, s->session->master_key,
+                pS->instance = NSSL_CHK_CALL(connect, pS->appId, (ubyte) pS->session->session_id_length,
+                                            pS->session->session_id, pS->session->master_key,
                                             (const sbyte *)pHostname, ctx->pCertStore);
-                if (OK > s->instance)
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
                     returnValue = -1;
                     goto exit;
                 }
@@ -22240,14 +22975,14 @@ extern int SSL_connect(SSL *s)
         else
         {
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-            if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+            if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
             {
-                s->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,0, NULL, NULL,
-                              (const sbyte *)s->tlsext_hostname,ctx->pCertStore);
-                if (OK > s->instance)
+                pS->instance = NSSL_CHK_CALL(dtlsConnect,&myPeerDescr,0, NULL, NULL,
+                              (const sbyte *)pS->tlsext_hostname,ctx->pCertStore);
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_DTLS1_CONNECT, ERR_R_INTERNAL_ERROR);
                     returnValue = -1;
                     goto exit;
                 }
@@ -22255,12 +22990,12 @@ extern int SSL_connect(SSL *s)
             else
 #endif
             {
-                s->instance = NSSL_CHK_CALL(connect, s->appId, 0, NULL, NULL,
-                              (const sbyte *)s->tlsext_hostname, ctx->pCertStore);
-                if (OK > s->instance)
+                pS->instance = NSSL_CHK_CALL(connect, pS->appId, 0, NULL, NULL,
+                              (const sbyte *)pS->tlsext_hostname, ctx->pCertStore);
+                if (OK > pS->instance)
                 {
                     convertMocStatusToSslErr(
-                        s, s->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
+                        s, pS->instance, SSL_F_SSL3_CONNECT, ERR_R_INTERNAL_ERROR);
                     returnValue = -1;
                     goto exit;
                 }
@@ -22270,17 +23005,17 @@ extern int SSL_connect(SSL *s)
         /* Session instance created. Create the OpenSSL client mutex if it
          * hasn't been created */
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
-        if (NULL == s->session_mutex)
+        if (NULL == pS->session_mutex)
         {
-            if (OK > moc_mutexCreate(&(s->session_mutex), 0, 0))
+            if (OK > moc_mutexCreate(&(pS->session_mutex), 0, 0))
                 return -1;
         }
 #endif
 
-    if ((NULL != s->ssl_ctx->orig_ssl_ctx.cert) && (NULL != s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
+    if ((NULL != pS->ssl_ctx->orig_ssl_ctx.cert) && (NULL != pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs))
     {
-        if (OK > NSSL_CHK_CALL(setCipherAlgorithm, s->instance, s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
-                               (ubyte4) s->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */))
+        if (OK > NSSL_CHK_CALL(setCipherAlgorithm, pS->instance, pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgs,
+                               (ubyte4) pS->ssl_ctx->orig_ssl_ctx.cert->conf_sigalgslen, 2 /* signature algorithms */))
         {
             returnValue = -1;
             goto exit;
@@ -22289,7 +23024,7 @@ extern int SSL_connect(SSL *s)
 
 #if defined(__ENABLE_DIGICERT_EXTENDED_MASTERSECRET_RFC7627__)
      /* Extended master secret is enabled by default */
-    if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
+    if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_USE_EXTENDED_MASTERSECRET, (void*)((OSSL_UINT_PTR)enableExtendedMasterSecret)))
     {
         returnValue = -1;
         goto exit;
@@ -22297,23 +23032,23 @@ extern int SSL_connect(SSL *s)
 #endif
 
 #if defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
-    if (!(s->ssl_ctx->options & SSL_OP_NO_TICKET))
+    if (!(pS->ssl_ctx->options & SSL_OP_NO_TICKET))
     {
-        if (OK < NSSL_CHK_CALL(sslIoctl, s->instance, SSL_REQUEST_SESSION_TICKET, &requestTicket))
+        if (OK < NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_REQUEST_SESSION_TICKET, &requestTicket))
         {
             return 0;
         }
-        NSSL_CHK_CALL(setClientSaveTicketCb, s->instance, OSSL_saveSessionTicket);
-        NSSL_CHK_CALL(setClientRetrieveTicketCb, s->instance, OSSL_retrieveSessionTicket);
+        NSSL_CHK_CALL(setClientSaveTicketCb, pS->instance, OSSL_saveSessionTicket);
+        NSSL_CHK_CALL(setClientRetrieveTicketCb, pS->instance, OSSL_retrieveSessionTicket);
 
     }
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     /* Don't use RFC4507 ticket extension */
-    if (!(s->ssl_ctx->options & SSL_OP_NO_TICKET))
+    if (!(pS->ssl_ctx->options & SSL_OP_NO_TICKET))
     {
-        if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_REQUEST_SESSION_TICKET, &requestTicket))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_REQUEST_SESSION_TICKET, &requestTicket))
         {
             returnValue = 0;
             goto exit;
@@ -22323,62 +23058,62 @@ extern int SSL_connect(SSL *s)
         SSL_set_psk_save_session_callback(s);
     }
 
-    if ((NULL != s->orig_s.psk_use_session_cb) || (1 == s->registerRetrievePSK))
+    if ((NULL != pS->orig_s.psk_use_session_cb) || (1 == pS->registerRetrievePSK))
     {
-        SSL_set_psk_use_session_callback(s, s->orig_s.psk_use_session_cb);
+        SSL_set_psk_use_session_callback(s, pS->orig_s.psk_use_session_cb);
     }
 
-    if (s->session != NULL)
+    if (pS->session != NULL)
     {
         if (pHostname)
         {
             /* Set TLS ServerName Extension */
-            status = NSSL_CHK_CALL(setServerNameExtension, s->instance,(const char *)pHostname);
+            status = NSSL_CHK_CALL(setServerNameExtension, pS->instance,(const char *)pHostname);
         }
 
-        if ((s->session->ext.alpn_selected) && (s->session->ext.alpn_selected_len > 0 ))
+        if ((pS->session->ext.alpn_selected) && (pS->session->ext.alpn_selected_len > 0 ))
         {
-            if ((OK != SSL_set_alpn_protos(s, s->session->ext.alpn_selected, (unsigned int) s->session->ext.alpn_selected_len)))
+            if ((OK != SSL_set_alpn_protos(s, pS->session->ext.alpn_selected, (unsigned int) pS->session->ext.alpn_selected_len)))
             {
                 returnValue = -1;
                 goto exit;
             }
         }
 
-        if (s->session->ssl_version)
+        if (pS->session->ssl_version)
         {
             /* Set version */
-            status = NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_VERSION, (void*)((OSSL_UINT_PTR)OSSL_convert_minor_version_from_ossl(s->session->ssl_version)));
+            status = NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_VERSION, (void*)((OSSL_UINT_PTR)OSSL_convert_minor_version_from_ossl(pS->session->ssl_version)));
         }
     }
 
-    if (1 == s->orig_s.ext.early_data)
+    if (1 == pS->orig_s.ext.early_data)
     {
         ubyte4 sendEarlyData = 1;
-        if (OK > NSSL_CHK_CALL(sslIoctl, s->instance, SSL_SET_SEND_EARLY_DATA, &sendEarlyData))
+        if (OK > NSSL_CHK_CALL(sslIoctl, pS->instance, SSL_SET_SEND_EARLY_DATA, &sendEarlyData))
         {
             returnValue = 0;
             goto exit;
         }
     }
 
-    if (s->orig_s.pha_enabled)
+    if (pS->orig_s.pha_enabled)
     {
-        NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags);
+        NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags);
 
         /* SSL_setSession flags resets the flags; So first get the flag value to preserve the previously set flags */
-        NSSL_CHK_CALL(setSessionFlags, s->instance, (sslFlags) | SSL_FLAG_ENABLE_POST_HANDSHAKE_AUTH);
+        NSSL_CHK_CALL(setSessionFlags, pS->instance, (sslFlags) | SSL_FLAG_ENABLE_POST_HANDSHAKE_AUTH);
     }
 #endif
 
     /* Check if client wants to send an OCSP request */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (TLSEXT_STATUSTYPE_ocsp == s->tlsext_status_type)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (TLSEXT_STATUSTYPE_ocsp == pS->tlsext_status_type)
 #else
-    if (TLSEXT_STATUSTYPE_ocsp == s->orig_s.tlsext_status_type)
+    if (TLSEXT_STATUSTYPE_ocsp == pS->orig_s.tlsext_status_type)
 #endif
     {
-        if (OK > NSSL_CHK_CALL(setCertifcateStatusRequestExtensions, s->instance, NULL, 0, NULL, 0))
+        if (OK > NSSL_CHK_CALL(setCertifcateStatusRequestExtensions, pS->instance, NULL, 0, NULL, 0))
         {
             return -1;
         }
@@ -22419,7 +23154,7 @@ extern int SSL_connect(SSL *s)
             goto exit;
         }
 
-        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, s->instance,(SSL *)s);
+        (void) NSSL_CHK_CALL(hashTableAddPtr, m_ssl_table, pS->instance,(SSL *)s);
 
         if (OK > (status = moc_mutexRelease(m_hashTableMutex)))
         {
@@ -22428,29 +23163,29 @@ extern int SSL_connect(SSL *s)
             goto exit;
         }
 
-        if (NULL != s->tlsext_hostname)
+        if (NULL != pS->tlsext_hostname)
         {
             /* Set TLS ServerName Extension */
-            status = NSSL_CHK_CALL(setServerNameExtension, s->instance,(const char *)s->tlsext_hostname);
+            status = NSSL_CHK_CALL(setServerNameExtension, pS->instance,(const char *)pS->tlsext_hostname);
         }
 
-      if((s->ssl_ctx->alpn_client_proto_list) && (s->ssl_ctx->alpn_client_proto_list_len > 0 ))
+      if((pS->ssl_ctx->alpn_client_proto_list) && (pS->ssl_ctx->alpn_client_proto_list_len > 0 ))
       {
-            if ((OK != SSL_set_alpn_protos(s,s->ssl_ctx->alpn_client_proto_list,s->ssl_ctx->alpn_client_proto_list_len)))
+            if ((OK != SSL_set_alpn_protos(s,pS->ssl_ctx->alpn_client_proto_list,pS->ssl_ctx->alpn_client_proto_list_len)))
             {
                 returnValue = -1;
                 goto exit;
             }
       }
 
-      NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags);
+      NSSL_CHK_CALL(getSessionFlags, pS->instance, &sslFlags);
 
       /* Reset the flags before setting */
       sslFlags &= ~(SSL_FLAG_NO_MUTUAL_AUTH_REQUEST);
       sslFlags &= ~(SSL_FLAG_REQUIRE_MUTUAL_AUTH);
 
       /* @Note: verify the client enforces auth requirement from server */
-      if (OK > (status = NSSL_CHK_CALL(setSessionFlags, s->instance, (sslFlags) | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
+      if (OK > (status = NSSL_CHK_CALL(setSessionFlags, pS->instance, (sslFlags) | (authModeFlag) | SSL_FLAG_ENABLE_SEND_BUFFER | SSL_FLAG_ENABLE_RECV_BUFFER)))
       {
            returnValue = -1; /* XXX: cleanup instance */
            goto exit;
@@ -22471,9 +23206,9 @@ extern int SSL_connect(SSL *s)
 
      OSSL_checkDSACipherSupport(s);
 
-    if (s->numCipherIds > 0)
+    if (pS->numCipherIds > 0)
     {
-        if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, s->cipherIds, s->numCipherIds)))
+        if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, pS->cipherIds, pS->numCipherIds)))
         {
             returnValue = -1;
             goto exit;
@@ -22488,7 +23223,7 @@ extern int SSL_connect(SSL *s)
         }
         if (ctx->numCipherIds > 0)
         {
-            if (OK > (status = NSSL_CHK_CALL(setCiphers, s->instance, ctx->cipherIds, ctx->numCipherIds)))
+            if (OK > (status = NSSL_CHK_CALL(setCiphers, pS->instance, ctx->cipherIds, ctx->numCipherIds)))
             {
                 returnValue = -1;
                 goto exit;
@@ -22502,10 +23237,10 @@ extern int SSL_connect(SSL *s)
         }
     }
 
-    if (s->numEccCurves > 0)
+    if (pS->numEccCurves > 0)
     {
         ubyte4 i = 0;
-        ubyte4 numCurves = s->numEccCurves;
+        ubyte4 numCurves = pS->numEccCurves;
         OSSL_tlsExtNamedCurves *curvesList = OSSL_MALLOC(numCurves * sizeof(OSSL_tlsExtNamedCurves));
         if (NULL == curvesList)
         {
@@ -22514,10 +23249,10 @@ extern int SSL_connect(SSL *s)
         }
         for (i = 0; i < numCurves; i++)
         {
-            curvesList[i] = s->pEccCurves[i];
+            curvesList[i] = pS->pEccCurves[i];
         }
 
-        NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+        NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
         OSSL_FREE(curvesList);
     }
     else if (ctx->numEccCurves > 0)
@@ -22535,48 +23270,48 @@ extern int SSL_connect(SSL *s)
             curvesList[i] = ctx->pEccCurves[i];
         }
 
-        NSSL_CHK_CALL(setEccCurves, s->instance, curvesList, numCurves);
+        NSSL_CHK_CALL(setEccCurves, pS->instance, curvesList, numCurves);
         OSSL_FREE(curvesList);
     }
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-    if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+    if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
     {
-        if (s->numSrtpProfileIds > 0)
+        if (pS->numSrtpProfileIds > 0)
         {
-            NSSL_CHK_CALL(setSrtpProfiles, s->instance, s->srtpProfileIds, s->numSrtpProfileIds);
+            NSSL_CHK_CALL(setSrtpProfiles, pS->instance, pS->srtpProfileIds, pS->numSrtpProfileIds);
         }
         else
         {
             if (ctx->numSrtpProfileIds > 0)
             {
-                NSSL_CHK_CALL(setSrtpProfiles, s->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
+                NSSL_CHK_CALL(setSrtpProfiles, pS->instance, ctx->srtpProfileIds, ctx->numSrtpProfileIds);
             }
         }
     }
 #endif
 
-      s->clientServerFlag    = SSL_CLIENT_FLAG;
+      pS->clientServerFlag    = SSL_CLIENT_FLAG;
      }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (SSL_ST_OK == s->orig_state)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (SSL_ST_OK == pS->orig_state)
 #else
-    if (SSL_ST_OK == s->orig_s.state)
+    if (SSL_ST_OK == pS->orig_s.state)
 #endif
     {
         returnValue = 1;
         goto exit;
     }
 
-    retValue = NSSL_CHK_CALL(isEstablished, s->instance);
+    retValue = NSSL_CHK_CALL(isEstablished, pS->instance);
     if (1 == retValue)
     {
-        s->sent_client_hello = 0;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        s->orig_state      = SSL_ST_OK;
+        pS->sent_client_hello = 0;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS->orig_state      = SSL_ST_OK;
 #else
-        s->orig_s.state      = SSL_ST_OK;
+        pS->orig_s.state      = SSL_ST_OK;
 #endif
         returnValue = 1;
         goto exit;
@@ -22587,31 +23322,31 @@ extern int SSL_connect(SSL *s)
         return -1;
     }
 
-     if (NULL == s->pHoldingBuf)
+     if (NULL == pS->pHoldingBuf)
      {
-        s->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
-        if (NULL == s->pHoldingBuf)
+        pS->pHoldingBuf = OSSL_MALLOC(OSSL_MAX_SSL_RX_MSG_SZ);
+        if (NULL == pS->pHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             returnValue = -1;
             goto exit;
         }
-        s->szHoldingBuf    = OSSL_MAX_SSL_RX_MSG_SZ;
-        s->bytesRcvdRemaining    = 0;
-        s->pFirstRcvdUnreadByte = s->pHoldingBuf;
+        pS->szHoldingBuf    = OSSL_MAX_SSL_RX_MSG_SZ;
+        pS->bytesRcvdRemaining    = 0;
+        pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
      }
 
-     if (NULL == s->pTxHoldingBuf) {
-        s->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
-        if (NULL == s->pTxHoldingBuf)
+     if (NULL == pS->pTxHoldingBuf) {
+        pS->pTxHoldingBuf    = OSSL_MALLOC(OSSL_MAX_SSL_MSG_SZ);
+        if (NULL == pS->pTxHoldingBuf)
         {
             SSLerr(SSL_F_SSL_DO_HANDSHAKE,ERR_R_MALLOC_FAILURE);
             returnValue = -1;
             goto exit;
         }
-        s->szTxHoldingBuf    = OSSL_MAX_SSL_MSG_SZ;
-        s->bytesSentRemaining = 0;
-        s->txHoldingBufOffset = 0;
+        pS->szTxHoldingBuf    = OSSL_MAX_SSL_MSG_SZ;
+        pS->bytesSentRemaining = 0;
+        pS->txHoldingBufOffset = 0;
      }
 
      /* In case of rehandshake, ClientHello is sent without explicitly invocation of triggerHello
@@ -22621,10 +23356,10 @@ extern int SSL_connect(SSL *s)
       * State is SSL_ST_OK once the initial connection is established.
       */
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-     if (!s->sent_client_hello && (s->orig_state != SSL_ST_RENEGOTIATE)) {
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     if (!pS->sent_client_hello && (pS->orig_state != SSL_ST_RENEGOTIATE)) {
 #else
-     if (!s->sent_client_hello && (s->orig_s.state != SSL_ST_RENEGOTIATE)) {
+     if (!pS->sent_client_hello && (pS->orig_s.state != SSL_ST_RENEGOTIATE)) {
 #endif
 
         /*Notify that handshake is started*/
@@ -22641,9 +23376,9 @@ extern int SSL_connect(SSL *s)
 #endif
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            status = NSSL_CHK_CALL(triggerDtlsHello, s->instance);
+            status = NSSL_CHK_CALL(triggerDtlsHello, pS->instance);
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
@@ -22661,7 +23396,7 @@ extern int SSL_connect(SSL *s)
         else
 #endif
         {
-            status = NSSL_CHK_CALL(triggerHello, s->instance);
+            status = NSSL_CHK_CALL(triggerHello, pS->instance);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
             {
@@ -22676,7 +23411,7 @@ extern int SSL_connect(SSL *s)
             }
         }
         /* This returns ERR_SSL_NO_DATA_TO_SEND when there is nothing pending to be sent */
-        mySendBufLen    = s->szTxHoldingBuf;
+        mySendBufLen    = pS->szTxHoldingBuf;
 
         status = OK;
         while (OK == status)
@@ -22689,7 +23424,7 @@ extern int SSL_connect(SSL *s)
                     mutexAcquired = 1;
             }
 #endif
-            status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf, &mySendBufLen);
+            status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
             {
@@ -22700,38 +23435,38 @@ extern int SSL_connect(SSL *s)
             if (OK > status)
                 break;
 
-            i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+            i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining = mySendBufLen - bytesSent;
-                s->txHoldingBufOffset = bytesSent;
+                pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                pS->txHoldingBufOffset = bytesSent;
                 returnValue = i;
                 goto exit;
             }
 
-            s->sent_client_hello = 1;
-            mySendBufLen    = s->szTxHoldingBuf;
+            pS->sent_client_hello = 1;
+            mySendBufLen    = pS->szTxHoldingBuf;
         }
      }
-     while ( 0 == (retValue = NSSL_CHK_CALL(isEstablished, s->instance))) {
-        if (0 == s->bytesRcvdRemaining) {
-            s->io_state    = OSSL_IN_READ;
-            s->orig_s.rwstate = SSL_READING;
+     while ( 0 == (retValue = NSSL_CHK_CALL(isEstablished, pS->instance))) {
+        if (0 == pS->bytesRcvdRemaining) {
+            pS->io_state    = OSSL_IN_READ;
+            pS->orig_s.rwstate = SSL_READING;
 
-            while( 0 >= (i = BIO_read(s->rbio, s->pHoldingBuf, s->szHoldingBuf)))
+            while( 0 >= (i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf)))
             {
                 /* XXX: check errors
                  */
-                if ((i < 0) || (!BIO_should_retry(s->rbio) || (SSL_pending(s) <= 0)))
+                if ((i < 0) || (!BIO_should_retry(pS->rbio) || (SSL_pending(s) <= 0)))
                 {
                     returnValue = i;
                     goto exit;
                 }
             }
-            s->io_state    = 0;
-            s->orig_s.rwstate = SSL_NOTHING;
-            s->pFirstRcvdUnreadByte     = s->pHoldingBuf;
-            s->bytesRcvdRemaining    = i;
+            pS->io_state    = 0;
+            pS->orig_s.rwstate = SSL_NOTHING;
+            pS->pFirstRcvdUnreadByte     = pS->pHoldingBuf;
+            pS->bytesRcvdRemaining    = i;
         }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -22742,7 +23477,7 @@ extern int SSL_connect(SSL *s)
                 mutexAcquired = 1;
         }
 #endif
-        status = NSSL_CHK_CALL(parseSslBuf, s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+        status = NSSL_CHK_CALL(parseSslBuf, pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                  &pFirstUnusedByte, &bytesRemaining);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
         if (1 == mutexAcquired)
@@ -22761,33 +23496,33 @@ extern int SSL_connect(SSL *s)
         }
         if (0 == status)
         {
-           s->pFirstRcvdUnreadByte     = s->pHoldingBuf;
-           s->bytesRcvdRemaining     = 0;
+           pS->pFirstRcvdUnreadByte     = pS->pHoldingBuf;
+           pS->bytesRcvdRemaining     = 0;
         } else
         {
-            s->pFirstRcvdUnreadByte    = pFirstUnusedByte;
-            s->bytesRcvdRemaining    = bytesRemaining;
+            pS->pFirstRcvdUnreadByte    = pFirstUnusedByte;
+            pS->bytesRcvdRemaining    = bytesRemaining;
         }
 
 
-        if (s->bytesSentRemaining > 0)
+        if (pS->bytesSentRemaining > 0)
         {
             i = asyncSendDataBio(
-                s, s->pTxHoldingBuf + s->txHoldingBufOffset, s->bytesSentRemaining,
+                s, pS->pTxHoldingBuf + pS->txHoldingBufOffset, pS->bytesSentRemaining,
                 &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining -= bytesSent;
-                s->txHoldingBufOffset += bytesSent;
+                pS->bytesSentRemaining -= bytesSent;
+                pS->txHoldingBufOffset += bytesSent;
                 return i;
             }
 
-            s->bytesSentRemaining = 0;
-            s->txHoldingBufOffset = 0;
+            pS->bytesSentRemaining = 0;
+            pS->txHoldingBufOffset = 0;
         }
 
         /* Now send any pending bytes */
-        mySendBufLen        = s->szTxHoldingBuf;
+        mySendBufLen        = pS->szTxHoldingBuf;
         status = OK;
         while (OK == status)
         {
@@ -22799,7 +23534,7 @@ extern int SSL_connect(SSL *s)
                     mutexAcquired = 1;
             }
 #endif
-            status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf, &mySendBufLen);
+            status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
             {
@@ -22811,16 +23546,16 @@ extern int SSL_connect(SSL *s)
             if (OK > status)
                 break;
 
-            i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+            i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining = mySendBufLen - bytesSent;
-                s->txHoldingBufOffset = bytesSent;
+                pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                pS->txHoldingBufOffset = bytesSent;
                 returnValue = i;
                 goto exit;
             }
 
-            mySendBufLen        = s->szTxHoldingBuf;
+            mySendBufLen        = pS->szTxHoldingBuf;
         }
      }
      if (-1 == retValue)
@@ -22834,15 +23569,15 @@ extern int SSL_connect(SSL *s)
         cb(s, SSL_CB_HANDSHAKE_DONE, 1);
 
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-     s->orig_state = SSL_ST_OK;
-     s->orig_s.statem.state = MSG_FLOW_FINISHED;
-     s->orig_s.statem.hand_state = TLS_ST_OK;
-     s->orig_s.statem.in_init = 0;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     pS->orig_state = SSL_ST_OK;
+     pS->orig_s.statem.state = MSG_FLOW_FINISHED;
+     pS->orig_s.statem.hand_state = TLS_ST_OK;
+     pS->orig_s.statem.in_init = 0;
 #else
-     s->orig_s.state = SSL_ST_OK;
+     pS->orig_s.state = SSL_ST_OK;
 #endif
-     s->sent_client_hello = 0; /* reset for next cycle */
+     pS->sent_client_hello = 0; /* reset for next cycle */
      returnValue = 1;
 
 exit:
@@ -22867,10 +23602,15 @@ checkRxBuffer(SSL *s, ubyte4 size)
         SSLerr(SSL_F_SSL_READ, SSL_R_UNINITIALIZED);
         return (MSTATUS) -1;
      }
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
      /* rxDataBufLen is the num of bytes remaining to be read */
-     spaceNeeded = size - (s->rxDataBufSz - s->rxDataBufLen);
+     spaceNeeded = size - (pS->rxDataBufSz - pS->rxDataBufLen);
      if (spaceNeeded > 0) {
-         allocLen = size + s->rxDataBufLen;
+         allocLen = size + pS->rxDataBufLen;
          if (NULL == (newBuf = OSSL_MALLOC(allocLen)))
          {
             SSLerr(SSL_F_SSL_READ, ERR_R_MALLOC_FAILURE);
@@ -22878,27 +23618,27 @@ checkRxBuffer(SSL *s, ubyte4 size)
          }
 
         to = newBuf;
-        s->rxDataBufSz = allocLen;
+        pS->rxDataBufSz = allocLen;
      }
      else
      {
-         to = s->pRxDataBuf;
+         to = pS->pRxDataBuf;
      }
 
-     if (s->rxDataBufLen > 0)
+     if (pS->rxDataBufLen > 0)
      {
-      from = s->pRxDataBuf + s->rxDataBufOffset;
-      memmove(to, from, s->rxDataBufLen);
+      from = pS->pRxDataBuf + pS->rxDataBufOffset;
+      memmove(to, from, pS->rxDataBufLen);
      }
 
     if (newBuf)
     {
-        if (s->pRxDataBuf)
-            OSSL_FREE(s->pRxDataBuf);
-        s->pRxDataBuf = newBuf;
+        if (pS->pRxDataBuf)
+            OSSL_FREE(pS->pRxDataBuf);
+        pS->pRxDataBuf = newBuf;
     }
 
-     s->rxDataBufOffset = 0;
+     pS->rxDataBufOffset = 0;
      return (MSTATUS) OK;
 }
 
@@ -22924,17 +23664,23 @@ SSL_read(SSL *s, void *buf, int num)
         return -1;
      }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
     /* If the shutdown signal was recieved from the peer then don't process
      * anymore data.
      */
-    if (SSL_RECEIVED_SHUTDOWN & s->orig_s.shutdown)
+    if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
     {
         return 0;
     }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if ( (SSL_EARLY_DATA_CONNECT_RETRY == s->orig_s.early_data_state) ||
-         (SSL_EARLY_DATA_ACCEPT_RETRY  == s->orig_s.early_data_state )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if ( (SSL_EARLY_DATA_CONNECT_RETRY == pS->orig_s.early_data_state) ||
+         (SSL_EARLY_DATA_ACCEPT_RETRY  == pS->orig_s.early_data_state )
        )
     {
         SSLerr(SSL_F_SSL_READ, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
@@ -22942,7 +23688,7 @@ SSL_read(SSL *s, void *buf, int num)
     }
 #endif
 
-     if ((MOC_SSL_CONN_INSTANCE_UNASSIGNED == s->instance))
+     if ((MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance))
      {
          do
          {
@@ -22950,14 +23696,14 @@ SSL_read(SSL *s, void *buf, int num)
              if(OK >= (status = SSL_do_handshake(s)))
                  return -1;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        } while (SSL_ST_OK != s->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        } while (SSL_ST_OK != pS->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
         doHandshakeCount = 0;
-        if (SSL_ST_OK != s->orig_state)
+        if (SSL_ST_OK != pS->orig_state)
 #else
-        } while (SSL_ST_OK != s->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+        } while (SSL_ST_OK != pS->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
         doHandshakeCount = 0;
-        if (SSL_ST_OK != s->orig_s.state)
+        if (SSL_ST_OK != pS->orig_s.state)
 #endif
         {
             return -1;
@@ -22965,16 +23711,16 @@ SSL_read(SSL *s, void *buf, int num)
      }
      else
      {
-        if (OK > (status = NSSL_CHK_CALL(getSessionStatus, s->instance, &connState)))
+        if (OK > (status = NSSL_CHK_CALL(getSessionStatus, pS->instance, &connState)))
             return -1;
         if ((connState == SSL_CONNECTION_NEGOTIATE) || (connState == SSL_CONNECTION_RENEGOTIATE))
         {
             if (connState == SSL_CONNECTION_RENEGOTIATE)
             {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                s->orig_state = SSL_ST_RENEGOTIATE;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                pS->orig_state = SSL_ST_RENEGOTIATE;
 #else
-                s->orig_s.state = SSL_ST_RENEGOTIATE;
+                pS->orig_s.state = SSL_ST_RENEGOTIATE;
 #endif
             }
 
@@ -22984,16 +23730,16 @@ SSL_read(SSL *s, void *buf, int num)
                 if(OK >= (status = SSL_do_handshake(s)))
                     return -1;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-            } while (SSL_ST_OK != s->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+            } while (SSL_ST_OK != pS->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 
             doHandshakeCount = 0;
-            if (SSL_ST_OK != s->orig_state)
+            if (SSL_ST_OK != pS->orig_state)
 #else
-            } while (SSL_ST_OK != s->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+            } while (SSL_ST_OK != pS->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 
             doHandshakeCount = 0;
-            if (SSL_ST_OK != s->orig_s.state)
+            if (SSL_ST_OK != pS->orig_s.state)
 #endif
             {
                 return -1;
@@ -23001,7 +23747,7 @@ SSL_read(SSL *s, void *buf, int num)
         }
      }
 
-     if ((NULL == s->pHoldingBuf) || (NULL == s->pTxHoldingBuf)) {
+     if ((NULL == pS->pHoldingBuf) || (NULL == pS->pTxHoldingBuf)) {
         return -1;
      }
     /*
@@ -23009,26 +23755,26 @@ SSL_read(SSL *s, void *buf, int num)
      * have been processed yet
      */
 
-    if (s->clientServerFlag == SSL_SERVER_FLAG)
+    if (pS->clientServerFlag == SSL_SERVER_FLAG)
     {
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
-    if (NULL != s->session_mutex)
+    if (NULL != pS->session_mutex)
     {
-        if (OK > moc_mutexWait(s->session_mutex))
+        if (OK > moc_mutexWait(pS->session_mutex))
             return -1;
 
         mutexAcquired = 1;
     }
 #endif
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            status = NSSL_CHK_CALL(dtlsReadSslRec,s->instance, &pReadPtr, &bytesAvail, &protocol);
+            status = NSSL_CHK_CALL(dtlsReadSslRec,pS->instance, &pReadPtr, &bytesAvail, &protocol);
         }
         else
 #endif
         {
-            status = NSSL_CHK_CALL(readSslRec, s->instance, &pReadPtr, &bytesAvail, &protocol);
+            status = NSSL_CHK_CALL(readSslRec, pS->instance, &pReadPtr, &bytesAvail, &protocol);
         }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -23043,11 +23789,11 @@ SSL_read(SSL *s, void *buf, int num)
             goto process_rec;
         }
     }
-     if (s->rxDataBufLen > 0) { /* Data left over from before */
-        toCopy = (num <= (int)s->rxDataBufLen) ? num : (int)s->rxDataBufLen;
-        memcpy(buf, s->pRxDataBuf + s->rxDataBufOffset, toCopy);
-        s->rxDataBufLen     -= toCopy;
-        s->rxDataBufOffset  += toCopy;
+     if (pS->rxDataBufLen > 0) { /* Data left over from before */
+        toCopy = (num <= (int)pS->rxDataBufLen) ? num : (int)pS->rxDataBufLen;
+        memcpy(buf, pS->pRxDataBuf + pS->rxDataBufOffset, toCopy);
+        pS->rxDataBufLen     -= toCopy;
+        pS->rxDataBufOffset  += toCopy;
 #ifdef __ENABLE_DIGICERT_READAHEAD_OPTIMIZATION__
         if (toCopy >= num)
         {
@@ -23065,7 +23811,7 @@ SSL_read(SSL *s, void *buf, int num)
      /* If we're here, we have no left over data to give. Reset our
       * RxData buffer state
       */
-      s->rxDataBufOffset    = 0; /* XXX: rxDataBufLen set to 0 already above */
+      pS->rxDataBufOffset    = 0; /* XXX: rxDataBufLen set to 0 already above */
      /* Get fresh TCP data from socket to look for SSL record */
 
 #ifdef __ENABLE_DIGICERT_OSSL_MULTIPACKET_READ__
@@ -23073,31 +23819,31 @@ read_packet:
 #endif
      do
      { /* Loop to read BIO */
-      if (0 == s->bytesRcvdRemaining) {
-        s->io_state    = OSSL_IN_READ;
-        s->orig_s.rwstate = SSL_READING;
+      if (0 == pS->bytesRcvdRemaining) {
+        pS->io_state    = OSSL_IN_READ;
+        pS->orig_s.rwstate = SSL_READING;
 
         /*
-        i = BIO_read(s->rbio, s->pHoldingBuf, s->szHoldingBuf);
+        i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf);
         if (i <= 0)
         {
             return i;
         }
         */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (!s->orig_s.rlayer.read_ahead)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (!pS->orig_s.rlayer.read_ahead)
 #else
-        if (!s->orig_s.read_ahead)
+        if (!pS->orig_s.read_ahead)
 #endif
         {
             numBytesRemaining = 0;
-            NSSL_CHK_CALL(recvPending, s->instance, &numBytesRemaining);
+            NSSL_CHK_CALL(recvPending, pS->instance, &numBytesRemaining);
         }
 
-        while( 0 >= ( i = BIO_read(s->rbio, s->pHoldingBuf, (((numBytesRemaining > 0) && (s->szHoldingBuf > numBytesRemaining)) ? numBytesRemaining : s->szHoldingBuf))))
+        while( 0 >= ( i = BIO_read(pS->rbio, pS->pHoldingBuf, (((numBytesRemaining > 0) && (pS->szHoldingBuf > numBytesRemaining)) ? numBytesRemaining : pS->szHoldingBuf))))
         {
 
-            if ((i < 0) || (!BIO_should_retry(s->rbio) || (SSL_pending(s) <= 0)))
+            if ((i < 0) || (!BIO_should_retry(pS->rbio) || (SSL_pending(s) <= 0)))
             {
                 /* If we read the left over data which was smaller than num bytes,
                  * and BIO_read could not read anything, we should return the
@@ -23110,9 +23856,9 @@ read_packet:
                 else
 #endif
                 {
-                    if ((s->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN) || (s->orig_s.shutdown & SSL_SENT_SHUTDOWN))
+                    if ((pS->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN) || (pS->orig_s.shutdown & SSL_SENT_SHUTDOWN))
                     {
-                        s->orig_s.rwstate       = SSL_NOTHING;
+                        pS->orig_s.rwstate       = SSL_NOTHING;
                         return 0; /* if we received SSL_RECEIVED_SHUTDOWN or SSL_SENT_SHUTDOWN, we can exit without error */
                     }
                     else
@@ -23124,10 +23870,10 @@ read_packet:
         }
 
 
-        s->io_state             = 0;
-        s->orig_s.rwstate       = SSL_NOTHING;
-        s->pFirstRcvdUnreadByte = s->pHoldingBuf;
-        s->bytesRcvdRemaining   = i;
+        pS->io_state             = 0;
+        pS->orig_s.rwstate       = SSL_NOTHING;
+        pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
+        pS->bytesRcvdRemaining   = i;
      }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -23140,9 +23886,9 @@ read_packet:
 #endif
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-     if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+     if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
      {
-        status = NSSL_CHK_CALL(dtlsParseSslBuf,s->instance,s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+        status = NSSL_CHK_CALL(dtlsParseSslBuf,pS->instance,pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                 &pFirstUnusedByte, &bytesRemaining);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
         if (1 == mutexAcquired)
@@ -23167,7 +23913,7 @@ read_packet:
      else
 #endif
      {
-        status = NSSL_CHK_CALL(parseSslBuf, s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+        status = NSSL_CHK_CALL(parseSslBuf, pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                 &pFirstUnusedByte, &bytesRemaining);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
         if (1 == mutexAcquired)
@@ -23194,41 +23940,41 @@ read_packet:
       if (0 == bytesRemaining)
         {
            /* status set to count */
-           s->pFirstRcvdUnreadByte     = s->pHoldingBuf;
-           s->bytesRcvdRemaining     = 0;
+           pS->pFirstRcvdUnreadByte     = pS->pHoldingBuf;
+           pS->bytesRcvdRemaining     = 0;
            break;
         }
         else
         {
-           s->pFirstRcvdUnreadByte    = pFirstUnusedByte;
-           s->bytesRcvdRemaining    = bytesRemaining;
+           pS->pFirstRcvdUnreadByte    = pFirstUnusedByte;
+           pS->bytesRcvdRemaining    = bytesRemaining;
            status = 1;
            break;
         }
       }
       else
       { /* full rec not present and all bytes were consumed */
-        s->bytesRcvdRemaining     = 0; /* necessary; recvMessage2 does not update this */
+        pS->bytesRcvdRemaining     = 0; /* necessary; recvMessage2 does not update this */
         if(0 == bytesRemaining)
         {
             /* Incase of HANDSHAKE pending message */
             /* Now send any pending bytes */
-            int mySendBufLen        = s->szTxHoldingBuf;
+            int mySendBufLen        = pS->szTxHoldingBuf;
 
-            if (s->bytesSentRemaining > 0)
+            if (pS->bytesSentRemaining > 0)
             {
                 i = asyncSendDataBio(
-                    s, s->pTxHoldingBuf + s->txHoldingBufOffset, s->bytesSentRemaining,
+                    s, pS->pTxHoldingBuf + pS->txHoldingBufOffset, pS->bytesSentRemaining,
                     &bytesSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining -= bytesSent;
-                    s->txHoldingBufOffset += bytesSent;
+                    pS->bytesSentRemaining -= bytesSent;
+                    pS->txHoldingBufOffset += bytesSent;
                     return i;
                 }
 
-                s->bytesSentRemaining = 0;
-                s->txHoldingBufOffset = 0;
+                pS->bytesSentRemaining = 0;
+                pS->txHoldingBufOffset = 0;
             }
 
             status = OK;
@@ -23242,7 +23988,7 @@ read_packet:
                         mutexAcquired = 1;
                 }
 #endif
-                status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf,(ubyte4*) &mySendBufLen);
+                status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf,(ubyte4*) &mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
                 if (1 == mutexAcquired)
                 {
@@ -23253,19 +23999,19 @@ read_packet:
                 if (OK > status)
                     break;
 
-                i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+                i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining = mySendBufLen - bytesSent;
-                    s->txHoldingBufOffset = bytesSent;
+                    pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                    pS->txHoldingBufOffset = bytesSent;
                     return i;
                 }
 
-                mySendBufLen        = s->szTxHoldingBuf;
+                mySendBufLen        = pS->szTxHoldingBuf;
             }
         }
       }
-     } while (0 == s->bytesRcvdRemaining);
+     } while (0 == pS->bytesRcvdRemaining);
 
     if (0 < status) {
         /* Valid record available to decrypt */
@@ -23278,14 +24024,14 @@ read_packet:
         }
 #endif
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
-            status = NSSL_CHK_CALL(dtlsReadSslRec,s->instance, &pReadPtr, &bytesAvail, &protocol);
+            status = NSSL_CHK_CALL(dtlsReadSslRec,pS->instance, &pReadPtr, &bytesAvail, &protocol);
         }
         else
 #endif
         {
-            status = NSSL_CHK_CALL(readSslRec, s->instance, &pReadPtr, &bytesAvail, &protocol);
+            status = NSSL_CHK_CALL(readSslRec, pS->instance, &pReadPtr, &bytesAvail, &protocol);
         }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -23307,8 +24053,8 @@ process_rec:
             ubyte4    toKeep;
             toKeep    = (bytesAvail - toCopy);
             checkRxBuffer(s, toKeep); /* Sets rxDatabufOffset to 0 if it allocates */
-            memcpy(s->pRxDataBuf + s->rxDataBufOffset + s->rxDataBufLen, pReadPtr + toCopy, toKeep);
-            s->rxDataBufLen        += toKeep;
+            memcpy(pS->pRxDataBuf + pS->rxDataBufOffset + pS->rxDataBufLen, pReadPtr + toCopy, toKeep);
+            pS->rxDataBufLen        += toKeep;
         }
 #ifdef __ENABLE_DIGICERT_OSSL_MULTIPACKET_READ__
         else /* Check read Buffer bigger than the packet(s) read */
@@ -23317,13 +24063,13 @@ process_rec:
             if ((num > 0)
 #ifdef __ENABLE_DIGICERT_OSSL_MUTIPACKET_BIO_RETRY__
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-            && ((s->bytesRcvdRemaining > 0) || ((0 == s->bytesRcvdRemaining) && (s->orig_s.rlayer.read_ahead))))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+            && ((pS->bytesRcvdRemaining > 0) || ((0 == pS->bytesRcvdRemaining) && (pS->orig_s.rlayer.read_ahead))))
 #else
-            && ((s->bytesRcvdRemaining > 0) || ((0 == s->bytesRcvdRemaining) && (s->orig_s.read_ahead))))
+            && ((pS->bytesRcvdRemaining > 0) || ((0 == pS->bytesRcvdRemaining) && (pS->orig_s.read_ahead))))
 #endif
 #else
-            && (s->bytesRcvdRemaining > 0))
+            && (pS->bytesRcvdRemaining > 0))
 #endif
             {
                 /* Loop to read more packets */
@@ -23361,6 +24107,11 @@ SSL_write(SSL *s, const void *buf, int num)
         SSLerr(SSL_F_SSL_WRITE, SSL_R_UNINITIALIZED);
         return -1;
     }
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
     if (num < 0)
     {
@@ -23370,13 +24121,13 @@ SSL_write(SSL *s, const void *buf, int num)
 
     /* If a shutdown notification was sent by us then don't send any data.
      */
-    if (SSL_SENT_SHUTDOWN & s->orig_s.shutdown)
+    if (SSL_SENT_SHUTDOWN & pS->orig_s.shutdown)
     {
         SSLerr(SSL_F_SSL_WRITE, SSL_R_PROTOCOL_IS_SHUTDOWN);
         return -1;
     }
 
-    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == s->instance)
+    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance)
     {
         do
         {
@@ -23384,16 +24135,16 @@ SSL_write(SSL *s, const void *buf, int num)
             if(OK >= (status = SSL_do_handshake(s)))
                 return -1;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        } while (SSL_ST_OK != s->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        } while (SSL_ST_OK != pS->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 
         doHandshakeCount = 0;
-        if (SSL_ST_OK != s->orig_state)
+        if (SSL_ST_OK != pS->orig_state)
 #else
-        } while (SSL_ST_OK != s->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+        } while (SSL_ST_OK != pS->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 
         doHandshakeCount = 0;
-        if (SSL_ST_OK != s->orig_s.state)
+        if (SSL_ST_OK != pS->orig_s.state)
 #endif
         {
             return -1;
@@ -23401,17 +24152,17 @@ SSL_write(SSL *s, const void *buf, int num)
     }
     else
     {
-        if (OK > (status = NSSL_CHK_CALL(getSessionStatus, s->instance, &connState)))
+        if (OK > (status = NSSL_CHK_CALL(getSessionStatus, pS->instance, &connState)))
             return -1;
 
         if ((connState == SSL_CONNECTION_NEGOTIATE) || (connState == SSL_CONNECTION_RENEGOTIATE))
         {
             if (connState == SSL_CONNECTION_RENEGOTIATE)
             {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                s->orig_state = SSL_ST_RENEGOTIATE;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                pS->orig_state = SSL_ST_RENEGOTIATE;
 #else
-                s->orig_s.state = SSL_ST_RENEGOTIATE;
+                pS->orig_s.state = SSL_ST_RENEGOTIATE;
 #endif
             }
 
@@ -23421,16 +24172,16 @@ SSL_write(SSL *s, const void *buf, int num)
                 if(OK >= (status = SSL_do_handshake(s)))
                     return -1;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-            } while (SSL_ST_OK != s->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+            } while (SSL_ST_OK != pS->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 
             doHandshakeCount = 0;
-            if (SSL_ST_OK != s->orig_state)
+            if (SSL_ST_OK != pS->orig_state)
 #else
-            } while (SSL_ST_OK != s->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+            } while (SSL_ST_OK != pS->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 
             doHandshakeCount = 0;
-            if (SSL_ST_OK != s->orig_s.state)
+            if (SSL_ST_OK != pS->orig_s.state)
 #endif
             {
                 return -1;
@@ -23439,7 +24190,7 @@ SSL_write(SSL *s, const void *buf, int num)
     }
 
     /* Pick any bytes from previous attempt */
-    bytesConsumed = s->applBytesEncoded;
+    bytesConsumed = pS->applBytesEncoded;
 
     /* Application attempts to write with the same buffer since all the bytes have not been written;
      * Move the pointers to send out the remaining consumed bytes correctly
@@ -23449,45 +24200,45 @@ SSL_write(SSL *s, const void *buf, int num)
 
     if (bytesConsumed > 0)
     {
-        if ((s->pPendingBuffer != buf) && !(SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER & s->orig_s.mode))
+        if ((pS->pPendingBuffer != buf) && !(SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER & pS->orig_s.mode))
         {
-            s->applBytesEncoded = 0;
+            pS->applBytesEncoded = 0;
             /* If there is data pending and the buffer pointer has been moved, throw an error */
             SSLerr(SSL_F_SSL3_WRITE_PENDING, SSL_R_BAD_WRITE_RETRY);
             return -1;
         }
     }
 
-    s->pPendingBuffer = (ubyte *) buf;
+    pS->pPendingBuffer = (ubyte *) buf;
 
     /* Handling for BIO_write failure in the previous attempt */
     /* Current logic will only make one attempt */
-    /* Send the bytes already in s->pTxHoldingBuf */
-     if (s->bytesSentRemaining > 0)
+    /* Send the bytes already in pS->pTxHoldingBuf */
+     if (pS->bytesSentRemaining > 0)
      {
-       holdingBufOffset = s->txHoldingBufOffset;
-       mySendBufLen = s->bytesSentRemaining;
+       holdingBufOffset = pS->txHoldingBufOffset;
+       mySendBufLen = pS->bytesSentRemaining;
 
        i = asyncSendDataBio(
-           s, s->pTxHoldingBuf + holdingBufOffset, mySendBufLen, &bytesSent);
+           s, pS->pTxHoldingBuf + holdingBufOffset, mySendBufLen, &bytesSent);
         if (0 >= i)
         {
-            s->bytesSentRemaining -= bytesSent;
-            s->txHoldingBufOffset += bytesSent;
+            pS->bytesSentRemaining -= bytesSent;
+            pS->txHoldingBufOffset += bytesSent;
             return i;
         }
 
-       s->bytesSentRemaining = 0;
-       s->txHoldingBufOffset = 0;
-       s->applBytesEncoded = 0;
+       pS->bytesSentRemaining = 0;
+       pS->txHoldingBufOffset = 0;
+       pS->applBytesEncoded = 0;
 
-       /* After bytes in s->pTxHoldingBuf (populated in previous SSL_write attempt) are sent,
+       /* After bytes in pS->pTxHoldingBuf (populated in previous SSL_write attempt) are sent,
         * check if we have any more already consumed bytes to send.
         */
        goto sendPendingData;
     }
 
-    mySendBufLen    = s->szTxHoldingBuf;
+    mySendBufLen    = pS->szTxHoldingBuf;
 
     /* Even if we dont have any new data to send, we might have some pending data to send;
      * This condition checks for that and attempts to send the pending data
@@ -23500,7 +24251,7 @@ SSL_write(SSL *s, const void *buf, int num)
     while (toSend > 0)
     {
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
             /* Make sure to send any pending data. This will empty the o/p buffer.
              * If the o/p buffer is not empty then DTLS_sendMessage will fail with
@@ -23517,7 +24268,7 @@ SSL_write(SSL *s, const void *buf, int num)
                         mutexAcquired = 1;
                 }
 #endif
-                status = NSSL_CHK_CALL(dtlsGetSendBuffer,s->instance, s->pTxHoldingBuf,&mySendBufLen);
+                status = NSSL_CHK_CALL(dtlsGetSendBuffer,pS->instance, pS->pTxHoldingBuf,&mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
                 if (1 == mutexAcquired)
                 {
@@ -23528,16 +24279,16 @@ SSL_write(SSL *s, const void *buf, int num)
                 if (OK > status)
                     break;
 
-                i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+                i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining = mySendBufLen - bytesSent;
-                    s->txHoldingBufOffset = bytesSent;
-                    s->applBytesEncoded = bytesConsumed;
+                    pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                    pS->txHoldingBufOffset = bytesSent;
+                    pS->applBytesEncoded = bytesConsumed;
                     return i;
                 }
 
-                mySendBufLen    = s->szTxHoldingBuf;
+                mySendBufLen    = pS->szTxHoldingBuf;
             }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -23548,7 +24299,7 @@ SSL_write(SSL *s, const void *buf, int num)
                     mutexAcquired = 1;
             }
 #endif
-            status = NSSL_CHK_CALL(dtlsSendMessage,s->instance, (sbyte *)pCurPtr, (sbyte4)toSend, &bytesSent);
+            status = NSSL_CHK_CALL(dtlsSendMessage,pS->instance, (sbyte *)pCurPtr, (sbyte4)toSend, &bytesSent);
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
@@ -23573,7 +24324,7 @@ SSL_write(SSL *s, const void *buf, int num)
                         mutexAcquired = 1;
                 }
 #endif
-                status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf,&mySendBufLen);
+                status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf,&mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
                 if (1 == mutexAcquired)
                 {
@@ -23584,16 +24335,16 @@ SSL_write(SSL *s, const void *buf, int num)
                 if (OK > status)
                     break;
 
-                i = asyncSendDataBio(s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+                i = asyncSendDataBio(s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining = mySendBufLen - bytesSent;
-                    s->txHoldingBufOffset = bytesSent;
-                    s->applBytesEncoded = bytesConsumed;
+                    pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                    pS->txHoldingBufOffset = bytesSent;
+                    pS->applBytesEncoded = bytesConsumed;
                     return -1;
                 }
 
-                mySendBufLen    = s->szTxHoldingBuf;
+                mySendBufLen    = pS->szTxHoldingBuf;
             }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -23604,7 +24355,7 @@ SSL_write(SSL *s, const void *buf, int num)
                     mutexAcquired = 1;
             }
 #endif
-            status = NSSL_CHK_CALL(prepareSslRec, s->instance, (sbyte *)pCurPtr, (sbyte4)toSend, &bytesSent);
+            status = NSSL_CHK_CALL(prepareSslRec, pS->instance, (sbyte *)pCurPtr, (sbyte4)toSend, &bytesSent);
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
             if (1 == mutexAcquired)
@@ -23619,7 +24370,7 @@ SSL_write(SSL *s, const void *buf, int num)
         {
             if (ERR_SSL_NEGOTIATION_STATE == status )
             {
-                if (OK > (status = NSSL_CHK_CALL(getSessionStatus, s->instance, &connState)))
+                if (OK > (status = NSSL_CHK_CALL(getSessionStatus, pS->instance, &connState)))
                 {
                     return -1;
                 }
@@ -23628,19 +24379,19 @@ SSL_write(SSL *s, const void *buf, int num)
                 {
                     if (connState == SSL_CONNECTION_RENEGOTIATE)
                     {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                        s->orig_state = SSL_ST_RENEGOTIATE;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                        pS->orig_state = SSL_ST_RENEGOTIATE;
 #else
-                        s->orig_s.state = SSL_ST_RENEGOTIATE;
+                        pS->orig_s.state = SSL_ST_RENEGOTIATE;
 #endif
                     }
 
                     if (connState == SSL_CONNECTION_NEGOTIATE)
                     {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                        s->orig_state = (s->clientServerFlag == SSL_CLIENT_FLAG) ? SSL_ST_CONNECT : SSL_ST_ACCEPT;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                        pS->orig_state = (pS->clientServerFlag == SSL_CLIENT_FLAG) ? SSL_ST_CONNECT : SSL_ST_ACCEPT;
 #else
-                        s->orig_s.state = (s->clientServerFlag == SSL_CLIENT_FLAG) ? SSL_ST_CONNECT : SSL_ST_ACCEPT;
+                        pS->orig_s.state = (pS->clientServerFlag == SSL_CLIENT_FLAG) ? SSL_ST_CONNECT : SSL_ST_ACCEPT;
 #endif
                     }
 
@@ -23650,25 +24401,25 @@ SSL_write(SSL *s, const void *buf, int num)
                         if(OK >= (status = SSL_do_handshake(s)))
                             return -1;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                    } while (SSL_ST_OK != s->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                    } while (SSL_ST_OK != pS->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 #else
-                    } while (SSL_ST_OK != s->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+                    } while (SSL_ST_OK != pS->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
 #endif
 
                     doHandshakeCount = 0;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                    if (SSL_ST_OK != s->orig_state)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                    if (SSL_ST_OK != pS->orig_state)
 #else
-                    if (SSL_ST_OK != s->orig_s.state)
+                    if (SSL_ST_OK != pS->orig_s.state)
 #endif
                     {
                         return -1;
                     }
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
-                    if (NULL != s->session_mutex)
+                    if (NULL != pS->session_mutex)
                     {
-                        if (OK > moc_mutexWait(s->session_mutex))
+                        if (OK > moc_mutexWait(pS->session_mutex))
                             return -1;
 
                         mutexAcquired = 1;
@@ -23695,7 +24446,7 @@ SSL_write(SSL *s, const void *buf, int num)
         }
 
         #ifndef __ENABLE_OSSL_ZERO_COPY__
-        mySendBufLen        = s->szTxHoldingBuf;
+        mySendBufLen        = pS->szTxHoldingBuf;
 
         /* Handle DTLS seperately. In case we need DTLS_send instead of BIO,
          * it is to be implemented. DTLS_send would require UDP descriptor.
@@ -23704,7 +24455,7 @@ SSL_write(SSL *s, const void *buf, int num)
 sendPendingData:
         status = OK;
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-        if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+        if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
         {
             while ( OK == status)
             {
@@ -23716,7 +24467,7 @@ sendPendingData:
                         mutexAcquired = 1;
                 }
 #endif
-                status = NSSL_CHK_CALL(dtlsGetSendBuffer,s->instance, s->pTxHoldingBuf,&mySendBufLen);
+                status = NSSL_CHK_CALL(dtlsGetSendBuffer,pS->instance, pS->pTxHoldingBuf,&mySendBufLen);
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
                 if (1 == mutexAcquired)
@@ -23729,16 +24480,16 @@ sendPendingData:
                     break;
 
                 i = asyncSendDataBio(
-                    s, s->pTxHoldingBuf, mySendBufLen, &bytesSent);
+                    s, pS->pTxHoldingBuf, mySendBufLen, &bytesSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining = mySendBufLen - bytesSent;
-                    s->txHoldingBufOffset = bytesSent;
-                    s->applBytesEncoded = bytesConsumed;
+                    pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                    pS->txHoldingBufOffset = bytesSent;
+                    pS->applBytesEncoded = bytesConsumed;
                     return i;
                 }
 
-                mySendBufLen    = s->szTxHoldingBuf;
+                mySendBufLen    = pS->szTxHoldingBuf;
             }
         }
         else
@@ -23755,7 +24506,7 @@ sendPendingData:
                         mutexAcquired = 1;
                 }
 #endif
-                status = NSSL_CHK_CALL(getPreparedSslRec, s->instance, s->pTxHoldingBuf, &mySendBufLen);
+                status = NSSL_CHK_CALL(getPreparedSslRec, pS->instance, pS->pTxHoldingBuf, &mySendBufLen);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
                 if (1 == mutexAcquired)
                 {
@@ -23767,45 +24518,45 @@ sendPendingData:
                     break;
 
                 i = asyncSendDataBio(
-                    s, s->pTxHoldingBuf, mySendBufLen, &dataSent);
+                    s, pS->pTxHoldingBuf, mySendBufLen, &dataSent);
                 if (0 >= i)
                 {
-                    s->bytesSentRemaining = mySendBufLen - dataSent;
-                    s->txHoldingBufOffset = dataSent;
-                    s->applBytesEncoded = bytesConsumed;
+                    pS->bytesSentRemaining = mySendBufLen - dataSent;
+                    pS->txHoldingBufOffset = dataSent;
+                    pS->applBytesEncoded = bytesConsumed;
                     return i;
                 }
 
-                mySendBufLen    = s->szTxHoldingBuf;
+                mySendBufLen    = pS->szTxHoldingBuf;
             }
         }
 
         #else
-        status = NSSL_CHK_CALL(getPreparedSslRecZC, s->instance, &pOutBuf, &mySendBufLen);
+        status = NSSL_CHK_CALL(getPreparedSslRecZC, pS->instance, &pOutBuf, &mySendBufLen);
 
         if ((OK == status) && (mySendBufLen > 0))
         {
             i = asyncSendDataBio(s, pOutBuf, mySendBufLen, &bytesSent);
             if (0 >= i)
             {
-                s->bytesSentRemaining = mySendBufLen - bytesSent;
-                s->txHoldingBufOffset = bytesSent;
-                s->applBytesEncoded = bytesConsumed;
+                pS->bytesSentRemaining = mySendBufLen - bytesSent;
+                pS->txHoldingBufOffset = bytesSent;
+                pS->applBytesEncoded = bytesConsumed;
                 return i;
             }
         }
-        NSSL_CHK_CALL(releaseZCsendBuffer, s->instance, 0);
+        NSSL_CHK_CALL(releaseZCsendBuffer, pS->instance, 0);
         #endif
 
         /* If this flag is enabled, exit after writing 1 block of application data */
-        if (SSL_MODE_ENABLE_PARTIAL_WRITE & s->orig_s.mode)
+        if (SSL_MODE_ENABLE_PARTIAL_WRITE & pS->orig_s.mode)
         {
             goto exit;
         }
     }
 
 exit:
-    s->applBytesEncoded = 0;
+    pS->applBytesEncoded = 0;
     return bytesConsumed;
 }
 /*---------------------------------------------------------------------------*/
@@ -23894,7 +24645,7 @@ exit:
      return 1;
 }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 DEFINE_RUN_ONCE_STATIC(ossl_init_ssl_base)
 {
     /* initialize cipher/digest methods table for OpenSSL connector */
@@ -23998,17 +24749,23 @@ int OPENSSL_init_ssl(uint64_t opts, const OPENSSL_INIT_SETTINGS * settings)
 
 int SSL_set1_host(SSL *pSsl, const char *pHostname)
 {
-    if ((NULL == pSsl) || (NULL == pSsl->orig_s.param))
+    if (NULL == pSsl)
     {
         return 0;
     }
 
-    if (0 == SSL_set_tlsext_host_name(pSsl, pHostname))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    if (NULL == pS->orig_s.param)
     {
         return 0;
     }
 
-    return X509_VERIFY_PARAM_set1_host(pSsl->orig_s.param, pHostname, 0);
+    return X509_VERIFY_PARAM_set1_host(pS->orig_s.param, pHostname, 0);
 }
 
 /* SSL_add1_host() adds name as an additional reference identifier that can match the
@@ -24020,7 +24777,13 @@ int SSL_set1_host(SSL *pSsl, const char *pHostname)
 
 int SSL_add1_host(SSL *pSsl, const char *pHostname)
 {
-    if ((NULL == pSsl) || (NULL == pSsl->orig_s.param))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
+    if ((NULL == pS) || (NULL == pS->orig_s.param))
     {
         return 0;
     }
@@ -24032,7 +24795,7 @@ int SSL_add1_host(SSL *pSsl, const char *pHostname)
         return 0;
     }
 
-    return X509_VERIFY_PARAM_add1_host(pSsl->orig_s.param, pHostname, 0);
+    return X509_VERIFY_PARAM_add1_host(pS->orig_s.param, pHostname, 0);
 }
 
 /* SSL_set_hostflags() sets the flags that will be passed to X509_check_host(3)
@@ -24042,12 +24805,17 @@ int SSL_add1_host(SSL *pSsl, const char *pHostname)
 
 void SSL_set_hostflags(SSL *pSsl, unsigned int flags)
 {
-    if ((NULL == pSsl) || (NULL == pSsl->orig_s.param))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+    if ((NULL == pS) || (NULL == pS->orig_s.param))
     {
         return;
     }
 
-    X509_VERIFY_PARAM_set_hostflags(pSsl->orig_s.param, flags);
+    X509_VERIFY_PARAM_set_hostflags(pS->orig_s.param, flags);
 }
 
 /* SSL_get0_peername() returns the DNS hostname or subject CommonName from the peer
@@ -24065,12 +24833,17 @@ void SSL_set_hostflags(SSL *pSsl, unsigned int flags)
 
 const char *SSL_get0_peername(SSL *pSsl)
 {
-    if ((NULL == pSsl) || (NULL == pSsl->orig_s.param))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+    if ((NULL == pS) || (NULL == pS->orig_s.param))
     {
         return NULL;
     }
 
-    return X509_VERIFY_PARAM_get0_peername(pSsl->orig_s.param);
+    return X509_VERIFY_PARAM_get0_peername(pS->orig_s.param);
 }
 
 int SSL_CTX_dane_enable(SSL_CTX *ctx)
@@ -24176,13 +24949,13 @@ static int getCurveIdFromNID(int nid)
             return 24;
         case NID_secp521r1:        /* secp521r1 (25) */
             return 25;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         case NID_X25519:          /* x25519 (29) */
             return 29;
         case NID_X448:            /* x448 (30) */
             return 30;
 #endif
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         case NID_ffdhe2048:       /* ffdhe2048 (256) */
             return 256;
         case NID_ffdhe3072:       /* ffdhe3072 (257) */
@@ -24196,6 +24969,34 @@ static int getCurveIdFromNID(int nid)
 #endif
         default:
             return 0;
+    }
+}
+
+static const char *getGroupNameFromGroupId(ubyte2 groupId)
+{
+    switch (groupId)
+    {
+        case 19: return "secp192r1";
+        case 21: return "secp224r1";
+        case 23: return "secp256r1";
+        case 24: return "secp384r1";
+        case 25: return "secp521r1";
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        case 29: return "x25519";
+        case 30: return "x448";
+#endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        case 256: return "ffdhe2048";
+        case 257: return "ffdhe3072";
+        case 258: return "ffdhe4096";
+        case 259: return "ffdhe6144";
+        case 260: return "ffdhe8192";
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+        case 0x11eb: return "SecP256r1MLKEM768";
+        case 0x11ec: return "X25519MLKEM768";
+#endif
+        default:  return NULL;
     }
 }
 
@@ -24221,7 +25022,7 @@ static int getCurveNIDFromCurveName(const char *name)
     {
         return NID_secp521r1;
     }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     else if (!strcmp("X25519", name))
     {
         return NID_X25519;
@@ -24231,7 +25032,7 @@ static int getCurveNIDFromCurveName(const char *name)
         return NID_X448;
     }
 #endif
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     else if (!strcmp("ffdhe2048", name))
     {
         return NID_ffdhe2048;
@@ -24330,7 +25131,7 @@ static void parseSignAndHashString(ubyte *pSig, ubyte *pHash, char *str)
         {
             *pSig = OSSL_TLS_RSA;
         }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         else if (strcmp(pStr, "RSA-PSS") == 0 || strcmp(pStr, "PSS") == 0)
         {
             *pHash = TLS_INTRINSIC;
@@ -24362,7 +25163,7 @@ static void parseSignAndHashString(ubyte *pSig, ubyte *pHash, char *str)
         {
             *pSig = OSSL_TLS_ECDSA;
         }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         else if (strcmp(pStr, "ED25519") == 0)
         {
             *pHash = TLS_INTRINSIC;
@@ -24420,7 +25221,7 @@ static void parseSignAndHash(ubyte *pSig, ubyte *pHash, int pInHash, int pInSig)
     {
         *pSig = OSSL_TLS_RSA;
     }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     else if ( EVP_PKEY_RSA_PSS == pInSig)
     {
         *pHash = TLS_INTRINSIC;
@@ -24449,7 +25250,7 @@ static void parseSignAndHash(ubyte *pSig, ubyte *pHash, int pInHash, int pInSig)
     {
         *pSig = OSSL_TLS_ECDSA;
     }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     else if (NID_ED25519 == pInSig)
     {
         *pHash = TLS_INTRINSIC;
@@ -24627,6 +25428,12 @@ static int setSignatureAlgorithms(SSL *pSsl, int *pSigAlgoList, ubyte4 sigAlgoLi
     ubyte2 signatureAlgorithm[MAX_SIGNATURE_ALGORITHMS] = { 0 };
     ubyte4 i = 0;
     ubyte4 index = 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+
     while( i < sigAlgoListLen)
     {
         ubyte sign = 0, hash = 0;
@@ -24635,12 +25442,17 @@ static int setSignatureAlgorithms(SSL *pSsl, int *pSigAlgoList, ubyte4 sigAlgoLi
         signatureAlgorithm[index++] = ((ubyte)hash << 8 | (ubyte)sign);
     }
 
-    return setCtxSignatureAlgorithmsInternal(pSsl->ssl_ctx, signatureAlgorithm, index);
+    return setCtxSignatureAlgorithmsInternal(pS->ssl_ctx, signatureAlgorithm, index);
 }
 
 static int setSignatureAlgorithmsList(SSL *pSsl, const char *pStr)
 {
-    return setCtxSignatureAlgorithmsList(pSsl->ssl_ctx, pStr);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
+#else
+    SSL *pS = pSsl;
+#endif
+    return setCtxSignatureAlgorithmsList(pS->ssl_ctx, pStr);
 }
 
 static int ssl_cert_add0_chain_cert(SSL_CTX *ctx, X509 *x)
@@ -24697,7 +25509,7 @@ static int ssl_cert_add1_chain_cert(SSL_CTX *ctx, X509 *x)
         goto exit;
     }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     X509_up_ref(x);
 #else
     CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
@@ -24819,7 +25631,7 @@ static int computeAndSetVersion(long option, unsigned long *pVersionOptions)
     return 0;
 }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static int ssl_cert_set_cert_store(X509_STORE **pstore, X509_STORE *store, int ref)
 {
     if (NULL != *pstore)
@@ -24847,7 +25659,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
     int i, rval = 0;
     ubyte *pP = NULL;
     ubyte *pG = NULL;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     int derLen;
     X509_OBJECT *pobj;
     X509 *x;
@@ -24916,7 +25728,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
       ctx->tlsext_servername_arg = parg;
       rval = 1;
       break;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     case SSL_CTRL_GET_VERIFY_CERT_STORE:
         if (NULL == ctx->cert_store)
         {
@@ -24974,7 +25786,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
         }
         return 1;
 #endif
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      case SSL_CTRL_SET_MIN_PROTO_VERSION:
      {
         ubyte4 minVersion = 0;
@@ -25098,7 +25910,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
          }
          return version;
      }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
      case SSL_CTRL_OPTIONS:
      {
         unsigned long version_options = 0;
@@ -25130,7 +25942,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
         }
         else
         {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             max_version = TLS1_3_VERSION;
 #else
             max_version = TLS1_2_VERSION;
@@ -25171,7 +25983,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
             int pLen = 0, gLen = 0;
 
             dh = (DH *)parg;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             if ((NULL == dh) || (NULL == dh->params.p) || (NULL == dh->params.g))
 #else
             if ((NULL == dh) || (NULL == dh->p) || (NULL == dh->g))
@@ -25181,7 +25993,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
                 return 0;
             }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             pLen = BN_num_bytes(dh->params.p);
 #else
             pLen = BN_num_bytes(dh->p);
@@ -25191,13 +26003,13 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
             {
                 return 0;
             }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             BN_bn2bin(dh->params.p, pP);
 #else
             BN_bn2bin(dh->p, pP);
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             gLen = BN_num_bytes(dh->params.g);
 #else
             gLen = BN_num_bytes(dh->g);
@@ -25208,7 +26020,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
                 OSSL_FREE(pP);
                 return 0;
             }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             BN_bn2bin(dh->params.g, pG);
 #else
             BN_bn2bin(dh->g, pG);
@@ -25299,7 +26111,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
         ctx->tlsext_status_arg = parg;
         rval = 1;
         break;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     case SSL_CTRL_GET_TLSEXT_STATUS_REQ_CB_ARG:
         *(void**)parg = ctx->tlsext_status_arg;
         break;
@@ -25309,16 +26121,16 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
         break;
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     case SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE:
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         return ctx->tlsext_status_type;
 #else
         return ctx->orig_ssl_ctx.tlsext_status_type;
 #endif
 
     case SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE:
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         ctx->tlsext_status_type = larg;
 #else
         ctx->orig_ssl_ctx.tlsext_status_type = larg;
@@ -25353,7 +26165,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
 long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
 {
     int l;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     int i;
     int derLen;
     X509_OBJECT *pobj;
@@ -25367,13 +26179,19 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
         return 0;
      }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
     switch (cmd) {
     case SSL_CTRL_GET_RI_SUPPORT:
     {
         intBoolean isRehandshake = 0;
         if (s != NULL)
         {
-            NSSL_CHK_CALL(isRehandshakeAllowed, s->instance, &isRehandshake);
+            NSSL_CHK_CALL(isRehandshakeAllowed, pS->instance, &isRehandshake);
         }
         return isRehandshake;
     }
@@ -25384,9 +26202,9 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
         {
             size_t len;
 
-            if (s->tlsext_hostname != NULL)
-                OSSL_FREE(s->tlsext_hostname);
-            s->tlsext_hostname = NULL;
+            if (pS->tlsext_hostname != NULL)
+                OSSL_FREE(pS->tlsext_hostname);
+            pS->tlsext_hostname = NULL;
 
             if (parg == NULL)
                 break;
@@ -25396,13 +26214,13 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
                 SSLerr(SSL_F_SSL3_CTRL, SSL_R_SSL3_EXT_INVALID_SERVERNAME);
                 return 0;
             }
-            if ((s->tlsext_hostname =(char *) OSSL_MALLOC(len + 1)) == NULL)
+            if ((pS->tlsext_hostname =(char *) OSSL_MALLOC(len + 1)) == NULL)
             {
                 SSLerr(SSL_F_SSL3_CTRL, ERR_R_INTERNAL_ERROR);
                 return 0;
             }
-            memcpy(s->tlsext_hostname, parg, len);
-            s->tlsext_hostname[len] = '\0';
+            memcpy(pS->tlsext_hostname, parg, len);
+            pS->tlsext_hostname[len] = '\0';
         } else
         {
             SSLerr(SSL_F_SSL3_CTRL, SSL_R_SSL3_EXT_INVALID_SERVERNAME_TYPE);
@@ -25410,24 +26228,24 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
         }
 
         break;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     case SSL_CTRL_GET_VERIFY_CERT_STORE:
-        if (NULL == s->ssl_ctx || NULL == s->ssl_ctx->cert_store)
+        if (NULL == pS->ssl_ctx || NULL == pS->ssl_ctx->cert_store)
         {
             SSLerr(SSL_F_SSL3_CTRL, ERR_R_INTERNAL_ERROR);
             return 0; /* return error */
         }
 
-        *((X509_STORE **)parg) = s->ssl_ctx->cert_store;
+        *((X509_STORE **)parg) = pS->ssl_ctx->cert_store;
         return 1;
     case SSL_CTRL_SET_VERIFY_CERT_STORE:
-        if (!ssl_cert_set_cert_store((&s->verify_store), parg, larg))
+        if (!ssl_cert_set_cert_store((&pS->verify_store), parg, larg))
         {
             SSLerr(SSL_F_SSL3_CTRL, ERR_R_INTERNAL_ERROR);
             return 0; /* return error */
         }
 
-        store = s->verify_store;
+        store = pS->verify_store;
         if (NULL == store)
         {
             SSLerr(SSL_F_SSL3_CTRL, ERR_R_INTERNAL_ERROR);
@@ -25448,7 +26266,7 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
                 /* certificates need to be in SSL_CTX cert_store
                  * for call to X509_verify_cert() in OSSL_certCallback()
                  */
-                if (!X509_STORE_add_cert(s->ssl_ctx->cert_store, x))
+                if (!X509_STORE_add_cert(pS->ssl_ctx->cert_store, x))
                 {
                     SSLerr(SSL_F_SSL3_CTRL, ERR_R_INTERNAL_ERROR);
                     return 0;/* return error */
@@ -25461,7 +26279,7 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
                 }
                 to      = pDerBuf;
                 derLen  = i2d_X509(x, &to);
-                NSSL_CHK_CALL(addTrustPoint, s->ssl_ctx->pCertStore, pDerBuf, derLen);
+                NSSL_CHK_CALL(addTrustPoint, pS->ssl_ctx->pCertStore, pDerBuf, derLen);
                 OSSL_FREE(pDerBuf);
                 pDerBuf = NULL;
             }
@@ -25472,11 +26290,11 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
       /* this is just a placeholder to allow Openssl Application to continue. */
         return 0;
     case SSL_CTRL_OPTIONS:
-        return (s->options |= larg);
+        return (pS->options |= larg);
      case SSL_CTRL_CLEAR_OPTIONS:
      {
          resetVersionOptions(s);
-         return (s->options &= ~larg);
+         return (pS->options &= ~larg);
      }
 
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
@@ -25484,7 +26302,7 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
         return DTLS_ctrl(s, cmd, larg, parg);
 #endif
     case SSL_CTRL_SET_MSG_CALLBACK_ARG:
-        s->msg_callback_arg = parg;
+        pS->msg_callback_arg = parg;
         break;
     case SSL_CTRL_SET_SIGALGS:
         return setSignatureAlgorithms(s, (int *)parg, larg);
@@ -25500,22 +26318,22 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
         break;
      }
      case SSL_CTRL_SET_CURVES:
-        setEccCurves(&s->pEccCurves, &s->numEccCurves, parg, larg);
+        setEccCurves(&pS->pEccCurves, &pS->numEccCurves, parg, larg);
         break;
 
      case SSL_CTRL_SET_CURVES_LIST:
      case SSL_CTRL_SET_GROUPS_LIST:
-        setEccCurvesFromString(&s->pEccCurves, &s->numEccCurves, parg);
+        setEccCurvesFromString(&pS->pEccCurves, &pS->numEccCurves, parg);
         break;
 
     case SSL_CTRL_MODE:
-        return (s->orig_s.mode |= larg);
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+        return (pS->orig_s.mode |= larg);
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      case SSL_CTRL_GET_SESSION_REUSED:
         if (NULL != s)
         {
             intBoolean isResumed;
-            if (OK == NSSL_CHK_CALL(isSessionResumed, s->instance, &isResumed))
+            if (OK == NSSL_CHK_CALL(isSessionResumed, pS->instance, &isResumed))
             {
                 return (long) isResumed;
             }
@@ -25526,53 +26344,53 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
 
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) 
     case SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE:
-        return s->orig_s.tlsext_status_type;
-#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+        return pS->orig_s.tlsext_status_type;
+#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     case SSL_CTRL_GET_TLSEXT_STATUS_REQ_TYPE:
-        return s->tlsext_status_type;
+        return pS->tlsext_status_type;
 #endif
 
     /* Set OCSP request type */
     case SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE:
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        s->tlsext_status_type = larg;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pS->tlsext_status_type = larg;
 #else
-        s->orig_s.tlsext_status_type = larg;
+        pS->orig_s.tlsext_status_type = larg;
 #endif
         break;
 
     /* Retrieve the OCSP response saved by the client */
     case SSL_CTRL_GET_TLSEXT_STATUS_REQ_OCSP_RESP:
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        *(unsigned char **)parg = s->tlsext_ocsp_resp;
-        return s->tlsext_ocsp_resplen;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        *(unsigned char **)parg = pS->tlsext_ocsp_resp;
+        return pS->tlsext_ocsp_resplen;
 #else
-        *(unsigned char **)parg = s->orig_s.tlsext_ocsp_resp;
-        return s->orig_s.tlsext_ocsp_resplen;
+        *(unsigned char **)parg = pS->orig_s.tlsext_ocsp_resp;
+        return pS->orig_s.tlsext_ocsp_resplen;
 #endif
 
     case SSL_CTRL_CHAIN_CERT:
         if (larg)
         {
-            return ssl_cert_add1_chain_cert(s->ssl_ctx, (X509 *)parg);
+            return ssl_cert_add1_chain_cert(pS->ssl_ctx, (X509 *)parg);
         }
         else
         {
-            return ssl_cert_add0_chain_cert(s->ssl_ctx, (X509 *)parg);
+            return ssl_cert_add0_chain_cert(pS->ssl_ctx, (X509 *)parg);
         }
     case SSL_CTRL_GET_READ_AHEAD:
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        return (s->orig_s.rlayer.read_ahead);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        return (pS->orig_s.rlayer.read_ahead);
 #else
-        return (s->orig_s.read_ahead);
+        return (pS->orig_s.read_ahead);
 #endif
     case SSL_CTRL_SET_READ_AHEAD:
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        l = s->orig_s.rlayer.read_ahead;
-        s->orig_s.rlayer.read_ahead = larg;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        l = pS->orig_s.rlayer.read_ahead;
+        pS->orig_s.rlayer.read_ahead = larg;
 #else
-        l = s->orig_s.read_ahead;
-        s->orig_s.read_ahead = larg;
+        l = pS->orig_s.read_ahead;
+        pS->orig_s.read_ahead = larg;
 #endif
         return (l);
     default:
@@ -25596,6 +26414,12 @@ static MSTATUS OSSL_closeConnection(SSL *s)
         goto exit;
     }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
     if (0 == mutexAcquired)
     {
@@ -25605,14 +26429,14 @@ static MSTATUS OSSL_closeConnection(SSL *s)
     }
 #endif
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
-    if ((s->version == DTLSV1_VERSION) || (s->version == DTLS_ANY_VERSION))
+    if ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION))
     {
-        NSSL_CHK_CALL(dtlsCloseConnection, s->instance);
+        NSSL_CHK_CALL(dtlsCloseConnection, pS->instance);
     }
     else
 #endif
     {
-        NSSL_CHK_CALL(closeConnection, s->instance);
+        NSSL_CHK_CALL(closeConnection, pS->instance);
     }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -25627,10 +26451,10 @@ static MSTATUS OSSL_closeConnection(SSL *s)
         goto exit;
     }
 
-    if (OK <= s->instance && NULL != m_ssl_table)
+    if (OK <= pS->instance && NULL != m_ssl_table)
     {
         NSSL_CHK_CALL(
-            hashTableDeletePtr, m_ssl_table, s->instance, s, NULL, &foundData, &isFound);
+            hashTableDeletePtr, m_ssl_table, pS->instance, s, NULL, &foundData, &isFound);
     }
 
     if (OK > (status = moc_mutexRelease(m_hashTableMutex)))
@@ -25638,7 +26462,7 @@ static MSTATUS OSSL_closeConnection(SSL *s)
         goto exit;
     }
 
-    s->instance = MOC_SSL_CONN_INSTANCE_UNASSIGNED;
+    pS->instance = MOC_SSL_CONN_INSTANCE_UNASSIGNED;
 
 exit:
 
@@ -25663,38 +26487,43 @@ int SSL_shutdown(SSL *s)
     {
         goto exit;
     }
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
     /*
      * Don't do anything much if we have not done the handshake or we don't
      * want to send messages :-)
      */
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if ((s->orig_s.quiet_shutdown) || (s->orig_state == 0))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if ((pS->orig_s.quiet_shutdown) || (pS->orig_state == 0))
 #else
-    if ((s->orig_s.quiet_shutdown) || (s->orig_s.state == 0))
+    if ((pS->orig_s.quiet_shutdown) || (pS->orig_s.state == 0))
 #endif
     {
-        s->orig_s.shutdown = (SSL_SENT_SHUTDOWN | SSL_RECEIVED_SHUTDOWN);
+        pS->orig_s.shutdown = (SSL_SENT_SHUTDOWN | SSL_RECEIVED_SHUTDOWN);
         ret = 1;
         goto exit;
     }
-    else if ((!(s->orig_s.shutdown & SSL_SENT_SHUTDOWN)) && (s->s3->fatal_alert != 1))
+    else if ((!(pS->orig_s.shutdown & SSL_SENT_SHUTDOWN)) && (pS->s3->fatal_alert != 1))
     {
         /* If the shutdown bit has not been set yet then set the bit and send an
          * alert to the peer to close the connection.
          */
-        s->orig_s.shutdown |= SSL_SENT_SHUTDOWN;
+        pS->orig_s.shutdown |= SSL_SENT_SHUTDOWN;
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
-        if (NULL != s->session_mutex)
+        if (NULL != pS->session_mutex)
         {
-            status = moc_mutexWait(s->session_mutex);
+            status = moc_mutexWait(pS->session_mutex);
             if (status >= OK)
                 mutexAcquired = 1;
         }
 #endif
         status = NSSL_CHK_CALL(
-            sslSendAlert, s->instance, SSL_ALERT_CLOSE_NOTIFY,
+            sslSendAlert, pS->instance, SSL_ALERT_CLOSE_NOTIFY,
             SSLALERTLEVEL_WARNING);
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -25713,7 +26542,7 @@ int SSL_shutdown(SSL *s)
         }
     }
 
-    if ((s->orig_s.shutdown & SSL_SENT_SHUTDOWN) && (s->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN))
+    if ((pS->orig_s.shutdown & SSL_SENT_SHUTDOWN) && (pS->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN))
     {
         ret = 1;
     }
@@ -25734,183 +26563,188 @@ SSL_free(SSL *s)
 
     if (!s)
         return;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
-    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED != s->instance)
+    if (MOC_SSL_CONN_INSTANCE_UNASSIGNED != pS->instance)
     {
         OSSL_closeConnection(s);
     }
 
-    if(NULL != s->ssl_ctx)
-        SSL_CTX_free(s->ssl_ctx);
+    if(NULL != pS->ssl_ctx)
+        SSL_CTX_free(pS->ssl_ctx);
 
-    if (NULL != s->bbio)
+    if (NULL != pS->bbio)
     {
-        if (s->bbio == s->wbio)
+        if (pS->bbio == pS->wbio)
         {
-            s->wbio = BIO_pop(s->wbio);
+            pS->wbio = BIO_pop(pS->wbio);
         }
-        (void) BIO_free(s->bbio);
-        s->bbio = NULL;
+        (void) BIO_free(pS->bbio);
+        pS->bbio = NULL;
     }
 
-    if (NULL != s->rbio)
+    if (NULL != pS->rbio)
     {
-        BIO_free_all(s->rbio);
-        s->rbio = NULL;
+        BIO_free_all(pS->rbio);
+        pS->rbio = NULL;
     }
-    if ((NULL != s->wbio))
+    if ((NULL != pS->wbio))
     {
-        BIO_free_all(s->wbio);
-        s->wbio = NULL;
+        BIO_free_all(pS->wbio);
+        pS->wbio = NULL;
     }
 
-    if (NULL != s->client_CA)
-        sk_X509_NAME_pop_free(s->client_CA, X509_NAME_free);
+    if (NULL != pS->client_CA)
+        sk_X509_NAME_pop_free(pS->client_CA, X509_NAME_free);
 
-    if (NULL != s->session)
+    if (NULL != pS->session)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (NULL != s->session->peer_chain)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (NULL != pS->session->peer_chain)
         {
-            sk_X509_pop_free(s->session->peer_chain, X509_free);
-            s->session->peer_chain = NULL;
+            sk_X509_pop_free(pS->session->peer_chain, X509_free);
+            pS->session->peer_chain = NULL;
         }
 #else
-        if (NULL != s->session->sess_cert)
+        if (NULL != pS->session->sess_cert)
         {
-            if (NULL != s->session->sess_cert->cert_chain)
+            if (NULL != pS->session->sess_cert->cert_chain)
             {
-                sk_X509_pop_free(s->session->sess_cert->cert_chain, X509_free);
-                s->session->sess_cert->cert_chain = NULL;
+                sk_X509_pop_free(pS->session->sess_cert->cert_chain, X509_free);
+                pS->session->sess_cert->cert_chain = NULL;
             }
-            OSSL_FREE(s->session->sess_cert);
-            s->session->sess_cert = NULL;
+            OSSL_FREE(pS->session->sess_cert);
+            pS->session->sess_cert = NULL;
         }
 #endif
     }
 
-    if (NULL != s->orig_s.param)
+    if (NULL != pS->orig_s.param)
     {
-        X509_VERIFY_PARAM_free(s->orig_s.param);
+        X509_VERIFY_PARAM_free(pS->orig_s.param);
     }
 
-    CRYPTO_free_ex_data(CRYPTO_EX_INDEX_SSL, s, &s->ex_data);
+    CRYPTO_free_ex_data(CRYPTO_EX_INDEX_SSL, s, &pS->ex_data);
 
-    if (NULL != s->pHoldingBuf)
+    if (NULL != pS->pHoldingBuf)
     {
-        OSSL_FREE((void *)s->pHoldingBuf);
-        s->pHoldingBuf = NULL;
+        OSSL_FREE((void *)pS->pHoldingBuf);
+        pS->pHoldingBuf = NULL;
     }
 
-    if (NULL != s->pTxHoldingBuf)
+    if (NULL != pS->pTxHoldingBuf)
     {
-        OSSL_FREE((void *)s->pTxHoldingBuf);
-        s->pTxHoldingBuf = NULL;
+        OSSL_FREE((void *)pS->pTxHoldingBuf);
+        pS->pTxHoldingBuf = NULL;
     }
 
-    if (NULL != s->pRxDataBuf)
+    if (NULL != pS->pRxDataBuf)
     {
-        OSSL_FREE((void *)s->pRxDataBuf);
-        s->pRxDataBuf = NULL;
+        OSSL_FREE((void *)pS->pRxDataBuf);
+        pS->pRxDataBuf = NULL;
     }
 
-    if (NULL != s->s3)
+    if (NULL != pS->s3)
     {
-        if (NULL != s->s3->tmp.ca_names)
+        if (NULL != pS->s3->tmp.ca_names)
         {
-            sk_X509_NAME_pop_free(s->s3->tmp.ca_names, X509_NAME_free);
+            sk_X509_NAME_pop_free(pS->s3->tmp.ca_names, X509_NAME_free);
         }
 
-        OSSL_FREE((void *)s->s3);
-        s->s3 = NULL;
+        OSSL_FREE((void *)pS->s3);
+        pS->s3 = NULL;
     }
 
-    if (NULL != s->compress)
+    if (NULL != pS->compress)
     {
-       OSSL_FREE((void *)s->compress);
-       s->compress = NULL;
+       OSSL_FREE((void *)pS->compress);
+       pS->compress = NULL;
     }
 
-    if (NULL != s->session)
+    if (NULL != pS->session)
     {
-        SSL_SESSION_free(s->session);
+        SSL_SESSION_free(pS->session);
     }
 
-    if (NULL != s->tlsext_hostname)
+    if (NULL != pS->tlsext_hostname)
     {
-        OSSL_FREE((void *)s->tlsext_hostname);
-        s->tlsext_hostname = NULL;
+        OSSL_FREE((void *)pS->tlsext_hostname);
+        pS->tlsext_hostname = NULL;
     }
 
-    if (NULL != s->cipher_list)
+    if (NULL != pS->cipher_list)
     {
-        sk_SSL_CIPHER_free(s->cipher_list);
-        s->cipher_list = NULL;
+        sk_SSL_CIPHER_free(pS->cipher_list);
+        pS->cipher_list = NULL;
     }
 
-    if (s->pEccCurves != NULL)
+    if (pS->pEccCurves != NULL)
     {
-        OSSL_FREE(s->pEccCurves);
+        OSSL_FREE(pS->pEccCurves);
     }
 
-    if (NULL != s->s3)
+    if (NULL != pS->s3)
     {
-        memset(s->s3, 0x00, sizeof(struct ssl3_state_st));
-        OSSL_FREE(s->s3);
-        s->s3 = NULL;
+        memset(pS->s3, 0x00, sizeof(struct ssl3_state_st));
+        OSSL_FREE(pS->s3);
+        pS->s3 = NULL;
     }
 
-    if (NULL != s->orig_s.srtp_profiles)
+    if (NULL != pS->orig_s.srtp_profiles)
     {
-        sk_SRTP_PROTECTION_PROFILE_free(s->orig_s.srtp_profiles);
+        sk_SRTP_PROTECTION_PROFILE_free(pS->orig_s.srtp_profiles);
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (NULL != s->tlsext_ocsp_resp)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (NULL != pS->tlsext_ocsp_resp)
     {
-        OPENSSL_free(s->tlsext_ocsp_resp);
-        s->tlsext_ocsp_resplen = 0;
+        OPENSSL_free(pS->tlsext_ocsp_resp);
+        pS->tlsext_ocsp_resplen = 0;
     }
 #else
-    if (NULL != s->orig_s.tlsext_ocsp_resp)
+    if (NULL != pS->orig_s.tlsext_ocsp_resp)
     {
-        OPENSSL_free(s->orig_s.tlsext_ocsp_resp);
-        s->orig_s.tlsext_ocsp_resplen = 0;
+        OPENSSL_free(pS->orig_s.tlsext_ocsp_resp);
+        pS->orig_s.tlsext_ocsp_resplen = 0;
     }
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (s->tls13_ciphersuites != NULL)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (pS->tls13_ciphersuites != NULL)
     {
-        sk_SSL_CIPHER_free(s->tls13_ciphersuites);
-        s->tls13_ciphersuites = NULL;
+        sk_SSL_CIPHER_free(pS->tls13_ciphersuites);
+        pS->tls13_ciphersuites = NULL;
     }
 #endif
 
-    if (s->mocAlpnList != NULL)
+    if (pS->mocAlpnList != NULL)
     {
-        OSSL_FREE(s->mocAlpnList);
+        OSSL_FREE(pS->mocAlpnList);
     }
 
-    if (s->alpn_client_proto_list != NULL)
+    if (pS->alpn_client_proto_list != NULL)
     {
-        OSSL_FREE(s->alpn_client_proto_list);
+        OSSL_FREE(pS->alpn_client_proto_list);
     }
 
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
-    if (NULL != s->session_mutex)
+    if (NULL != pS->session_mutex)
     {
-        moc_mutexFree(&s->session_mutex);
+        moc_mutexFree(&pS->session_mutex);
     }
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    sk_X509_pop_free(s->verified_chain, X509_free);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    sk_X509_pop_free(pS->verified_chain, X509_free);
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (NULL != s->verify_store)
-        X509_STORE_free(s->verify_store);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (NULL != pS->verify_store)
+        X509_STORE_free(pS->verify_store);
 #endif
 
     memset((ubyte*)s, 0, sizeof(*s));
@@ -25922,12 +26756,17 @@ SSL_free(SSL *s)
 extern X509 *
 SSL_get_certificate(const SSL *ssl)
 {
-    return ssl ? ssl->ssl_ctx->cert_x509 : NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+    return pS ? pS->ssl_ctx->cert_x509 : NULL;
 }
 
 /*------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 extern X509 *
 SSL_get0_peer_certificate(const SSL *s)
 {
@@ -25938,7 +26777,13 @@ SSL_get0_peer_certificate(const SSL *s)
     if ( (NULL == s))
         return NULL;
 
-    if (OK > (status = NSSL_CHK_CALL(getSessionStatus, s->instance, &connState)))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
+
+    if (OK > (status = NSSL_CHK_CALL(getSessionStatus, pS->instance, &connState)))
         return NULL;
 
     if ((connState == SSL_CONNECTION_NEGOTIATE) || (connState == SSL_CONNECTION_RENEGOTIATE))
@@ -25947,12 +26792,12 @@ SSL_get0_peer_certificate(const SSL *s)
             return NULL;
     }
 
-    if (NULL != s->session)
+    if (NULL != pS->session)
     {
-        if (NULL == s->session->peer_chain)
+        if (NULL == pS->session->peer_chain)
             return NULL;
 
-        pPeerCert = sk_X509_value(s->session->peer_chain, 0);
+        pPeerCert = sk_X509_value(pS->session->peer_chain, 0);
 
     }
 
@@ -25966,12 +26811,19 @@ SSL_get0_peer_certificate(const SSL *s)
 /*------------------------------------------------------------------*/
 
 extern X509 *
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 SSL_get1_peer_certificate(const SSL *s)
 #else
 SSL_get_peer_certificate(SSL *s)
 #endif
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+    const SSL *pS = s;
+#else
+    SSL *pS = s;
+#endif
     X509 *pPeerCert = NULL;
     ubyte4 connState = 0;
     sbyte4 status = 0;
@@ -25979,7 +26831,7 @@ SSL_get_peer_certificate(SSL *s)
     if ( (NULL == s))
         return NULL;
 
-    if (OK > (status = NSSL_CHK_CALL(getSessionStatus, s->instance, &connState)))
+    if (OK > (status = NSSL_CHK_CALL(getSessionStatus, pS->instance, &connState)))
         return NULL;
 
     if ((connState == SSL_CONNECTION_NEGOTIATE) || (connState == SSL_CONNECTION_RENEGOTIATE))
@@ -25988,18 +26840,18 @@ SSL_get_peer_certificate(SSL *s)
             return NULL;
     }
 
-    if (NULL != s->session)
+    if (NULL != pS->session)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (NULL == s->session->peer_chain)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (NULL == pS->session->peer_chain)
             return NULL;
 
-        pPeerCert = sk_X509_value(s->session->peer_chain, 0);
+        pPeerCert = sk_X509_value(pS->session->peer_chain, 0);
 #else
-        if ((NULL == s->session->sess_cert) || (NULL == s->session->sess_cert->cert_chain))
+        if ((NULL == pS->session->sess_cert) || (NULL == pS->session->sess_cert->cert_chain))
             return NULL;
 
-        pPeerCert = sk_X509_value(s->session->sess_cert->cert_chain, 0);
+        pPeerCert = sk_X509_value(pS->session->sess_cert->cert_chain, 0);
 #endif
 
     }
@@ -26007,7 +26859,7 @@ SSL_get_peer_certificate(SSL *s)
     if (NULL == pPeerCert)
         return NULL;
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     X509_up_ref(pPeerCert);
 #else
     CRYPTO_add(&pPeerCert->references, 1, CRYPTO_LOCK_X509);
@@ -26020,11 +26872,16 @@ SSL_get_peer_certificate(SSL *s)
 extern EVP_PKEY*
 SSL_get_privatekey(SSL *ssl)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
      int idx;
-     if ((NULL == ssl) || (OSSL_PKEY_MAX == (idx = ssl->ssl_ctx->ossl_pkey_idx)))
+     if ((NULL == pS) || (OSSL_PKEY_MAX == (idx = pS->ssl_ctx->ossl_pkey_idx)))
        return NULL;
      else
-       return ssl->ssl_ctx->privatekey[idx];
+       return pS->ssl_ctx->privatekey[idx];
 }
 
 /*------------------------------------------------------------------*/
@@ -26039,6 +26896,12 @@ SSL_get_error(const SSL *s, int ret_code)
 
     if (s == NULL)
         return -1;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
 
     if (ret_code > 0)
         return SSL_ERROR_NONE;
@@ -26056,10 +26919,10 @@ SSL_get_error(const SSL *s, int ret_code)
     }
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (OSSL_IN_READ == s->io_state)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (OSSL_IN_READ == pS->io_state)
 #else
-    if ((ret_code < 0) && (OSSL_IN_READ == s->io_state))
+    if ((ret_code < 0) && (OSSL_IN_READ == pS->io_state))
 #endif
     {
         bio = SSL_get_rbio(s);
@@ -26073,7 +26936,7 @@ SSL_get_error(const SSL *s, int ret_code)
              * This one doesn't make too much sense ... We never try to write
              * to the rbio, and an application program where rbio and wbio
              * are separate couldn't even know what it should wait for.
-             * However if we ever set s->rwstate incorrectly (so that we have
+             * However if we ever set pS->rwstate incorrectly (so that we have
              * SSL_want_read(s) instead of SSL_want_write(s)) and rbio and
              * wbio *are* the same, this test works around that bug; so it
              * might be safer to keep it.
@@ -26098,10 +26961,10 @@ SSL_get_error(const SSL *s, int ret_code)
         }
     }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (OSSL_IN_WRITE == s->io_state)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (OSSL_IN_WRITE == pS->io_state)
 #else
-    if ((ret_code < 0) && (OSSL_IN_WRITE == s->io_state))
+    if ((ret_code < 0) && (OSSL_IN_WRITE == pS->io_state))
 #endif
     {
         bio = SSL_get_wbio(s);
@@ -26134,27 +26997,27 @@ SSL_get_error(const SSL *s, int ret_code)
         }
     }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (OSSL_X509_LOOKUP == s->io_state)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (OSSL_X509_LOOKUP == pS->io_state)
 #else
-    if ((ret_code < 0) && (OSSL_X509_LOOKUP == s->io_state))
+    if ((ret_code < 0) && (OSSL_X509_LOOKUP == pS->io_state))
 #endif
     {
         return (SSL_ERROR_WANT_X509_LOOKUP);
     }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if (s->orig_s.rwstate == SSL_CLIENT_HELLO_CB)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (pS->orig_s.rwstate == SSL_CLIENT_HELLO_CB)
     {
         return (SSL_ERROR_WANT_CLIENT_HELLO_CB);
     }
 #endif
 
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (ret_code == 0)
 #endif
     {
-        if (s->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN)
+        if (pS->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN)
             return (SSL_ERROR_ZERO_RETURN);
     }
 
@@ -26172,8 +27035,13 @@ SSL_get_cipher(SSL* ssl)
 
     if (!ssl)
         return NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
 
-     if (OK > NSSL_CHK_CALL(getCipherInfo,ssl->instance, &cipherId, &eccCurves))
+     if (OK > NSSL_CHK_CALL(getCipherInfo,pS->instance, &cipherId, &eccCurves))
         return NULL;
 
     for (i = 0; i < NUM_CIPHER_DESCS; i++)
@@ -26226,7 +27094,12 @@ extern const SSL_CIPHER *SSL_CIPHER_find(SSL *ssl, const unsigned char *ptr)
 extern SSL *
 SSL_new(SSL_CTX *ctx)
 {
-    SSL* ssl = NULL;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *s = NULL;
+    SSL *ssl = NULL;
+#else
+    SSL *ssl = NULL;
+#endif
     sbyte4 status = 0;
     char *pminiVersion = NULL;
     char* pMaxVersion  = NULL;
@@ -26238,12 +27111,40 @@ SSL_new(SSL_CTX *ctx)
         return (NULL);
     }
 
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    /* For 3.5: Allocate SSL_CONNECTION, get pointer to embedded SSL */
+    s = OSSL_MALLOC(sizeof(*s));
+    if (!s) {
+        SSLerr(SSL_F_SSL_NEW, ERR_R_MALLOC_FAILURE);
+        return (NULL);
+    }
+    
+    memset((ubyte*)s, 0, sizeof(*s));
+    
+    /* Get pointer to the embedded ssl_st (first member via nesting) */
+    ssl = &s->orig_s.ssl;
+
+    /* Set the type field to identify this as SSL_CONNECTION (SSL_TYPE_SSL_CONNECTION = 0) */
+    ssl->type = 0;
+    
+    /* Set user_ssl pointer */
+    s->orig_s.user_ssl = ssl;
+    
+    /* Set custom shim fields in SSL_CONNECTION */
+    s->method     = ctx->ssl_method;
+    s->version    = ctx->ssl_method->version;
+    s->instance    = MOC_SSL_CONN_INSTANCE_UNASSIGNED;
+    s->tempSocket    = -1;
+    s->clientServerFlag = SSL_CLIENT_FLAG;
+    s->orig_s.quiet_shutdown = ctx->orig_ssl_ctx.quiet_shutdown;
+#else
+    /* For older versions: Allocate SSL directly */
     ssl = OSSL_MALLOC(sizeof(*ssl));
     if (!ssl) {
         SSLerr(SSL_F_SSL_NEW, ERR_R_MALLOC_FAILURE);
         return (NULL);
     }
-
+    
     memset((ubyte*)ssl, 0, sizeof(*ssl));
     ssl->method     = ctx->ssl_method;
     ssl->version    = ctx->ssl_method->version;
@@ -26251,25 +27152,57 @@ SSL_new(SSL_CTX *ctx)
     ssl->tempSocket    = -1;
     ssl->clientServerFlag = SSL_CLIENT_FLAG;
     ssl->orig_s.quiet_shutdown = ctx->orig_ssl_ctx.quiet_shutdown;
+#endif
 
 	if (OK > (status = moc_mutexWait(m_connectionCountMutex)))
     {
         PRINT("RTOS_mutexWait() failed : %d\n", status);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        OSSL_FREE(s);
+#else
         OSSL_FREE(ssl);
+#endif
         ssl = NULL;
         return NULL;
     }
 
-       ssl->appId = gConnectionCount++;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->appId = gConnectionCount++;
+#else
+    ssl->appId = gConnectionCount++;
+#endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    ossl_statem_clear(s);
+    s->orig_s.rlayer.read_ahead = ctx->orig_ssl_ctx.read_ahead;
+#else
     ossl_statem_clear(ssl);
     ssl->orig_s.rlayer.read_ahead = ctx->orig_ssl_ctx.read_ahead;
+#endif
 #else
     ssl->orig_s.read_ahead = ctx->orig_ssl_ctx.read_ahead;
 #endif
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     /* Shallow copy of the ciphersuites stack */
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->tls13_ciphersuites = sk_SSL_CIPHER_dup(ctx->tls13_ciphersuites);
+    if (s->tls13_ciphersuites == NULL)
+    {
+        OSSL_FREE(s);
+        ssl = NULL;
+        return NULL;
+    }
+
+    s->orig_s.max_early_data                = ctx->orig_ssl_ctx.max_early_data;
+    s->orig_s.recv_max_early_data           = ctx->orig_ssl_ctx.recv_max_early_data;
+    s->orig_s.num_tickets                   = ctx->orig_ssl_ctx.num_tickets;
+    s->orig_s.pha_enabled                   = ctx->orig_ssl_ctx.pha_enabled;
+    s->orig_s.psk_find_session_cb           = ctx->orig_ssl_ctx.psk_find_session_cb;
+    s->orig_s.psk_use_session_cb            = ctx->orig_ssl_ctx.psk_use_session_cb;
+    s->orig_s.allow_early_data_cb           = ctx->orig_ssl_ctx.allow_early_data_cb;
+    s->orig_s.allow_early_data_cb_data      = ctx->orig_ssl_ctx.allow_early_data_cb_data;
+#else
     ssl->tls13_ciphersuites = sk_SSL_CIPHER_dup(ctx->tls13_ciphersuites);
     if (ssl->tls13_ciphersuites == NULL)
     {
@@ -26286,7 +27219,8 @@ SSL_new(SSL_CTX *ctx)
     ssl->orig_s.psk_use_session_cb            = ctx->orig_ssl_ctx.psk_use_session_cb;
     ssl->orig_s.allow_early_data_cb           = ctx->orig_ssl_ctx.allow_early_data_cb;
     ssl->orig_s.allow_early_data_cb_data      = ctx->orig_ssl_ctx.allow_early_data_cb_data;
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
     /* if the OPENSSL_MIN_TLS_VERSION environment variable is set, load the version */
     if (NULL != (pminiVersion = getenv("OPENSSL_MIN_TLS_VERSION")))
@@ -26308,7 +27242,11 @@ SSL_new(SSL_CTX *ctx)
     if (OK > (status = moc_mutexRelease(m_connectionCountMutex)))
     {
         PRINT("RTOS_mutexRelease() failed : %d\n", status);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        OSSL_FREE(s);
+#else
         OSSL_FREE(ssl);
+#endif
         ssl = NULL;
         return NULL;
     }
@@ -26318,18 +27256,61 @@ SSL_new(SSL_CTX *ctx)
      */
     if(0 == OSSL_getNewSession(ssl)) {
         SSLerr(SSL_F_SSL_NEW, ERR_R_MALLOC_FAILURE);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        OSSL_FREE(s);
+#else
         OSSL_FREE(ssl);
+#endif
         ssl = NULL;
         return NULL;
     }
     /* Reference is incremented as CTX is being assinged to SSL*/
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     SSL_CTX_up_ref(ctx);
 #else
     (void) CRYPTO_add(&ctx->orig_ssl_ctx.references, 1, CRYPTO_LOCK_SSL_CTX);
 #endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->ssl_ctx = ctx;
+#else
     ssl->ssl_ctx = ctx;
+#endif
     /* Get ALPN protocol list*/
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (s->ssl_ctx->alpn_client_proto_list) {
+        s->alpn_client_proto_list =
+            OSSL_MALLOC(s->ssl_ctx->alpn_client_proto_list_len);
+        if (s->alpn_client_proto_list == NULL) {
+            SSLerr(SSL_F_SSL_NEW, ERR_R_MALLOC_FAILURE);
+            OSSL_FREE(s);
+            s = NULL;
+            return (NULL);
+        }
+        memcpy(s->alpn_client_proto_list, s->ssl_ctx->alpn_client_proto_list,
+               s->ssl_ctx->alpn_client_proto_list_len);
+        s->alpn_client_proto_list_len = s->ssl_ctx->alpn_client_proto_list_len;
+    }
+
+    s->orig_s.param = X509_VERIFY_PARAM_new();
+    if (NULL == s->orig_s.param)
+    {
+        SSLerr(SSL_F_SSL_NEW, ERR_R_MALLOC_FAILURE);
+        OSSL_FREE(s);
+        s = NULL;
+        return (NULL);
+    }
+    X509_VERIFY_PARAM_inherit(s->orig_s.param, ctx->orig_ssl_ctx.param);
+
+    s->s3 = OSSL_MALLOC(sizeof(struct ssl3_state_st));
+    if (NULL == s->s3)
+    {
+        SSLerr(SSL_F_SSL_NEW, ERR_R_MALLOC_FAILURE);
+        OSSL_FREE(s);
+        s = NULL;
+        return NULL;
+    }
+    memset(s->s3, 0x00, sizeof(struct ssl3_state_st));
+#else
     if (ssl->ssl_ctx->alpn_client_proto_list) {
         ssl->alpn_client_proto_list =
             OSSL_MALLOC(ssl->ssl_ctx->alpn_client_proto_list_len);
@@ -26363,41 +27344,68 @@ SSL_new(SSL_CTX *ctx)
         return NULL;
     }
     memset(ssl->s3, 0x00, sizeof(struct ssl3_state_st));
+#endif
 
     if(NULL == m_ssl_table)
         (void) NSSL_CHK_CALL(hashTableCreatePtrsTable, &m_ssl_table, 15, pHashCookie, allocSslTable, freeSslTable);
 
     /* Copy the verify mode from context */
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->orig_s.verify_mode = ctx->verify_mode;
+    s->orig_s.verify_callback = ctx->verify_callback;
+    s->orig_s.mode = ctx->orig_ssl_ctx.mode;
+    s->msg_callback = ctx->msg_callback;
+    s->msg_callback_arg = ctx->msg_callback_arg;
+#else
     ssl->orig_s.verify_mode = ctx->verify_mode;
-
     ssl->orig_s.verify_callback = ctx->verify_callback;
-
     ssl->orig_s.mode = ctx->orig_ssl_ctx.mode;
     ssl->msg_callback = ctx->msg_callback;
     ssl->msg_callback_arg = ctx->msg_callback_arg;
+#endif
 
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__)
     ssl->orig_s.tlsext_status_type = ctx->orig_ssl_ctx.tlsext_status_type;
-#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->tlsext_status_type = ctx->tlsext_status_type;
+#else
     ssl->tlsext_status_type = ctx->tlsext_status_type;
+#endif
 #else
     ssl->orig_s.tlsext_status_type = -1;
 #endif
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->tlsext_ocsp_resplen = -1;
+#else
     ssl->tlsext_ocsp_resplen = -1;
+#endif
 #else
     ssl->orig_s.tlsext_ocsp_resplen = -1;
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->orig_s.key_update = SSL_KEY_UPDATE_NONE;
+#else
     ssl->orig_s.key_update = SSL_KEY_UPDATE_NONE;
 #endif
+#endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->verified_chain = NULL;
+#else
     ssl->verified_chain = NULL;
 #endif
+#endif
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s->hello_verify_done = 0;
+#else
     ssl->hello_verify_done = 0;
+#endif
 #endif
 
     return ssl;
@@ -26432,7 +27440,7 @@ static int OSSL_init(void)
     if (OK > (status = NSSL_CHK_CALL(libraryInit, 0)))
     {
         PRINT("Library Init failed with status = %d\n", (int)status);
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         ossl_assert(status >= OK);
 #else
         OPENSSL_assert(status >= OK);
@@ -26455,7 +27463,7 @@ static int OSSL_init(void)
   {
     PRINT("sslCheckFIPS failed with status = %d\n", (int)status);
   }
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
   ossl_assert(status >= OK);
 #else
   OPENSSL_assert(status >= OK);
@@ -26511,7 +27519,7 @@ static int OSSL_init(void)
 
 #if defined(__ENABLE_DIGICERT_SSL_FIPS__)
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
   /* returns 1 if the 'fips=yes' default property is set for the given
      libctx, otherwise it returns 0. */
   isFIPSEnabled = EVP_default_properties_is_fips_enabled(NULL);
@@ -26604,14 +27612,20 @@ int SSL_set_session_id_context(SSL *ssl, const unsigned char *sid_ctx,
     return 0;
   }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+
   if (sid_ctx_len > SSL_MAX_SID_CTX_LENGTH)
   {
     SSLerr(SSL_F_SSL_SET_SESSION_ID_CONTEXT,
            SSL_R_SSL_SESSION_ID_CONTEXT_TOO_LONG);
     return 0;
   }
-  ssl->sid_ctx_length = sid_ctx_len;
-  memcpy(ssl->sid_ctx, sid_ctx, sid_ctx_len);
+  pS->sid_ctx_length = sid_ctx_len;
+  memcpy(pS->sid_ctx, sid_ctx, sid_ctx_len);
 
   return 1;
 }
@@ -26637,37 +27651,44 @@ SSL_peek(SSL *s, void *buf, int num)
     SSLerr(SSL_F_SSL_PEEK, SSL_R_UNINITIALIZED);
     return 0; /*  ERR_INVALID_ARG; */
   }
-  if ((NULL == s->pHoldingBuf) || (NULL == s->pTxHoldingBuf)) {
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+  if ((NULL == pS->pHoldingBuf) || (NULL == pS->pTxHoldingBuf)) {
     return -1;
   }
-  if (s->rxDataBufLen > 0) { /* Data left over from before */
-    toCopy = num <= (int)s->rxDataBufLen ? num : (int)s->rxDataBufLen;
-    memcpy(buf, s->pRxDataBuf + s->rxDataBufOffset, toCopy);
+  if (pS->rxDataBufLen > 0) { /* Data left over from before */
+    toCopy = num <= (int)pS->rxDataBufLen ? num : (int)pS->rxDataBufLen;
+    memcpy(buf, pS->pRxDataBuf + pS->rxDataBufOffset, toCopy);
     return toCopy;
   }
    do {
-   if (0 == s->bytesRcvdRemaining) {
-        s->io_state    = OSSL_IN_READ;
-        s->orig_s.rwstate = SSL_READING;
+   if (0 == pS->bytesRcvdRemaining) {
+        pS->io_state    = OSSL_IN_READ;
+        pS->orig_s.rwstate = SSL_READING;
 
-        while( 0 >= ( i = BIO_read(s->rbio, s->pHoldingBuf, s->szHoldingBuf)))
+        while( 0 >= ( i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf)))
         {
-             if ((i<0)||(!BIO_should_retry(s->rbio) || (SSL_pending(s) <= 0)))
+             if ((i<0)||(!BIO_should_retry(pS->rbio) || (SSL_pending(s) <= 0)))
              {
                return i;
              }
         }
         /*
-         i = BIO_read(s->rbio, s->pHoldingBuf, s->szHoldingBuf);
+         i = BIO_read(pS->rbio, pS->pHoldingBuf, pS->szHoldingBuf);
         if (i <= 0)
         {
             return i;
         }
         */
-        s->io_state             = 0;
-        s->orig_s.rwstate       = SSL_NOTHING;
-        s->pFirstRcvdUnreadByte = s->pHoldingBuf;
-        s->bytesRcvdRemaining   = i;
+        pS->io_state             = 0;
+        pS->orig_s.rwstate       = SSL_NOTHING;
+        pS->pFirstRcvdUnreadByte = pS->pHoldingBuf;
+        pS->bytesRcvdRemaining   = i;
      }
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
     if (0 == mutexAcquired)
@@ -26677,7 +27698,7 @@ SSL_peek(SSL *s, void *buf, int num)
             mutexAcquired = 1;
     }
 #endif
-    status = NSSL_CHK_CALL(parseSslBuf, s->instance, s->pFirstRcvdUnreadByte, s->bytesRcvdRemaining,
+    status = NSSL_CHK_CALL(parseSslBuf, pS->instance, pS->pFirstRcvdUnreadByte, pS->bytesRcvdRemaining,
                 &pFirstUnusedByte, &bytesRemaining);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
     if (1 == mutexAcquired)
@@ -26693,19 +27714,19 @@ SSL_peek(SSL *s, void *buf, int num)
     if (NULL != pFirstUnusedByte)
     { /* 1 full record was extracted and processed */
       if (0 == bytesRemaining) {
-           s->pFirstRcvdUnreadByte     = s->pHoldingBuf;
-           s->bytesRcvdRemaining     = 0;
+           pS->pFirstRcvdUnreadByte     = pS->pHoldingBuf;
+           pS->bytesRcvdRemaining     = 0;
            break;
       } else
       {
-           s->pFirstRcvdUnreadByte    = pFirstUnusedByte;
-           s->bytesRcvdRemaining    = bytesRemaining;
+           pS->pFirstRcvdUnreadByte    = pFirstUnusedByte;
+           pS->bytesRcvdRemaining    = bytesRemaining;
            status = 1;
       }
      } else { /* full rec not present and all bytes were consumed */
-      s->bytesRcvdRemaining     = 0; /* necessary; recvMessage2 does not update this */
+      pS->bytesRcvdRemaining     = 0; /* necessary; recvMessage2 does not update this */
       }
-     } while (0 == s->bytesRcvdRemaining);
+     } while (0 == pS->bytesRcvdRemaining);
 
      if (0 < status) {
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
@@ -26716,7 +27737,7 @@ SSL_peek(SSL *s, void *buf, int num)
                 mutexAcquired = 1;
         }
 #endif
-        status = NSSL_CHK_CALL(readSslRec, s->instance, &pReadPtr, &bytesAvail, &protocol);
+        status = NSSL_CHK_CALL(readSslRec, pS->instance, &pReadPtr, &bytesAvail, &protocol);
 #if defined(__ENABLE_DIGICERT_OSSL_CLIENT_THREAD_SAFE__)
         if (1 == mutexAcquired)
         {
@@ -26733,8 +27754,8 @@ SSL_peek(SSL *s, void *buf, int num)
          /* SSL_peek leave the data for SSL_read */
           toKeep    = bytesAvail;
           (void) checkRxBuffer(s, toKeep); /* Sets rxDatabufOffset to 0 if it allocates */
-          memcpy(s->pRxDataBuf + s->rxDataBufOffset + s->rxDataBufLen, pReadPtr, toKeep);
-          s->rxDataBufLen      += toKeep;
+          memcpy(pS->pRxDataBuf + pS->rxDataBufOffset + pS->rxDataBufLen, pReadPtr, toKeep);
+          pS->rxDataBufLen      += toKeep;
        }
      }
      return retCount;
@@ -26748,16 +27769,22 @@ SSL_pending(const SSL *ssl)
     sbyte4 status = 0;
     sbyte4 numBytes = 0;
 
-    if ( (NULL == ssl) || (MOC_SSL_CONN_INSTANCE_UNASSIGNED == ssl->instance) )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+
+    if ( (NULL == ssl) || (MOC_SSL_CONN_INSTANCE_UNASSIGNED == pS->instance) )
         goto exit;
 
-    if ( (ssl->orig_s.shutdown & SSL_SENT_SHUTDOWN) ||
-         (ssl->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN) )
+    if ( (pS->orig_s.shutdown & SSL_SENT_SHUTDOWN) ||
+         (pS->orig_s.shutdown & SSL_RECEIVED_SHUTDOWN) )
     {
         goto exit;
     }
 
-    if (OK > NSSL_CHK_CALL(recvPending, ssl->instance, &numBytes))
+    if (OK > NSSL_CHK_CALL(recvPending, pS->instance, &numBytes))
         goto exit;
 
     if (numBytes > 0)
@@ -26766,13 +27793,13 @@ SSL_pending(const SSL *ssl)
        goto exit;
     }
 
-    if (ssl->rxDataBufLen > 0 )
+    if (pS->rxDataBufLen > 0 )
     {
-        status = ssl->rxDataBufLen;
+        status = pS->rxDataBufLen;
         goto exit;
     }
 
-    if (ssl->bytesRcvdRemaining > 0 )
+    if (pS->bytesRcvdRemaining > 0 )
     {
         /* Since the content is not deciphered yet - using length 1 */
         status = 1;
@@ -26798,31 +27825,43 @@ extern SSL
   if (s == NULL)
     return NULL;
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
   if (NULL == (ret = SSL_new(SSL_get_SSL_CTX(s))))
     return (NULL);
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pRet = (SSL_CONNECTION *)ret;
+#else
+    SSL *pRet = ret;
+#endif
+
   /* setup rbio, and wbio */
-  if (NULL != s->rbio)
+  if (NULL != pS->rbio)
   {
-    if (!BIO_dup_state(s->rbio, (char *) &ret->rbio))
+    if (!BIO_dup_state(pS->rbio, (char *) &pRet->rbio))
       goto err;
   }
 
-  if (NULL != s->wbio)
+  if (NULL != pS->wbio)
   {
-    if (s->wbio != s->rbio)
+    if (pS->wbio != pS->rbio)
     {
-      if (!BIO_dup_state(s->wbio, (char *) &ret->wbio))
+      if (!BIO_dup_state(pS->wbio, (char *) &pRet->wbio))
         goto err;
     } else
-      ret->wbio = ret->rbio;
+      pRet->wbio = pRet->rbio;
   }
   /* Dup the client_CA list */
-  if (NULL != s->client_CA)
+  if (NULL != pS->client_CA)
   {
-    if (NULL == (sk = sk_X509_NAME_dup(s->client_CA)))
+    if (NULL == (sk = sk_X509_NAME_dup(pS->client_CA)))
       goto err;
-    ret->client_CA = sk;
+    pRet->client_CA = sk;
     for (i = 0; i < sk_X509_NAME_num(sk); i++)
     {
       xn = sk_X509_NAME_value(sk, i);
@@ -26834,85 +27873,85 @@ extern SSL
     }
   }
 
-  ret->version = s->version;
-  ret->method = s->method;
-  ret->tempSocket = s->tempSocket;
+  pRet->version = pS->version;
+  pRet->method = pS->method;
+  pRet->tempSocket = pS->tempSocket;
 
-  if (NULL != s->session)
+  if (NULL != pS->session)
   {
     SSL_copy_session_id(ret, s);
   } else
   {
-    (void) SSL_set_session_id_context(ret, s->sid_ctx, s->sid_ctx_length);
+    (void) SSL_set_session_id_context(ret, pS->sid_ctx, pS->sid_ctx_length);
   }
 
   /* Calculate the length of dnsName */
-  t =s->tlsext_hostname;
+  t =pS->tlsext_hostname;
   while (0 != *t)
     t++;
-  dnsNameLen = (ubyte4) (t - s->tlsext_hostname);
+  dnsNameLen = (ubyte4) (t - pS->tlsext_hostname);
 
-  if (NULL == (ret->tlsext_hostname = (char *) OSSL_MALLOC(dnsNameLen + 1)))
+  if (NULL == (pRet->tlsext_hostname = (char *) OSSL_MALLOC(dnsNameLen + 1)))
     goto err;
 
-  memcpy(ret->tlsext_hostname, s->tlsext_hostname, dnsNameLen + 1);
-  ret->instance = s->instance;
-  ret->clientServerFlag = s->clientServerFlag;
-  ret->verify_result = s->verify_result;
+  memcpy(pRet->tlsext_hostname, pS->tlsext_hostname, dnsNameLen + 1);
+  pRet->instance = pS->instance;
+  pRet->clientServerFlag = pS->clientServerFlag;
+  pRet->verify_result = pS->verify_result;
   SSL_set_info_callback(ret, SSL_get_info_callback(s));
 
-  if (!CRYPTO_dup_ex_data(CRYPTO_EX_INDEX_SSL, &ret->ex_data, &s->ex_data))
+  if (!CRYPTO_dup_ex_data(CRYPTO_EX_INDEX_SSL, &pRet->ex_data, &pS->ex_data))
     goto err;
 
-  if (NULL == (ret->pHoldingBuf = (ubyte *) OSSL_MALLOC(s->szHoldingBuf)))
+  if (NULL == (pRet->pHoldingBuf = (ubyte *) OSSL_MALLOC(pS->szHoldingBuf)))
     goto err;
 
-  memcpy(ret->pHoldingBuf, s->pHoldingBuf, s->szHoldingBuf);
-  ret->szHoldingBuf = s->szHoldingBuf;
+  memcpy(pRet->pHoldingBuf, pS->pHoldingBuf, pS->szHoldingBuf);
+  pRet->szHoldingBuf = pS->szHoldingBuf;
 
-  if (NULL == (ret->pTxHoldingBuf = (ubyte *) OSSL_MALLOC(s->szTxHoldingBuf)))
+  if (NULL == (pRet->pTxHoldingBuf = (ubyte *) OSSL_MALLOC(pS->szTxHoldingBuf)))
     goto err;
-  memcpy(ret->pTxHoldingBuf, s->pTxHoldingBuf, s->szTxHoldingBuf);
-  ret->szTxHoldingBuf = s->szTxHoldingBuf;
+  memcpy(pRet->pTxHoldingBuf, pS->pTxHoldingBuf, pS->szTxHoldingBuf);
+  pRet->szTxHoldingBuf = pS->szTxHoldingBuf;
 
-  ret->bytesRcvdRemaining = s->bytesRcvdRemaining;
-  if (NULL == (ret->pFirstRcvdUnreadByte =
-                   (ubyte *) OSSL_MALLOC(s->bytesRcvdRemaining)))
+  pRet->bytesRcvdRemaining = pS->bytesRcvdRemaining;
+  if (NULL == (pRet->pFirstRcvdUnreadByte =
+                   (ubyte *) OSSL_MALLOC(pS->bytesRcvdRemaining)))
     goto err;
-  memcpy(ret->pFirstRcvdUnreadByte,
-         s->pFirstRcvdUnreadByte,
-         s->bytesRcvdRemaining);
+  memcpy(pRet->pFirstRcvdUnreadByte,
+         pS->pFirstRcvdUnreadByte,
+         pS->bytesRcvdRemaining);
 
-  if (NULL == (ret->pRxDataBuf = (ubyte *) OSSL_MALLOC(s->rxDataBufSz)))
+  if (NULL == (pRet->pRxDataBuf = (ubyte *) OSSL_MALLOC(pS->rxDataBufSz)))
     goto err;
-  memcpy(ret->pRxDataBuf, s->pRxDataBuf, s->rxDataBufSz);
+  memcpy(pRet->pRxDataBuf, pS->pRxDataBuf, pS->rxDataBufSz);
 
-  ret->rxDataBufSz = s->rxDataBufSz;
-  ret->rxDataBufOffset = s->rxDataBufOffset;
-  ret->rxDataBufLen = s->rxDataBufLen;
-  ret->orig_s.shutdown = s->orig_s.shutdown;
-  ret->state = s->state;
-  ret->options = s->options;
-  ret->io_state = s->io_state;
-  ret->sent_client_hello = s->sent_client_hello;
+  pRet->rxDataBufSz = pS->rxDataBufSz;
+  pRet->rxDataBufOffset = pS->rxDataBufOffset;
+  pRet->rxDataBufLen = pS->rxDataBufLen;
+  pRet->orig_s.shutdown = pS->orig_s.shutdown;
+  pRet->state = pS->state;
+  pRet->options = pS->options;
+  pRet->io_state = pS->io_state;
+  pRet->sent_client_hello = pS->sent_client_hello;
 
   SSL_set_read_ahead(ret, SSL_get_read_ahead(s));
   /* @Note Assign the values of ssl3_state_st and compress */
-  ret->s3 = (struct ssl3_state_st *) OSSL_MALLOC(sizeof(struct ssl3_state_st));
-  ret->compress = (COMP_CTX *) OSSL_MALLOC(sizeof(COMP_CTX));
-  ret->next_proto_negotiated =
-      (unsigned char *) OSSL_MALLOC(s->next_proto_negotiated_len);
-  if (NULL == ret->next_proto_negotiated || NULL == ret->s3 || NULL == ret->compress)
+  pRet->s3 = (struct ssl3_state_st *) OSSL_MALLOC(sizeof(struct ssl3_state_st));
+  pRet->compress = (COMP_CTX *) OSSL_MALLOC(sizeof(COMP_CTX));
+  pRet->next_proto_negotiated =
+      (unsigned char *) OSSL_MALLOC(pS->next_proto_negotiated_len);
+  if (NULL == pRet->next_proto_negotiated || NULL == pRet->s3 || NULL == pRet->compress)
     goto err;
 
-  memcpy(ret->next_proto_negotiated,
-         s->next_proto_negotiated,
-         s->next_proto_negotiated_len);
+  memcpy(pRet->next_proto_negotiated,
+         pS->next_proto_negotiated,
+         pS->next_proto_negotiated_len);
 
-  if (NULL != s->cipher_list)
+  if (NULL != pS->cipher_list)
   {
-    ret->cipher_list = sk_SSL_CIPHER_dup(s->cipher_list);
-    if (NULL != ret->cipher_list)
+    pRet->cipher_list = sk_SSL_CIPHER_dup(pS->cipher_list);
+    if (NULL != pRet->cipher_list)
       goto err;
   }
 
@@ -26932,7 +27971,13 @@ SSL_is_server(SSL *s)
   if (s == NULL)
     return 0;
 
-  return (s->clientServerFlag == SSL_SERVER_FLAG) ? 1 : 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+  return (pS->clientServerFlag == SSL_SERVER_FLAG) ? 1 : 0;
 }
 
 /*------------------------------------------------------------------*/
@@ -26940,8 +27985,13 @@ SSL_is_server(SSL *s)
 extern void
 SSL_set_info_callback(SSL *ssl, void (*cb)(const SSL *ssl, int type, int val))
 {
-    if (ssl)
-        ssl->info_callback = cb;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+    if (pS)
+        pS->info_callback = cb;
 }
 
 /*------------------------------------------------------------------*/
@@ -26949,8 +27999,13 @@ SSL_set_info_callback(SSL *ssl, void (*cb)(const SSL *ssl, int type, int val))
 extern void
 (*SSL_get_info_callback(const SSL *ssl))(const SSL *ssl, int type, int val)
 {
-    if (ssl == NULL) return NULL;
-    return ssl->info_callback;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+    if (pS == NULL) return NULL;
+    return pS->info_callback;
 }
 
 void SSL_CTX_set_cert_store(SSL_CTX *ctx, X509_STORE *store)
@@ -27377,7 +28432,7 @@ SSL_CTX_set_cookie_generate_cb(SSL_CTX *ctx,
 
 /*------------------------------------------------------------------*/
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 void SSL_CTX_set_stateless_cookie_generate_cb(
     SSL_CTX *ctx,
@@ -27489,7 +28544,7 @@ SSL_use_psk_identity_hint(SSL *s, const char *identity_hint)
 extern const char
 *SSL_get_psk_identity_hint(const SSL *s)
 {
-  if (s == NULL || s->session == NULL)
+  if (s == NULL)
     return NULL;
 
   return NULL; /* @Note : unsupported */
@@ -27500,7 +28555,7 @@ extern const char
 extern const char
 *SSL_get_psk_identity(const SSL *s)
 {
-  if (s == NULL || s->session == NULL)
+  if (s == NULL)
     return NULL;
 
   return NULL; /* @Note: unsupported */
@@ -27540,7 +28595,7 @@ SSL_CTX_add_server_custom_ext(SSL_CTX *ctx, unsigned int ext_type,
 
 /*------------------------------------------------------------------*/
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 extern int
 SSL_extension_supported(unsigned int ext_type)
 {
@@ -27620,7 +28675,13 @@ SSL_want(const SSL *s)
   if (s == NULL)
     return -1;
 
-  return s->orig_s.rwstate;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
+
+  return pS->orig_s.rwstate;
 }
 
 /*------------------------------------------------------------------*/
@@ -27634,47 +28695,53 @@ SSL_clear(SSL *s)
     return 0;
   }
 
-  if (s->method == NULL)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+  if (pS->method == NULL)
   {
     SSLerr(SSL_F_SSL_CLEAR, SSL_R_NO_METHOD_SPECIFIED);
     return 0;
   }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    ossl_statem_clear(s);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    ossl_statem_clear(pS);
 #endif
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
   /*
    * X509_VERIFY_PARAM_move_peername frees and sets the peername value to NULL;
    * If X509_VERIFY_PARAM_free is called later(NULL check is not performed
    * in this function before freeing peername), it may cause a crash.
    */
-  X509_VERIFY_PARAM_move_peername(s->orig_s.param, NULL);
+  X509_VERIFY_PARAM_move_peername(pS->orig_s.param, NULL);
 #endif
-  s->orig_s.shutdown = 0;
-  s->state = SSL_ST_BEFORE | ((s->clientServerFlag == SSL_CLIENT_FLAG) ? SSL_ST_CONNECT : SSL_ST_ACCEPT);
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-  s->orig_state = s->state;
+  pS->orig_s.shutdown = 0;
+  pS->state = SSL_ST_BEFORE | ((pS->clientServerFlag == SSL_CLIENT_FLAG) ? SSL_ST_CONNECT : SSL_ST_ACCEPT);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+  pS->orig_state = pS->state;
 #else
-  s->orig_s.state = s->state;
+  pS->orig_s.state = pS->state;
 #endif
-  s->version = s->method->version;
+  pS->version = pS->method->version;
 
-  s->orig_s.rwstate = SSL_NOTHING;
+  pS->orig_s.rwstate = SSL_NOTHING;
 
-  if (MOC_SSL_CONN_INSTANCE_UNASSIGNED != s->instance)
+  if (MOC_SSL_CONN_INSTANCE_UNASSIGNED != pS->instance)
   {
       if (OK > OSSL_closeConnection(s))
       {
         return 0;
       }
   }
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-  if (NULL != s->verify_store)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+  if (NULL != pS->verify_store)
   {
-    X509_STORE_free(s->verify_store);
-    s->verify_store = NULL;
+    X509_STORE_free(pS->verify_store);
+    pS->verify_store = NULL;
   }
 #endif
   return 1;
@@ -27717,8 +28784,13 @@ SSL_get_rfd(const SSL *s)
   /* The operation failed, because the underlying BIO is not of the correct type */
   if (s == NULL)
     return -1;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
 
-  return s->rfd;
+  return pS->rfd;
 }
 
 /*------------------------------------------------------------------*/
@@ -27729,8 +28801,13 @@ SSL_get_wfd(const SSL *s)
   /* The operation failed, because the underlying BIO is not of the correct type */
   if (s == NULL)
     return -1;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
 
-  return s->wfd;
+  return pS->wfd;
 }
 
 /*------------------------------------------------------------------*/
@@ -27772,11 +28849,16 @@ SSL_get_read_ahead(const SSL *s)
   /* No Error Code in Openssl */
   if (s == NULL)
     return 0;
-
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-  return s->orig_s.rlayer.read_ahead;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
 #else
-  return s->orig_s.read_ahead;
+    const SSL *pS = s;
+#endif
+
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+  return pS->orig_s.rlayer.read_ahead;
+#else
+  return pS->orig_s.read_ahead;
 #endif
 }
 
@@ -27793,7 +28875,12 @@ extern void
 SSL_set_verify_depth(SSL *s, int depth)
 {
   if (s == NULL) return;
-  X509_VERIFY_PARAM_set_depth(s->orig_s.param, depth);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+  X509_VERIFY_PARAM_set_depth(pS->orig_s.param, depth);
 }
 
 /*------------------------------------------------------------------*/
@@ -27831,7 +28918,13 @@ SSL_use_RSAPrivateKey(SSL *ssl, RSA *pRsaKey)
     EVP_PKEY *pEvpKey;
     int ret;
 
-    if ( (NULL == ssl) || (NULL == ssl->ssl_ctx) || (NULL == pRsaKey) )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+
+    if ( (NULL == ssl) || (NULL == pS->ssl_ctx) || (NULL == pRsaKey) )
     {
         SSLerr(SSL_F_SSL_USE_RSAPRIVATEKEY, ERR_R_PASSED_NULL_PARAMETER);
         return 0;
@@ -27859,7 +28952,7 @@ SSL_use_RSAPrivateKey(SSL *ssl, RSA *pRsaKey)
      * If a call to this function and SSL_CTX_use_PrivateKey is made by the
      * application then the latter call will have the key that is actually used.
      */
-    ret = SSL_CTX_use_PrivateKey(ssl->ssl_ctx, pEvpKey);
+    ret = SSL_CTX_use_PrivateKey(pS->ssl_ctx, pEvpKey);
     return ret;
 }
 
@@ -27905,6 +28998,11 @@ SSL_use_PrivateKey(SSL *ssl, EVP_PKEY *pkey)
     SSLerr(SSL_F_SSL_USE_PRIVATEKEY, SSL_R_UNINITIALIZED);
     return (0);
   }
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
 
   if (pkey == NULL)
   {
@@ -27912,7 +29010,7 @@ SSL_use_PrivateKey(SSL *ssl, EVP_PKEY *pkey)
     return (0);
   }
 
-    return SSL_CTX_use_PrivateKey(ssl->ssl_ctx, pkey);
+    return SSL_CTX_use_PrivateKey(pS->ssl_ctx, pkey);
 }
 
 /*------------------------------------------------------------------*/
@@ -27924,7 +29022,13 @@ SSL_use_PrivateKey_ASN1(
     int ret;
     EVP_PKEY *pEvpKey;
 
-    if ( (NULL == ssl) || (NULL == ssl->ssl_ctx) )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+
+    if ( (NULL == ssl) || (NULL == pS->ssl_ctx) )
     {
         SSLerr(SSL_F_SSL_USE_RSAPRIVATEKEY, ERR_R_PASSED_NULL_PARAMETER);
         return 0;
@@ -27947,7 +29051,7 @@ SSL_use_PrivateKey_ASN1(
      * If a call to this function and SSL_CTX_use_PrivateKey is made by the
      * application then the latter call will have the key that is actually used.
      */
-    ret = SSL_CTX_use_PrivateKey(ssl->ssl_ctx, pEvpKey);
+    ret = SSL_CTX_use_PrivateKey(pS->ssl_ctx, pEvpKey);
     return ret;
 }
 
@@ -27956,13 +29060,18 @@ SSL_use_PrivateKey_ASN1(
 extern int
 SSL_use_certificate(SSL *ssl, X509 *x)
 {
-    if ( (NULL == ssl) || (NULL == ssl->ssl_ctx) || (NULL == x) )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+    if ( (NULL == ssl) || (NULL == pS->ssl_ctx) || (NULL == x) )
     {
         SSLerr(SSL_F_SSL_USE_CERTIFICATE, ERR_R_PASSED_NULL_PARAMETER);
         return 0;
     }
 
-    return SSL_CTX_use_certificate(ssl->ssl_ctx, x);
+    return SSL_CTX_use_certificate(pS->ssl_ctx, x);
 }
 
 /*------------------------------------------------------------------*/
@@ -27983,17 +29092,22 @@ int SSL_use_certificate_ASN1(SSL *ssl, const unsigned char *d, int len)
     return (ret);
 }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 extern int
 SSL_use_certificate_chain_file(SSL *ssl, const char *file)
 {
-    if ((NULL == ssl) || (NULL == ssl->ssl_ctx))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+    if ((NULL == ssl) || (NULL == pS->ssl_ctx))
     {
         SSLerr(SSL_F_SSL_USE_CERTIFICATE, ERR_R_PASSED_NULL_PARAMETER);
         return 0;
     }
 
-    return SSL_CTX_use_certificate_chain_file(ssl->ssl_ctx, file);
+    return SSL_CTX_use_certificate_chain_file(pS->ssl_ctx, file);
 }
 #endif
 
@@ -28046,13 +29160,18 @@ SSL_use_RSAPrivateKey_file(SSL *ssl, const char *file, int type)
 extern int
 SSL_use_PrivateKey_file(SSL *ssl, const char *file, int type)
 {
-    if ( (NULL == ssl) || (NULL == ssl->ssl_ctx) || (NULL == file) )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+    if ( (NULL == ssl) || (NULL == pS->ssl_ctx) || (NULL == file) )
     {
         SSLerr(SSL_F_SSL_USE_RSAPRIVATEKEY, ERR_R_PASSED_NULL_PARAMETER);
         return 0;
     }
 
-    return SSL_CTX_use_PrivateKey_file(ssl->ssl_ctx, file, type);
+    return SSL_CTX_use_PrivateKey_file(pS->ssl_ctx, file, type);
 }
 
 /*------------------------------------------------------------------*/
@@ -28060,13 +29179,18 @@ SSL_use_PrivateKey_file(SSL *ssl, const char *file, int type)
 extern int
 SSL_use_certificate_file(SSL *ssl, const char *file, int type)
 {
-    if ( (NULL == ssl) || (NULL == ssl->ssl_ctx) || (NULL == file) )
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+    if ( (NULL == ssl) || (NULL == pS->ssl_ctx) || (NULL == file) )
     {
         SSLerr(SSL_F_SSL_USE_RSAPRIVATEKEY, ERR_R_PASSED_NULL_PARAMETER);
         return 0;
     }
 
-    return SSL_CTX_use_certificate_file(ssl->ssl_ctx, file, type);
+    return SSL_CTX_use_certificate_file(pS->ssl_ctx, file, type);
 }
 
 /*------------------------------------------------------------------*/
@@ -28383,7 +29507,13 @@ X509_VERIFY_PARAM
     if (ssl == NULL)
         return NULL;
 
-    return ssl->orig_s.param;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+
+    return pS->orig_s.param;
 }
 
 /*------------------------------------------------------------------*/
@@ -28502,11 +29632,16 @@ long
 SSL_callback_ctrl(SSL *s, int cmd, void (*fp)(void))
 {
     if (s == NULL) return 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
     switch (cmd) {
     case SSL_CTRL_SET_MSG_CALLBACK:
         if ( NULL == fp )
             return 0;
-        s->msg_callback = (void (*)
+        pS->msg_callback = (void (*)
                            (int write_p, int version, int content_type,
                             const void *buf, size_t len, SSL *ssl,
                             void *arg))(fp);
@@ -28534,7 +29669,12 @@ int SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen,
     sbyte4 status = 0;
 
     if (s == NULL) return 0;
-    status = NSSL_CHK_CALL(getExportKeyMaterial, s->instance, out, (ubyte2) olen, (ubyte *)label, (ubyte2) llen, (ubyte *)p, (ubyte2) plen, use_context);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+    status = NSSL_CHK_CALL(getExportKeyMaterial, pS->instance, out, (ubyte2) olen, (ubyte *)label, (ubyte2) llen, (ubyte *)p, (ubyte2) plen, use_context);
 
     /* NanoSSL API returns 0 in case of success */
     if (0 == status)
@@ -28552,13 +29692,18 @@ int SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen,
 
 int SSL_check_private_key(const SSL *ssl)
 {
-    if ((NULL == ssl) || (NULL == ssl->ssl_ctx))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+    if ((NULL == ssl) || (NULL == pS->ssl_ctx))
     {
         SSLerr(SSL_F_SSL_CHECK_PRIVATE_KEY, ERR_R_PASSED_NULL_PARAMETER);
         return (0);
     }
 
-    if (NULL == ssl->ssl_ctx->cert_x509)
+    if (NULL == pS->ssl_ctx->cert_x509)
     {
         SSLerr(SSL_F_SSL_CTX_CHECK_PRIVATE_KEY,
             SSL_R_NO_CERTIFICATE_ASSIGNED);
@@ -28569,8 +29714,8 @@ int SSL_check_private_key(const SSL *ssl)
     return 1;
 #else
     return (X509_check_private_key(
-        ssl->ssl_ctx->cert_x509,
-        ssl->ssl_ctx->privatekey[ssl->ssl_ctx->ossl_pkey_idx]));
+        pS->ssl_ctx->cert_x509,
+        pS->ssl_ctx->privatekey[pS->ssl_ctx->ossl_pkey_idx]));
 #endif
 }
 
@@ -28861,16 +30006,21 @@ SSL_renegotiate_pending(SSL *s)
 
     if (s == NULL)
         return 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
-    if (OK > (status = NSSL_CHK_CALL(getSessionStatus, s->instance, &connState)))
+    if (OK > (status = NSSL_CHK_CALL(getSessionStatus, pS->instance, &connState)))
     {
         return 0;
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    if ((SSL_CONNECTION_RENEGOTIATE == connState) || (SSL_ST_RENEGOTIATE == s->orig_state))
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if ((SSL_CONNECTION_RENEGOTIATE == connState) || (SSL_ST_RENEGOTIATE == pS->orig_state))
 #else
-    if ((SSL_CONNECTION_RENEGOTIATE == connState) || (SSL_ST_RENEGOTIATE == s->orig_s.state))
+    if ((SSL_CONNECTION_RENEGOTIATE == connState) || (SSL_ST_RENEGOTIATE == pS->orig_s.state))
 #endif
     {
         return 1;
@@ -28900,7 +30050,13 @@ extern const SSL_METHOD
   if (s == NULL)
     return NULL;
 
-  return s->method;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+  return pS->method;
 }
 
 /*------------------------------------------------------------------*/
@@ -28911,8 +30067,13 @@ SSL_set_ssl_method(SSL *s, const SSL_METHOD *method)
   /* No Error Code in Openssl */
   if (s == NULL)
     return 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
 
-  s->method = method;
+  pS->method = method;
   return 1;
 }
 
@@ -28937,16 +30098,21 @@ SSL_add_client_CA(SSL *ssl, X509 *x)
 STACK_OF(X509_NAME) *SSL_get_client_CA_list(const SSL *s)
 {
     if (s == NULL) return NULL;
-     if (s->clientServerFlag == SSL_CLIENT_FLAG) { /* we are in the client */
-        if (s->s3 != NULL)
-            return (s->s3->tmp.ca_names);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)s;
+#else
+    const SSL *pS = s;
+#endif
+     if (pS->clientServerFlag == SSL_CLIENT_FLAG) { /* we are in the client */
+        if (pS->s3 != NULL)
+            return (pS->s3->tmp.ca_names);
         else
             return (NULL);
     } else {
-        if (s->client_CA != NULL)
-            return (s->client_CA);
+        if (pS->client_CA != NULL)
+            return (pS->client_CA);
         else
-            return (s->ssl_ctx->client_CA);
+            return (pS->ssl_ctx->client_CA);
     }
 }
 
@@ -29000,7 +30166,7 @@ static const char *ssl_protocol_to_string(int version)
 extern char
 *SSL_CIPHER_description(const SSL_CIPHER *cipher, char *buf, int len)
 {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     const char *kx, *au, *enc, *mac;
     const char *ver;
     uint32_t alg_mkey, alg_auth, alg_enc, alg_mac;
@@ -29036,7 +30202,7 @@ extern char
     case SSL_kPSK:
         kx = "PSK";
         break;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     case SSL_kRSAPSK:
         kx = "RSAPSK";
         break;
@@ -29440,7 +30606,13 @@ SSL_set_quiet_shutdown(SSL *ssl, int mode)
     if (NULL == ssl)
         return;
 
-    ssl->orig_s.quiet_shutdown = mode;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)ssl;
+#else
+    SSL *pS = ssl;
+#endif
+
+    pS->orig_s.quiet_shutdown = mode;
 }
 
 /*------------------------------------------------------------------*/
@@ -29451,7 +30623,13 @@ SSL_get_quiet_shutdown(const SSL *ssl)
   if (ssl == NULL)
     return 0;
 
-  return ssl->orig_s.quiet_shutdown;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+
+  return pS->orig_s.quiet_shutdown;
 }
 
 /*------------------------------------------------------------------*/
@@ -29463,7 +30641,13 @@ SSL_version(const SSL *ssl)
     if (NULL == ssl)
         return 0;
 
-    version = NSSL_CHK_CALL(sslGetVersion, ssl->instance);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+
+    version = NSSL_CHK_CALL(sslGetVersion, pS->instance);
 
     if (version == TLS10_MINORVERSION)
     {
@@ -29808,6 +30992,12 @@ SSL_CONF_CTX_set_ssl(SSL_CONF_CTX *pConfCtx, SSL *pSSL)
     if (NULL == pConfCtx)
         return;
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)pSSL;
+#else
+    SSL *pS = pSSL;
+#endif
+
     /* Set the SSL variable and unset the SSL context variable within the
      * configuration context.
      */
@@ -29815,7 +31005,7 @@ SSL_CONF_CTX_set_ssl(SSL_CONF_CTX *pConfCtx, SSL *pSSL)
     pConfCtx->ctx = NULL;
     if (pSSL)
     {
-        pConfCtx->poptions = &pSSL->options;
+        pConfCtx->poptions = &pS->options;
     }
     else
     {
@@ -29951,7 +31141,7 @@ static int cmd_Protocol(SSL_CONF_CTX *cctx, const char *value)
         SSL_FLAG_TBL_INV("TLSv1", SSL_OP_NO_TLSv1),
         SSL_FLAG_TBL_INV("TLSv1.1", SSL_OP_NO_TLSv1_1),
         SSL_FLAG_TBL_INV("TLSv1.2", SSL_OP_NO_TLSv1_2),
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         SSL_FLAG_TBL_INV("TLSv1.3", SSL_OP_NO_TLSv1_3),
 #endif
     };
@@ -30033,7 +31223,7 @@ exit:
 }
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static int cmd_MinProtocol(SSL_CONF_CTX *pCtx, const char *pValue)
 {
     int version = 0;
@@ -30117,7 +31307,7 @@ ssl_conf_cmd_skip_prefix(SSL_CONF_CTX *pConfCtx, const char **ppCmd)
     return 1;
 }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 /* Determine if a command is allowed according to pCtx flags */
 static int ssl_conf_cmd_allowed(SSL_CONF_CTX *pCtx, const ssl_conf_cmd_tbl * t)
 {
@@ -30154,7 +31344,7 @@ ssl_conf_cmd_lookup(SSL_CONF_CTX *pConfCtx, const char *pCmd)
     for (i = 0, pRetCmd = ssl_conf_cmds;
          i < sizeof(ssl_conf_cmds) / sizeof(ssl_conf_cmd_tbl); i++, pRetCmd++)
     {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         if (ssl_conf_cmd_allowed(pConfCtx, pRetCmd))
 #endif
         {
@@ -30319,7 +31509,7 @@ OpenSSL_add_all_digests(void)
 /*------------------------------------------------------------------*/
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
  void SSL_CTX_set_client_hello_cb(SSL_CTX *c, SSL_client_hello_cb_fn cb,
                                   void *arg)
 {
@@ -30359,7 +31549,12 @@ void SSL_CTX_set_security_level(SSL_CTX *ctx, int level)
 int SSL_is_dtls(const SSL *ssl)
 {
     if (ssl == NULL) return 0; /* OpenSSL no error */
-	return  ((ssl->version == DTLSV1_VERSION) || (ssl->version == DTLS_ANY_VERSION)) ? 1 : 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *pS = (const SSL_CONNECTION *)ssl;
+#else
+    const SSL *pS = ssl;
+#endif
+	return  ((pS->version == DTLSV1_VERSION) || (pS->version == DTLS_ANY_VERSION)) ? 1 : 0;
 }
 
 int SSL_has_pending(const SSL *s)
@@ -30411,7 +31606,7 @@ int SSL_CTX_get_security_level(const SSL_CTX *ctx)
 }
 #endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 typedef unsigned int (*DTLS_timer_cb)(SSL *s, unsigned int timer_us);
 
 void DTLS_set_timer_cb(SSL *s, DTLS_timer_cb cb)
@@ -30604,9 +31799,14 @@ void SSL_set0_rbio(SSL *s, BIO *rbio)
 {
     if (NULL != s)
     {
-        BIO_free_all(s->rbio);
-        s->rbio = rbio;
-        s->orig_s.rbio = s->rbio;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+        BIO_free_all(pS->rbio);
+        pS->rbio = rbio;
+        pS->orig_s.rbio = pS->rbio;
     }
 }
 
@@ -30614,19 +31814,45 @@ void SSL_set0_wbio(SSL *s, BIO *wbio)
 {
     if (NULL != s)
     {
-        if (s->bbio != NULL) {
-            if (s->wbio == s->bbio) {
-                s->wbio = s->wbio->next_bio;
-                s->bbio->next_bio = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+        if (pS->bbio != NULL) {
+            if (pS->wbio == pS->bbio) {
+                pS->wbio = pS->wbio->next_bio;
+                pS->bbio->next_bio = NULL;
             }
         }
 
-        BIO_free_all(s->wbio);
-        s->wbio = wbio;
+        BIO_free_all(pS->wbio);
+        pS->wbio = wbio;
 
-        s->orig_s.wbio = s->wbio;
-        s->orig_s.bbio = s->bbio;
+        pS->orig_s.wbio = pS->wbio;
+        pS->orig_s.bbio = pS->bbio;
     }
+}
+
+const char *SSL_get0_group_name(SSL *s)
+{
+    ubyte2 groupId = 0;
+    const char *groupName = NULL;
+
+    if (!s)
+        return NULL;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *pS = (SSL_CONNECTION *)s;
+#else
+    SSL *pS = s;
+#endif
+
+    if (OK > NSSL_CHK_CALL(getKEGroupId, pS->instance, &groupId))
+        return NULL;
+
+    groupName = getGroupNameFromGroupId(groupId);
+    return groupName;
 }
 
 void SSL_CTX_set_allow_early_data_cb(SSL_CTX *ctx,
@@ -30882,7 +32108,6 @@ const char *SSL_group_to_name(SSL *ssl, int id)
     return NULL;
 }
 
-
 int SSL_in_before(const SSL *s)
 {
     /* @Note: unsupported */
@@ -31008,7 +32233,7 @@ int SSL_CTX_enable_ct(SSL_CTX *ctx, int validation_mode)
     /* @Note: unsupported */
     return 0;
 }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 /*
 RU: END SKELETON SSL FUNCTIONS.
 */

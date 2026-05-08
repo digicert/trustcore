@@ -82,6 +82,7 @@ function show_usage
 }
 
 BUILD_OPTIONS=""
+COMMON_BUILD_OPTIONS=""
 DEBUG_OPTIONS=""
 FIPS_OPTION=""
 FIPS_MAKE_OPTION=""
@@ -448,6 +449,10 @@ do
             BUILD_OPTIONS+=" --build-for-osi"
             BUILD_FOR_OSI=1
             ;;
+        --enable-posix)
+            echo "Building with posix support enabled...";
+            COMMON_BUILD_OPTIONS+=" $1"
+            ;;
         *)
             echo "Invalid option: $1";
             INV_OPT=1
@@ -517,7 +522,7 @@ echo "***************************************************************"
 for pass in first second
 do
     cd ${MSS_PROJECTS_DIR}/platform && ./build.sh $BUILD_OPTIONS $FIPS_OPTION $STATIC_OPTION
-    cd ${MSS_PROJECTS_DIR}/common && ./build.sh $BUILD_OPTIONS $FIPS_OPTION $URI_OPTION $STATIC_OPTION
+    cd ${MSS_PROJECTS_DIR}/common && ./build.sh $BUILD_OPTIONS $FIPS_OPTION $URI_OPTION $STATIC_OPTION $COMMON_BUILD_OPTIONS
     cd ${MSS_PROJECTS_DIR}/asn1 && ./build.sh $BUILD_OPTIONS $STATIC_OPTION $DISABLE_PQC_OPT
     cd ${MSS_PROJECTS_DIR}/initialize && ./build.sh $BUILD_OPTIONS $CUSTOM_ENTROPY_OPTION $FORCE_ENTROPY_EXAMPLE_OPTION $STATIC_OPTION $DISABLE_TCP_INIT_OPTIONS
     cd ${MSS_PROJECTS_DIR}/nanocap && ./build.sh $BUILD_OPTIONS $STATIC_OPTION

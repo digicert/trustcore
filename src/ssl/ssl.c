@@ -8570,6 +8570,18 @@ ubyte2 SSL_getNamedCurveOfCurveId( ubyte4 curveId)
         return tlsExtNamedCurves_secp521r1;
         break;
 
+#if defined(__ENABLE_DIGICERT_ECC_EDDH_25519__)
+    case cid_EC_X25519:
+        return tlsExtNamedCurves_x25519;
+        break;
+#endif
+
+#if defined(__ENABLE_DIGICERT_ECC_EDDH_448__)
+    case cid_EC_X448:
+        return tlsExtNamedCurves_x448;
+        break;
+#endif
+
     default:
         break;
     }
@@ -9456,6 +9468,74 @@ extern MSTATUS SSL_getEcCurveId(
     return EC_getCurveIdFromKey(pAsymKey->key.pECC, pCurveId);
 #endif
 }
+
+#if (defined( __ENABLE_DIGICERT_SSL_ECDH_SUPPORT__) || \
+     defined(__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__)  || \
+     defined(__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__) || \
+     defined(__ENABLE_DIGICERT_TLS13__))
+extern MSTATUS
+SSL_getKEGroupId(sbyte4 connectionInstance, ubyte2 *pGroupId)
+{
+    sbyte4     index;
+    MSTATUS    status  = ERR_SSL_BAD_ID;
+
+    if (NULL == pGroupId)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    *pGroupId = 0;
+
+    if (OK > (index = getIndexFromConnectionInstance(connectionInstance)))
+        goto exit;
+
+    if (CONNECT_NEGOTIATE <= m_sslConnectTable[index].connectionState)
+    {
+        SSLSocket *pSSLSock = m_sslConnectTable[index].pSSLSock;
+
+        if (NULL == pSSLSock)
+            goto exit;
+
+#ifdef __ENABLE_DIGICERT_TLS13__
+        if (TLS13_MINORVERSION == pSSLSock->sslMinorVersion ||
+            DTLS13_MINORVERSION == pSSLSock->sslMinorVersion)
+        {
+#ifdef __ENABLE_DIGICERT_SSL_SERVER__
+            if (pSSLSock->server)
+            {
+                *pGroupId = (ubyte2)pSSLSock->roleSpecificInfo.server.selectedGroup;
+                status = OK;
+                goto exit;
+            }
+#endif
+#ifdef __ENABLE_DIGICERT_SSL_CLIENT__
+            if (!pSSLSock->server)
+            {
+                *pGroupId = pSSLSock->roleSpecificInfo.client.selectedGroup;
+                status = OK;
+                goto exit;
+            }
+#endif
+        }
+#endif /* __ENABLE_DIGICERT_TLS13__ */
+
+#if (defined(__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__) || \
+     defined(__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__))
+        /* TLS 1.2 and below: derive the group from the ECDHE key */
+        ubyte4 curveId = 0;
+        if (OK > (status = SSL_getEcCurveId(&pSSLSock->ecdheKey, &curveId)))
+            goto exit;
+
+        *pGroupId = SSL_getNamedCurveOfCurveId(curveId);
+        status = OK;
+#endif /* ECDHE/ECDH_ANON */
+    }
+
+exit:
+    return status;
+}
+#endif /* ECDH/ECDHE/ECDH_ANON/TLS13 */
 
 #endif
 
@@ -10479,6 +10559,12 @@ SSL_bindShimMethods(nssl_methods_t *pMeth)
      pMeth->extractEcKeyData     = SSL_extractEcKeyData;
      pMeth->freeEcKeyData        = SSL_freeEcKeyData;
      pMeth->getEcCurveId         = SSL_getEcCurveId;
+#if (defined(__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__) || \
+     defined(__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__)  || \
+     defined(__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__) || \
+     defined(__ENABLE_DIGICERT_TLS13__))
+     pMeth->getKEGroupId         = SSL_getKEGroupId;
+#endif
 #endif
      pMeth->getPreparedSslRec    = SSL_ASYNC_getSendBuffer;
      pMeth->getPreparedSslRecZC  = SSL_ASYNC_getSendBufferZeroCopy;
