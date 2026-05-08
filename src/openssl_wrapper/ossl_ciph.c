@@ -22,13 +22,13 @@
 #ifdef __RTOS_VXWORKS__
 #include <openssl/x509.h>
 #include <openssl/pem.h>
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <openssl/err.h>
-#else /* !__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#else /* !__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || !__ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || !__ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #include <err.h>
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #else
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
@@ -51,13 +51,13 @@
 
 STACK_OF(SSL_CIPHER) *OSSL_sslCreateCipherList(const SSL_METHOD *ssl_method,
                                     const char *str,
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
                                     STACK_OF(SSL_CIPHER) *tls13_ciphersuites,
 #endif
                                     STACK_OF(SSL_CIPHER) **cipher_list,
                                     STACK_OF(SSL_CIPHER) **cipher_list_by_id);
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 # define OSSL_NELEM(x)    (sizeof(x)/sizeof((x)[0]))
 
@@ -82,7 +82,7 @@ const ssl_cipher_table ssl_cipher_table_cipher[SSL_ENC_NUM_IDX] = {
     {SSL_AES256CCM8, NID_aes_256_ccm}, /* SSL_ENC_AES256CCM8_IDX 17 */
     {SSL_eGOST2814789CNT12, NID_gost89_cnt_12}, /* SSL_ENC_GOST8912_IDX 18 */
     {SSL_CHACHA20POLY1305, NID_chacha20_poly1305}, /* SSL_ENC_CHACHA_IDX 19 */
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     {SSL_ARIA128GCM, NID_aria_128_gcm}, /* SSL_ENC_ARIA128GCM_IDX 20 */
     {SSL_ARIA256GCM, NID_aria_256_gcm}, /* SSL_ENC_ARIA256GCM_IDX 21 */
 #endif
@@ -114,7 +114,7 @@ static const ssl_cipher_table ssl_cipher_table_kx[] = {
     {SSL_kPSK,      NID_kx_psk},
     {SSL_kSRP,      NID_kx_srp},
     {SSL_kGOST,     NID_kx_gost},
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     {SSL_kANY,      NID_kx_any}
 #endif
 };
@@ -128,12 +128,12 @@ static const ssl_cipher_table ssl_cipher_table_auth[] = {
     {SSL_aGOST12, NID_auth_gost12},
     {SSL_aSRP,    NID_auth_srp},
     {SSL_aNULL,   NID_auth_null},
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     {SSL_aANY,    NID_auth_any}
 #endif
 };
 
-#endif /* defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) */
+#endif /* defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) */
 
 /**
  * Returns string which indicates the SSL/TLS protocol version that first
@@ -199,39 +199,44 @@ unsigned long SSL_CIPHER_get_id(const SSL_CIPHER *c)
 
 int SSL_set_cipher_list(SSL *s, const char *str)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *sc = (SSL_CONNECTION *)s;
+#else
+    SSL *sc = s;
+#endif
     STACK_OF(SSL_CIPHER) *sk = NULL;
     ubyte4 i = 0;
 
-    sk = OSSL_sslCreateCipherList(s->method, str,
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-                                  s->tls13_ciphersuites,
+    sk = OSSL_sslCreateCipherList(sc->method, str,
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+                                  sc->tls13_ciphersuites,
 #endif
-                                  &s->cipher_list,
-                                  &s->cipher_list_by_id);
+                                  &sc->cipher_list,
+                                  &sc->cipher_list_by_id);
 
     if(NULL == sk)
     {
         return 0;
     }
 
-    s->numCipherIds = sk_SSL_CIPHER_num(sk);
+    sc->numCipherIds = sk_SSL_CIPHER_num(sk);
 
-    if (0 == s->numCipherIds)
+    if (0 == sc->numCipherIds)
     {
         SSLerr(SSL_F_SSL_SET_CIPHER_LIST, SSL_R_NO_CIPHER_MATCH);
         return 0;
     }
 
-    sk = s->cipher_list_by_id;
-    for (i = 0; i < s->numCipherIds; i++)
+    sk = sc->cipher_list_by_id;
+    for (i = 0; i < sc->numCipherIds; i++)
     {
-        s->cipherIds[i] = (ubyte2)(((SSL_CIPHER*)sk_SSL_CIPHER_value(sk,i))->id) & 0xFFFF;
+        sc->cipherIds[i] = (ubyte2)(((SSL_CIPHER*)sk_SSL_CIPHER_value(sk,i))->id) & 0xFFFF;
     }
 
     return 1;
 }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 /*------------------------------------------------------------------*/
 

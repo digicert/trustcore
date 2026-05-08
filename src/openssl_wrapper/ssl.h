@@ -30,13 +30,13 @@ extern "C" {
  * VxWorks7 has openssl .h files in different locations
  */
 #ifdef __RTOS_VXWORKS__
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <openssl/comp.h>
 #else
 #include <comp.h>
 #endif
 #else
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include "include/openssl/comp.h"
 #else
 #include "crypto/comp/comp.h"
@@ -524,7 +524,7 @@ typedef enum {
     TLS_ST_SR_END_OF_EARLY_DATA
 } OSSL_HANDSHAKE_STATE;
 #endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ */
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 /* These states are a copy from sslsock_priv.h; These are needed for SSL_get_state */
 /* SSL Handshake Record type also used as a Handshake state identifier */
 #define SSL_BEGIN                           (-1)
@@ -554,7 +554,7 @@ MOC_EXTERN void	SSL_free(SSL *ssl);
 MOC_EXTERN int	SSL_connect(SSL *ssl);
 MOC_EXTERN int	SSL_accept(SSL *ssl);
 MOC_EXTERN X509 *SSL_get_certificate(const SSL *ssl);
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 MOC_EXTERN X509 *SSL_get0_peer_certificate(const SSL *s);
 MOC_EXTERN X509 *SSL_get1_peer_certificate(const SSL *s);
 #define SSL_get_peer_certificate SSL_get1_peer_certificate
@@ -642,7 +642,7 @@ MOC_EXTERN long SSL_CTX_get_timeout(const SSL_CTX *s);
      SSL_CTX_ctrl(ctx,SSL_CTRL_EXTRA_CHAIN_CERT,0,(char *)x509)
 #define SSL_CTX_clear_extra_chain_certs(ctx) \
      SSL_CTX_ctrl(ctx,SSL_CTRL_CLEAR_EXTRA_CHAIN_CERTS,0,NULL)
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 unsigned long SSL_CTX_set_options(SSL_CTX *ctx, unsigned long op);
 MOC_EXTERN int SSL_set1_host(SSL *pSsl, const char *pHostname);
 MOC_EXTERN int SSL_add1_host(SSL *pSsl, const char *pHostname);
@@ -652,7 +652,7 @@ MOC_EXTERN const char *SSL_get0_peername(SSL *pSsl);
 #define SSL_CTX_set_options(ctx,op) \
      SSL_CTX_ctrl((ctx),SSL_CTRL_OPTIONS,(op),NULL)
 #endif
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 unsigned long SSL_CTX_get_options(const SSL_CTX *ctx);
 unsigned long SSL_clear_options(SSL *s, unsigned long op);
 
@@ -704,7 +704,7 @@ unsigned long SSL_clear_options(SSL *s, unsigned long op);
 #define SSL_set1_sigalgs_list(ctx, s) \
         SSL_ctrl(ctx, SSL_CTRL_SET_SIGALGS_LIST, 0, (char *)(s))
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 unsigned long SSL_set_options(SSL *s, unsigned long op);
 #else
 # define SSL_set_options(ssl,op) \
@@ -750,7 +750,7 @@ typedef int (*tls_session_ticket_ext_cb_fn) (SSL *s,
                                              const unsigned char *data,
                                              int len, void *arg);
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 typedef sbyte4 (*pskFindSessionCallbackFuncPtr)(sbyte4 connectionInstance, ubyte *pIdentityPSK,
                                                  ubyte4 identityLengthPSK, ubyte **ppPsk, ubyte4 *pPskLen,
                                                  intBoolean *pFreeMemory);
@@ -1084,7 +1084,7 @@ MOC_EXTERN int SSL_CTX_set_ex_data(SSL_CTX *ssl, int idx, void *data);
 # define SSL_CTX_set_mode(ctx,op)         SSL_CTX_ctrl((ctx), SSL_CTRL_MODE, (op), NULL)
 # define SSL_set_tlsext_host_name(s,name) \
 SSL_ctrl(s,SSL_CTRL_SET_TLSEXT_HOSTNAME,TLSEXT_NAMETYPE_host_name,(char *)name)
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 int SSL_session_reused(SSL *s);
 #else
 # define SSL_session_reused(ssl) \
@@ -1107,7 +1107,7 @@ SSL_ctrl((ssl),SSL_CTRL_GET_SESSION_REUSED,0,NULL)
 # define SSL_set1_curves_list(s, list) \
         SSL_ctrl(s, SSL_CTRL_SET_CURVES_LIST, 0, (char *)list)
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 unsigned long SSL_CTX_clear_options(SSL_CTX *ctx, unsigned long op);
 #else
 # define SSL_CTX_clear_options(ctx,op) \
@@ -1119,7 +1119,7 @@ SSL_CTX_ctrl((ctx),SSL_CTRL_CLEAR_OPTIONS,(op),NULL)
 #define SSL_CTX_set_tlsext_status_arg(ssl, arg) \
         SSL_CTX_ctrl(ssl, SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB_ARG, 0, (void *)arg)
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #define SSL_CTX_get_tlsext_status_cb(ssl, cb) \
         SSL_CTX_ctrl(ssl, SSL_CTRL_GET_TLSEXT_STATUS_REQ_CB, 0, (void (**)(void))cb)
 #define SSL_CTX_get_tlsext_status_arg(ssl, arg) \
@@ -1128,7 +1128,7 @@ SSL_CTX_ctrl((ctx),SSL_CTRL_CLEAR_OPTIONS,(op),NULL)
 
 #endif /* __DISABLE_DIGICERT_UNSUPPORTED_OPENSSL_FN__ */
 
-#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) && !defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #if (defined(__ENABLE_DIGICERT_DTLS_CLIENT__) || defined(__ENABLE_DIGICERT_DTLS_SERVER__))
 #define DTLSv1_listen(ssl, peer) \
 SSL_ctrl(ssl,DTLS_CTRL_LISTEN,0, (void *)peer)
@@ -1145,7 +1145,7 @@ typedef struct cipher_order_st {
 
 /* Internal use only */
 int register_pem_bio_handler();
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 size_t SSL_client_hello_get0_random(SSL *pSsl, const unsigned char **pRandomNumber);
 size_t SSL_client_hello_get0_ciphers(SSL *pSsl, const unsigned char **pCiphers);
@@ -1336,9 +1336,9 @@ const char *OPENSSL_cipher_name(const char *rfc_name);
 size_t DTLS_get_data_mtu(const SSL *s);
 #define OSSL_ASYNC_FD       int
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 #define OSSL_BAD_ASYNC_FD   -1
 typedef int (*OPENSSL_sk_compfunc)(const void *, const void *);

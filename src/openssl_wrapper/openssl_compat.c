@@ -23,16 +23,19 @@
  * VxWorks7 has openssl .h files in different locations
  */
 #if defined(__RTOS_VXWORKS__)
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <openssl/err.h>
 #else
 #include <err.h>
 #endif
 #else
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 #include <include/openssl/err.h>
 #else
 #include <crypto/err/err.h>
+#endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#include <include/internal/refcount.h>
 #endif
 #endif
 
@@ -57,6 +60,8 @@
 
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
 void ossl_statem_clear(SSL *s);
+#elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+void ossl_statem_clear(SSL_CONNECTION *s);
 #endif
 
 const char *SSLeay_version(int t)
@@ -214,20 +219,31 @@ const char *SSL_state_string_long(const SSL *s)
 int SSL_state(const SSL *ssl)
 {
      int doHandshakeCount = 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     const SSL_CONNECTION *s = NULL;
+#else
+     const SSL *s = NULL;
+#endif
 
      if(ssl == NULL)
         return -1;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+     s = (const SSL_CONNECTION *)ssl;
+#else
+     s = ssl;
+#endif
  
-     if(1 == NSSL_CHK_CALL(isEstablished,ssl->instance))
+     if(1 == NSSL_CHK_CALL(isEstablished,s->instance))
 	    return (SSL_ST_OK);
      else
      {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if ((ssl->orig_state == SSL_ST_OK) || (ssl->orig_state == SSL_ST_RENEGOTIATE))
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if ((s->orig_state == SSL_ST_OK) || (s->orig_state == SSL_ST_RENEGOTIATE))
         {
             return SSL_ST_OK;
         }
-        else if ((ssl->orig_state & SSL_ST_ACCEPT) && (ssl->state & SSL_ST_ACCEPT_NEGOTIATING))
+        else if ((s->orig_state & SSL_ST_ACCEPT) && (s->state & SSL_ST_ACCEPT_NEGOTIATING))
         {
             do
             {
@@ -235,18 +251,18 @@ int SSL_state(const SSL *ssl)
                 if (OK >= SSL_do_handshake((SSL *) ssl))
                     return -1;
 
-            } while (SSL_ST_OK != ssl->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
-            if (SSL_ST_OK == ssl->orig_state)
+            } while (SSL_ST_OK != s->orig_state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+            if (SSL_ST_OK == s->orig_state)
             {
                 return SSL_ST_OK;
             }
         }
 #else
-        if ((ssl->orig_s.state == SSL_ST_OK) || (ssl->orig_s.state == SSL_ST_RENEGOTIATE))
+        if ((s->orig_s.state == SSL_ST_OK) || (s->orig_s.state == SSL_ST_RENEGOTIATE))
         {
             return SSL_ST_OK;
         }
-        else if ((ssl->orig_s.state & SSL_ST_ACCEPT) && (ssl->state & SSL_ST_ACCEPT_NEGOTIATING))
+        else if ((s->orig_s.state & SSL_ST_ACCEPT) && (s->state & SSL_ST_ACCEPT_NEGOTIATING))
         {
             do
             {
@@ -254,18 +270,18 @@ int SSL_state(const SSL *ssl)
                 if (OK >= SSL_do_handshake((SSL *) ssl))
                     return -1;
 
-            } while (SSL_ST_OK != ssl->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
-            if (SSL_ST_OK == ssl->orig_s.state)
+            } while (SSL_ST_OK != s->orig_s.state && doHandshakeCount < MAX_HANDSHAKE_ATTEMPT);
+            if (SSL_ST_OK == s->orig_s.state)
             {
                 return SSL_ST_OK;
             }
         }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        if (SSL_SERVER_FLAG == ssl->clientServerFlag)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (SSL_SERVER_FLAG == s->clientServerFlag)
 #else
-        if (SSL_SERVER_METHOD == ssl->ssl_ctx->ssl_method->server_or_client)
+        if (SSL_SERVER_METHOD == s->ssl_ctx->ssl_method->server_or_client)
 #endif
         {
            return (SSL_ST_ACCEPT);
@@ -276,10 +292,25 @@ int SSL_state(const SSL *ssl)
         }
      }
 }
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 OSSL_HANDSHAKE_STATE SSL_get_state(const SSL *ssl)
 {
-    return ssl->orig_s.statem.hand_state;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *s = NULL;
+#else
+    const SSL *s = NULL;
+#endif
+    
+    if (ssl == NULL)
+        return TLS_ST_BEFORE;
+    
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s = (const SSL_CONNECTION *)ssl;
+#else
+    s = ssl;
+#endif
+    
+    return s->orig_s.statem.hand_state;
 }
 #elif defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__)
 int SSL_get_state(const SSL *s)
@@ -407,7 +438,7 @@ int SSL_get_state(const SSL *s)
             else
                 state = TLS_ST_CR_CERT_STATUS;
             break;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         case SSL_KEY_UPDATE:
         {
             sbyte4 keyUpdateType = 0;
@@ -467,13 +498,18 @@ const char *SSL_state_string(const SSL *s)
 
 void SSL_set_connect_state(SSL *s)
 {
-    if(s)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *ssl = (SSL_CONNECTION *) s;
+#else
+    SSL *ssl = s;
+#endif
+    if(ssl)
     {
-        s->clientServerFlag = SSL_CLIENT_FLAG;
-        s->orig_s.shutdown = 0;
-        s->state = SSL_ST_CONNECT | SSL_ST_BEFORE;
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-        ossl_statem_clear(s);
+        ssl->clientServerFlag = SSL_CLIENT_FLAG;
+        ssl->orig_s.shutdown = 0;
+        ssl->state = SSL_ST_CONNECT | SSL_ST_BEFORE;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        ossl_statem_clear(ssl);
 #endif
     }
 }
@@ -498,7 +534,14 @@ SSL_SESSION_new(void)
         return (0);
     }
     /* Start reference at 1, same as OpenSSL */
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (!CRYPTO_NEW_REF(&ss->references, 1)) {
+        OPENSSL_free(ss);
+        return NULL;
+    }
+#else
     ss->references = 1;
+#endif
     ss->session_id_length = 0;
     return ss;
 }
@@ -508,8 +551,16 @@ SSL_SESSION_up_ref(SSL_SESSION *ses)
 {
     if (ses == NULL)
         return 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    int i;
+
+    if (CRYPTO_UP_REF(&ses->references, &i) <= 0)
+        return 0;
+    return ((i > 1) ? 1 : 0);
+#else
     ses->references++;
     return 1;
+#endif
 }
 
 extern void
@@ -517,13 +568,22 @@ SSL_SESSION_free(SSL_SESSION *ses)
 {
     if (ses)
     {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        int i;
+        CRYPTO_DOWN_REF(&ses->references, &i);
+        if (i > 0)
+            return;
+#else
         if (--ses->references > 0)
 	        return;
+#endif
 
         CRYPTO_free_ex_data(CRYPTO_EX_INDEX_SSL_SESSION, ses, &ses->ex_data);
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#if !defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         CRYPTO_THREAD_lock_free(ses->lock);
+#endif
 
         if (NULL != ses->ext.alpn_selected)
         {
@@ -563,6 +623,9 @@ SSL_SESSION_free(SSL_SESSION *ses)
             ses->sess_cert = NULL;
         }
 #endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        CRYPTO_FREE_REF(&ses->references);
+#endif
         memset((ubyte*)ses, 0, sizeof(SSL_SESSION));
         OSSL_FREE(ses);
     }
@@ -571,10 +634,20 @@ SSL_SESSION_free(SSL_SESSION *ses)
 extern SSL_SESSION *
 SSL_get1_session(SSL *ssl)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *s = NULL;
+#else
+    SSL *s = NULL;
+#endif
 
     if(NULL != ssl) 
     {
-        if(NULL != ssl->session) 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        s = (SSL_CONNECTION *)ssl;
+#else
+        s = ssl;
+#endif
+        if(NULL != s->session) 
         {
             return SSL_SESSION_reference(SSL_get_session(ssl)); 
         }
@@ -586,7 +659,16 @@ extern SSL_SESSION*
 SSL_SESSION_reference(SSL_SESSION* ses)
 {
     if (ses)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    {
+        int i;
+
+        if (CRYPTO_UP_REF(&ses->references, &i) <= 0)
+            return NULL;
+    }
+#else
         ses->references++;
+#endif
     return ses;
 }
 
@@ -594,28 +676,40 @@ SSL_SESSION_reference(SSL_SESSION* ses)
 extern int
 SSL_set_session(SSL *to, SSL_SESSION *session)
 {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *s = NULL;
+#else
+    SSL *s = NULL;
+#endif
+
     if (!to)
         return 0; /* invalid argument */
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    s = (SSL_CONNECTION *)to;
+#else
+    s = to;
+#endif
+
     /* If passed session is NULL free the session */
     if (!session)
-        if (to->session)
+        if (s->session)
         {
-            SSL_SESSION_free(to->session);
-            to->session = NULL;
+            SSL_SESSION_free(s->session);
+            s->session = NULL;
             return 1;
         }
 
-    if (to->session)
-        SSL_SESSION_free(to->session);
+    if (s->session)
+        SSL_SESSION_free(s->session);
 
-    if(NULL != (to->session = SSL_SESSION_reference(session))) {
-        to->verify_result = session->verify_result;
+    if(NULL != (s->session = SSL_SESSION_reference(session))) {
+        s->verify_result = session->verify_result;
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     SSL_set_psk_use_session_callback(to, NULL);
-    to->registerRetrievePSK = 1;
+    s->registerRetrievePSK = 1;
 #endif
 
     return 1;
@@ -629,18 +723,32 @@ SSL_set_session(SSL *to, SSL_SESSION *session)
 STACK_OF(X509) *SSL_get_peer_cert_chain(const SSL *s)
 {
     STACK_OF(X509)* pCertChain = NULL;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *sc = NULL;
+#else
+    const SSL *sc = NULL;
+#endif
 
-    if((s == NULL) || (s->session == NULL))
+    if(s == NULL)
+        return NULL;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    sc = (const SSL_CONNECTION *)s;
+#else
+    sc = s;
+#endif
+
+    if(sc->session == NULL)
     {
         return NULL;
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    pCertChain = s->session->peer_chain;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pCertChain = sc->session->peer_chain;
 #else
-    if (s->session->sess_cert != NULL)
+    if (sc->session->sess_cert != NULL)
     {
-        pCertChain = s->session->sess_cert->cert_chain;
+        pCertChain = sc->session->sess_cert->cert_chain;
     }
 #endif
 
@@ -726,7 +834,13 @@ int SSL_get_verify_mode(const SSL *s)
      if(s == NULL)
         return 0;
 
-     return s->orig_s.verify_mode;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *sc = (const SSL_CONNECTION *)s;
+#else
+    const SSL *sc = s;
+#endif
+
+     return sc->orig_s.verify_mode;
 }
 
 int (*SSL_CTX_get_verify_callback(const SSL_CTX *ctx)) (int, X509_STORE_CTX *) {
@@ -749,24 +863,35 @@ void SSL_set_verify(SSL *s, int mode,
 {
     ubyte4 sslFlags  = 0;
     int authModeFlag = 0;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *sc = NULL;
+#else
+    SSL *sc = NULL;
+#endif
 
     if(s == NULL)
         return;
 
-    s->orig_s.verify_mode = mode;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    sc = (SSL_CONNECTION *)s;
+#else
+    sc = s;
+#endif
+
+    sc->orig_s.verify_mode = mode;
     if (callback != NULL)
     {
-        s->orig_s.verify_callback = callback;
+        sc->orig_s.verify_callback = callback;
     }
 
-    if((s->orig_s.verify_mode & SSL_VERIFY_PEER) || (s->ssl_ctx->verify_mode & SSL_VERIFY_PEER)){
+    if((sc->orig_s.verify_mode & SSL_VERIFY_PEER) || (sc->ssl_ctx->verify_mode & SSL_VERIFY_PEER)){
         /* allow mutual auth */
         authModeFlag = 1L/*SSL_FLAG_REQUIRE_MUTUAL_AUTH*/;
     } else {
         authModeFlag = 2L/*SSL_FLAG_NO_MUTUAL_AUTH_REQUEST*/;
     }
 
-    if (OK > NSSL_CHK_CALL(getSessionFlags, s->instance, &sslFlags))
+    if (OK > NSSL_CHK_CALL(getSessionFlags, sc->instance, &sslFlags))
     {
         return;
     }
@@ -775,7 +900,7 @@ void SSL_set_verify(SSL *s, int mode,
     sslFlags &= ~(1L/*SSL_FLAG_NO_MUTUAL_AUTH_REQUEST*/);
     sslFlags &= ~(2L/*SSL_FLAG_REQUIRE_MUTUAL_AUTH*/);
 
-    if (OK > NSSL_CHK_CALL(setSessionFlags, s->instance, (sslFlags | authModeFlag)))
+    if (OK > NSSL_CHK_CALL(setSessionFlags, sc->instance, (sslFlags | authModeFlag)))
     {
         return;
     }
@@ -785,12 +910,19 @@ const char *SSL_get_servername(const SSL *s, const int type)
 {
     if (NULL == s || type != TLSEXT_NAMETYPE_host_name)
         return NULL;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    return s->session && !s->tlsext_hostname ?
-         (const char *) s->session->ext.hostname : (const char *) s->tlsext_hostname;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *sc = (const SSL_CONNECTION *)s;
 #else
-    return s->session && !s->tlsext_hostname ?
-        (const char *) s->session->tlsext_hostname : (const char *) s->tlsext_hostname;
+    const SSL *sc = s;
+#endif
+
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    return sc->session && !sc->tlsext_hostname ?
+         (const char *) sc->session->ext.hostname : (const char *) sc->tlsext_hostname;
+#else
+    return sc->session && !sc->tlsext_hostname ?
+        (const char *) sc->session->tlsext_hostname : (const char *) sc->tlsext_hostname;
 #endif
 
 }
@@ -802,13 +934,19 @@ int SSL_get_servername_type(const SSL *s)
     if (NULL == s)
         return -1;
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
-    pHostname  = (!s->tlsext_hostname ? s->session->ext.hostname : s->tlsext_hostname);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    const SSL_CONNECTION *sc = (const SSL_CONNECTION *)s;
 #else
-    pHostname = (!s->tlsext_hostname ? s->session->tlsext_hostname : s->tlsext_hostname);
+    const SSL *sc = s;
 #endif
 
-    if (s->session && (pHostname))
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pHostname  = (!sc->tlsext_hostname ? sc->session->ext.hostname : sc->tlsext_hostname);
+#else
+    pHostname = (!sc->tlsext_hostname ? sc->session->tlsext_hostname : sc->tlsext_hostname);
+#endif
+
+    if (sc->session && (pHostname))
         return TLSEXT_NAMETYPE_host_name;
     return -1;
 }
@@ -978,7 +1116,7 @@ SSL_SESSION *d2i_SSL_SESSION(
     {
         /* Store ticket values in OpenSSL session structure */
         pNewSession->cipher_id = pTicketData->cipherId;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         pNewSession->ext.tick = OSSL_MALLOC(bufferLen);
         memcpy(pNewSession->ext.tick, *ppBuffer, bufferLen);
         pNewSession->ext.ticklen = bufferLen;
@@ -1003,7 +1141,7 @@ SSL_SESSION *d2i_SSL_SESSION(
 
         if (NULL != pDNSName)
         {
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
             pNewSession->ext.hostname = OSSL_MALLOC(dnsNameLen + 1);
             memcpy(pNewSession->ext.hostname, pDNSName, dnsNameLen);
             pNewSession->ext.hostname[dnsNameLen] = '\0';
@@ -1055,7 +1193,7 @@ int i2d_SSL_SESSION(
         goto exit;
     }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     pHostname = pSession->ext.hostname;
 #else
     pHostname = pSession->tlsext_hostname;
@@ -1066,7 +1204,7 @@ int i2d_SSL_SESSION(
         pBuffer = *ppRetBuffer;
     }
 #if defined(__ENABLE_DIGICERT_SSL_SESSION_TICKET_RFC_5077__)
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     if (NULL != pSession->ext.tick)
     {
         if (pBuffer)
@@ -1137,7 +1275,7 @@ int PEM_write_bio_SSL_SESSION(BIO *bp, SSL_SESSION *x)
         NULL, 0, NULL, NULL);
 }
 
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 size_t SSL_SESSION_get_master_key(
     const SSL_SESSION *pSession,
@@ -1196,4 +1334,4 @@ unsigned long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *s)
     return s->ext.tick_lifetime_hint;
 }
 
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */

@@ -26,6 +26,8 @@
 
 #if defined(__RTOS_LINUX__) || defined(__RTOS_OSX__) || (defined(__RTOS_FREERTOS__) && defined(__RTOS_FREERTOS_ESP32__))
 #define DIR_SLASH   "/"
+#elif defined(__RTOS_WIN32__)
+#define DIR_SLASH   "\\"
 #else
 #error "No directory separator specified for this platform"
 #endif

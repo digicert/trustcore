@@ -181,7 +181,7 @@ function(buildflags targetdir extraFlags mocana_flags)
   endif()
 
   if(CM_BUILD_NANOSSL_LIB)
-    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_1 OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1F OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1I OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1K OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_7 OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_12)
+    if(CM_ENABLE_SSL_OPENSSL_LIB_1_1_1 OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1F OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1I OR CM_ENABLE_SSL_OPENSSL_LIB_1_1_1K OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_7 OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_12 OR CM_ENABLE_SSL_OPENSSL_LIB_3_5_0)
       if(CM_ENABLE_TLS13)
         set(MOCANA_OPENSSL_TLS13_FLAGS_FILE "${targetdir}/../features/mocana_openssl_tls13_flags.txt")
         message("\n MOCANA_OPENSSL_TLS13_FLAGS_FILE = ${MOCANA_OPENSSL_TLS13_FLAGS_FILE}")
@@ -780,6 +780,15 @@ function(buildflags targetdir extraFlags mocana_flags)
 
  if(CM_ENABLE_SSL_OPENSSL_LIB_3_0_7 OR CM_ENABLE_SSL_OPENSSL_LIB_3_0_12)
     set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OPENSSL_LIB_3_0__")
+ endif()
+
+ if(CM_ENABLE_SSL_OPENSSL_LIB_3_5_0)
+    set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_OPENSSL_LIB_3_5__")
+ endif()
+
+ # Disable QUIC for OpenSSL 3.5 to avoid undefined symbol references
+ if(CM_ENABLE_SSL_OPENSSL_LIB_3_5_0)
+    set(MOCANA_FLAGS "${MOCANA_FLAGS} -DOPENSSL_NO_QUIC")
  endif()
 
   if(CM_ENABLE_SSL_SESSION_CACHE)

@@ -7,7 +7,7 @@
  * https://www.openssl.org/source/license.html
  */
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +28,9 @@
 #else
 #include "ssl/ssl_local.h"
 #endif /* __RTOS_VXWORKS__ */
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#include "internal/ssl_unwrap.h"
+#endif
 #endif
 
 struct ssl_async_args {
@@ -46,38 +49,53 @@ static int ssl_start_async_job(SSL *s, struct ssl_async_args *args,
                                int (*func) (void *))
 {
     int ret;
-    if (s->waitctx == NULL) {
-        s->waitctx = ASYNC_WAIT_CTX_new();
-        if (s->waitctx == NULL)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *ssl = SSL_CONNECTION_FROM_SSL(s);
+    if (ssl == NULL)
+        return 0;
+#else
+    SSL *ssl = s;
+#endif
+
+    if (ssl->waitctx == NULL) {
+        ssl->waitctx = ASYNC_WAIT_CTX_new();
+        if (ssl->waitctx == NULL)
             return -1;
     }
-    switch (ASYNC_start_job(&s->job, s->waitctx, &ret, func, args,
+    switch (ASYNC_start_job(&ssl->job, ssl->waitctx, &ret, func, args,
                             sizeof(struct ssl_async_args))) {
     case ASYNC_ERR:
-        s->rwstate = SSL_NOTHING;
+        ssl->rwstate = SSL_NOTHING;
         SSLerr(SSL_F_SSL_START_ASYNC_JOB, SSL_R_FAILED_TO_INIT_ASYNC);
         return -1;
     case ASYNC_PAUSE:
-        s->rwstate = SSL_ASYNC_PAUSED;
+        ssl->rwstate = SSL_ASYNC_PAUSED;
         return -1;
     case ASYNC_NO_JOBS:
-        s->rwstate = SSL_ASYNC_NO_JOBS;
+        ssl->rwstate = SSL_ASYNC_NO_JOBS;
         return -1;
     case ASYNC_FINISH:
-        s->job = NULL;
+        ssl->job = NULL;
         return ret;
     default:
-        s->rwstate = SSL_NOTHING;
+        ssl->rwstate = SSL_NOTHING;
         SSLerr(SSL_F_SSL_START_ASYNC_JOB, ERR_R_INTERNAL_ERROR);
         /* Shouldn't happen */
         return -1;
     }
 }
 
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+void ossl_statem_set_in_init(SSL_CONNECTION *sc, int init)
+{
+    sc->statem.in_init = init;
+}
+#else
 void ossl_statem_set_in_init(SSL *s, int init)
 {
     s->statem.in_init = init;
 }
+#endif
 
 /*
  * Called when we are in SSL_read*(), SSL_write*(), or SSL_accept()
@@ -87,7 +105,11 @@ void ossl_statem_set_in_init(SSL *s, int init)
  * attempting to read data (SSL_read*()), or -1 if we are in SSL_do_handshake()
  * or similar.
  */
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+int ossl_statem_check_finish_init(SSL_CONNECTION *s, int sending)
+#else
 void ossl_statem_check_finish_init(SSL *s, int sending)
+#endif
 {
     if (sending == -1) {
         if (s->statem.hand_state == TLS_ST_PENDING_EARLY_DATA_END
@@ -119,6 +141,9 @@ void ossl_statem_check_finish_init(SSL *s, int sending)
                 && s->statem.hand_state == TLS_ST_EARLY_DATA)
             ossl_statem_set_in_init(s, 1);
     }
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    return 1;
+#endif
 }
 
 static int ssl_io_intern(void *vargs)
@@ -127,16 +152,28 @@ static int ssl_io_intern(void *vargs)
     SSL *s;
     void *buf;
     size_t num;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *sc;
+#endif
+    size_t *asyncrw_ptr;
 
     args = (struct ssl_async_args *)vargs;
     s = args->s;
     buf = args->buf;
     num = args->num;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if ((sc = SSL_CONNECTION_FROM_SSL(s)) == NULL)
+        return -1;
+    asyncrw_ptr = &sc->asyncrw;
+#else
+    asyncrw_ptr = &s->asyncrw;
+#endif
+
     switch (args->type) {
     case READFUNC:
-        return args->f.func_read(s, buf, num, &s->asyncrw);
+        return args->f.func_read(s, buf, num, asyncrw_ptr);
     case WRITEFUNC:
-        return args->f.func_write(s, buf, num, &s->asyncrw);
+        return args->f.func_write(s, buf, num, asyncrw_ptr);
     case OTHERFUNC:
         return args->f.func_other(s);
     }
@@ -145,18 +182,26 @@ static int ssl_io_intern(void *vargs)
 
 int ssl_read_internal(SSL *s, void *buf, size_t num, size_t *readbytes)
 {
-    if (s->handshake_func == NULL) {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *ssl = SSL_CONNECTION_FROM_SSL(s);
+    if (ssl == NULL)
+        return -1;
+#else
+    SSL *ssl = s;
+#endif
+
+    if (ssl->handshake_func == NULL) {
         SSLerr(SSL_F_SSL_READ_INTERNAL, SSL_R_UNINITIALIZED);
         return -1;
     }
 
-    if (s->shutdown & SSL_RECEIVED_SHUTDOWN) {
-        s->rwstate = SSL_NOTHING;
+    if (ssl->shutdown & SSL_RECEIVED_SHUTDOWN) {
+        ssl->rwstate = SSL_NOTHING;
         return 0;
     }
 
-    if (s->early_data_state == SSL_EARLY_DATA_CONNECT_RETRY
-                || s->early_data_state == SSL_EARLY_DATA_ACCEPT_RETRY) {
+    if (ssl->early_data_state == SSL_EARLY_DATA_CONNECT_RETRY
+                || ssl->early_data_state == SSL_EARLY_DATA_ACCEPT_RETRY) {
         SSLerr(SSL_F_SSL_READ_INTERNAL, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
         return 0;
     }
@@ -164,9 +209,14 @@ int ssl_read_internal(SSL *s, void *buf, size_t num, size_t *readbytes)
      * If we are a client and haven't received the ServerHello etc then we
      * better do that
      */
-    ossl_statem_check_finish_init(s, 0);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (!ossl_statem_check_finish_init(ssl, 0))
+        return -1;
+#else
+    ossl_statem_check_finish_init(ssl, 0);
+#endif
 
-    if ((s->mode & SSL_MODE_ASYNC) && ASYNC_get_current_job() == NULL) {
+    if ((ssl->mode & SSL_MODE_ASYNC) && ASYNC_get_current_job() == NULL) {
         struct ssl_async_args args;
         int ret;
 
@@ -177,36 +227,61 @@ int ssl_read_internal(SSL *s, void *buf, size_t num, size_t *readbytes)
         args.f.func_read = s->method->ssl_read;
 
         ret = ssl_start_async_job(s, &args, ssl_io_intern);
-        *readbytes = s->asyncrw;
+        *readbytes = ssl->asyncrw;
         return ret;
     } else {
         return s->method->ssl_read(s, buf, num, readbytes);
     }
 }
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+int ssl_write_internal(SSL *s, const void *buf, size_t num, uint64_t flags, size_t *written)
+#else
 int ssl_write_internal(SSL *s, const void *buf, size_t num, size_t *written)
+#endif
 {
-    if (s->handshake_func == NULL) {
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *ssl = SSL_CONNECTION_FROM_SSL(s);
+    if (ssl == NULL)
+        return 0;
+#else
+    SSL *ssl = s;
+#endif
+
+    if (ssl->handshake_func == NULL) {
         SSLerr(SSL_F_SSL_WRITE_INTERNAL, SSL_R_UNINITIALIZED);
         return -1;
     }
 
-    if (s->shutdown & SSL_SENT_SHUTDOWN) {
-        s->rwstate = SSL_NOTHING;
+    if (ssl->shutdown & SSL_SENT_SHUTDOWN) {
+        ssl->rwstate = SSL_NOTHING;
         SSLerr(SSL_F_SSL_WRITE_INTERNAL, SSL_R_PROTOCOL_IS_SHUTDOWN);
         return -1;
     }
 
-    if (s->early_data_state == SSL_EARLY_DATA_CONNECT_RETRY
-                || s->early_data_state == SSL_EARLY_DATA_ACCEPT_RETRY
-                || s->early_data_state == SSL_EARLY_DATA_READ_RETRY) {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (flags != 0) {
+        SSLerr(SSL_F_SSL_WRITE_INTERNAL, SSL_R_UNSUPPORTED_WRITE_FLAG);
+        return -1;
+    }
+#endif
+
+    if (ssl->early_data_state == SSL_EARLY_DATA_CONNECT_RETRY
+                || ssl->early_data_state == SSL_EARLY_DATA_ACCEPT_RETRY
+                || ssl->early_data_state == SSL_EARLY_DATA_READ_RETRY) {
         SSLerr(SSL_F_SSL_WRITE_INTERNAL, ERR_R_SHOULD_NOT_HAVE_BEEN_CALLED);
         return 0;
     }
     /* If we are a client and haven't sent the Finished we better do that */
-    ossl_statem_check_finish_init(s, 1);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    if (!ossl_statem_check_finish_init(ssl, 1))
+        return -1;
+#else
+    ossl_statem_check_finish_init(ssl, 1);
+#endif
 
-    if ((s->mode & SSL_MODE_ASYNC) && ASYNC_get_current_job() == NULL) {
+    if ((ssl->mode & SSL_MODE_ASYNC) && ASYNC_get_current_job() == NULL) {
         int ret;
         struct ssl_async_args args;
 
@@ -217,7 +292,7 @@ int ssl_write_internal(SSL *s, const void *buf, size_t num, size_t *written)
         args.f.func_write = s->method->ssl_write;
 
         ret = ssl_start_async_job(s, &args, ssl_io_intern);
-        *written = s->asyncrw;
+        *written = ssl->asyncrw;
         return ret;
     } else {
         return s->method->ssl_write(s, buf, num, written);
@@ -381,7 +456,11 @@ static int ssl_write(BIO *b, const char *buf, size_t size, size_t *written)
 
     BIO_clear_retry_flags(b);
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    ret = ssl_write_internal(ssl, buf, size, 0, written);
+#else
     ret = ssl_write_internal(ssl, buf, size, written);
+#endif
 
     switch (SSL_get_error(ssl, ret)) {
     case SSL_ERROR_NONE:
@@ -436,6 +515,9 @@ static long ssl_ctrl(BIO *b, int cmd, long num, void *ptr)
     BIO *dbio, *bio;
     long ret = 1;
     BIO *next;
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    SSL_CONNECTION *sc = NULL;
+#endif
 
     bs = BIO_get_data(b);
     next = BIO_next(b);
@@ -444,12 +526,23 @@ static long ssl_ctrl(BIO *b, int cmd, long num, void *ptr)
         return 0;
     switch (cmd) {
     case BIO_CTRL_RESET:
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if ((sc = SSL_CONNECTION_FROM_SSL_ONLY(ssl)) == NULL)
+            return 0;
+#endif
         SSL_shutdown(ssl);
 
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if (sc->handshake_func == ssl->method->ssl_connect)
+            SSL_set_connect_state(ssl);
+        else if (sc->handshake_func == ssl->method->ssl_accept)
+            SSL_set_accept_state(ssl);
+#else
         if (ssl->handshake_func == ssl->method->ssl_connect)
             SSL_set_connect_state(ssl);
         else if (ssl->handshake_func == ssl->method->ssl_accept)
             SSL_set_accept_state(ssl);
+#endif
 
         if (!SSL_clear(ssl)) {
             ret = 0;
@@ -458,8 +551,13 @@ static long ssl_ctrl(BIO *b, int cmd, long num, void *ptr)
 
         if (next != NULL)
             ret = BIO_ctrl(next, cmd, num, ptr);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        else if (sc->rbio != NULL)
+            ret = BIO_ctrl(sc->rbio, cmd, num, ptr);
+#else
         else if (ssl->rbio != NULL)
             ret = BIO_ctrl(ssl->rbio, cmd, num, ptr);
+#endif
         else
             ret = 1;
         break;
@@ -498,10 +596,13 @@ static long ssl_ctrl(BIO *b, int cmd, long num, void *ptr)
         bs->ssl = ssl;
         bio = SSL_get_rbio(ssl);
         if (bio != NULL) {
+            if (!BIO_up_ref(bio)) {
+                ret = 0;
+                break;
+            }
             if (next != NULL)
                 BIO_push(bio, next);
             BIO_set_next(b, bio);
-            BIO_up_ref(bio);
         }
         BIO_set_init(b, 1);
         break;
@@ -519,26 +620,45 @@ static long ssl_ctrl(BIO *b, int cmd, long num, void *ptr)
         BIO_set_shutdown(b, (int)num);
         break;
     case BIO_CTRL_WPENDING:
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        ret = BIO_ctrl(SSL_get_wbio(ssl), cmd, num, ptr);
+#else
         ret = BIO_ctrl(ssl->wbio, cmd, num, ptr);
+#endif
         break;
     case BIO_CTRL_PENDING:
         ret = SSL_pending(ssl);
         if (ret == 0)
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+            ret = BIO_pending(SSL_get_rbio(ssl));
+#else
             ret = BIO_pending(ssl->rbio);
+#endif
         break;
     case BIO_CTRL_FLUSH:
         BIO_clear_retry_flags(b);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        ret = BIO_ctrl(SSL_get_wbio(ssl), cmd, num, ptr);
+#else
         ret = BIO_ctrl(ssl->wbio, cmd, num, ptr);
+#endif
         BIO_copy_next_retry(b);
         break;
     case BIO_CTRL_PUSH:
-        if ((next != NULL) && (next != ssl->rbio)) {
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        if ((next != NULL) && (next != SSL_get_rbio(ssl)))     
+#else
+        if ((next != NULL) && (next != ssl->rbio))
+#endif
+        {
             /*
              * We are going to pass ownership of next to the SSL object...but
              * we don't own a reference to pass yet - so up ref
              */
-            BIO_up_ref(next);
-            SSL_set_bio(ssl, next, next);
+           if (!BIO_up_ref(next))
+                ret = 0;
+            else
+                SSL_set_bio(ssl, next, next);
         }
         break;
     case BIO_CTRL_POP:
@@ -586,13 +706,21 @@ static long ssl_ctrl(BIO *b, int cmd, long num, void *ptr)
         ret = (dbs->ssl != NULL);
         break;
     case BIO_C_GET_FD:
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        ret = BIO_ctrl(SSL_get_rbio(ssl), cmd, num, ptr);
+#else
         ret = BIO_ctrl(ssl->rbio, cmd, num, ptr);
+#endif
         break;
     case BIO_CTRL_SET_CALLBACK:
         ret = 0; /* use callback ctrl */
         break;
     default:
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        ret = BIO_ctrl(SSL_get_rbio(ssl), cmd, num, ptr);
+#else
         ret = BIO_ctrl(ssl->rbio, cmd, num, ptr);
+#endif
         break;
     }
     return ret;
@@ -608,7 +736,11 @@ static long ssl_callback_ctrl(BIO *b, int cmd, BIO_info_cb *fp)
     ssl = bs->ssl;
     switch (cmd) {
     case BIO_CTRL_SET_CALLBACK:
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        ret = BIO_callback_ctrl(SSL_get_rbio(ssl), cmd, fp);
+#else
         ret = BIO_callback_ctrl(ssl->rbio, cmd, fp);
+#endif
         break;
     default:
         ret = 0;
