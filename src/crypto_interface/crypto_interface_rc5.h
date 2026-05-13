@@ -187,6 +187,20 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_MocRC5GetIv (
   ubyte4 ivLen
   );
 
+/** Clone an RC5 context.
+ *
+ * @param pCtx The RC5 context to clone.
+ * @param ppNewCtx Address where the cloned context will be stored.
+ *
+ * @return     \c OK (0) if successful; otherwise a negative number error code
+ *             definition from merrors.h.
+ */
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_MocRC5CloneCtx (
+  MOC_SYM(hwAccelDescr hwAccelCtx)
+  BulkCtx pCtx,
+  BulkCtx *ppNewCtx
+  );
+
 #ifdef __cplusplus
 }
 #endif

@@ -102,6 +102,21 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_DeleteChaCha20Ctx (
   );
 
 /**
+ * @brief             Clone a ChaCha20 context.
+ *
+ * @param pCtx        Context to clone.
+ * @param ppNewCtx    Pointer to receive the cloned context.
+ *
+ * @return            \c OK (0) if successful, otherwise a negative number
+ *                    error code from merrors.h
+ */
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_CloneChaCha20Ctx (
+  MOC_SYM(hwAccelDescr hwAccelCtx)
+  BulkCtx pCtx,
+  BulkCtx *ppNewCtx
+  );
+
+/**
  @brief      Set values for the nonce and counter blocks for ChaCha20 context.
              This function specifically is for ssh protocol, this function assumes
              an 8 byte counter and an 8 byte nonce.

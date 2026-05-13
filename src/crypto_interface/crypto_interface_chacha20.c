@@ -74,6 +74,16 @@
 /*----------------------------------------------------------------------------*/
 
 #ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
+#define MOC_CHACHA20_CLONE(_status, _pCtx, _ppCtx) \
+    _status = CloneChaCha20Ctx(MOC_SYM(hwAccelCtx) _pCtx, _ppCtx)
+#else
+#define MOC_CHACHA20_CLONE(_status, _pCtx, _ppCtx) \
+    _status = ERR_CRYPTO_INTERFACE_NO_IMPLEMENTATION_AVAILABLE
+#endif
+
+/*----------------------------------------------------------------------------*/
+
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__
 #define MOC_CHACHA20POLY1305_CREATE(_pCtx, _pKey, _keyLen, _encrypt)          \
     _pCtx = ChaCha20Poly1305_createCtx (                                      \
       MOC_SYM(hwAccelCtx) _pKey, _keyLen, _encrypt);                         \
@@ -355,6 +365,62 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_CHACHA20_setNonceAndCounterSSH(
   }
 
 exit:
+  return status;
+}
+
+/*----------------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_CloneChaCha20Ctx (
+  MOC_SYM(hwAccelDescr hwAccelCtx)
+  BulkCtx pCtx,
+  BulkCtx *ppNewCtx
+  )
+{
+  MSTATUS status;
+  ChaCha20Ctx *pChaChaCtx = NULL;
+  ChaCha20Ctx *pNewChaChaCtx = NULL;
+  MocSymCtx pNewSymCtx = NULL;
+
+  status = ERR_NULL_POINTER;
+  if ( (NULL == pCtx) || (NULL == ppNewCtx) )
+    goto exit;
+
+  pChaChaCtx = (ChaCha20Ctx *)pCtx;
+
+  if (CRYPTO_INTERFACE_ALGO_ENABLED == pChaChaCtx->enabled)
+  {
+    /* Clone the underlying MocSymCtx */
+    status = CRYPTO_cloneMocSymCtx(pChaChaCtx->pMocSymCtx, &pNewSymCtx);
+    if (OK != status)
+      goto exit;
+
+    status = DIGI_CALLOC((void **)&pNewChaChaCtx, 1, sizeof(ChaCha20Ctx));
+    if (OK != status)
+      goto exit;
+
+    status = DIGI_MEMCPY((void *)pNewChaChaCtx, (void *)pChaChaCtx, sizeof(ChaCha20Ctx));
+    if (OK != status)
+      goto exit;
+
+    pNewChaChaCtx->pMocSymCtx = pNewSymCtx;
+    pNewSymCtx = NULL;
+    *ppNewCtx = (BulkCtx)pNewChaChaCtx;
+    pNewChaChaCtx = NULL;
+  }
+  else
+  {
+    MOC_CHACHA20_CLONE(status, pCtx, ppNewCtx);
+  }
+
+exit:
+  if (NULL != pNewSymCtx)
+  {
+    CRYPTO_freeMocSymCtx(&pNewSymCtx);
+  }
+  if (NULL != pNewChaChaCtx)
+  {
+    DIGI_FREE((void **)&pNewChaChaCtx);
+  }
   return status;
 }
 

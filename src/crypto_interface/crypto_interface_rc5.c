@@ -107,6 +107,17 @@ typedef struct _RC5CTX_SHADOW
 
 /*---------------------------------------------------------------------------*/
 
+#if (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__)) && \
+    (defined(__ENABLE_DIGICERT_RC5__))
+#define MOC_RC5_CLONE(_status, _pCtx, _ppNewCtx)             \
+    _status = MocRC5CloneCtx(MOC_SYM(hwAccelCtx) _pCtx, _ppNewCtx);
+#else
+#define MOC_RC5_CLONE(_status, _pCtx, _ppNewCtx)             \
+    _status = ERR_CRYPTO_INTERFACE_NO_IMPLEMENTATION_AVAILABLE
+#endif
+
+/*---------------------------------------------------------------------------*/
+
 MOC_EXTERN MSTATUS CRYPTO_INTERFACE_MocCreateRC5Ctx (
     MOC_SYM(hwAccelDescr hwAccelCtx)
     ubyte *keyMaterial,
@@ -292,4 +303,58 @@ exit:
     
     return status;
 }
+
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_MocRC5CloneCtx (
+    MOC_SYM(hwAccelDescr hwAccelCtx)
+    BulkCtx pCtx,
+    BulkCtx *ppNewCtx
+    )
+{
+    MSTATUS status = ERR_NULL_POINTER;
+    RC5CTX_SHADOW *pRc5Ctx = NULL;
+    RC5CTX_SHADOW *pNewRc5Ctx = NULL;
+    MocSymCtx pNewSymCtx = NULL;
+
+    if ((NULL == pCtx) || (NULL == ppNewCtx))
+        goto exit;
+
+    pRc5Ctx = (RC5CTX_SHADOW *)pCtx;
+
+    if (CRYPTO_INTERFACE_ALGO_ENABLED == pRc5Ctx->enabled)
+    {
+        /* Clone the underlying MocSymCtx */
+        status = CRYPTO_cloneMocSymCtx(pRc5Ctx->pMocSymCtx, &pNewSymCtx);
+        if (OK != status)
+            goto exit;
+
+        status = DIGI_CALLOC((void **)&pNewRc5Ctx, 1, sizeof(RC5CTX_SHADOW));
+        if (OK != status)
+            goto exit;
+
+        status = DIGI_MEMCPY((void *)pNewRc5Ctx, (void *)pRc5Ctx, sizeof(RC5CTX_SHADOW));
+        if (OK != status)
+            goto exit;
+
+        pNewRc5Ctx->pMocSymCtx = pNewSymCtx;
+        pNewSymCtx = NULL;
+        *ppNewCtx = (BulkCtx)pNewRc5Ctx;
+        pNewRc5Ctx = NULL;
+    }
+    else
+    {
+        MOC_RC5_CLONE(status, pCtx, ppNewCtx);
+    }
+
+exit:
+    if (NULL != pNewSymCtx)
+    {
+        CRYPTO_freeMocSymCtx(&pNewSymCtx);
+    }
+    if (NULL != pNewRc5Ctx)
+    {
+        DIGI_FREE((void **)&pNewRc5Ctx);
+    }
+    return status;
+}
+
 #endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE_RC5__ */

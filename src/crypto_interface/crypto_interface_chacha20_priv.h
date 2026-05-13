@@ -32,6 +32,7 @@ extern "C" {
 #define DoChaCha20                      CRYPTO_INTERFACE_DoChaCha20
 #define DeleteChaCha20Ctx               CRYPTO_INTERFACE_DeleteChaCha20Ctx
 #define CHACHA20_setNonceAndCounterSSH  CRYPTO_INTERFACE_CHACHA20_setNonceAndCounterSSH
+#define CloneChaCha20Ctx                CRYPTO_INTERFACE_CloneChaCha20Ctx
 
 #if ( defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_POLY1305_MAPPING__)) && \
     (!defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_POLY1305_INTERNAL__))

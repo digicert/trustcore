@@ -34,6 +34,7 @@ extern "C" {
 #define MocRC5Final     CRYPTO_INTERFACE_MocRC5Final
 #define MocReinitRC5Ctx CRYPTO_INTERFACE_MocReinitRC5Ctx
 #define MocRC5GetIv     CRYPTO_INTERFACE_MocRC5GetIv
+#define MocRC5CloneCtx  CRYPTO_INTERFACE_MocRC5CloneCtx
 #endif
 
 #ifdef __cplusplus
