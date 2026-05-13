@@ -1,0 +1,67 @@
+32a33,43
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+> #include "digitest_cnf.h"
+> #define PRINT_TEST_BEGIN(NAME, FILENAME, LINENUM)   TEST_info("######## BEGIN TEST=%s, FILE=%s, LINE=%d ########", NAME, FILENAME, LINENUM)
+> #define PRINT_TEST_END(NAME, FILENAME, LINENUM)   TEST_info("######## END TEST=%s, FILE=%s, LINE=%d ########", NAME, FILENAME, LINENUM)
+> #define PRINT_TEST_PASS(NAME, FILENAME, LINENUM)   TEST_info("!!! PASSED TEST=%s, FILE=%s, LINE=%d !!!", NAME, FILENAME, LINENUM)
+> #else
+> #define PRINT_TEST_BEGIN(NAME, FILENAME, LINENUM)
+> #define PRINT_TEST_END(NAME, FILENAME, LINENUM)
+> #define PRINT_TEST_PASS(NAME, FILENAME, LINENUM)
+> #endif
+> 
+35a47,50
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+> static DigiTestFilter digiTestFilter = {0};
+> #endif
+> 
+4976a4992
+>         PRINT_TEST_BEGIN(t->meth->name, t->s.test_file, t->s.start);
+4980a4997
+>             PRINT_TEST_END(t->meth->name, t->s.test_file, t->s.start);
+4986a5004,5007
+>         else {
+>             PRINT_TEST_PASS(t->meth->name, t->s.test_file, t->s.start);
+>         }
+>         PRINT_TEST_END(t->meth->name, t->s.test_file, t->s.start);
+5209a5231,5239
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+>         if (!checkIfProviderShortlisted(&digiTestFilter, pp->value)) {
+>             TEST_info("Skipping, %s provider not shortlisted in "
+>                     "digitest conf file. Test:%s:%d",
+>                     pp->value, t->s.test_file, t->s.start);
+>             t->skip = 1;
+>             return 0;
+>         }
+> #endif
+5255a5286,5296
+>     /* Check the algo being executed based on first key value and proceed */
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+>     if (!checkIfAlgoShortlisted(&digiTestFilter, pp->value)) {
+>         TEST_info("Skipping, '%s = %s' test as algo '%s' is not shortlisted in "
+>                 "digitest conf file. Test:%s:%d",
+>                 pp->key, pp->value, pp->value, t->s.test_file, t->s.start);
+>         t->skip = 1;
+>         return 0;
+>     }
+> #endif
+> 
+5436a5478,5491
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+>     char *digitestConfFile = getenv(ENV_PATH_DIGITEST_CNF);
+> 
+>     if (NULL != digitestConfFile)
+>     {
+>         if (loadDigiTestConf(digitestConfFile, &digiTestFilter) <= 0)
+>         {
+>             TEST_error("Failed loading digicert test configuration file '%s'",
+>                      digitestConfFile);
+>             return 0;
+>         }
+>     }
+> #endif
+> 
+5445a5501,5503
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+>     free_digiTestFilter(&digiTestFilter);
+> #endif

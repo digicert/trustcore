@@ -13,6 +13,9 @@ function show_usage
   echo "   --pkcs11           - Build TAP with PKCS11"
   echo "   --gdb              - Build a Debug version or Makefiles & Projects. (Release is default)."
   echo "   --debug            - Build with Mocana logging enabled for specific build executable."
+  echo "   --openssl_3_0_7    - Build with openssl 3.0.7."
+  echo "   --openssl_3_0_12   - Build with openssl 3.0.12."
+  echo "   --openssl_3_5_0    - Build with openssl 3.5.0."
   echo "   --x32              - Build for 32-bit platforms."
   echo "   --x64              - Build for 64-bit platforms."
   echo "   --toolchain <rpi32 | rpi64 | bbb | android> - Specify the toolchain to be used"
@@ -92,11 +95,15 @@ do
             ;;
         --openssl_3_0_7)
             echo "Build with openssl 3.0.7...";
-	    BUILD_OPTIONS+=" -DCM_OPENSSL_LIB=openssl-3.0.7"
+	        BUILD_OPTIONS+=" -DCM_OPENSSL_LIB=openssl-3.0.7"
             ;;
         --openssl_3_0_12)
             echo "Build with openssl 3.0.12...";
             BUILD_OPTIONS+=" -DCM_OPENSSL_LIB=openssl-3.0.12"
+            ;;
+        --openssl_3_5_0)
+            echo "Build with openssl 3.5.0...";
+	        BUILD_OPTIONS+=" -DCM_OPENSSL_LIB=openssl-3.5.0"
             ;;
         --build-for-osi)
             echo "Enabling BUILD_FOR_OSI...";

@@ -1279,4 +1279,113 @@ exit:
   return status;
 }
 
+/*------------------------------------------------------------------*/
+
+MSTATUS MocRC5CloneCtx(MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCtx, BulkCtx *ppNewCtx)
+{
+  MSTATUS status;
+  MocRc5LocalCtx *pSrcCtx = (MocRc5LocalCtx *)pCtx;
+  MocRc5LocalCtx *pNewCtx = NULL;
+  ubyte *pBuf = NULL;
+  void *pNewKeyTable = NULL;
+  ubyte4 blockSize, vectorSize, bufSize;
+
+  status = ERR_NULL_POINTER;
+  if (NULL == pCtx || NULL == ppNewCtx)
+    goto exit;
+
+  *ppNewCtx = NULL;
+
+  blockSize = pSrcCtx->rc5Ctx.blockSizeBits >> 3;
+  vectorSize = (NULL != pSrcCtx->pInitVector) ? (2 * blockSize) : 0;
+  bufSize = sizeof(MocRc5LocalCtx) + vectorSize + blockSize + pSrcCtx->rc5Ctx.keyDataLen;
+
+  status = DIGI_CALLOC((void **)&pBuf, bufSize, 1);
+  if (OK != status)
+    goto exit;
+
+  pNewCtx = (MocRc5LocalCtx *)pBuf;
+  *pNewCtx = *pSrcCtx;
+
+  pNewCtx->rc5Ctx.pKeyTable = NULL;
+  pNewCtx->rc5Ctx.keyTableSize = 0;
+
+  if (0 != vectorSize)
+  {
+    pNewCtx->pInitVector    = pBuf + sizeof(MocRc5LocalCtx);
+    pNewCtx->pCurrentVector = pNewCtx->pInitVector + blockSize;
+    pNewCtx->pLeftovers     = pNewCtx->pCurrentVector + blockSize;
+  }
+  else
+  {
+    pNewCtx->pInitVector    = NULL;
+    pNewCtx->pCurrentVector = NULL;
+    pNewCtx->pLeftovers     = pBuf + sizeof(MocRc5LocalCtx);
+  }
+
+  pNewCtx->rc5Ctx.pKeyData = pNewCtx->pLeftovers + blockSize;
+
+  /* Copy IV and current vector if present. */
+  if (0 != vectorSize)
+  {
+    status = DIGI_MEMCPY(
+      (void *)pNewCtx->pInitVector, (void *)pSrcCtx->pInitVector, blockSize);
+    if (OK != status)
+      goto exit;
+
+    status = DIGI_MEMCPY(
+      (void *)pNewCtx->pCurrentVector, (void *)pSrcCtx->pCurrentVector, blockSize);
+    if (OK != status)
+      goto exit;
+  }
+
+  /* Copy any leftover bytes. */
+  if (0 != pSrcCtx->leftoverLen)
+  {
+    status = DIGI_MEMCPY(
+      (void *)pNewCtx->pLeftovers, (void *)pSrcCtx->pLeftovers,
+      pSrcCtx->leftoverLen);
+    if (OK != status)
+      goto exit;
+  }
+
+  status = DIGI_MEMCPY(
+    (void *)pNewCtx->rc5Ctx.pKeyData, (void *)pSrcCtx->rc5Ctx.pKeyData,
+    pSrcCtx->rc5Ctx.keyDataLen);
+  if (OK != status)
+    goto exit;
+
+  status = DIGI_MALLOC(&pNewKeyTable, pSrcCtx->rc5Ctx.keyTableSize);
+  if (OK != status)
+    goto exit;
+
+  status = DIGI_MEMCPY(
+    pNewKeyTable, pSrcCtx->rc5Ctx.pKeyTable, pSrcCtx->rc5Ctx.keyTableSize);
+  if (OK != status)
+    goto exit;
+
+  pNewCtx->rc5Ctx.pKeyTable    = pNewKeyTable;
+  pNewCtx->rc5Ctx.keyTableSize = pSrcCtx->rc5Ctx.keyTableSize;
+  pNewKeyTable = NULL;
+
+  *ppNewCtx = (BulkCtx)pNewCtx;
+  pBuf = NULL;
+
+exit:
+
+  if (NULL != pNewKeyTable)
+  {
+    DIGI_MEMSET(pNewKeyTable, 0, pSrcCtx->rc5Ctx.keyTableSize);
+    DIGI_FREE((void **)&pNewKeyTable);
+  }
+
+  if (NULL != pBuf)
+  {
+    DIGI_MEMSET((void *)pBuf, 0, bufSize);
+    DIGI_FREE((void **)&pBuf);
+  }
+
+  return status;
+}
+
 #endif /* defined(__ENABLE_DIGICERT_RC5__) */

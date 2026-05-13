@@ -32,10 +32,12 @@ function show_usage
   echo "   --openssl_1_1_1k  - Build with openssl 1.1.1k."
   echo "   --openssl_3_0_7   - Build with openssl 3.0.7."
   echo "   --openssl_3_0_12  - Build with openssl 3.0.12."
+  echo "   --openssl_3_5_0   - Build with openssl 3.5.0."
   echo "   --rsa1024         - Build with RSA 1024 support."
   echo "   --rsa_8k          - Build with RSA 8K support."
   echo "   --sha1            - Build with support for SHA1."
   echo "   --disable-rc5     - Build with RC5 disabled."
+  echo "   --disable-md4     - Build with MD4 disabled (for OpenSSL 3.5 connector CMS test; one test will only run when this option is passed)."
   echo "   --ocsp            - Build with OCSP support."
   echo "   --ocsp_cert       - Build with OCSP Cert API support."
   echo "   --disable-servername-validation - Server flag to ignore the certificate common name."
@@ -112,6 +114,7 @@ SHA1_OPTION=""
 RC5_DISABLE_OPTION=""
 RC5_DISABLE_CRYPTO_OPTION=""
 OSSL3_RC5_OPTION="enable-rc5"
+OSSL3_DISABLE_MD4_OPTION=""
 OCSP_OPTION=""
 OCSP_CERT_OPTION=""
 URI_OPTION=""
@@ -260,6 +263,15 @@ do
             SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
             OSSL_VER="3"
             ;;
+        --openssl_3_5_0)
+            echo "Build with openssl 3.5.0..."
+            OPENSSL_OPTION=" $1"
+            OPENSSL_LIB_OPTION="openssl-3.5.0"
+            OPENSSL_ENGINE_TYPE=
+            OPENSSL_VER="3.5.0"
+            SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
+            OSSL_VER="3"
+            ;;
         --rsa1024)
             echo "Build with support for RSA 1024";
             RSA1024_OPTION=" $1"
@@ -277,6 +289,10 @@ do
             RC5_DISABLE_CRYPTO_OPTION=" $1"
             RC5_DISABLE_OPTION="disable_rc5=true"
             OSSL3_RC5_OPTION=
+            ;;
+        --disable-md4)
+            echo "Build with MD4 disabled";
+            OSSL3_DISABLE_MD4_OPTION="no-md4"
             ;;
         --static)
             echo "Build static library..";
@@ -541,21 +557,21 @@ do
     if [ "$pass" == "first" ]; then
         cd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}
         if [[ "$OSSL_CONFIG_CMD" == "" ]]; then
-            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]; then
-                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 enable-mocana-cryptointerface enable-mocana-tap ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} ${OSSL_PQC_OPTION}
+            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
+                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 $OSSL3_DISABLE_MD4_OPTION enable-mocana-cryptointerface enable-mocana-tap ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} ${OSSL_PQC_OPTION}
             else
                 ./config $OPENSSL_GDB_OPTIONS $OPENSSL_ENGINE_TYPE
             fi
         else
             eval ${OSSL_CONFIG_CMD}
-            if [[ "$OPENSSL_VER" == "1.1.1" ]] || [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]; then
+            if [[ "$OPENSSL_VER" == "1.1.1" ]] || [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
                 make $FIPS_MAKE_OPTION $REDEFINE_LIB_OPTION $STRICT_DH_OPTION_OSSL build_generated
             fi
         fi
 
         if [[ "$STATIC_OPTION" == "" ]]; then
             make clean
-            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]
+            if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
             then
                 make build_libs
                 cp ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/libcrypto.so* ${MSS_DIR}/${BIN_DIR}
@@ -586,7 +602,7 @@ do
 done
 
 if [[ "$STATIC_OPTION" == "" ]]; then
-    if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]
+    if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
     then
         cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so
         cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so.3

@@ -35,6 +35,7 @@ function show_usage
   echo "   --rsa1024         - Build with RSA 1024 support."
   echo "   --rsa_8k          - Build with RSA 8K support."
   echo "   --disable-rc5     - Build with RC5 disabled."
+  echo "   --disable-md4     - Build with MD4 disabled (for OpenSSL 3.5 connector CMS test; one test will only run when this option is passed)."
   echo "   --sha1            - Build with support for SHA1."
   echo "   --enable_ecp192   - Build with support for EC P-192."
   echo "   --ocsp            - Build with OCSP support."
@@ -114,6 +115,7 @@ SHA1_OPTION=""
 RC5_DISABLE_OPTION=""
 RC5_DISABLE_CRYPTO_OPTION=""
 OSSL3_RC5_OPTION="enable-rc5"
+OSSL3_DISABLE_MD4_OPTION=""
 OCSP_OPTION=""
 OCSP_CERT_OPTION=""
 URI_OPTION=""
@@ -298,6 +300,10 @@ do
             RC5_DISABLE_CRYPTO_OPTION=" $1"
             RC5_DISABLE_OPTION="disable_rc5=true"
             OSSL3_RC5_OPTION=
+            ;;
+        --disable-md4)
+            echo "Build with MD4 disabled";
+            OSSL3_DISABLE_MD4_OPTION="no-md4"
             ;;
         --static)
             echo "Build static library..";
@@ -572,7 +578,7 @@ do
         cd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}
         if [[ "$OSSL_CONFIG_CMD" == "" ]]; then
             if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
-                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 enable-mocana-cryptointerface ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test ${OSSL_EXTRA_OPTS} ${OSSL_PQC_OPTION} ${LEGACY_FIPS_DEFINE}
+                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 $OSSL3_DISABLE_MD4_OPTION enable-mocana-cryptointerface ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test ${OSSL_EXTRA_OPTS} ${OSSL_PQC_OPTION} ${LEGACY_FIPS_DEFINE}
             else
                 ./config $OPENSSL_GDB_OPTIONS $OPENSSL_ENGINE_TYPE
                 makefile="${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/engines/mocana/Makefile"

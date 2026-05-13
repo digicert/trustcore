@@ -17,8 +17,9 @@ function show_usage
   echo "   --gdb              - Build Debug version."
   echo "   --debug            - Build with Mocana logging enabled for specific build executable."
   echo "   --nlr              - Don't rebuild ANY suporting libraries."
-  echo "   --openssl_3_0_7   - Build with openssl 3.0.7."
-  echo "   --openssl_3_0_12   - Build with openssl 3.0.12."  
+  echo "   --openssl_3_0_7    - Build with openssl 3.0.7."
+  echo "   --openssl_3_0_12   - Build with openssl 3.0.12."
+  echo "   --openssl_3_5_0    - Build with openssl 3.5.0."
   echo "   --orp              - Don't rebuild mss supporting libraries, only rebuild the provider and test(s)."
   echo "   --ossl-digi-test   - Build the openssl test suite for digiprov."
   echo "   --tap-local        - Build TAP local with TPM2"
@@ -135,6 +136,17 @@ do
             OPENSSL_LIB_OPTION="openssl-3.0.7"
             OPENSSL_ENGINE_TYPE=
             OPENSSL_VER="3.0.7"
+            SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
+            OSSL_VER="3"
+            OSSL_EXTRA_OPTS+=" -D__ENABLE_DIGICERT_OSSL_V3_TEST__"
+            OSSL_EXTRA_OPTS+=" enable-moc-ossl-v3-test"
+            ;;
+	--openssl_3_5_0)
+            echo "Build with openssl 3.5.0...";
+	    OPENSSL_OPTION=" $1"
+            OPENSSL_LIB_OPTION="openssl-3.5.0"
+            OPENSSL_ENGINE_TYPE=
+            OPENSSL_VER="3.5.0"
             SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
             OSSL_VER="3"
             OSSL_EXTRA_OPTS+=" -D__ENABLE_DIGICERT_OSSL_V3_TEST__"

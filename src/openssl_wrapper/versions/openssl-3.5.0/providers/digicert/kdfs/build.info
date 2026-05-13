@@ -1,0 +1,11 @@
+# We make separate GOAL variables for each algorithm
+
+$NIST_KDF_GOAL=../../libdigiprov.a
+$HMAC_KDF_GOAL=../../libdigiprov.a
+$X963_KDF_GOAL=../../libdigiprov.a
+$PBKDF2_GOAL=../../libdigiprov.a
+
+SOURCE[$NIST_KDF_GOAL]=digi_nist_kdf.c
+SOURCE[$HMAC_KDF_GOAL]=digi_hmac_kdf.c
+SOURCE[$X963_KDF_GOAL]=digi_x963_kdf.c
+SOURCE[$PBKDF2_GOAL]=digi_pbkdf.c

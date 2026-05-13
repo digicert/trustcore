@@ -1,0 +1,51 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+#
+
+$COMMON_GOAL=../../libdigiprov.a
+$AES_GOAL=../../libdigiprov.a
+$TDES_GOAL=../../libdigiprov.a
+$DES_GOAL=../../libdigiprov.a
+$BF_GOAL=../../libdigiprov.a
+$RC4_GOAL=../../libdigiprov.a
+$RC5_GOAL=../../libdigiprov.a
+$CHACHA_GOAL=../../libdigiprov.a
+$CHACHAPOLY_GOAL=../../libdigiprov.a
+
+# This source is common building blocks for all ciphers in all our providers.
+SOURCE[$COMMON_GOAL]=\
+        digi_ciphercommon.c digi_ciphercommon_block.c
+
+SOURCE[$AES_GOAL]=\
+        digi_cipher_aes.c digi_cipher_aes_gcm.c digi_cipher_aes_ccm.c digi_cipher_aes_keywrap.c
+
+IF[{- !$disabled{des} -}]
+SOURCE[$DES_GOAL]=\
+        digi_cipher_des.c
+SOURCE[$TDES_GOAL]=\
+        digi_cipher_tdes.c
+ENDIF
+
+IF[{- !$disabled{bf} -}]
+SOURCE[$BF_GOAL]=\
+        digi_cipher_blowfish.c
+ENDIF
+
+IF[{- !$disabled{rc4} -}]
+SOURCE[$RC4_GOAL]=\
+        digi_cipher_rc4.c
+ENDIF
+
+IF[{- !$disabled{rc5} -}]
+SOURCE[$RC5_GOAL]=\
+        digi_cipher_rc5.c
+ENDIF
+
+IF[{- !$disabled{chacha} -}]
+  SOURCE[$CHACHA_GOAL]=\
+      digi_cipher_chacha20.c
+ IF[{- !$disabled{poly1305} -}]
+  SOURCE[$CHACHAPOLY_GOAL]=\
+      digi_cipher_chacha20_poly1305.c
+ ENDIF
+ENDIF
