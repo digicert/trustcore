@@ -426,6 +426,18 @@ MOC_EXTERN MSTATUS MocRC5GetIv (
   ubyte4 ivLen
   );
 
+/**
+ * Clone RC5 context previously created with MocCreateRC5Ctx.
+ *
+ * @param pCtx     Pointer to a BulkCtx returned by MocCreateRC5Ctx.
+ * @param ppNewCtx Double pointer to the BulkCtx to be created and populated with
+ *                 the key data from the source key.
+ *
+ * @return     \c OK (0) if successful, otherwise a negative number
+ *             error code from merrors.h.
+ */
+MOC_EXTERN MSTATUS MocRC5CloneCtx (MOC_SYM(hwAccelDescr hwAccelCtx) BulkCtx pCtx, BulkCtx *ppNewCtx);
+
 #ifdef __cplusplus
 }
 #endif
