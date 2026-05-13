@@ -1,6 +1,7 @@
 name: OpenSSL Connector Unit Tests
 
 on:
+  workflow_dispatch: {}
   pull_request:
     paths:
       - "scripts/openssl/**"
@@ -16,7 +17,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        openssl_version: ["3.0.7", "3.0.12"]
+        openssl_version: ["3.0.7", "3.0.12", "3.5.0"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -38,8 +39,10 @@ jobs:
         run: |
           if [ "${{ matrix.openssl_version }}" = "3.0.7" ]; then
             ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_0_7 --ossl-digi-test
-          else
+          elif [ "${{ matrix.openssl_version }}" = "3.0.12" ]; then
             ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_0_12 --ossl-digi-test
+          else
+            ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_5_0 --ossl-digi-test
           fi
 
       - name: Run digiprov_test
@@ -55,8 +58,10 @@ jobs:
         run: |
           if [ "${{ matrix.openssl_version }}" = "3.0.7" ]; then
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_7
-          else
+          elif [ "${{ matrix.openssl_version }}" = "3.0.12" ]; then
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_12
+          else
+            ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_5_0
           fi
 
       - name: Run OpenSSL Crypto Tests

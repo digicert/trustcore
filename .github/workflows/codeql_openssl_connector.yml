@@ -6,16 +6,20 @@ on:
     branches: [ "main" ]
     paths:
       - "scripts/openssl/**"
+      - "scripts/nanossl/openssl_connector/**"
       - "src/openssl_wrapper/**"
       - "src/ssl/**"
       - "projects/nanossl/**"
+      - ".github/workflows/codeql_openssl_connector.yml"
   pull_request:
     branches: [ "main" ]
     paths:
       - "scripts/openssl/**"
+      - "scripts/nanossl/openssl_connector/**"
       - "src/openssl_wrapper/**"
       - "src/ssl/**"
       - "projects/nanossl/**"
+      - ".github/workflows/codeql_openssl_connector.yml"
 
 jobs:
   analyze:
@@ -33,6 +37,9 @@ jobs:
           - openssl_version: "3_0_12"
             full_url: "https://github.com/openssl/openssl/releases/download/openssl-3.0.12/openssl-3.0.12.tar.gz"
             openssl_version_display: "3.0.12"
+          - openssl_version: "3_5_0"
+            full_url: "https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz"
+            openssl_version_display: "3.5.0"
     permissions:
       security-events: write
       packages: read
