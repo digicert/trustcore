@@ -1,0 +1,173 @@
+The following sample apps demonstrate usage of OpenSSL APIs to connect to an HTTPS server.
+
+openssl_client.c
+----------------
+This is the standard openssl_client from the community, modified to connect
+to https://www.rediff.com without mutual authentication.
+
+Build:
+    $ make openssl_client
+
+Execute:
+    $ ./openssl_client
+
+
+openssl_client_tpm.c
+--------------------
+This openssl_client should be used if using TPM keys and it has mutual authentication enabled.
+
+Build:
+    $ make openssl_client_tpm
+
+Execute:
+    $ ./openssl_client_tpm
+
+
+openssl_dtls_server.c
+---------------------
+openssl_dtls_server demonstrates DTLS server. This can be executed against DTLS client.
+Execute the DTLS client with "127.0.0.1" as IP and 1440as the port.
+
+Build:
+    $ make openssl_dtls_server
+
+Execute:
+    $ ./openssl_dtls_server
+
+
+openssl_dtls_client.c
+--------------------
+This openssl_client demonstrates the DTLS. Run it against a DTLS enabled server.
+Run the server on the same machine listening on port 1440.
+
+Build:
+    $ make openssl_dtls_client
+
+Execute:
+    $ ./openssl_dtls_client
+
+
+openssl_client_local.c
+----------------------------------------------------------------------------------------------------------
+The following command line arguments are used to set up openssl without TAP:
+
+Openssl Client command line parameters and corresponding compile flags:
+
+Default SSL server build flags
+  --h | ?
+  --ssl_port <port>
+  --ssl_servername <server_name>
+  --ssl_certpath <path_to_files>
+  --ssl_ca_cert <cert_name>
+  --ssl_testrun <test choice>
+
+when mauth or post handshake is enabled :
+  --ssl_client_cert <cert_name>
+  --ssl_client_keyblob <blob_name>
+
+
+default settings:
+ssl_port              1440
+ssl_servername        webapptap.securitydemos.net
+ssl_certpath          "../../../bin/keystore"
+ssl_client_cert       "ClientECCCertCA384.pem"
+ssl_client_keyblob    "ClientECCCertCA384Key.pem"
+ssl_ca_cert           "ECCCertCA384.pem"
+ssl_testrun           "default"
+
+
+openssl client uses these default settings:
+ssl_port              1440
+ssl_server_cert       "../../../bin/keystore/RSACertCA.pem"
+ssl_server_keyblob    "../../../bin/keystore/RSACertCAKey.pem"
+ssl_ca_cert           "../../../bin/keystore/ClientRSACert.pem"
+
+
+by using Openssl connector examples :
+using software generated keys without mauth
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun default
+         or
+    <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local
+
+using software generated keys with mauth
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true mauth=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun default
+        or 
+  <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local
+
+tls13 psk feature testing :
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true psk=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun psk
+
+tls13 0rtt feature testing :
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true 0rtt=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun 0rtt
+
+tls13 key_update feature testing :
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true key_update=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun keyupdate
+
+tls13 posthandshake auth feature testing :
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true posthandshake_auth=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun posthandshake
+
+tls13 key_update and posthandshake feature testing  :
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true posthandshake_auth=true key_update=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun keyupdate,posthandshake
+
+tls13 all features testing :
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true psk=true 0rtt=true posthandshake_auth=true key_update=true clean openssl_client_local
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_client_local --ssl_testrun all
+3. ssl_testrun command accepts combination of different tests such as psk and 0rtt ./openssl_client_local --ssl_testrun psk,0rtt
+
+openssl_server.c
+----------------------------------------------------------------------------------------------------------
+The following command line arguments are used to set up openssl without TAP:
+
+Openssl Server command line parameters and corresponding compile flags:
+
+Default SSL server build flags
+  --h | ?
+  --ssl_port <port>
+  --ssl_servername <server_name>
+  --ssl_certpath <path_to_files>
+  --ssl_server_cert <cert_name>
+  --ssl_server_keyblob <blob_name>
+
+when mauth is enabled :
+  --ssl_ca_cert <cert_name>
+
+
+default settings:
+ssl_port              1440
+ssl_servername        webapptap.securitydemos.net
+ssl_certpath          "../../../keystore"
+ssl_server_cert       "ECCCertCA384.pem"
+ssl_server_keyblob    "ECCCertCA384Key.pem"
+ssl_ca_cert           "ClientECCCertCA384.pem"
+
+using software generated keys without mauth:
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true clean openssl_server
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_server   ( it uses the default settings)
+
+using software generated keys with mauth:
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true mauth=true clean openssl_server
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_server ( it uses the default settings)
+
+tls1.3 features testing:
+1. <mss/thirdparty/openssl-1.1.1{X}/sample> make -f Makefile suiteb=true gdb=true psk=true 0rtt=true posthandshake_auth=true mauth=true clean openssl_server
+2. <mss/thirdparty/openssl-1.1.1{X}/sample> ./openssl_server ( it uses the default settings)
+
+by using openssl libs :
+----------------------------------------------------
+
+Inter-operability test with Openssl:
+
+1. No mauth
+   1. (echo -ne "GET /"; cat ) | openssl s_client -connect <server_ip>:<port> -CAfile <ca_file>
+   2.  enter q , followed by Ctrl ^C
+
+2. Mauth testing
+  1. (echo -ne "GET /"; cat ) | openssl s_client -connect <server_ip>:<port> -CAfile <ca_file> -cert <cert_file> -key <key_file>
+  2.  enter q , followed by Ctrl ^C

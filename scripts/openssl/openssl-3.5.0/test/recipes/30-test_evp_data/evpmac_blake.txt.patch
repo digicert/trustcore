@@ -1,0 +1,156 @@
+146,175c146,175
+< MAC = BLAKE2BMAC
+< Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+< Custom = "email"
+< Input = "Sample input for keylen<blocklen and custom"
+< Output = fb7abee8f585b0d844a3c7db211b8f50a3a5de9bb20a560eb095d05430a60e83f3d44a84c84e8a8ef79eef694551418a05c7495d10aae051e9c63822dfa59e7c
+< 
+< MAC = BLAKE2BMAC
+< Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+< Custom = "blockchain"
+< Input = "Sample input for keylen<blocklen and custom"
+< Output = b971503ceebaa26c98cb7722abaf019d74138d92ff5d82f91a7473ec641ae6811148bc1edbe9db9030fd9a8a965d7f35492d79f602be81f6e2d9b84abc819c62
+< 
+< MAC = BLAKE2BMAC
+< Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+< Salt = a3a5de9b8fcccd0a560eb095a3638bb1
+< Input = "Sample input for keylen<blocklen and salt"
+< Output = a57e6f23123be251f4e8cd04d4313e50bfa2ed5a28a3685dc86398da78503d54a169faabcc186037418636af20718f20797fb883b83ab98f5b2d17ce185b615e
+< 
+< MAC = BLAKE2BMAC
+< Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+< Salt = b4a5b8cd0a009561
+< Input = "Sample input for keylen<blocklen and salt"
+< Output = 709ee3733b179658d326fda6692e6761068d0044895252615bd2a19a14ad4da1ee6ddf613bdf1ae805f97809a140837640c4ce2fece1831b3ccd07544b0d36ab
+< 
+< MAC = BLAKE2BMAC
+< Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+< Custom = "application"
+< Salt = 000102030405060708090a0b0c0d0e0f
+< Input = "Sample input for keylen<blocklen, salt and custom"
+< Output = 233a6c732212f4813ec4c9f357e35297e59a652fd24155205f00363f7c54734ee1e8c7329d92116cbec62db35ebb5d51f9e5c2ba41789b84ac9ebc266918e524
+---
+> #MAC = BLAKE2BMAC
+> #Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+> #Custom = "email"
+> #Input = "Sample input for keylen<blocklen and custom"
+> #Output = fb7abee8f585b0d844a3c7db211b8f50a3a5de9bb20a560eb095d05430a60e83f3d44a84c84e8a8ef79eef694551418a05c7495d10aae051e9c63822dfa59e7c
+> 
+> #MAC = BLAKE2BMAC
+> #Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+> #Custom = "blockchain"
+> #Input = "Sample input for keylen<blocklen and custom"
+> #Output = b971503ceebaa26c98cb7722abaf019d74138d92ff5d82f91a7473ec641ae6811148bc1edbe9db9030fd9a8a965d7f35492d79f602be81f6e2d9b84abc819c62
+> 
+> #MAC = BLAKE2BMAC
+> #Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+> #Salt = a3a5de9b8fcccd0a560eb095a3638bb1
+> #Input = "Sample input for keylen<blocklen and salt"
+> #Output = a57e6f23123be251f4e8cd04d4313e50bfa2ed5a28a3685dc86398da78503d54a169faabcc186037418636af20718f20797fb883b83ab98f5b2d17ce185b615e
+> 
+> #MAC = BLAKE2BMAC
+> #Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+> #Salt = b4a5b8cd0a009561
+> #Input = "Sample input for keylen<blocklen and salt"
+> #Output = 709ee3733b179658d326fda6692e6761068d0044895252615bd2a19a14ad4da1ee6ddf613bdf1ae805f97809a140837640c4ce2fece1831b3ccd07544b0d36ab
+> 
+> #MAC = BLAKE2BMAC
+> #Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+> #Custom = "application"
+> #Salt = 000102030405060708090a0b0c0d0e0f
+> #Input = "Sample input for keylen<blocklen, salt and custom"
+> #Output = 233a6c732212f4813ec4c9f357e35297e59a652fd24155205f00363f7c54734ee1e8c7329d92116cbec62db35ebb5d51f9e5c2ba41789b84ac9ebc266918e524
+194,231c194,231
+< MAC = BLAKE2BMAC
+< Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+< Input = "Combo input with outlen, custom and salt"
+< Custom = "application"
+< Salt = 000102030405060708090a0b0c0d0e0f
+< Ctrl = size:32
+< Output = 51742fc491171eaf6b9459c8b93a44bbf8f44a0b4869a17fa178c8209918ad96
+< 
+< MAC = BLAKE2SMAC
+< Key = 000102030405060708090a0b0c0d0e0f
+< Custom = "email"
+< Input = "Sample input for keylen<blocklen and custom"
+< Output = 099619607617f8767b278d6d76216b91794ea372c9fd3733a4a36e995a767987
+< 
+< MAC = BLAKE2SMAC
+< Key = 000102030405060708090a0b0c0d0e0f
+< Custom = "database"
+< Input = "Sample input for keylen<blocklen and custom"
+< Output = afa468ff12d922c1bfdfe26b7d74f1041e7708e83ee7e128ce878f93e2852ad0
+< 
+< MAC = BLAKE2SMAC
+< Key = 000102030405060708090a0b0c0d0e0f
+< Salt = a205819e78d6d762
+< Input = "Sample input for keylen<blocklen and salt"
+< Output = 29f7d780009ef8f001ec44088622f0752f6c360cda40e3c2181c4f7eacdd9dc6
+< 
+< MAC = BLAKE2SMAC
+< Key = 000102030405060708090a0b0c0d0e0f
+< Salt = d6e437b2
+< Input = "Sample input for keylen<blocklen and salt"
+< Output = aa9dbb8bbad89ea35467f1ff995521121989eb6439f1263e04e87d63a9c2ef28
+< 
+< MAC = BLAKE2SMAC
+< Key = 000102030405060708090a0b0c0d0e0f
+< Custom = "app"
+< Salt = a205819e78d6d762
+< Input = "Sample input for keylen<blocklen, salt and custom"
+< Output = e9f7704dfe5080a4aafe62a806f53ea7f98ffc24175164158f18ec5497b961f5
+---
+> #MAC = BLAKE2BMAC
+> #Key = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+> #Input = "Combo input with outlen, custom and salt"
+> #Custom = "application"
+> #Salt = 000102030405060708090a0b0c0d0e0f
+> #Ctrl = size:32
+> #Output = 51742fc491171eaf6b9459c8b93a44bbf8f44a0b4869a17fa178c8209918ad96
+> 
+> #MAC = BLAKE2SMAC
+> #Key = 000102030405060708090a0b0c0d0e0f
+> #Custom = "email"
+> #Input = "Sample input for keylen<blocklen and custom"
+> #Output = 099619607617f8767b278d6d76216b91794ea372c9fd3733a4a36e995a767987
+> 
+> #MAC = BLAKE2SMAC
+> #Key = 000102030405060708090a0b0c0d0e0f
+> #Custom = "database"
+> #Input = "Sample input for keylen<blocklen and custom"
+> #Output = afa468ff12d922c1bfdfe26b7d74f1041e7708e83ee7e128ce878f93e2852ad0
+> 
+> #MAC = BLAKE2SMAC
+> #Key = 000102030405060708090a0b0c0d0e0f
+> #Salt = a205819e78d6d762
+> #Input = "Sample input for keylen<blocklen and salt"
+> #Output = 29f7d780009ef8f001ec44088622f0752f6c360cda40e3c2181c4f7eacdd9dc6
+> 
+> #MAC = BLAKE2SMAC
+> #Key = 000102030405060708090a0b0c0d0e0f
+> #Salt = d6e437b2
+> #Input = "Sample input for keylen<blocklen and salt"
+> #Output = aa9dbb8bbad89ea35467f1ff995521121989eb6439f1263e04e87d63a9c2ef28
+> 
+> #MAC = BLAKE2SMAC
+> #Key = 000102030405060708090a0b0c0d0e0f
+> #Custom = "app"
+> #Salt = a205819e78d6d762
+> #Input = "Sample input for keylen<blocklen, salt and custom"
+> #Output = e9f7704dfe5080a4aafe62a806f53ea7f98ffc24175164158f18ec5497b961f5
+244,250c244,250
+< MAC = BLAKE2SMAC
+< Key = 000102030405060708090a0b0c0d0e0f
+< Ctrl = size:16
+< Custom = "app"
+< Salt = 0001020304050607
+< Input = "Combo input with outlen, custom and salt"
+< Output = 6808d8daae537a16bf00e837010969a4
+---
+> #MAC = BLAKE2SMAC
+> #Key = 000102030405060708090a0b0c0d0e0f
+> #Ctrl = size:16
+> #Custom = "app"
+> #Salt = 0001020304050607
+> #Input = "Combo input with outlen, custom and salt"
+> #Output = 6808d8daae537a16bf00e837010969a4

@@ -1,0 +1,6 @@
+$DIGI_COMMON_GOAL=../../libdigiprov.a
+
+SOURCE[$DIGI_COMMON_GOAL]=\
+        compat_funcs.c  e_moc_EVP_ciphers.c  e_moc_evp_err.c \
+        mocana_glue.c  moc_dsa_pmeth.c  moc_ec_pmeth.c \
+        digicert_common.c

@@ -24,6 +24,10 @@ The build process downloads OpenSSL source, applies patches, and compiles the co
      ```bash
      wget https://github.com/openssl/openssl/releases/download/openssl-3.0.12/openssl-3.0.12.tar.gz
      ```
+   - For OpenSSL 3.5.0:
+      ```bash
+       wget https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
+      ```
 
 2. Create thirdparty directory and extract the source:
    ```bash
@@ -44,7 +48,7 @@ The build process downloads OpenSSL source, applies patches, and compiles the co
    ./scripts/nanossl/openssl_connector/build_openssl_connector_cap.sh --openssl_3_0_7
    ```
 
-**Note:** For other supported versions (3.0.12 or 1.1.1i), download the corresponding tar.gz, extract it, apply the patch with the version name (e.g., `./apply-patch.sh openssl-3.0.12`), and build with the matching flag (e.g., `--openssl_3_0_12`).
+**Note:** For other supported versions (3.5.0, 3.0.12 or 1.1.1i), download the corresponding tar.gz, extract it, apply the patch with the version name (e.g., `./apply-patch.sh openssl-3.0.12`), and build with the matching flag (e.g., `--openssl_3_0_12`).
 
 ## Common Setup for OpenSSL s_server/s_client
 
@@ -157,7 +161,7 @@ ${PWD}/thirdparty_app/openssl-3.0.7/apps/openssl s_client -CAfile keystore/opens
 
 ## Additional Notes
 
-- **Supported Versions:** OpenSSL 1.1.1i, 3.0.7, and 3.0.12. Build other versions by updating the version in the download, patch, and build script commands.
+- **Supported Versions:** OpenSSL 1.1.1i, 3.0.7, 3.0.12, 3.5.0. Build other versions by updating the version in the download, patch, and build script commands.
 - **Scripts Location:** Build scripts are located in `scripts/nanossl/openssl_connector/` (e.g., `build_openssl_connector_cap.sh`, `build_openssl_connector_tap_local.sh`, `build_openssl_connector_tap_remote.sh`). Run any script with `--help` flag for more build options (e.g., `./scripts/nanossl/openssl_connector/build_openssl_connector_cap.sh --help`).
 - **Keystore:** Ensure keystore files exist in `keystore/openssl_connector/`.
 - **Troubleshooting:** 

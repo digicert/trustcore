@@ -1,0 +1,6 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+
+$PQC_GOAL=../../libdigiprov.a
+
+SOURCE[$PQC_GOAL]=digi_pqc_kem.c

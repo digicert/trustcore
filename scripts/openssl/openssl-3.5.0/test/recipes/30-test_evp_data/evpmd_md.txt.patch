@@ -1,0 +1,52 @@
+48c48
+< Availablein = legacy
+---
+> #Availablein = legacy
+53c53
+< Availablein = legacy
+---
+> #Availablein = legacy
+58c58
+< Availablein = legacy
+---
+> #Availablein = legacy
+63c63
+< Availablein = legacy
+---
+> #Availablein = legacy
+68c68
+< Availablein = legacy
+---
+> #Availablein = legacy
+73c73
+< Availablein = legacy
+---
+> #Availablein = legacy
+78c78
+< Availablein = legacy
+---
+> #Availablein = legacy
+115,125c115,125
+< Digest = MD5-SHA1
+< Input =
+< Output = d41d8cd98f00b204e9800998ecf8427eda39a3ee5e6b4b0d3255bfef95601890afd80709
+< 
+< Digest = MD5-SHA1
+< Input = "abc"
+< Output = 900150983cd24fb0d6963f7d28e17f72a9993e364706816aba3e25717850c26c9cd0d89d
+< 
+< Digest = MD5-SHA1
+< Input = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+< Output = 8215ef0796a20bcaaae116d3876c664a84983e441c3bd26ebaae4aa1f95129e5e54670f1
+---
+> #Digest = MD5-SHA1
+> #Input =
+> #Output = d41d8cd98f00b204e9800998ecf8427eda39a3ee5e6b4b0d3255bfef95601890afd80709
+> 
+> #Digest = MD5-SHA1
+> #Input = "abc"
+> #Output = 900150983cd24fb0d6963f7d28e17f72a9993e364706816aba3e25717850c26c9cd0d89d
+> 
+> #Digest = MD5-SHA1
+> #Input = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+> #Output = 8215ef0796a20bcaaae116d3876c664a84983e441c3bd26ebaae4aa1f95129e5e54670f1

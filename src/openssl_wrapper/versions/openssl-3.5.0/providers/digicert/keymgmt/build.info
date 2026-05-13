@@ -1,0 +1,28 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+
+$DH_GOAL=../../libdigiprov.a
+$DSA_GOAL=../../libdigiprov.a
+$EC_GOAL=../../libdigiprov.a
+$ECX_GOAL=../../libdigiprov.a
+$RSA_GOAL=../../libdigiprov.a
+$MAC_GOAL=../../libdigiprov.a
+$PQC_GOAL=../../libdigiprov.a
+
+IF[{- !$disabled{dh} -}]
+  SOURCE[$DH_GOAL]=digi_dh_kmgmt.c
+ENDIF
+IF[{- !$disabled{dsa} -}]
+  SOURCE[$DSA_GOAL]=digi_dsa_kmgmt.c
+ENDIF
+IF[{- !$disabled{ec} -}]
+  SOURCE[$EC_GOAL]=digi_ec_kmgmt.c
+ENDIF
+
+IF[{- !$disabled{ec} -}]
+  SOURCE[$ECX_GOAL]=digi_ecx_kmgmt.c
+ENDIF
+
+SOURCE[$RSA_GOAL]=digi_rsa_kmgmt.c
+SOURCE[$MAC_GOAL]=digi_mac_kmgmt.c
+SOURCE[$PQC_GOAL]=digi_pqc_kmgmt.c

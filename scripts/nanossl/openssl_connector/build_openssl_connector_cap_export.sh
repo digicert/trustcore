@@ -29,6 +29,7 @@ function show_usage
   echo "   --openssl_1_1_1k  - Build with openssl 1.1.1k."
   echo "   --openssl_3_0_7   - Build with openssl 3.0.7."
   echo "   --openssl_3_0_12  - Build with openssl 3.0.12."
+  echo "   --openssl_3_5_0   - Build with openssl 3.5.0."
   echo "   --enable_extended_master_secret - Build with support for Extended Master Secret"
   echo "   --rsa1024         - Build with RSA 1024 support."
   echo "   --rsa_8k          - Build with RSA 8K support."
@@ -176,6 +177,15 @@ do
             SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
             OSSL_VER="3"
             ;;
+        --openssl_3_5_0)
+            echo "Build with openssl 3.5.0..."
+            OPENSSL_OPTION=" $1"
+            OPENSSL_LIB_OPTION="openssl-3.5.0"
+            OPENSSL_ENGINE_TYPE=
+            OPENSSL_VER="3.5.0"
+            SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
+            OSSL_VER="3"
+            ;;
         --enable_extended_master_secret)
             echo "Build with support for Extended Master Secret";
             NANOSSL_OSSL_OPTIONS+=" $1"
@@ -304,13 +314,13 @@ do
 
     if [ "$pass" == "second" ]; then
         cd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}
-        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]; then
+        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
             ./Configure enable-rc5 enable-mocana-cryptointerface enable-mocana-export ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test
         else
             ./config $OPENSSL_GDB_OPTIONS $OPENSSL_ENGINE_TYPE
         fi
         make clean
-        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]
+        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
         then
             make
             cp ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/libcrypto.so* ${MSS_DIR}/${BIN_DIR}
@@ -338,7 +348,7 @@ do
     fi
 done
 
-if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]]
+if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
 then
     cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so
     cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so.3

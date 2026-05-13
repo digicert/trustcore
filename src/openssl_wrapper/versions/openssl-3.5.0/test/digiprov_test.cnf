@@ -1,0 +1,18 @@
+[Filters]
+Availablein = availablein_sect 
+Algo = algo_sect
+
+#providers listed below will be matched against Availablein value.
+#If the Availablein value matches below then the test is shortlisted for testing.
+#empty section means no filter on Availablein
+# Set the value as 1 is to filter-in/shortlist.
+[availablein_sect]
+default = 1
+fips = 1
+
+#These names are the values passed to the operation keys specified in test data txt file, 
+#They can be values to keys:
+#       Cipher Decrypt Derive Digest Encoding KDF MAC PBE
+#       PrivPubKeyPair Sign Verify VerifyRecover
+# Set the value as 1 is to filter-in/shortlist.
+[algo_sect]

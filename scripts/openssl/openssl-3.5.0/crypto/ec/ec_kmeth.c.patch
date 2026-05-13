@@ -1,0 +1,10 @@
+44a45,51
+> #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
+> const EC_KEY_METHOD *DIGI_EC_KEY_get_default_method(void);
+> const EC_KEY_METHOD *EC_KEY_get_default_method(void)
+> {
+>     return DIGI_EC_KEY_get_default_method();
+> }
+> #else
+48a56
+> #endif
