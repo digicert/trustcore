@@ -1,0 +1,207 @@
+name: "OpenSSL Connector 3.0.12 3rd Party Integration Tests"
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 14 * * 1'   # Monday 8:00 PM IST
+    - cron: '30 14 * * 3'   # Wednesday 8:00 PM IST
+
+permissions:
+  contents: read
+  
+jobs:
+  openssl-connector-3-0-12-3rdparty-integration-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+
+      - name: Clone mocn-qa-m-products
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
+        run: |
+          git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
+  
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update 
+          sudo apt-get install -y cmake python3-pip valgrind expect wget curl build-essential libssl-dev zlib1g-dev libncurses5-dev libreadline-dev libsqlite3-dev libgdbm-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libapr1-dev libaprutil1-dev libpcre3-dev
+          
+          cmake --version
+          pip3 install --upgrade pip
+          pip3 install psutil
+          pip3 install tls-client
+          pip3 install typing_extensions
+          valgrind --version
+          expect -v
+          
+      - name: Map hostnames to runner IP
+        run: |
+          RUNNER_IP=$(hostname -I | awk '{print $1}')
+      
+          echo "Runner IP: $RUNNER_IP"
+      
+          echo "$RUNNER_IP athena.securitydemos.net ossltest.securitydemos.net" | sudo tee -a /etc/hosts
+      
+          cat /etc/hosts
+      
+      - name: Build Python 3.12 from /usr/src
+        run: |
+          cd /usr/src
+      
+          sudo wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz
+          sudo tar xzf Python-3.12.0.tgz
+      
+          # verify directory exists
+          ls -la /usr/src
+      
+          # run everything inside root context
+          sudo bash -c '
+            cd /usr/src/Python-3.12.0 &&
+            ./configure --prefix=/usr --enable-optimizations &&
+            make -j$(nproc) &&
+            make altinstall
+          '
+          
+      - name: Prepare thirdparty_app directory
+        run: |
+          mkdir -p ~/thirdparty_app
+          mkdir -p ~/thirdparty_app/build
+          mkdir -p ~/thirdparty_app/install
+      
+      - name: Install OpenSSL 1.1.1k (fixed layout)
+        run: |
+          cd ~/thirdparty_app
+      
+          wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+          tar -xf openssl-1.1.1k.tar.gz
+      
+          cd openssl-1.1.1k
+      
+          OPENSSL_DIR=~/thirdparty_app/install/openssl-1.1.1k
+      
+          ./config --prefix=$OPENSSL_DIR --openssldir=$OPENSSL_DIR shared
+      
+          make -j$(nproc)
+          make install
+          
+      - name: Install OpenSSL 3.0.12 (fixed layout)
+        run: |
+          cd ~/thirdparty_app
+      
+          wget https://www.openssl.org/source/openssl-3.0.12.tar.gz
+          tar -xf openssl-3.0.12.tar.gz
+      
+          cd openssl-3.0.12
+      
+          OPENSSL_DIR=~/thirdparty_app/install/openssl-3.0.12
+      
+          ./config --prefix=$OPENSSL_DIR --openssldir=$OPENSSL_DIR shared
+      
+          make -j$(nproc)
+          make install
+          
+      - name: Build Node.js v18.16.0
+        run: |
+          cd ~/thirdparty_app
+      
+          wget https://nodejs.org/download/release/v18.16.0/node-v18.16.0.tar.gz
+      
+          tar -xf node-v18.16.0.tar.gz
+      
+          cd node-v18.16.0
+          
+          export OPENSSL_DIR=$PWD/../openssl-3.0.12
+      
+          ./configure --prefix=binary --shared-openssl --shared-openssl-include=$PWD/deps/openssl/openssl/include --shared-openssl-libname crypto,ssl --shared-openssl-libpath=$OPENSSL_DIR
+      
+          make -j$(nproc)
+      
+          touch $PWD/out/Release/obj.target/deps/googletest/gtest_prod.stamp
+      
+          touch $PWD/out/Release/obj.target/tools/icu/icu_implementation.stamp
+          
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      
+      - name: Prepare thirdparty directory
+        run: |
+          mkdir -p thirdparty
+  
+      - name: Install OpenSSL 3.0.12, apply patch and build 
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/openssl-3.0.12/openssl-3.0.12.tar.gz
+          tar -xzf openssl-3.0.12.tar.gz -C thirdparty/
+          
+          cd scripts/openssl
+          ./apply-patch.sh openssl-3.0.12
+          cd ../../
+          
+          ./scripts/nanossl/openssl_connector/build_openssl_connector_cap.sh --gdb --debug --rsa1024 --rsa_8k --sha1 --enable_ecp192 --enable_3des --ocsp --dsa --openssl_load_algos --rehandshake --srp --version-logging --openssl_3_0_12
+          
+          LD_LIBRARY_PATH=$PWD/lib ldd /usr/bin/wget
+          
+      - name: Build and install Apache HTTPD 2.4.57
+        run: |
+          cd thirdparty
+          wget https://archive.apache.org/dist/httpd/httpd-2.4.57.tar.gz --no-check-certificate
+          wget https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz --no-check-certificate
+          wget https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz --no-check-certificate
+      
+          tar -zxvf httpd-2.4.57.tar.gz
+      
+          cd httpd-2.4.57/srclib
+      
+          tar -xzf ../../apr-1.7.0.tar.gz
+          tar -xzf ../../apr-util-1.6.1.tar.gz
+      
+          cd ..
+          
+          export OPENSSL_DIR=$PWD/../openssl-3.0.12
+      
+          ./configure --with-openssl=$OPENSSL_DIR CFLAGS=-g --prefix=/usr/local/httpd-2.4.57/
+      
+          make -j$(nproc)
+          sudo make install
+          
+  
+      - name: Copy SSL Test Files
+        run: |
+          cp -r ~/mocn-qa-m-products/qa_utils/setup_qa_reports/jenkins_auto_integration/* .
+          cp -r ~/mocn-qa-m-products/openssl_shim_test/test_opensource/* .
+  
+      - name: Run OpenSSL Connector 3rd Party Integration Test
+        run: |
+          PYTHONUNBUFFERED=1 python3 python_integration_test_3rd_party.py ossl_3_cap.json
+  
+      - name: Cleanup mocn-qa-m-products
+        run: |
+          rm -rf ~/mocn-qa-m-products
+          
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+  
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="OpenSSL Connector 3.0.12 3rd Party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="OpenSSL Connector 3.0.12 3rd Party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
