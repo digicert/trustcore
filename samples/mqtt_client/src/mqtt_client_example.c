@@ -18,7 +18,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <signal.h>
 
 #include "../common/moptions.h"
 #include "../common/mtypes.h"
@@ -27,6 +26,7 @@
 #include "../common/mocana.h"
 #include "../common/mstdlib.h"
 #include "../common/mfmgmt.h"
+#include "../common/msignal.h"
 #include "../common/mtcp.h"
 #include "../common/mtcp_async.h"
 #include "../crypto/hw_accel.h"
@@ -2734,27 +2734,13 @@ exit:
 static int published = 0;
 
 /*----------------------------------------------------------------------------*/
-static volatile sig_atomic_t shutdownClient;
 
-void MQTT_signalHandler(int dummy)
+static volatile int gShutdownMqttClient;
+
+static void MQTT_signalHandler(int sig)
 {
-    shutdownClient = 1;
-}
-
-MSTATUS MQTT_setupSignalHandler(int signal)
-{
-    MSTATUS status = OK;
-    struct sigaction sa;
-    sa.sa_handler = MQTT_signalHandler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-
-    /* Register the signal handler */
-    if (sigaction(signal, &sa, NULL) == -1) {
-        status = ERR_MQTT;
-    }
-
-    return status;
+    MOC_UNUSED(sig);
+    gShutdownMqttClient = 1;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -2857,10 +2843,10 @@ int main(int argc, char *ppArgv[])
         }
     }
 
-    status = MQTT_setupSignalHandler(SIGINT);
+    status = SIGNAL_registerHandler(MSIGINT, MQTT_signalHandler);
     if (OK != status)
     {
-        printf("MQTT_setupSignalHandler failed with status = %d on line %d\n", status, __LINE__);
+        printf("SIGNAL_registerHandler failed with status = %d on line %d\n", status, __LINE__);
         goto exit;
     }
 
@@ -3113,7 +3099,7 @@ int main(int argc, char *ppArgv[])
                     &pCtx->bytesReceived, 3000);
                 if (OK > status)
                 {
-                    if (0 == shutdownClient)
+                    if (0 == gShutdownMqttClient)
                     {
                         printf("SSL_recv failed with status = %d on line %d\n", status, __LINE__);
                     }
@@ -3132,7 +3118,7 @@ int main(int argc, char *ppArgv[])
                     &pCtx->bytesReceived, 3000);
                 if (OK != status)
                 {
-                    if (0 == shutdownClient)
+                    if (0 == gShutdownMqttClient)
                     {
                         printf("TCP_READ_AVL failed with status = %d on line %d\n", status, __LINE__);
                     }
@@ -3227,7 +3213,7 @@ int main(int argc, char *ppArgv[])
                     status = OK;
                 if (OK > status)
                 {
-                    if (0 == shutdownClient)
+                    if (0 == gShutdownMqttClient)
                     {
                         printf("SSL_recv failed with status = %d on line %d\n", status, __LINE__);
                     }
@@ -3248,7 +3234,7 @@ int main(int argc, char *ppArgv[])
                     status = OK;
                 if (OK != status)
                 {
-                    if (0 == shutdownClient)
+                    if (0 == gShutdownMqttClient)
                     {
                         printf("TCP_READ_AVL failed with status = %d on line %d\n", status, __LINE__);
                     }
@@ -3301,7 +3287,7 @@ int main(int argc, char *ppArgv[])
                     status = OK;
                 if (OK > status)
                 {
-                    if (0 == shutdownClient)
+                    if (0 == gShutdownMqttClient)
                     {
                         printf("SSL_recv failed with status = %d on line %d\n", status, __LINE__);
                     }
@@ -3322,7 +3308,7 @@ int main(int argc, char *ppArgv[])
                     status = OK;
                 if (OK != status)
                 {
-                    if (0 == shutdownClient)
+                    if (0 == gShutdownMqttClient)
                     {
                         printf("TCP_READ_AVL failed with status = %d on line %d\n", status, __LINE__);
                     }
@@ -3354,7 +3340,7 @@ int main(int argc, char *ppArgv[])
             status = MQTT_recv(connInst);
             if (0 > status)
             {
-                if (0 == shutdownClient)
+                if (0 == gShutdownMqttClient)
                 {
                     printf("MQTT_recv failed with status = %d on line %d\n", status, __LINE__);
                 }
