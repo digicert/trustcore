@@ -49,7 +49,7 @@ option(CM_ENABLE_ABSOLUTE_PATH    "Enable absolute path support." ON)
 else()
 option(CM_ENABLE_ABSOLUTE_PATH    "Enable absolute path support." OFF)
 endif()
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   option(CM_ENABLE_POSIX_SUPPORT    "Enable posix support." ON)
 else()
   option(CM_ENABLE_POSIX_SUPPORT    "Enable posix support." OFF)
@@ -72,7 +72,7 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   set(LIB_DIR "${MSS_DIR}/lib")
 endif()
 
@@ -548,7 +548,7 @@ endif()
 if("SHARED" STREQUAL "${LIB_TYPE}")
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  if(BUILD_FOR_OSI)
+  if(BUILD_FOR_OSI AND NOT WIN32)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD
@@ -596,7 +596,7 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
 else()
   add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
-  if(BUILD_FOR_OSI)
+  if(BUILD_FOR_OSI AND NOT WIN32)
       # Copy static library to lib directory
       add_custom_command(
         TARGET ${PROJECT_NAME}

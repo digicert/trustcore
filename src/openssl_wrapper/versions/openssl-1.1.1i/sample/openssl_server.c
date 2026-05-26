@@ -55,8 +55,8 @@
 #include "crypto/mocasymkeys/tap/rsatap.h"
 #include "crypto/mocasymkeys/tap/ecctap.h"
 #include "crypto_interface/cryptointerface.h"
-#endif
 #include "common/tpm2_path.h"
+#endif
 
 
 #define OK                  0
@@ -148,8 +148,10 @@ setDefaultArguments()
     const char defaultServerName[] = "webapptap.securitydemos.net";
     const char defaultServerIp[] = "127.0.0.1";
     const char defaultPortNum[] = "1440";
+#ifdef __ENABLE_DIGICERT_TAP__
     const char defaultTapFile[] = TPM2_CONFIGURATION_FILE;
     const char defaultTapKeySource[] = "TPM2";
+#endif
 
     const char defaultCertFile[] = "ECCCertCA384.pem";
     const char defaultKeyFile[]  = "ECCCertCA384Key.pem";

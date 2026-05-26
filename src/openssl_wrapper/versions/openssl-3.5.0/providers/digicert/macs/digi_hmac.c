@@ -47,6 +47,14 @@
 #include "../../../src/crypto/hmac.h"
 #include "../../../src/crypto_interface/crypto_interface_hmac.h"
 
+#ifdef CONTEXT
+#undef CONTEXT
+#endif
+
+#ifdef BOOLEAN
+#undef BOOLEAN
+#endif
+
 #include "prov/names.h"
 #include "openssl/params.h"
 #include "openssl/provider.h"

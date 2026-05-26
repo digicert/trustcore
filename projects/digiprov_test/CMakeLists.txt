@@ -77,7 +77,7 @@ include(${NCRYPTO_DEFS_FILE})
 
 # Get the full path to our base libraries
 # Note: If library is not found, variable will be empty.
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   set(COMMON_LIB "${MSS_BIN_DIR}/libcommon.so")
   set(ASN1_LIB "${MSS_BIN_DIR}/libasn1.so")
   set(NANOCERT_LIB "${MSS_BIN_DIR}/libnanocert.so")
