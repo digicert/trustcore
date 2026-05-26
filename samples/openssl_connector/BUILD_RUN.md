@@ -359,7 +359,7 @@ set PATH=%CD%\thirdparty_app\openssl-3.0.7;%PATH%
 ## Additional Notes
 
 - **Supported Versions:** OpenSSL 1.1.1i, 3.0.7, 3.0.12, 3.5.0. Build other versions by updating the version in the download, patch, and build script commands.
-- **Scripts Location:** Build scripts are located in `scripts/nanossl/openssl_connector/` (e.g., `build_openssl_connector_cap.sh`, `build_openssl_connector_tap_local.sh`, `build_openssl_connector_tap_remote.sh`). Run any script with `--help` flag for more build options (e.g., `./scripts/nanossl/openssl_connector/build_openssl_connector_cap.sh --help`).
+- **Scripts Location:** Build scripts are located in `scripts/nanossl/openssl_connector/` (e.g., `build_openssl_connector_cap.sh`/`build_openssl_connector_cap.bat`, `build_openssl_connector_tap_local.sh`/`build_openssl_connector_tap_local.bat`, `build_openssl_connector_tap_remote.sh`). Run any script with `--help` flag for more build options (e.g., `./scripts/nanossl/openssl_connector/build_openssl_connector_cap.sh --help` on Linux, `scripts\nanossl\openssl_connector\build_openssl_connector_cap.bat --help` on Windows).
 - **Keystore:** Ensure keystore files exist in `keystore/openssl_connector/`.
 - **Troubleshooting:** 
   - If connections fail, verify certificate paths, and check that `-servername` matches the certificate subject/SAN.
