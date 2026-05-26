@@ -332,7 +332,7 @@ set PATH=%CD%\thirdparty_app\openssl-3.0.7;%PATH%
 **Rebuild openssl_server without mutual authentication:**
 ```cmd
 cd thirdparty\openssl-3.0.7\sample
-build.bat --x64 openssl_server
+build.bat <--x32|--x64> openssl_server
 cd ..\..\..
 ```
 
