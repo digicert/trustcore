@@ -30,20 +30,72 @@ set ERR_INV_ARGS=2
 ::VERBOSE_MODE - Set this variable to non-zero in order to print verbose messages, else set it to 0.
 set VERBOSE_MODE=1
 
-::CMAKE paths
-set CMAKE_PATH=C:\Program Files\CMake\bin
-set CMAKE_BIN="%CMAKE_PATH%\cmake.exe"
+:: Check if VSINSTALLDIR is set (Visual Studio environment required)
+if not defined VSINSTALLDIR (
+    echo ERROR: VSINSTALLDIR is not set. Visual Studio build environment is required.
+    echo Please run this script from a Visual Studio Developer Command Prompt or use vsdevcmd.bat
+    exit /b %ERR_EXIT%
+)
 
-::WIN_BUILD_MODE values - VSIDE is for building VisualStudio generator, and NMAKE for nmake generator
-set WIN_BUILD_MODE=VSIDE
-set VSIDE_GENERATOR_x64="Visual Studio 15 2017 Win64"
-set VSIDE_GENERATOR_x32="Visual Studio 15 2017"
+:: Detect VS version using string substitution (most reliable method)
+set "VS_PATH=%VSINSTALLDIR%"
 
-echo "%VSINSTALLDIR%" | findstr /C:"2019" 1>/NUL
-if %ERRORLEVEL% EQU 0 (
+:: Check for VS 2026 (path contains \18\)
+if not "!VS_PATH:\18\=!"=="!VS_PATH!" (
+    echo Detected Visual Studio 2026
+    set VSIDE_GENERATOR_x64="Visual Studio 18 2026" -A x64
+    set VSIDE_GENERATOR_x32="Visual Studio 18 2026" -A Win32
+    goto :VS_DETECTED
+)
+
+:: Check for VS 2022 (path contains \2022\)
+if not "!VS_PATH:\2022\=!"=="!VS_PATH!" (
+    echo Detected Visual Studio 2022
+    set VSIDE_GENERATOR_x64="Visual Studio 17 2022" -A x64
+    set VSIDE_GENERATOR_x32="Visual Studio 17 2022" -A Win32
+    goto :VS_DETECTED
+)
+
+:: Check for VS 2019 (path contains \2019\)
+if not "!VS_PATH:\2019\=!"=="!VS_PATH!" (
+    echo Detected Visual Studio 2019
     set VSIDE_GENERATOR_x64="Visual Studio 16 2019" -A x64
     set VSIDE_GENERATOR_x32="Visual Studio 16 2019" -A Win32
+    goto :VS_DETECTED
 )
+
+:: If we get here, VSINSTALLDIR is set but version is unknown
+echo ERROR: Unsupported Visual Studio version. VSINSTALLDIR=%VSINSTALLDIR%
+echo Supported versions: Visual Studio 2019, 2022, 2026
+exit /b %ERR_EXIT%
+
+:VS_DETECTED
+:: Set CMAKE path based on VSINSTALLDIR
+set "CMAKE_PATH=%VSINSTALLDIR%Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
+set CMAKE_BIN="!CMAKE_PATH!\cmake.exe"
+
+:: Check if CMAKE binary exists at the VS path
+if exist "!CMAKE_PATH!\cmake.exe" (
+    echo Using CMake from Visual Studio: !CMAKE_BIN!
+    goto :CMAKE_READY
+)
+
+:: CMAKE not found in VS, check if it's in PATH
+where cmake >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo CMake not found in Visual Studio installation, using cmake from PATH
+    set CMAKE_BIN=cmake.exe
+    goto :CMAKE_READY
+)
+
+:: CMAKE not found anywhere
+echo ERROR: CMake is required but not found.
+echo CMake was not found in Visual Studio installation at: !CMAKE_PATH!
+echo CMake is also not available in PATH.
+echo Please install CMake or use a Visual Studio installation that includes CMake.
+exit /b %ERR_EXIT%
+
+:CMAKE_READY
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: -- Variables
@@ -410,5 +462,3 @@ echo ********** Building OpenSSL Connector ********** >>%LOG_FILE%
 call:build_proj & IF ERRORLEVEL 1 goto:end %errorlevel%
 
 GOTO:end 0
-
-

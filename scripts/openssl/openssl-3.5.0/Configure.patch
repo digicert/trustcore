@@ -19,7 +19,7 @@
 >                   "mocana-strict-dh"    => "default",
 836a853
 > my $os_version="";
-848a866,869
+845a863,866
 >         if ($_ eq "VC-WIN64A" || $_ eq "VC-WIN32")
 >                 {
 >                     $os_version="win";

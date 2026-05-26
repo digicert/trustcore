@@ -93,7 +93,7 @@ include(locate_lib)
 # Set the path to the mss directory and source directory
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   set(LIB_DIR "${MSS_DIR}/lib")
 endif()
 if("STATIC" STREQUAL "${LIB_TYPE}")

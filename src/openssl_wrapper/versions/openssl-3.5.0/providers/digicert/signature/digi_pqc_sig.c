@@ -38,6 +38,14 @@
 #include "mocana_glue.h"
 #include "digicert_common.h"
 
+#ifdef CONTEXT
+#undef CONTEXT
+#endif
+
+#ifdef BOOLEAN
+#undef BOOLEAN
+#endif
+
 #include "openssl/evp.h"
 #include "prov/names.h"
 #include "openssl/core_dispatch.h"

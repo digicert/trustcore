@@ -42,7 +42,7 @@
 >     $digi_lib_mss="libmss";
 > } else {
 >     $digi_rtos_flag="__RTOS_LINUX__";
->     $digi_link_path="-L../../lib";
+>     $digi_link_path="-L../../bin -L../../lib";
 >     $digi_link_lib_prefix="-l";
 >     $digi_link_lib_suffix="";
 >     $digi_lib_mss="mss";

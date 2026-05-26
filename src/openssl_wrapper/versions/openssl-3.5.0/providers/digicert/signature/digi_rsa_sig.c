@@ -45,6 +45,14 @@
 #include "mocana_glue.h"
 #include "digicert_common.h"
 
+#ifdef CONTEXT
+#undef CONTEXT
+#endif
+
+#ifdef BOOLEAN
+#undef BOOLEAN
+#endif
+
 #include "internal/deprecated.h"
 
 #include "openssl/evp.h"

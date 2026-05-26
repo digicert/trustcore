@@ -44,6 +44,14 @@
 #undef AES_BLOCK_SIZE
 #endif
 
+#ifdef CONTEXT
+#undef CONTEXT
+#endif
+
+#ifdef BOOLEAN
+#undef BOOLEAN
+#endif
+
 /* For SSL3_VERSION */
 #include "openssl/prov_ssl.h"
 #include "openssl/proverr.h"

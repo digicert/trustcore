@@ -37,6 +37,14 @@
 #include "digicert_common.h"
 #include "digiprov.h"
 
+#ifdef CONTEXT
+#undef CONTEXT
+#endif
+
+#ifdef BOOLEAN
+#undef BOOLEAN
+#endif
+
 #include "openssl/err.h"
 #include "openssl/proverr.h"
 #include "openssl/rand.h"

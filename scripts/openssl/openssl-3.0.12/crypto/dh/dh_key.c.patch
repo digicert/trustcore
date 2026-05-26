@@ -4,7 +4,7 @@
 > const DH_METHOD *DH_get_default_method(void)
 > {
 >     /* redefine default DH methods to point
->        to DigiCert implementations */
+>        to Digicert implementations */
 >     return DIGI_DH_get_default_method();
 > }
 > #else

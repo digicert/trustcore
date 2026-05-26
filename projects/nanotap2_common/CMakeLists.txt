@@ -59,7 +59,7 @@ if("STATIC" STREQUAL "${LIB_TYPE}")
 endif()
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   set(LIB_DIR "${MSS_DIR}/lib")
   set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
@@ -101,7 +101,7 @@ include(${NTAP2_DEFS_FILE})
 # Mocana nanotap2_common SHARED LIBRARY building
 ########################################################################
 
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
     set(COMMON_LIB "${LIB_DIR}/libcommon.so")
     set(PLATFORM_LIB "${LIB_DIR}/libplatform.so")
     if(CM_ENABLE_SMP_PKCS11)
@@ -192,7 +192,7 @@ else()
     target_compile_definitions(${TARGET_NAME}   PRIVATE ${MOCANA_FLAGS})
 endif()
 
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD
