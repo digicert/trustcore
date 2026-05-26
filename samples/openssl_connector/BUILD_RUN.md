@@ -204,11 +204,11 @@ ${PWD}/thirdparty_app/openssl-3.0.7/apps/openssl s_client -CAfile keystore/opens
 
 ### Windows Prerequisites
 
-**Supported Visual Studio versions:** 2017, 2019, 2022, 2026
+**Supported Visual Studio versions:** 2019, 2022, 2026
 
 **Prerequisites:**
 - Administrator Command Prompt
-- Set up 32-bit or 64-bit build environment by running the appropriate script (replace `<version>` with `2017`, `2019`, `2022`, or `18`, and `<edition>` with your installed edition e.g. `Professional`, `Enterprise`, `Community`):
+- Set up 32-bit or 64-bit build environment by running the appropriate script (replace `<version>` with `2019`, `2022`, or `18`, and `<edition>` with your installed edition e.g. `Professional`, `Enterprise`, `Community`):
 
   - 32-bit:
     ```cmd
