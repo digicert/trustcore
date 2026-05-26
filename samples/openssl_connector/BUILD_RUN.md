@@ -307,7 +307,34 @@ bin_win32\openssl_client_local.exe --ssl_port=1440 --ssl_certpath=%CD%\keystore\
 
 ---
 
-### 3. openssl_server vs OpenSSL s_client ECDSA Server Authentication
+### 3. openssl_server vs OpenSSL s_client ECDSA Mutual Authentication
+
+**Run openssl_server (CMD):**
+```cmd
+set PATH=%CD%\bin_win32;%PATH%
+bin_win32\openssl_server.exe --ssl_port=1440 --ssl_certpath=%CD%\keystore\openssl_connector --ssl_server_cert=openssl_ecdsa_crt.pem --ssl_server_keyblob=openssl_ecdsa_key.pem --ssl_ca_cert=openssl_ec_ca_crt.pem
+```
+
+**In a new CMD terminal, run the OpenSSL s_client:**
+```cmd
+set PATH=%CD%\thirdparty_app\openssl-3.0.7;%PATH%
+%CD%\thirdparty_app\openssl-3.0.7\apps\openssl.exe s_client -CAfile keystore\openssl_connector\openssl_ec_ca_crt.pem -servername openssl-ecdsa -cert keystore\openssl_connector\openssl_ecdsa_crt.pem -key keystore\openssl_connector\openssl_ecdsa_key.pem -connect 127.0.0.1:1440 -msg
+```
+
+**Expected Output:** You should see the connection established and mutual authentication completed in both terminals. Both server and client verify each other's certificates.
+
+**Tip:** Run `openssl_server.exe --h` to see all available command-line options.
+
+---
+
+### 4. openssl_server vs OpenSSL s_client ECDSA Server Authentication
+
+**Rebuild openssl_server without mutual authentication:**
+```cmd
+cd thirdparty\openssl-3.0.7\sample
+build.bat --x64 openssl_server
+cd ..\..\..
+```
 
 **Run openssl_server (CMD):**
 ```cmd
@@ -324,26 +351,6 @@ set PATH=%CD%\thirdparty_app\openssl-3.0.7;%PATH%
 **Expected Output:** You should see the connection established and handshake messages in both terminals. The client verifies the server's ECDSA certificate.
 
 **Note:** The `-servername` option specifies the SNI hostname, which should match the subject name or SAN in the server certificate.
-
-**Tip:** Run `openssl_server.exe --h` to see all available command-line options.
-
----
-
-### 4. openssl_server vs OpenSSL s_client ECDSA Mutual Authentication
-
-**Run openssl_server (CMD):**
-```cmd
-set PATH=%CD%\bin_win32;%PATH%
-bin_win32\openssl_server.exe --ssl_port=1440 --ssl_certpath=%CD%\keystore\openssl_connector --ssl_server_cert=openssl_ecdsa_crt.pem --ssl_server_keyblob=openssl_ecdsa_key.pem --ssl_ca_cert=openssl_ec_ca_crt.pem
-```
-
-**In a new CMD terminal, run the OpenSSL s_client:**
-```cmd
-set PATH=%CD%\thirdparty_app\openssl-3.0.7;%PATH%
-%CD%\thirdparty_app\openssl-3.0.7\apps\openssl.exe s_client -CAfile keystore\openssl_connector\openssl_ec_ca_crt.pem -servername openssl-ecdsa -cert keystore\openssl_connector\openssl_ecdsa_crt.pem -key keystore\openssl_connector\openssl_ecdsa_key.pem -connect 127.0.0.1:1440 -msg
-```
-
-**Expected Output:** You should see the connection established and mutual authentication completed in both terminals. Both server and client verify each other's certificates.
 
 **Tip:** Run `openssl_server.exe --h` to see all available command-line options.
 
