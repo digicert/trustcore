@@ -1,0 +1,31 @@
+############################################################################
+# File:        Makefile.linux.modules
+# Created:     Mon Aug 06 17:04:44 -0700 2007
+# Description: Makefile targets for building Linux kernel modules
+############################################################################
+
+#
+# TODO delete this file
+# It's rather pointless to have an if/else that essentially does the same
+# thing no matter what the condition is. ;-)
+#
+
+
+all_modules:
+ifeq ($(HW_ACCEL_DEV),)
+  ifeq (CROSS_e500v2_WRLINUX, $(OS_NAME))
+	make V=1 -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+  else 
+    ifeq (CROSS_ANDROID2_ARM, $(OS_NAME))
+	  make V=1 -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+    else
+	  make V=1 -C $(KDIR) M=$(PWD) modules
+    endif
+  endif 
+else
+	make V=1 -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+endif
+
+clean_modules:
+	make -C $(KDIR) M=$(PWD) clean
+
