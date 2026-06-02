@@ -42,6 +42,14 @@
 #undef AES_BLOCK_SIZE
 #endif
 
+#ifdef CONTEXT
+#undef CONTEXT
+#endif
+
+#ifdef BOOLEAN
+#undef BOOLEAN
+#endif
+
 #include "internal/deprecated.h"
 #include "prov/implementations.h"
 #include "prov/providercommon.h"

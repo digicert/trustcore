@@ -225,11 +225,11 @@ MOC_EXTERN MSTATUS DIGI_Defragment(uintptr *pAllocationList, ubyte4 listLen);
 #define DIGI_MEMSET_FREE(_ppMemToShred, _memToShredLen) \
     shredMemory(_ppMemToShred, _memToShredLen, TRUE)
 
-void moc_memset(void *pDest, ubyte value, usize len);
-void moc_free(void **ppPtr);
-void moc_memset_free(ubyte **ppMemToShred, ubyte4 memToShredLen);
-void moc_memcpy(void *pDest1, const void *pSrc1, sbyte4 len);
-sbyte4 moc_memcmp(const void *pSrc1, const void *pSrc2, usize len);
+MOC_EXTERN void moc_memset(void *pDest, ubyte value, usize len);
+MOC_EXTERN void moc_free(void **ppPtr);
+MOC_EXTERN void moc_memset_free(ubyte **ppMemToShred, ubyte4 memToShredLen);
+MOC_EXTERN void moc_memcpy(void *pDest1, const void *pSrc1, sbyte4 len);
+MOC_EXTERN sbyte4 moc_memcmp(const void *pSrc1, const void *pSrc2, usize len);
 
 MOC_EXTERN MSTATUS DIGI_UTOA(ubyte4 value, ubyte *pRetResult, ubyte4 *pRetNumDigitsLong);
 MOC_EXTERN ubyte4  DIGI_floorPower2(ubyte4 value);

@@ -120,9 +120,9 @@ MOC_EXTERN_DATA_DEF const BulkEncryptionAlgo CRYPTO_RC2EffectiveBitsSuite =
 #ifdef __ENABLE_BLOWFISH_CIPHERS__
 MOC_EXTERN_DATA_DEF const BulkEncryptionAlgo CRYPTO_BlowfishSuite =
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
-    { BLOWFISH_BLOCK_SIZE/*8*/, CRYPTO_INTERFACE_CreateBlowfishCtx, CRYPTO_INTERFACE_DeleteBlowfishCtx, CRYPTO_INTERFACE_DoBlowfishEx };
+    { BLOWFISH_BLOCK_SIZE/*8*/, CRYPTO_INTERFACE_CreateBlowfishCtx, CRYPTO_INTERFACE_DeleteBlowfishCtx, CRYPTO_INTERFACE_DoBlowfishEx, CRYPTO_INTERFACE_CloneBlowfishCtx };
 #else
-    { BLOWFISH_BLOCK_SIZE/*8*/, CreateBlowfishCtx, DeleteBlowfishCtx, DoBlowfish };
+    { BLOWFISH_BLOCK_SIZE/*8*/, CreateBlowfishCtx, DeleteBlowfishCtx, DoBlowfish, CloneBlowfishCtx };
 #endif
 #endif /* __ENABLE_BLOWFISH_CIPHERS__ */
 

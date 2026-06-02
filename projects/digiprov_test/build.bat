@@ -1,0 +1,7 @@
+@echo OFF
+SETLOCAL ENABLEEXTENSIONS
+SETLOCAL ENABLEDELAYEDEXPANSION
+set BAT_DIR=%~dp0
+pushd %BAT_DIR%
+cmake -P build.cmake %*
+popd

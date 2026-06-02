@@ -1,5 +1,5 @@
 ########################################################################
-# CMake build script for Mocana Common Library
+# CMake build script for DigiCert Common Library
 #
 
 cmake_minimum_required(VERSION 3.5)

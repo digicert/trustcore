@@ -1,9 +1,9 @@
 CFLAGS+=-I../include -I../ -I../../../src
 
 ifeq ($(export),true)
-LDFLAGS=-L../../../lib -lopenssl_shim -lnanossl -lcrypto -lcryptomw
+LDFLAGS=-L../../../bin -L../../../lib -lopenssl_shim -lnanossl -lcrypto -lcryptomw
 else
-LDFLAGS=-L../../../lib -lopenssl_shim -lnanossl -lcrypto -lnanocrypto
+LDFLAGS=-L../../../bin -L../../../lib -lopenssl_shim -lnanossl -lcrypto -lnanocrypto
 endif
 
 EXTFLAGS=
@@ -18,9 +18,9 @@ endif
 
 ifeq ($(tap),true)
 ifeq ($(export),true)
-    LDFLAGS+=-L ../../../lib  -lssl -lcrypto -lnanotap2 -lnanotap2_common -lcryptointerface -lcommon -lcryptomw
+    LDFLAGS+=-L ../../../bin -L ../../../lib -lssl -lcrypto -lnanotap2 -lnanotap2_common -lcryptointerface -lcommon -lcryptomw
 else
-    LDFLAGS+=-L ../../../lib  -lssl -lcrypto -lnanotap2 -lnanotap2_common -lcryptointerface -lcommon -lnanocrypto
+    LDFLAGS+=-L ../../../bin -L ../../../lib -lssl -lcrypto -lnanotap2 -lnanotap2_common -lcryptointerface -lcommon -lnanocrypto
 endif
     CFLAGS += -D__ENABLE_DIGICERT_TAP__ -D__ENABLE_DIGICERT_CRYPTO_INTERFACE__
 
@@ -31,11 +31,11 @@ else
     LDFLAGS += -lsmptpm2 -ltpm2
 endif
 else
-    LDFLAGS+=-L ../../../lib -lssl -lcrypto
+    LDFLAGS+=-L ../../../bin -L ../../../lib -lssl -lcrypto
 endif
 
 ifeq ($(cryptointerface),true)
-   LDFLAGS += -L../../../lib -lcryptointerface -lcommon -lnanocert -lplatform -lasn1 -linitialize -lnanocap
+   LDFLAGS += -L../../../bin -L../../../lib -lcryptointerface -lcommon -lnanocert -lplatform -lasn1 -linitialize -lnanocap
 endif
 
 ifeq ($(tap_extern),true)
@@ -44,11 +44,11 @@ endif
 
 ifeq ($(fips),true)
     CFLAGS  += -D__EVP_NAMESPACE_CONFLICT__
-    LDFLAGS += -L../../../lib -lmss
+    LDFLAGS += -L../../../bin -L../../../lib -lmss
 endif
 
 ifeq ($(android),true)
-CFLAGS += -Wl,-rpath-link=../../../lib
+CFLAGS += -Wl,-rpath-link=../../../bin:../../../lib
 LDFLAGS += -ldl
 else
 LDFLAGS += -lpthread -lrt -ldl

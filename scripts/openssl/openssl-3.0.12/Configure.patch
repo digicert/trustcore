@@ -19,7 +19,7 @@
 >                   "mocana-strict-dh"    => "default",
 757a774
 > my $os_version="";
-769a787,790
+766a784,787
 >         if ($_ eq "VC-WIN64A" || $_ eq "VC-WIN32")
 >                 {
 >                     $os_version="win";
@@ -42,7 +42,7 @@
 >     $digi_lib_mss="libmss";
 > } else {
 >     $digi_rtos_flag="__RTOS_LINUX__";
->     $digi_link_path="-L../../lib";
+>     $digi_link_path="-L../../bin -L../../lib";
 >     $digi_link_lib_prefix="-l";
 >     $digi_link_lib_suffix="";
 >     $digi_lib_mss="mss";

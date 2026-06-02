@@ -5,3 +5,8 @@ MSS_SRC_DIR/platform/linux_udp.c
 MSS_SRC_DIR/platform/linux_fmgmt.c
 MSS_SRC_DIR/platform/linux_signal.c
 MSS_SRC_DIR/platform/linux_term.c
+MSS_SRC_DIR/platform/win32_fmgmt.c
+MSS_SRC_DIR/platform/win32_rtos.c
+MSS_SRC_DIR/platform/win32_tcp_async.c
+MSS_SRC_DIR/platform/win32_tcp.c
+MSS_SRC_DIR/platform/win32_udp.c
