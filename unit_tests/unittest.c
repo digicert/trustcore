@@ -1,7 +1,7 @@
 /*
  * unittest.c
  *
- *  unit test support
+ * unit test support
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
