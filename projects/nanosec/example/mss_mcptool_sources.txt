@@ -1,0 +1,2 @@
+MSS_SRC_DIR/mcp/win32/IpsecUtil/main.cpp 
+MSS_SRC_DIR/mcp/win32/mem_cmd.c

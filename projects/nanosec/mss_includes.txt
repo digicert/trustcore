@@ -1,0 +1,14 @@
+MSS_SRC_DIR/asn1
+MSS_SRC_DIR/cap
+MSS_SRC_DIR/common
+MSS_SRC_DIR/crypto
+MSS_SRC_DIR/crypto_interface
+MSS_SRC_DIR/harness
+MSS_SRC_DIR/http
+MSS_SRC_DIR/../samples/nanosec/src/linux/gpl
+MSS_SRC_DIR/ike
+MSS_SRC_DIR/ipsec
+MSS_SRC_DIR/platform
+MSS_SRC_DIR/ssl
+
+

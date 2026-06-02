@@ -1,0 +1,8 @@
+MSS_SRC_DIR/examples/ca_mgmt_example.c
+MSS_SRC_DIR/examples/ike_cert_utils.c
+MSS_SRC_DIR/examples/ike_example.c
+MSS_SRC_DIR/examples/ikeadm_example.c
+MSS_SRC_DIR/examples/ikecfg_example.c
+MSS_SRC_DIR/examples/ipseckey_example.c
+MSS_SRC_DIR/examples/mcp_example.c
+MSS_SRC_DIR/examples/mocana_example.c

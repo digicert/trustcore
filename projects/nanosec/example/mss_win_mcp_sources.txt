@@ -1,0 +1,10 @@
+MSS_SRC_DIR/mcp/win32/MCP_wincrypt.c
+MSS_SRC_DIR/mcp/win32/mem_cmd.c
+MSS_SRC_DIR/mcp/win32/config_ini.cpp
+MSS_SRC_DIR/mcp/win32/config_reg.cpp
+MSS_SRC_DIR/mcp/win32/service/MCPService.cpp
+MSS_SRC_DIR/mcp/win32/service/main.cpp
+MSS_SRC_DIR/mcp/win32/service/ServiceBase.cpp
+MSS_SRC_DIR/mcp/win32/service/ServiceInstaller.cpp
+MSS_SRC_DIR/examples/event_mapping.c
+MSS_SRC_DIR/common/win32oid.c

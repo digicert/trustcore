@@ -1,0 +1,7 @@
+MSS_SRC_DIR/mcp/config_keys.c
+MSS_SRC_DIR/examples/mcp_example.c
+MSS_SRC_DIR/examples/if_mapping.c
+MSS_SRC_DIR/ipsec/script.c
+MSS_SRC_DIR/examples/ipsec/vxworks7/vxworks_mcp.c
+MSS_SRC_DIR/examples/ipsec/vxworks7/ipseckey_vxworks.c
+

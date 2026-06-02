@@ -1,0 +1,493 @@
+export KDIR ?= /lib/modules/`uname -r`/build
+
+#KERNEL  ?=`uname -r`
+#MACHINE ?=`uname -m`
+
+PRJ_DIR ?= $(shell pwd)
+BIN_DIR  = $(PRJ_DIR)/bin
+
+# IPv6 support
+IPV6 ?= n
+
+# by default, enable debug output
+DEBUG ?= n
+
+# by default, do a clean build
+CLEAN ?= clean
+
+# Use samples/nanosec if present, otherwise fall back to src/examples (ipsec)
+ifeq ($(wildcard samples/nanosec),)
+  NANOSEC_SRC     := src/examples
+  NANOSEC_IPSEC   := src/examples/ipsec
+  NANOSEC_LINUX   := src/examples/ipsec/linux
+  NANOSEC_LOADCFG := src/examples/ipsec_loadconfig
+else
+  NANOSEC_SRC     := samples/nanosec/src
+  NANOSEC_IPSEC   := samples/nanosec/src
+  NANOSEC_LINUX   := samples/nanosec/src/linux
+  NANOSEC_LOADCFG := samples/nanosec/src/ipsec_loadconfig
+endif
+
+COMMON_DEFINES = \
+  -D__RTOS_LINUX__ \
+  -D__DISABLE_ARC4_CIPHERS__ \
+  -D__ENABLE_BLOWFISH_CIPHERS__ \
+  -D__ENABLE_DIGICERT_IKE_SERVER__ \
+  -D__ENABLE_DIGICERT_SUPPORT_FOR_NATIVE_STDLIB__ \
+  -D__DISABLE_DIGICERT_CRYPTO_DEFAULT_ALGOS__
+
+
+ifeq ($(NO_CRYPTO),true)
+COMMON_DEFINES += \
+  -D__MOC_PLATFORM_MODULE__
+endif
+
+ifeq ($(BUILD_IPSEC_MOD),y)
+IPSEC_MOD_DEFINES = \
+  -D__MOC_PLATFORM_MODULE__  \
+  -D__ENABLE_DIGICERT_SPLIT_DRIVER__
+endif
+
+ifeq ($(CI),y)
+COMMON_DEFINES += \
+  -D__ENABLE_DIGICERT_SYM__ \
+  -D__ENABLE_DIGICERT_ASYM_KEY__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_TDES__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_MD5__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA1__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA224__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA256__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA384__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_CHACHA20__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_POLY1305__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_SHA512__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_HMAC__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_CTR__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_BLOWFISH__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_NIST_CTR_DRBG__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_XCBC__ \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_RANDOM__ \
+  -D__DISABLE_DIGICERT_CREATE_MOCSYM_FROM_ALG_ID__
+
+ifeq "$(SUITEB)" "y"
+COMMON_DEFINES += \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_GCM__
+endif
+
+ifeq ($(EXPORT),y)
+COMMON_DEFINES += \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_EXPORT__ \
+  -D__ENABLE_DIGICERT_DIGEST_OPERATORS__ \
+  -D__ENABLE_DIGICERT_MBED_DIGEST_OPERATORS__ \
+  -D__ENABLE_DIGICERT_SYM_OPERATORS__ \
+  -D__ENABLE_DIGICERT_MBED_SYM_OPERATORS__ \
+  -D__ENABLE_DIGICERT_AES_CBC_OPERATOR__ \
+  -D__ENABLE_DIGICERT_AES_CBC_MBED__ \
+  -D__ENABLE_DIGICERT_BLOWFISH_OPERATOR__ \
+  -D__ENABLE_DIGICERT_BLOWFISH_MBED__ \
+  -D__ENABLE_DIGICERT_CHACHA_POLY_OPERATOR__ \
+  -D__ENABLE_DIGICERT_CHACHA20_OPERATOR__ \
+  -D__ENABLE_DIGICERT_CHACHA20_MBED__ \
+  -D__ENABLE_DIGICERT_POLY1305_OPERATOR__ \
+  -D__ENABLE_DIGICERT_POLY1305_MBED__ \
+  -D__ENABLE_DIGICERT_DES_ECB_OPERATOR__ \
+  -D__ENABLE_DIGICERT_DES_CBC_OPERATOR__ \
+  -D__ENABLE_DIGICERT_DES_MBED__ \
+  -D__ENABLE_DIGICERT_TDES_ECB_OPERATOR__ \
+  -D__ENABLE_DIGICERT_TDES_CBC_OPERATOR__ \
+  -D__ENABLE_DIGICERT_TDES_MBED__ \
+  -D__ENABLE_DIGICERT_MD5_OPERATOR__ \
+  -D__ENABLE_DIGICERT_MD5_MBED__ \
+  -D__ENABLE_DIGICERT_SHA1_OPERATOR__ \
+  -D__ENABLE_DIGICERT_SHA1_MBED__ \
+  -D__ENABLE_DIGICERT_SHA224_OPERATOR__ \
+  -D__ENABLE_DIGICERT_SHA224_MBED__ \
+  -D__ENABLE_DIGICERT_SHA256_OPERATOR__ \
+  -D__ENABLE_DIGICERT_SHA256_MBED__ \
+  -D__ENABLE_DIGICERT_SHA384_OPERATOR__ \
+  -D__ENABLE_DIGICERT_SHA384_MBED__ \
+  -D__ENABLE_DIGICERT_SHA512_OPERATOR__ \
+  -D__ENABLE_DIGICERT_SHA512_MBED__ \
+  -D__ENABLE_DIGICERT_HMAC_OPERATOR__ \
+  -D__ENABLE_DIGICERT_HMAC_MBED__ \
+  -D__ENABLE_DIGICERT_AES_CTR_OPERATOR__ \
+  -D__ENABLE_DIGICERT_AES_CTR_MBED__ \
+  -D__ENABLE_DIGICERT_CTR_DRBG_AES_OPERATOR__ \
+  -D__ENABLE_DIGICERT_CTR_DRBG_AES_MBED__ \
+  -D__DISABLE_DIGICERT_FIPS186_RNG__ \
+  -D__DISABLE_DIGICERT_NIST_CTR_DRBG__ \
+  -D__DISABLE_AES_CCM__
+
+ifeq "$(SUITEB)" "y"
+COMMON_DEFINES += \
+  -DMBEDTLS_GCM_C \
+  -D__ENABLE_DIGICERT_AES_GCM_OPERATOR__ \
+  -D__ENABLE_DIGICERT_AES_GCM_MBED__
+endif
+
+EXPORT_OPT=EXPORT=1
+
+else
+
+# Only add Crypto Interface CCM flag if not
+# building with EXPORT=y
+COMMON_DEFINES += \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_AES_CCM__  \
+  -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_BLAKE_2S__
+
+ifeq "$(CROSS_COMPILE)" ""
+ifneq (,$(findstring x86_64, $(shell uname -m)))
+  COMMON_DEFINES += -D__ENABLE_DIGICERT_CRYPTO_INTERFACE_BLAKE_2B__
+endif
+endif
+
+EXPORT_OPT=
+endif # EXPORT
+endif # CI
+
+ifeq "$(CROSS_COMPILE)" ""
+ifneq (,$(findstring x86_64, $(shell uname -m)))
+ifeq "$(32BIT_MODE)" ""
+  COMMON_DEFINES += -D__ENABLE_DIGICERT_64_BIT__
+endif
+endif
+endif
+
+# optional defines
+OPT_DEFINES += \
+  -D__IKE_MULTI_HOMING__
+
+COMMON_DEFINES += $(OPT_DEFINES)
+
+ifeq "$(IPV6)" "y"
+  COMMON_DEFINES += -D__ENABLE_DIGICERT_IPV6__
+endif
+
+ifeq "$(TRACK)" "y"
+  COMMON_DEFINES += -D__IKE_TRACK__
+endif
+
+ifeq "$(MSGTHREAD)" "y"
+  COMMON_DEFINES += -D__ENABLE_MSGIDLE_THREAD__
+endif
+
+ifeq "$(32BIT_MODE)" "y"
+    CONFIG_EXTRA += -m32
+    EXTRA_LDFLAGS += -m32
+endif
+
+ifeq "$(DEBUG)" "y"
+  COMMON_DEFINES += \
+    -D__ENABLE_ALL_DEBUGGING__ \
+    -D__ENABLE_DIGICERT_DEBUG_CONSOLE__ \
+    -D__DIGICERT_DUMP_CONSOLE_TO_STDOUT__
+
+  GDB = true
+endif
+
+# GDOI support
+GDOI  ?=
+IKE    = ike
+
+ifeq "$(MCP)" "y"
+  COMMON_DEFINES += -DLOADCONFIG_DUMP_TO_STDOUT \
+                    -D__ENABLE_DIGICERT_MCP_UNICAST_SUPPORT__ \
+		    -D__ENABLE_DIGICERT_MCP_FQDN_SUPPORT__ \
+                    -D__ENABLE_DIGICERT_INFINTE_KEY_TIMEOUT__ \
+		    -D__ENABLE_DIGICERT_MULTICAST_MCP__
+
+  IKE_EXTRA      += -D__ENABLE_LOOKUP_TABLE__ \
+                    -D__ENABLE_DIGICERT_DER_CONVERSION__ \
+                    -D__ENABLE_DIGICERT_MCP_UNICAST_SUPPORT__ \
+		    -D__ENABLE_DIGICERT_MCP_FQDN_SUPPORT__ \
+                    -D__ENABLE_DIGICERT_PEM_CONVERSION__ \
+                    -D__ENABLE_DIGICERT_MCP_EXAMPLE__ \
+                    -D__ENABLE_DIGICERT_RSA_ALL_KEYSIZE__ \
+		    -D__ENABLE_DIGICERT_MCP_UNICAST_SUPPORT__ \
+                    -D__ENABLE_DIGICERT_MCP_FQDN_SUPPORT__ \
+                    -D__ENABLE_DIGICERT_INFINTE_KEY_TIMEOUT__
+
+  IPSEC_EXTRA    += -D__ENABLE_DIGICERT_MCP_UNICAST_SUPPORT__ \
+                    -D__ENABLE_DIGICERT_MCP_FQDN_SUPPORT__ \
+                    -D__ENABLE_DIGICERT_INFINTE_KEY_TIMEOUT__
+  ifeq "$(GDOI)" ""
+    GDOI = c
+  endif
+endif
+
+ifeq "$(GDOI)" "c"
+  COMMON_DEFINES += -D__ENABLE_DIGICERT_GDOI_CLIENT__
+  ifeq "$(MCP)" "y"
+    IKE = mcpagent
+    IKE_EXTRA      += -D__DISABLE_EXTENDED_SPD_LOOKUP__
+    IKE_EXTRA	   += -D__ENABLE_RB_SADB__
+    IPSEC_EXTRA	   += -D__ENABLE_RB_SADB__
+    IPSEC_EXTRA    += -D__DISABLE_EXTENDED_SPD_LOOKUP__
+    CONFIG_EXTRA   += -D__DISABLE_EXTENDED_SPD_LOOKUP__
+    ifeq "$(DUAL_MODE)" "y"
+      IPSEC_EXTRA    += -D__ENABLE_DIGICERT_DUAL_MODE__
+    endif
+  else
+    IKE = ike_gdoic
+  endif
+else
+ifeq "$(GDOI)" "s"
+  COMMON_DEFINES += -D__ENABLE_DIGICERT_GDOI_SERVER__
+  ifeq "$(MCP)" "y"
+    IKE_EXTRA    += -D__ENABLE_IKE_MODE_CFG__ \
+                    -D__ENABLE_DIGICERT_ECC__ \
+                    -D__ENABLE_DIGICERT_RNG_DRBG_ECC__ \
+                    -D__ENABLE_DIGICERT_ECC_ELGAMAL__
+    IKE = kdc
+  else
+    IKE = ike_gdois
+  endif
+else
+ifeq "$(GDOI)" "cs"
+  COMMON_DEFINES += -D__ENABLE_DIGICERT_GDOI_CLIENT__ \
+                    -D__ENABLE_DIGICERT_GDOI_SERVER__
+  ifeq "$(MCP)" "y"
+    IKE_EXTRA    += -D__ENABLE_IKE_MODE_CFG__ \
+                    -D__ENABLE_DIGICERT_ECC__ \
+                    -D__ENABLE_DIGICERT_RNG_DRBG_ECC__ \
+                    -D__ENABLE_DIGICERT_ECC_ELGAMAL__
+    CONFIG_EXTRA   += -D__DISABLE_EXTENDED_SPD_LOOKUP__
+    IKE = kdc_secondary
+  else
+    IKE = ike_gdoics
+  endif
+else
+  COMMON_DEFINES += -D__ENABLE_IPSEC_NAT_T__
+endif
+endif
+endif
+
+# __ENABLE_DIGICERT_ECC__ is not defined here (for ipsec)
+# IKE and LOADCONFIG will define it themselves for suiteb
+ifeq "$(SUITEB)" "y"
+  COMMON_DEFINES += \
+    -D__ENABLE_DIGICERT_GCM__ \
+    -DMOC_LITTLE_ENDIAN \
+    -D_CRYPTO_AES_H \
+    -D_CRYPTO_DES_H \
+    -D_CRYPTO_MD5_H
+    SUITEB_OPT=SUITEB=1
+else
+    SUITEB_OPT=
+endif
+
+
+IPSEC_DEFINES = $(COMMON_DEFINES) \
+  -D__DISABLE_DIGICERT_FILE_SYSTEM_HELPER__ \
+  -D__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__ \
+  -D__ENABLE_DIGICERT_CHACHA20__ \
+  -D__ENABLE_DIGICERT_POLY1305__ \
+  -D__ENABLE_DIGICERT_IPSEC_SERVICE__ \
+  -D__ENABLE_DIGICERT_MEM_PART__ \
+  $(IPSEC_MOD_DEFINES) \
+  $(IPSEC_EXTRA)
+
+ifeq ($(CUSTOM_ENTROPY), y)
+IPSEC_DEFINES += \
+  -D__ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__
+endif
+
+ifneq ($(EXPORT),y)
+IPSEC_DEFINES += -D__ENABLE_DIGICERT_BLAKE_2S__
+ifeq "$(CROSS_COMPILE)" ""
+ifneq (,$(findstring x86_64, $(shell uname -m)))
+  IPSEC_DEFINES += -D__ENABLE_DIGICERT_BLAKE_2B__
+endif
+endif
+endif
+
+INCLUDE_FILES= -I$(shell pwd)/src/common/ \
+               -I$(shell pwd)/src/crypto/ \
+               -I$(shell pwd)/src/ipsec/ \
+               -I$(shell pwd)/src/harness/ \
+               -I$(shell pwd)/src/pfkey/ \
+               -I$(shell pwd)/src/ike/ \
+               -I$(shell pwd)/src/platform/ \
+               -I$(shell pwd)/$(NANOSEC_LINUX)/gpl/ \
+               -I$(shell pwd)/$(NANOSEC_LINUX)/missiu/
+
+ifeq ($(CI),y)
+INCLUDE_FILES += \
+               -I$(shell pwd)/src/crypto_interface \
+               -I$(shell pwd)/src/cap
+
+ifeq ($(EXPORT),y)
+INCLUDE_FILES += \
+               -include $(shell pwd)/src/ipsec/kernel_build/mbedtls-2.13.0/include/mbedtls/lk.h \
+               -I$(shell pwd)/src/crypto/mocsymalgs/mbed \
+               -I$(shell pwd)/src/ipsec/kernel_build/mbedtls-2.13.0/include/mbedtls/include_overrides \
+               -I$(shell pwd)/src/ipsec/kernel_build/mbedtls-2.13.0/include
+endif # EXPORT
+endif # CI
+
+IKE_DEFINES = $(COMMON_DEFINES) \
+  -DxMOCANA_IKEADM_PORT=4968 \
+  -D__ENABLE_DIGICERT_CERTIFICATE_SEARCH_SUPPORT__ \
+  -D__ENABLE_DIGICERT_EXAMPLES__ \
+  -D__ENABLE_DIGICERT_MEM_PART__ \
+  -D__PLATFORM_HAS_GETOPT__ \
+  -D__ENABLE_DIGICERT_DER_CONVERSION__ \
+  -D__ENABLE_DIGICERT_PEM_CONVERSION__ \
+  -D__ENABLE_DIGICERT_SERIALIZE__ \
+  $(IKE_EXTRA)
+
+# IKEv2 EAP authenticator support
+ifeq "$(EAP)" "a"
+  IKE_EAP = 1
+  IKE_DEFINES += \
+    -D__ENABLE_IKE_EAP_ONLY__ \
+    -D__ENABLE_DIGICERT_DER_CONVERSION__ \
+    -D__ENABLE_DIGICERT_PEM_CONVERSION__ \
+    -D__ENABLE_DIGICERT_EAP_AUTH__ \
+    -D__ENABLE_DIGICERT_EAP_GTC__ \
+    -D__ENABLE_DIGICERT_EAP_LEAP__ \
+    -D__ENABLE_DIGICERT_EAP_MD5__ \
+    -D__ENABLE_DIGICERT_EAP_MSCHAPv2__ \
+    -D__ENABLE_DIGICERT_EAP_PSK__ \
+    -D__ENABLE_DIGICERT_EAP_RADIUS__ \
+    -D__ENABLE_DIGICERT_EAP_SIM__ \
+    -D__ENABLE_DIGICERT_EAP_SRP__ \
+    -D__ENABLE_DIGICERT_MD4__ \
+    -D__ENABLE_DIGICERT_PKCS8__ \
+    -D__ENABLE_DIGICERT_RADIUS_CLIENT__ \
+    -D__ENABLE_RFC3576__ \
+    -DMOC_LITTLE_ENDIAN
+
+ifeq "$(TLS)" "y"
+  IKE_EAP = 2
+  IKE_DEFINES += \
+    -D__ENABLE_DIGICERT_EAP_TLS__ \
+    -D__ENABLE_DIGICERT_EAP_TTLS__ \
+    -D__ENABLE_DIGICERT_SSL_ASYNC_API_EXTENSIONS__ \
+    -D__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__ \
+    -D__ENABLE_DIGICERT_SSL_ASYNC_SERVER_API__ \
+    -D__ENABLE_DIGICERT_SSL_KEY_EXPANSION__ \
+    -D__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__
+
+ifeq "$(SUITEB)" "y"
+  IKE_DEFINES += \
+    -D__ENABLE_DIGICERT_ECC__ \
+    -D__ENABLE_DIGICERT_AEAD_CIPHER__ \
+    -D__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__ \
+    -D__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__ \
+    -D__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__
+endif
+endif
+endif
+
+ifeq "$(EAP)" "s"
+  IKE_EAP = 1
+  IKE_DEFINES += \
+    -D__ENABLE_IKE_EAP_ONLY__ \
+    -D__ENABLE_DIGICERT_DER_CONVERSION__ \
+    -D__ENABLE_DIGICERT_PEM_CONVERSION__ \
+    -D__ENABLE_DIGICERT_EAP_GTC__ \
+    -D__ENABLE_DIGICERT_EAP_LEAP__ \
+    -D__ENABLE_DIGICERT_EAP_MD5__ \
+    -D__ENABLE_DIGICERT_EAP_MSCHAPv2__ \
+    -D__ENABLE_DIGICERT_EAP_PEER__ \
+    -D__ENABLE_DIGICERT_EAP_PSK__ \
+    -D__ENABLE_DIGICERT_EAP_SIM__ \
+    -D__ENABLE_DIGICERT_EAP_SRP__ \
+    -D__ENABLE_DIGICERT_MD4__ \
+    -D__ENABLE_DIGICERT_PKCS8__ \
+    -DMOC_LITTLE_ENDIAN
+
+ifeq "$(TLS)" "y"
+  IKE_EAP = 2
+  IKE_DEFINES += \
+    -D__ENABLE_DIGICERT_EAP_TLS__ \
+    -Dx__ENABLE_DIGICERT_EAP_TTLS__ \
+    -D__ENABLE_DIGICERT_SSL_ASYNC_API_EXTENSIONS__ \
+    -D__ENABLE_DIGICERT_SSL_ASYNC_CLIENT_API__ \
+    -D__ENABLE_DIGICERT_SSL_KEY_EXPANSION__ \
+    -D__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__ \
+    -Dx__ENABLE_DIGICERT_TLS12_UNSECURE_HASH__
+
+ifeq "$(SUITEB)" "y"
+  IKE_DEFINES += \
+    -D__ENABLE_DIGICERT_AEAD_CIPHER__ \
+    -D__ENABLE_DIGICERT_SSL_ECDH_SUPPORT__ \
+    -D__ENABLE_DIGICERT_SSL_ECDHE_SUPPORT__ \
+    -D__ENABLE_DIGICERT_SSL_ECDH_ANON_SUPPORT__
+endif
+endif
+endif
+
+ifeq "$(TAP)" "y"
+  IKE_DEFINES += \
+    -D__DISABLE_DIGICERT_INIT__ \
+    -D__ENABLE_DIGICERT_ASYM_KEY__ \
+    -D__ENABLE_DIGICERT_CRYPTO_INTERFACE__ \
+    -D__ENABLE_DIGICERT_ECC__ \
+    -D__ENABLE_DIGICERT_SERIALIZE__ \
+    -D__ENABLE_DIGICERT_SMP__ \
+    -D__ENABLE_DIGICERT_TAP__
+
+ifeq "$(REMOTE)" "y"
+  IKE_DEFINES += \
+    -D__ENABLE_DIGICERT_TAP_REMOTE__
+
+endif
+
+endif
+
+LOADCONFIG_DEFINES = $(COMMON_DEFINES) \
+ -D__ENABLE_DIGICERT_IPSEC_SERVICE__ \
+ -D__DISABLE_DIGICERT_RAND_ENTROPY_THREADS__ \
+ -D__DISABLE_DIGICERT_RNG__ \
+ -D__DISABLE_DIGICERT_INIT__ \
+ -D__DISABLE_DIGICERT_ADD_ENTROPY__ \
+ -D__PLATFORM_HAS_GETOPT__ \
+ $(CONFIG_EXTRA)
+
+ifeq "$(GDB)" "true"
+LOADCONFIG_DEFINES += -g -O0
+endif
+
+ifeq "$(SUITEB)" "y"
+LOADCONFIG_DEFINES += \
+  -D__ENABLE_DIGICERT_ECC__
+endif
+
+IKEADM_DEFINES = $(IKE_DEFINES) \
+  -DMOCANA_IKEADM_CLIENT
+
+all: modules ike loadConfig
+
+modules:
+	$(MAKE) -f make/Makefile.linux \
+		EXTRA_CFLAGS='-I$(shell pwd)/src/common/vlong $(IPSEC_DEFINES) $(INCLUDE_FILES)' \
+		RTOS='__RTOS_LINUX__' IMG_EXT='linux.native' \
+		BUILD_IPSEC_MOD=$(BUILD_IPSEC_MOD) \
+		$(SUITEB_OPT) \
+		$(EXPORT_OPT) \
+		$(CLEAN) ipsec_module memdrv_module
+
+ike:
+	$(MAKE) -f make/Makefile.linux \
+                MB_OS='linux' CFLAGS='-I$(shell pwd)/$(NANOSEC_SRC) $(INCLUDE_FILES) $(IKE_DEFINES)' \
+                $(SUITEB_OPT) \
+                gdb=$(GDB) \
+                IKE_EAP=$(IKE_EAP) \
+                $(CLEAN) $(IKE)
+
+ikeadm:
+	$(MAKE) -f make/Makefile.linux CFLAGS='-I$(shell pwd)/$(NANOSEC_SRC) $(IKEADM_DEFINES)' $(CLEAN) ikeadm
+
+loadConfig:
+	$(MAKE) -f make/Makefile.linux CFLAGS="-I$(shell pwd)/$(NANOSEC_SRC) -I$(shell pwd)/$(NANOSEC_IPSEC) -I$(shell pwd)/src/common/ -I$(shell pwd)/src/crypto/ -I$(shell pwd)/src/ipsec/ -I$(shell pwd)/src/harness/ -I$(shell pwd)/src/pfkey/ -I$(shell pwd)/src/ike/ -I$(shell pwd)/src/platform/ -I$(shell pwd)/$(NANOSEC_LINUX)/missiu/ $(LOADCONFIG_DEFINES)"  gdb=$(GDB) EXTRA_CFLAGS=$(EXTRA_LDFLAGS) ipsec_loadconfig
+ifeq "$(MCP)" "y"
+	mv $(BIN_DIR)/loadConfig $(BIN_DIR)/mcptool
+endif
+
+clean:
+	$(MAKE) -f ./make/Makefile.linux.mb clean
+	$(MAKE) -f ./make/Makefile.linux clean

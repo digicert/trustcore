@@ -1,0 +1,14 @@
+MSS_SRC_DIR/ike/ikekey.c
+MSS_SRC_DIR/ipsec/ipsec.c
+MSS_SRC_DIR/ipsec/ipsec_crypto.c
+MSS_SRC_DIR/ipsec/ipsec_flow.c
+MSS_SRC_DIR/ipsec/ipsec_frag.c
+MSS_SRC_DIR/ipsec/ipsec_utils.c
+MSS_SRC_DIR/ipsec/ipsecconf.c
+MSS_SRC_DIR/ipsec/ipseckey.c
+MSS_SRC_DIR/ipsec/ipsec6.c
+MSS_SRC_DIR/ipsec/sadb.c
+MSS_SRC_DIR/ipsec/spd.c
+MSS_SRC_DIR/examples/ipsec/vxworks7/vxworks_ipsec.c
+MSS_SRC_DIR/examples/ipsec/vxworks7/pfkey_vxworks.c
+

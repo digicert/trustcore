@@ -1,0 +1,5 @@
+MSS_SRC_DIR/gdoi/client/gdoi_client.c
+MSS_SRC_DIR/gdoi/server/gdoi_server.c
+MSS_SRC_DIR/gdoi/gdoi.c
+MSS_SRC_DIR/ipsec/ipsec_crypto.c
+

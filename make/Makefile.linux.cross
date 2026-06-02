@@ -1,0 +1,98 @@
+############################################################################
+# File:        Makefile.linux.cross
+# Created:     Mon Aug 06 17:04:44 -0700 2007
+# Description: Variables needed for setting up cross-compiling
+#              for various BSPs
+############################################################################
+
+ifeq ($(HW_ACCEL_DEV),fsl8272)
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8272-
+  KDIR          = /auto/freescale/ltib/8272/src/linux-2.6
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8313)
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8313-
+  KDIR          = /auto/freescale/ltib/ltib-mpc8313erdb-20070718/rpm/BUILD/linux-2.6.20
+endif
+# to be run on brie only
+ifeq ($(HW_ACCEL_DEV),fsl8315)
+  ARCH          = ppc
+  CROSS_COMPILE = /opt/freescale/usr/local/gcc-4.1.78-eglibc-2.5.78-1/powerpc-e300c3-linux-gnu/bin/powerpc-e300c3-linux-gnu-
+  KDIR          = /space/ltib/MPC8315ERDB_20080627-ltib/ltib-mpc8315erdb-20080630/rpm/BUILD/linux
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8323)
+ifeq ($(WIND_BASE),)
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8323-
+  KDIR          = /auto/freescale/ltib/ltib-mpc832x_rdb-20070420/rpm/BUILD/linux-2.6.20
+else
+  ARCH          = ppc
+  CROSS_COMPILE = powerpc-wrs-linux-gnu-603e-glibc_std-
+  KDIR          = /auto/windriver/PNELE/mpc8323e-rdb/build/linux-2.6.14-cgl
+endif
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8349)
+ifeq ($(MVLINUX),fsl8349)
+  ARCH          = ppc
+  CROSS_COMPILE = ppc_82xx-
+  KDIR          = /home/space/build8349/linux-2.6.10_mvl401 
+else
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8349-
+  KDIR          = /auto/freescale/ltib/ltib-mpc8349emds-20061221/rpm/BUILD/linux-2.6.10
+endif
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8360)
+  ARCH          = ppc
+#  CROSS_COMPILE = fsl8349-  #Bug in 8360 compiler. Workaround use 8349 compiler
+#  KDIR          = /auto/freescale/ltib/ltib-mpc8360epb-20061208/rpm/BUILD/linux-2.6.10
+# erik - using new fsl8360 compiler
+  CROSS_COMPILE = fsl8360-
+  KDIR          = /auto/freescale/ltib/new8360/kd/linux-2.6.22
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8544)
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8544-
+  KDIR          = /auto/freescale/ltib/ltib-mpc8544ds-20071122/rpm/BUILD/linux-2.6.23
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8548)
+ifeq ($(WIND_BASE),)
+ifeq ($(MVLINUX),fsl8548)
+  ARCH          = ppc
+  CROSS_COMPILE = ppc_85xx-
+  KDIR          = /home/space/build8548/linux-2.6.10_mvl401
+else 
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8548-
+  KDIR          = /auto/freescale/ltib/ltib-mpc8548cds-20061205/rpm/BUILD/linux-2.6.10
+endif
+else
+  ARCH          = ppc
+  CROSS_COMPILE = powerpc-wrs-linux-gnu-
+  KDIR          = /auto/windriver/PNELE/8548cds/build/linux-2.6.14-cgl
+endif
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8555)
+ifeq ($(MVLINUX),fsl8555)
+  ARCH          = ppc
+  CROSS_COMPILE = ppc_85xx-
+  KDIR          = /home/space/build8555/linux-2.6.10/linux-2.6.10_mvl401 
+else
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8555-
+  KDIR          = /auto/freescale/ltib/ltib-mpc8555cds-20061017/rpm/BUILD/linux-2.6.10
+endif
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8572)
+  ARCH          = ppc
+  CROSS_COMPILE = fsl8572-
+  KDIR          = /auto/freescale/ltib/ltib-mpc8572ds-20080107/rpm/BUILD/linux-2.6.23
+endif
+ifeq ($(HW_ACCEL_DEV),fsl8379)
+  ARCH          = powerpc
+  CROSS_COMPILE = fsl8379-
+  KDIR          = /auto/freescale/ltib/8379/ltib-mpc837xerdb-20080409/rpm/BUILD/linux/
+endif
+
+export CC=$(CROSS_COMPILE)gcc

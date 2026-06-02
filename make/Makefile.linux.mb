@@ -1,0 +1,96 @@
+#
+# Copyright (c) 2003-2006 Digicert Inc
+# All rights reserved.
+#
+# Use of this software and its source code are governed by
+# the terms and conditions of the Digicert Inc Software License ("LICENSE").
+#
+
+#
+# Makefile for Linux build under mssbuild
+#
+
+# The following env vars must be defined by the build supervisor
+# (mssbuild).  Otherwise, user need to define these in their shell.
+#CROSS_COMPILE = fsl8313-
+#IMG_EXT       = linux.fsl8313
+#MB_CFLAGS     = -Os
+#HW_ACCEL_DEV  = fsl8313
+RTOS          = __RTOS_LINUX__
+MB_OS         = linux
+
+CC              = $(BCC_PREFIX)$(CROSS_COMPILE)gcc
+CXX             = $(BCC_PREFIX)$(CROSS_COMPILE)gcc
+LD              = $(CROSS_COMPILE)gcc
+RANLIB          = $(CROSS_COMPILE)ranlib
+export OBJCOPY  = $(CROSS_COMPILE)objcopy
+export OBJSTRIP = $(CROSS_COMPILE)strip
+
+PRJ_DIR  ?= $(shell pwd)
+
+CFLAGS  += $(MB_CFLAGS)
+CFLAGS  += $(EXTRA_CFLAGS)
+
+BUILDENV ?= PRODUCTION
+
+# Extension of final output module
+OUT_EXT    = ""
+LIBOUT_EXT = ".a"
+LINKFLAGS  = 
+
+CFLAGS     += -D$(RTOS) -fno-builtin -Wall -pipe
+CXXFLAGS   = $(CFLAGS)
+
+LIBS       += $(LINKFLAGS) -pthread
+PRJ_DIR    = $(shell pwd)
+SEP        = /
+
+# Provide a sane default for the Kernel header directory.
+ifeq ($(HW_ACCEL_DEV),)
+  KDIR          ?= /tools/linux-src/2.6.17-1.2174_FC5-smp-i686
+endif
+
+ifeq ($(BUILDENV),PRODUCTION)
+  include $(PRJ_DIR)/make/Makefile.common
+else
+  include $(PRJ_DIR)/make/Makefile.common.$(BUILDENV)
+endif
+
+%.$(IMG_EXT): %
+	cp $(BIN_DIR)/$< $(BIN_DIR)/$@
+
+all.$(IMG_EXT):      all
+	echo $@ build complete.
+
+ipsec_module.$(IMG_EXT): ipsec_module
+	echo $@ build complete.
+
+ipsec_module_sb.$(IMG_EXT): ipsec_module_sb
+	echo $@ build complete.
+	
+memdrv_module.$(IMG_EXT): memdrv_module
+	echo $@ build complete.
+
+harness_module.$(IMG_EXT): harness_module
+	echo $@ build complete.
+
+testall.$(IMG_EXT):  test_fh.$(IMG_EXT)
+	echo $@ build complete.
+
+binlibs.$(IMG_EXT):  binlibs
+	echo $@ build complete.
+
+kbinlibs.$(IMG_EXT): ipsec_module
+	echo $@ build complete.
+
+harness.$(IMG_EXT):  harness_module
+	echo $@ build complete.
+
+drivers.$(IMG_EXT):  memdrv_module
+	echo $@ build complete.
+
+ipsec_loadconfig.$(IMG_EXT): ipsec_loadconfig
+	echo $@ build complete.
+
+missiu.$(IMG_EXT): missiu
+	echo $@ build complete.
