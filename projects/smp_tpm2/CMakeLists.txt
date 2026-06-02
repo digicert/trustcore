@@ -41,7 +41,7 @@ endif()
 # MSS_DIR needed by locate_lib
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   set(LIB_DIR "${MSS_DIR}/lib")
   set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
@@ -211,7 +211,7 @@ endforeach()
 #    add_library(smptpm2 tpm2 nanocryptocore STATIC ${DSF_SOURCES})
 #endif()
 
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
     set(COMMON_LIB "${LIB_DIR}/libcommon.so")
     set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
 else()
@@ -258,7 +258,7 @@ else()
     target_compile_definitions(${TARGET_NAME}   PRIVATE "${MOCANA_FLAGS}")
 endif()
 
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD

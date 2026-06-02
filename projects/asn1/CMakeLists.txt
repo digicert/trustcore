@@ -38,7 +38,7 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   set(LIB_DIR "${MSS_DIR}/lib")
 endif()
 
@@ -228,7 +228,7 @@ link_directories(${MSS_BIN_DIR})
 if("SHARED" STREQUAL "${LIB_TYPE}")
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  if(BUILD_FOR_OSI)
+  if(BUILD_FOR_OSI AND NOT WIN32)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD
@@ -240,7 +240,7 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
     locate_lib(LIBMSS_LIB libmss)
     target_link_libraries(${PROJECT_NAME} ${LIBMSS_LIB})
   endif()
-  if(BUILD_FOR_OSI)
+  if(BUILD_FOR_OSI AND NOT WIN32)
     set(COMMON_LIB "${LIB_DIR}/libcommon.so")
   else()
     locate_lib(COMMON_LIB common)
@@ -250,7 +250,7 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 else()
   add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
   # Copy static library to lib directory
-  if(BUILD_FOR_OSI)
+  if(BUILD_FOR_OSI AND NOT WIN32)
       add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD

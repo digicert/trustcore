@@ -1,4 +1,4 @@
 5926a5927,5929
 > moc_get_rsa_ex_app_data                 6055	3_0_0	EXIST::FUNCTION:
 > moc_get_ecc_ex_app_data                 6056	3_0_0	EXIST::FUNCTION:
-> DIGI_EVP_maskCred                        6057	3_0_0	EXIST::FUNCTION:
+> DIGI_EVP_maskCred                        6057	3_0_0	EXIST::FUNCTION:MOCANA_TAP

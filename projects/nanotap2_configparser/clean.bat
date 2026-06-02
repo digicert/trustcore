@@ -35,6 +35,7 @@ RMDIR /s /q Release
 
 DEL /s /q *.vcxproj*
 DEL /q *.sln
+DEL /q *.slnx
 
 echo Deleting log files by executing - "del /s /q %LOG_FILE_PATTERN%"
 del /s /q %LOG_FILE_PATTERN%

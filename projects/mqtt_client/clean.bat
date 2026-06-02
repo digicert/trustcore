@@ -1,0 +1,3 @@
+@echo off
+echo Cleaning up...
+if exist build rmdir /s /q build

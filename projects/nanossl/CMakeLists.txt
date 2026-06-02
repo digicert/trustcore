@@ -155,7 +155,7 @@ endif()
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
   set(LIB_DIR "${MSS_DIR}/lib")
   set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
@@ -422,7 +422,7 @@ endif()
 # - mss/bin for Unix
 # - mss/bin_win32 for Windows
 set(BIN_DIR "${MSS_BIN_DIR}")
-if(BUILD_FOR_OSI)
+if(BUILD_FOR_OSI AND NOT WIN32)
     macro(move_to_bin t_name)
     add_custom_command(
         TARGET ${t_name}
@@ -473,7 +473,7 @@ if(CM_BUILD_NANOSSL_LIB)
     buildflags(${TARGET_DIR} ${EXTRA_DEFINITIONS} MOCANA_FLAGS)
     message("MOCANA_FLAGS = ${MOCANA_FLAGS}")
 
-    if(BUILD_FOR_OSI)
+    if(BUILD_FOR_OSI AND NOT WIN32)
         set(ASN1_LIB             "${LIB_DIR}/libasn1.so")
         set(COMMON_LIB           "${LIB_DIR}/libcommon.so")
         set(PLATFORM_LIB         "${LIB_DIR}/libplatform.so")
@@ -512,7 +512,7 @@ if(CM_BUILD_NANOSSL_LIB)
     
     # Copy static library to lib directory if building static
     if("STATIC" STREQUAL "${LIB_TYPE}")
-        if(BUILD_FOR_OSI)
+        if(BUILD_FOR_OSI AND NOT WIN32)
             add_custom_command(
                 TARGET ${TARGET_NAME}
                 POST_BUILD

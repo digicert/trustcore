@@ -313,7 +313,7 @@ typedef struct ClientHelloData {
 
 typedef sbyte4 (*ClientHelloCallback)(struct ClientHelloData *hello_data, void *args);
 
-typedef sbyte4  (*NSSLSetClientHelloCallback)(sbyte4 connectionInstance, ClientHelloCallback callback, void *args);
+typedef MSTATUS (*NSSLSetClientHelloCallback)(sbyte4 connectionInstance, ClientHelloCallback callback, void *args);
 
 #if defined(__ENABLE_DIGICERT_DEFER_CLIENT_CERT_VERIFY_ENCODING__) && \
     defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__)
