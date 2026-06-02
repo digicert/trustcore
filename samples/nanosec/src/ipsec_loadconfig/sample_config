@@ -1,0 +1,30 @@
+#This line is a comment!
+#
+# Example of transport mode mirror policy:
+# { laddr 192.168.3.122 raddr 192.168.3.110 ulp icmp } ipsec { encr_algs 3des encr_auth_algs sha1 }
+#
+#
+# Example of tunnel mode mirror policy:
+# tladdr - local tunnel gateway
+# rladdr - remote tunnel gateway
+# { laddr 192.168.1.2 raddr 192.168.2.2 ulp icmp } ipsec { tladdr 10.0.0.1 traddr 10.0.0.2 encr_algs 3des encr_auth_algs sha1 }
+#
+#
+# Example of system reset:
+# flush;
+# spdflush;
+#
+# Example of manual key and its corresponding policy:
+# add 192.168.3.110 192.168.3.16 esp 257 -m transport -E 3des-cbc 0x313233343536373839303132313233343536373839303132 -A hmac-sha1 0x3132333435363738393031323132333435363738;
+# add 192.168.3.16 192.168.3.110 esp 256 -m transport -E 3des-cbc 0x313233343536373839303132313233343536373839303132 -A hmac-sha1 0x3132333435363738393031323132333435363738;
+# { laddr 192.168.3.110 raddr 192.168.3.16 } ipsec { encr_auth_algs sha1 encr_algs 3des }
+#
+#
+
+flush;
+spdflush;
+
+{ raddr 192.168.3.110 ulp icmp } ipsec { encr_algs 3des encr_auth_algs sha1 }
+{ raddr 192.168.3.115 ulp icmp } ipsec { encr_algs aes encr_auth_algs md5 }
+{ raddr 192.168.3.116 ulp icmp } ipsec { encr_algs any encr_auth_algs any }
+

@@ -21,6 +21,7 @@ def extract_macros(json_path, ci_example_file, ssh_server_file, ssh_client_file,
     ssh_server_macros = set()
     mqtt_client_macros = set()
     ssl_macros = set()
+    nanosec_macros = set()
     for entry in compile_commands:
         command = entry.get('command', '')
         arguments = entry.get('arguments', [])
@@ -54,6 +55,11 @@ def extract_macros(json_path, ci_example_file, ssh_server_file, ssh_client_file,
             for arg in arguments:
                 if arg.startswith('-D'):
                     ssl_macros.add(arg[2:])
+        elif dir_name == 'nanosec':
+            nanosec_macros.update(re.findall(r'-D(\w+)', command))
+            for arg in arguments:
+                if arg.startswith('-D'):
+                    nanosec_macros.add(arg[2:])
         else:
             ci_example_macros.update(re.findall(r'-D(\w+)', command))
             ssh_client_macros.update(re.findall(r'-D(\w+)', command))

@@ -1,0 +1,121 @@
+#
+# Copyright (c) 2003-2021 Digicert Inc
+# All rights reserved.
+#
+# Use of this software and its source code are governed by
+# the terms and conditions of the Digicert Inc Software License ("LICENSE").
+#
+
+#
+# Makefile for Linux build
+#
+SEP        = /
+PRJ_DIR   ?= $(shell pwd)
+
+ifeq ($(MOCANA_FORCE_32BIT),true)
+ CFLAGS_TARGET=-m32
+else
+ CFLAGS_TARGET=
+endif
+
+BUILDENV ?= PRODUCTION
+
+ifeq ($(toolchain),)
+LD	 = $(CROSS_COMPILE)gcc
+LD       += $(CFLAGS_TARGET)
+endif
+RANLIB   ?= $(CROSS_COMPILE)ranlib
+
+ifeq ($(no-undefined),true)
+  CFLAGS_UNDEFINED  = -Wl,-z,defs
+else
+  CFLAGS_UNDEFINED  =
+endif
+
+ifneq (,$(CCACHE_DIR))
+  CC  = ccache-gcc $(CFLAGS_TARGET) $(CFLAGS_UNDEFINED)
+  CXX = ccache-gcc $(CFLAGS_TARGET) $(CFLAGS_UNDEFINED)
+else
+  CC  ?= $(CROSS_COMPILE)gcc
+  CXX ?= $(CROSS_COMPILE)gcc
+  CC  += $(CFLAGS_TARGET) $(CFLAGS_UNDEFINED)
+  CXX += $(CFLAGS_TARGET) $(CFLAGS_UNDEFINED)
+endif
+
+#LINKFLAGS  = -lrt
+LINKFLAGS  = -lrt -Wl,--no-as-needed -lpthread
+CPU_ARCH ?= $(shell uname -m)
+ifeq ($(CROSS_COMPILE), )
+  ifeq ($(CPU_ARCH),$(filter $(CPU_ARCH), i686 x86_64))
+    ifeq ($(CPU_WIDTH),32)
+      LINKFLAGS += -m32
+    else
+      LINKFLAGS += -m64
+    endif
+  endif
+endif
+
+#CFLAGS    = -Os -D__RTOS_LINUX__ -Wall
+ifeq ($(gdb),true)
+    override CFLAGS += -D__RTOS_LINUX__ -O0 -g -Wall -Wno-missing-braces -fPIC
+    override TAP_CFLAGS = -Wall -Werror -Wno-missing-braces -ffunction-sections -fdata-sections -fno-strict-aliasing
+else
+    override CFLAGS += -D__RTOS_LINUX__ -Wall -Wno-missing-braces -fPIC
+    #override CFLAGS += -D__RTOS_LINUX__ -g -Wall
+    override TAP_CFLAGS = -Os -Wall -Werror -Wno-missing-braces -ffunction-sections -fdata-sections -fno-strict-aliasing
+endif
+
+LIBSSL_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+
+NANOTAP_LINKFLAGS = -lnanotap -Wl,-rpath=/usr/lib/mocana
+ifneq ($(remote),true)
+NANOTAP_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections -lnano_common -lnanotap2_configparser -lsmptpm2 -ltpm2 -lnanocryptocore
+else
+NANOTAP_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections -lnanotap2_clientcomm -lnanossl -lnanocryptossl -lnano_common -lnanotap2_configparser -lsmptpm2 -ltpm2 -lnanocryptocore
+endif
+
+TAP_SERIALIZE_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+
+TAP_COMMON_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+
+TAP_CONFIG_PARSER_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+
+TAP_CLIENT_COMM_LINKFLAGS = -lnanossl -lnanocryptossl -Wl,-rpath=/usr/lib/mocana
+TAP_CLIENT_COMM_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+
+TAP_SERVER_LINKFLAGS = -lnanotap2_clientcomm -lnano_common -lnanossl -lnanocryptossl -lnanocryptocore -lnanotap2_configparser -lnanotap2 -ltpm2 -lsmptpm2
+TAP_SERVER_TEST_LINKFLAGS = -lnanocryptocore -ltapserialize -ltapconfigparser -lnanossl -lnanocryptossl -lnanotap2_clientcomm -ltap -ltpm2 -lsmptpm2
+
+ifneq ($(remote),true)
+TAP_TOOLS_TPM2_LINKFLAGS = -lnanotap2 -ltpm2 -lsmptpm2 -lnanotap2_common -lnanotap2_configparser -lnano_common -lnanocryptocore -Wl,-rpath=/usr/lib/mocana
+else
+TAP_TOOLS_TPM2_LINKFLAGS = -lnanotap2 -ltpm2 -lsmptpm2 -lnanotap2_common -lnanotap2_clientcomm -lnanossl -lnanocryptossl -lnanotap2_configparser -lnano_common -lnanocryptocore -Wl,-rpath=/usr/lib/mocana
+endif
+
+ifneq ($(remote),true)
+TAP_TPM2_COMMANDS_LINKFLAGS = -lnanotap2 -ltpm2 -lsmptpm2 -lnanotap2_common -lnanotap2_configparser -lnano_common -lnanocryptocore -Wl,-rpath=/usr/lib/mocana
+else
+TAP_TPM2_COMMANDS_LINKFLAGS = -lnanotap2 -ltpm2 -lsmptpm2 -lnanotap2_common -lnanotap2_clientcomm -lnanossl -lnanocryptossl -lnanotap2_configparser -lnano_common -lnanocryptocore -Wl,-rpath=/usr/lib/mocana
+endif
+
+TAP_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+TPM2_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+SMP_TPM2_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+SMP_NAME_LIB_LINKFLAGS = $(LINKFLAGS) -shared -Wl,--gc-sections
+
+ifeq ($(tpm2),true)
+    TAP_SERVER_LINKFLAGS += -ltpm2 -lsmptpm2 
+endif
+TAP_SERVER_LINKFLAGS += -Wl,-rpath=/usr/lib/mocana
+
+
+CXXFLAGS   = $(CFLAGS)
+LIBS       = $(LINKFLAGS)
+
+LIBOUT_EXT = .a
+
+ifeq ($(BUILDENV),PRODUCTION)
+  include $(PRJ_DIR)/make/Makefile.common
+else
+  include $(PRJ_DIR)/make/Makefile.common.$(BUILDENV)
+endif

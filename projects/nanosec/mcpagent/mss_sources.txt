@@ -1,0 +1,3 @@
+MSS_SRC_DIR/gdoi/client/gdoi_client.c
+MSS_SRC_DIR/gdoi/gdoi.c
+
