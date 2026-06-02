@@ -1,0 +1,40 @@
+obj-m += moc_memdrv.o
+moc_memdrv-objs := linux_memdrv.o
+
+PWD   ?= $(shell pwd)
+
+DSF_PROJECTS_DIR ?= $(PWD)/../../..
+DSF_PROTOCOLS_DIR ?= $(PWD)/../../..
+DSF_AUTOMATE_DIR ?= $(PWD)/../../..
+DSF_CORE_DIR ?= $(PWD)/../../..
+PRJ_DIR ?= $(PWD)/../../..
+
+EXTRA_CFLAGS += -D__RTOS_LINUX__ -I$(PWD)/../../.. -I$(DSF_CORE_DIR)/src -I$(DSF_PROTOCOLS_DIR)/src -I$(DSF_PROJECTS_DIR)/src
+
+INSMOD = sudo /sbin/insmod
+RMMOD  = sudo /sbin/rmmod
+
+ifneq ($(KBUILD_EXTMOD),)
+KBUILD_AUTOMATE_DIR = $(PRJ_DIR)
+endif
+
+ifneq ($(KBUILD_EXTMOD),)
+include $(KBUILD_AUTOMATE_DIR)/make/Makefile.linux.modules
+else
+include $(PRJ_DIR)/make/Makefile.linux.modules
+endif
+
+ccflags-y := $(EXTRA_CFLAGS) -I$(PWD)/../../.. -I$(DSF_CORE_DIR)/src -I$(DSF_PROTOCOLS_DIR)/src -I$(DSF_PROJECTS_DIR)/src
+
+all: all_modules
+
+clean: clean_modules
+
+load: all device unload
+	$(INSMOD) moc_memdrv.ko
+
+unload:
+	-$(RMMOD) moc_memdrv
+
+device:
+	[ -e /dev/moc_memdrv ] || sudo mknod /dev/moc_memdrv c 250 0

@@ -7,7 +7,7 @@
 
 ## TrustCore SDK Overview  
 
-TrustCore SDK is a powerful suite of security tools hardend over 15 years of usage, designed to simplify and enhance certificate-based authentication, encryption, and secure communications. Previously a closed-source solution, it is now being open-sourced to empower developers with greater flexibility in integrating robust security mechanisms into their applications.  
+TrustCore SDK is a powerful suite of security tools hardened over 15 years of usage, designed to simplify and enhance certificate-based authentication, encryption, and secure communications. Previously a closed-source solution, it is now being open-sourced to empower developers with greater flexibility in integrating robust security mechanisms into their applications.  
 
 ### **Key Capabilities**
 

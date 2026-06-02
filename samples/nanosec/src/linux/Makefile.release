@@ -1,0 +1,24 @@
+#
+# Makefile for IPsec example integration code for Linux
+#
+# Copyright 2026 DigiCert Project Authors. All Rights Reserved.
+#
+# This is a convenience Makefile used for building the GPL and non-GPL
+# portions of the Linux integration code and Mocana IPsec code, respectively.
+#
+#
+DSF_AUTOMATE_DIR ?= $(PWD)/../../../../..
+
+prepare:
+	ln -f $(DSF_AUTOMATE_DIR)/make/Makefile.linux.cross gpl/
+	cd gpl && make links
+
+all:
+	cd mocana && $(MAKE)
+	cd gpl && $(MAKE)
+
+clean:
+	cd mocana && $(MAKE) clean
+	cd gpl && $(MAKE) clean
+	-rm -f gpl/*.o_shipped
+	-rm -f gpl/Makefile.linux.cross

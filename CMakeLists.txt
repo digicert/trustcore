@@ -35,17 +35,13 @@ option(ENABLE_EST_UNITTEST "Enable EST Unit Test" OFF)
 option(CM_ENABLE_SSL               "Enable SSL library build" ON)
 option(CM_ENABLE_SSL_MAUTH_SUPPORT "Enable Mutual Authentication" OFF)
 option(CM_ENABLE_SSL_OCSP          "Enable OCSP support" OFF)
-if(CM_ENABLE_SSL)
-  option(DISABLE_SSL_CLIENT "Disable SSL Client." OFF)
-  option(DISABLE_SSL_SERVER "Disable SSL Server." OFF)
-else()
-  option(DISABLE_SSL_CLIENT "Disable SSL Client." ON)
-  option(DISABLE_SSL_SERVER "Disable SSL Server." ON)
-endif()
 if(CM_ENABLE_SSL_OCSP)
   set(CM_ENABLE_URI ON CACHE BOOL "Build with URI support." FORCE)
   set(CM_ENABLE_OCSP ON CACHE BOOL "Build with OCSP support." FORCE)
 endif()
+# Note: DISABLE_SSL_CLIENT / DISABLE_SSL_SERVER options are declared further
+# below, after all other ENABLE_* module options, so their defaults can depend
+# on whether any other module was explicitly requested.
 
 # MQTT build options
 option(ENABLE_MQTT_CLIENT "Build MQTT Client." OFF)
@@ -64,6 +60,20 @@ endif()
 # NanoTAP API example
 option(ENABLE_TAP_API_EXAMPLE "Build NanoTAP API Example." OFF)
 
+# NanoSec (IKE) sample
+option(ENABLE_NANOSEC "Build NanoSec IKE Example." OFF)
+
+# IPsec kernel module build (only applies when ENABLE_NANOSEC=ON)
+option(BUILD_KERNELMOD "Build IPsec kernel modules (moc_platform_mod.ko, moc_crypto.ko, moc_ipsec.ko)" OFF)
+if(ENABLE_NANOSEC AND BUILD_KERNELMOD)
+  set(CM_BUILD_IPSECMOD ON CACHE BOOL "Build IPsec kernel modules" FORCE)
+else()
+  set(CM_BUILD_IPSECMOD OFF CACHE BOOL "Build IPsec kernel modules" FORCE)
+  if(BUILD_KERNELMOD AND NOT ENABLE_NANOSEC)
+    message(WARNING "BUILD_KERNELMOD=ON has no effect without ENABLE_NANOSEC=ON")
+  endif()
+endif()
+
 # SMP build options
 option(ENABLE_NANOROOT "Enable NanoROOT support" OFF)
 option(ENABLE_PKCS11_SOFTHSM "Enable PKCS11 SoftHSM support" OFF)
@@ -78,6 +88,40 @@ option(ENABLE_PQC_COMPOSITE "Enable PQC Composite" OFF)
 option(DISABLE_EDDSA_25519_SUPPORT "Disable Ed25519 support." OFF)
 option(DISABLE_ECDH_25519_SUPPORT "Disable ECDH with Curve25519 support." OFF)
 option(ENABLE_TAP "Enable TAP" OFF)
+option(ENABLE_FIPS "Build with FIPS enabled." OFF)
+
+if(ENABLE_CI_EXAMPLE OR ENABLE_SSH_CLIENT OR ENABLE_SSH_SERVER
+    OR ENABLE_MQTT_CLIENT OR ENABLE_NANOROOT OR ENABLE_PKCS11_SOFTHSM
+    OR ENABLE_PKCS11_TEE OR ENABLE_TPM2 OR ENABLE_TAP_API_EXAMPLE
+    OR ENABLE_SCEP OR ENABLE_EST OR ENABLE_NANOSEC)
+  set(_SSL_DEFAULT_DISABLED ON)
+else()
+  set(_SSL_DEFAULT_DISABLED OFF)
+endif()
+
+if(CM_ENABLE_SSL)
+  option(DISABLE_SSL_CLIENT "Disable SSL Client." ${_SSL_DEFAULT_DISABLED})
+  option(DISABLE_SSL_SERVER "Disable SSL Server." ${_SSL_DEFAULT_DISABLED})
+else()
+  option(DISABLE_SSL_CLIENT "Disable SSL Client." ON)
+  option(DISABLE_SSL_SERVER "Disable SSL Server." ON)
+endif()
+
+if(ENABLE_FIPS)
+  set(CM_ENABLE_FIPS ON CACHE BOOL "Build with FIPS enabled." FORCE)
+  set(DISABLE_PQC ON CACHE BOOL "Disable Quantum Safe algorithms." FORCE)
+
+  set(CM_ENABLE_CUSTOM_ENTROPY ON CACHE BOOL "Enable Custom Entropy." FORCE)
+
+  if(NOT EXISTS "${CMAKE_SOURCE_DIR}/lib/libmss.so")
+    message(FATAL_ERROR
+      "FIPS build requires a prebuilt FIPS library at "
+      "${CMAKE_SOURCE_DIR}/lib/libmss.so. Copy your FIPS-enabled libmss.so "
+      "into lib/ before configuring.")
+  endif()
+else()
+  set(CM_ENABLE_FIPS OFF CACHE BOOL "Build with FIPS enabled." FORCE)
+endif()
 
 # PQC and SSL/MQTT are not available without suiteb
 if(DISABLE_SUITEB)
@@ -102,13 +146,14 @@ if(
     AND NOT ENABLE_TAP_API_EXAMPLE
     AND NOT ENABLE_SCEP
     AND NOT ENABLE_EST
+    AND NOT ENABLE_NANOSEC
     AND DISABLE_SSL_CLIENT
     AND DISABLE_SSL_SERVER
 )
   message(FATAL_ERROR
     "No modules enabled. Please enable at least one of: ENABLE_CI_EXAMPLE, ENABLE_SSH_CLIENT, ENABLE_SSH_SERVER, "
     "ENABLE_MQTT_CLIENT, ENABLE_NANOROOT, ENABLE_PKCS11_SOFTHSM, ENABLE_PKCS11_TEE, ENABLE_TPM2, ENABLE_TAP_API_EXAMPLE, "
-    "ENABLE_SCEP, ENABLE_EST, (set DISABLE_SSL_CLIENT and/or DISABLE_SSL_SERVER to OFF)")
+    "ENABLE_SCEP, ENABLE_EST, ENABLE_NANOSEC, (set DISABLE_SSL_CLIENT and/or DISABLE_SSL_SERVER to OFF)")
 endif()
 
 if(ENABLE_TAP_API_EXAMPLE)
@@ -299,14 +344,14 @@ set(SSL_CLIENT_HEADER "")
 set(SSL_CLIENT_FILE ${CMAKE_BINARY_DIR}/ssl_client_macros.h)
 if(NOT DISABLE_SSL_CLIENT)
   set(SSL_CLIENT_HEADER ${SSL_CLIENT_FILE})
-  
+
   # Determine library dependency based on build type
   if("STATIC" STREQUAL "${LIB_TYPE}")
     set(NANOSSL_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanossl.a)
   else()
     set(NANOSSL_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanossl.so)
   endif()
-  
+
   add_custom_target(overwrite_for_ssl_client
     COMMAND ${CMAKE_COMMAND} -E copy ${SSL_CLIENT_HEADER} ${MOPTIONS_CUSTOM_SSL_CLIENT_FILE}
     DEPENDS ${SSL_CLIENT_HEADER} ${NANOSSL_DEPENDENCY}
@@ -338,7 +383,7 @@ set(MQTT_CLIENT_HEADER "")
 set(MQTT_CLIENT_FILE ${CMAKE_BINARY_DIR}/mqtt_client_macros.h)
 if(ENABLE_MQTT_CLIENT)
   set(MQTT_CLIENT_HEADER ${MQTT_CLIENT_FILE})
-  
+
   # Determine library dependency based on build type
   if("STATIC" STREQUAL "${LIB_TYPE}")
     set(NANOMQTT_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanomqtt.a)
@@ -453,6 +498,15 @@ if(ENABLE_EST)
   endif()
 endif()
 
+# NanoSec (IKE) library and sample
+if(ENABLE_NANOSEC)
+  set(CM_BUILD_IKE ON CACHE BOOL "Build IKE" FORCE)
+  add_subdirectory(projects/nanosec ${CMAKE_BINARY_DIR}/projects/nanosec)
+  if(BUILD_SAMPLES)
+    add_subdirectory(samples/nanosec)
+  endif()
+endif()
+
 # SCEP unit tests
 if(ENABLE_SCEP AND ENABLE_SCEP_UNITTEST)
     add_subdirectory(projects/scep_testunit)
@@ -477,15 +531,25 @@ if((ENABLE_SCEP OR ENABLE_EST) AND BUILD_SAMPLES)
 endif()
 
 # generate both client and server macro headers
-add_custom_command(
-    OUTPUT ${CI_EXAMPLE_HEADER} ${SSH_SERVER_HEADER} ${SSH_CLIENT_HEADER} ${MQTT_CLIENT_HEADER} ${SSL_SERVER_HEADER} ${SSL_CLIENT_HEADER}
-    COMMAND ${CMAKE_COMMAND} -E echo "Generating macros from compile_commands.json"
-    COMMAND ${Python3_EXECUTABLE} ${MACRO_SCRIPT} ${COMPILE_COMMANDS_JSON} ${CI_EXAMPLE_FILE} ${SSH_SERVER_FILE} ${SSH_CLIENT_FILE} ${MQTT_CLIENT_FILE} ${SSL_SERVER_FILE} ${SSL_CLIENT_FILE}
-    DEPENDS ${COMPILE_COMMANDS_JSON} ${MACRO_SCRIPT}
-    COMMENT "Extracting macros from compile_commands.json"
+set(_MACRO_OUTPUTS
+    ${CI_EXAMPLE_HEADER}
+    ${SSH_SERVER_HEADER}
+    ${SSH_CLIENT_HEADER}
+    ${MQTT_CLIENT_HEADER}
+    ${SSL_SERVER_HEADER}
+    ${SSL_CLIENT_HEADER}
 )
+if(_MACRO_OUTPUTS)
+  add_custom_command(
+      OUTPUT ${_MACRO_OUTPUTS}
+      COMMAND ${CMAKE_COMMAND} -E echo "Generating macros from compile_commands.json"
+      COMMAND ${Python3_EXECUTABLE} ${MACRO_SCRIPT} ${COMPILE_COMMANDS_JSON} ${CI_EXAMPLE_FILE} ${SSH_SERVER_FILE} ${SSH_CLIENT_FILE} ${MQTT_CLIENT_FILE} ${SSL_SERVER_FILE} ${SSL_CLIENT_FILE}
+      DEPENDS ${COMPILE_COMMANDS_JSON} ${MACRO_SCRIPT}
+      COMMENT "Extracting macros from compile_commands.json"
+  )
 
-# Custom target to run the script
-add_custom_target(generate_macros_header ALL
-    DEPENDS ${SSH_SERVER_HEADER} ${SSH_CLIENT_HEADER} ${MQTT_CLIENT_HEADER}
-)
+  # Custom target to run the script
+  add_custom_target(generate_macros_header ALL
+      DEPENDS ${_MACRO_OUTPUTS}
+  )
+endif()

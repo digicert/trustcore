@@ -14,7 +14,6 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
- *
  */
 
 #ifndef __LINUX_MEM_DRV_HEADER__
@@ -23,7 +22,7 @@
 
 /*------------------------------------------------------------------*/
 
-#define MEM_DRIVER_NAME             "moc_memdrv"
+#define MEM_DRIVER_NAME            "moc_memdrv"
 
 
 /*------------------------------------------------------------------*/

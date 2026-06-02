@@ -1,0 +1,153 @@
+############################################################################
+# File:        Makefile
+# Created:     Tue Sep 12 09:24:45 PDT 2006
+# Description: Makefile for IPsec linux build
+############################################################################
+
+# Need to include this first in case the sane defaults for the values
+# below will overwrite them.
+PWD          ?= $(shell pwd)
+DSF_PROJECTS_DIR ?= $(PWD)/../../../../..
+DSF_PROTOCOLS_DIR ?= $(PWD)/../../../../..
+DSF_AUTOMATE_DIR ?= $(PWD)/../../../../..
+DSF_CORE_DIR ?= $(PWD)/../../../../..
+include $(DSF_AUTOMATE_DIR)/make/Makefile.linux.cross
+
+# Common variables needed for both Linux kernel build and Mocana build
+RTOS         ?= __RTOS_LINUX__
+
+export EXTRA_CFLAGS += -D$(RTOS) -g -Wall -I$(PWD)/../../.. -I$(DSF_CORE_DIR)/src -I$(DSF_PROTOCOLS_DIR)/src -I$(DSF_PROJECTS_DIR)/src
+export CC=$(CROSS_COMPILE)gcc
+
+# Distinquish between Android and Linux
+ifeq (__RTOS_ANDROID__, $(RTOS))
+  # Android Variants
+  ifeq (CROSS_ANDROID2_ARM, $(OS_NAME))
+        KBUILD_NOPEDANTIC=1
+	ARCH=arm
+	CROSS_COMPILE=arm-eabi-
+	KERNEL ?= 2.6
+	KDIR ?= /home/kblack/aaa_work/mocana/DELL/Streak/android/kernel
+
+	KBUILD_EXTRA_SYMBOLS := $(PWD)/../moc_platform_module/Module.symvers
+	MODDIR ?= /system/lib/modules
+
+  endif
+endif
+
+ifeq (__RTOS_LINUX__, $(RTOS))
+  # Normal linux
+  #
+  # For SNAPGEAR LINUX (customer specific) we leave ENTROPY THREADS in the kernel module
+  # but for other LINUX modules, take them out.
+  #
+  ifeq (CROSS_SNAPGEAR_LINUX, $(OS_NAME))
+	export ARCH=arm
+	export CROSS_COMPILE=arm-linux-
+
+	KERNEL ?= 2.6.19
+	KDIR ?= /home/buildmaster/svn_snapgear/linux-2.6.x
+	MODDIR ?= $(KDIR)/kernel
+  endif
+
+  ifeq (CROSS_e500v2_WRLINUX, $(OS_NAME))
+    export ARCH=powerpc
+    export CROSS_COMPILE=ppc_e500v2-target-linux-gnu-
+    export EXTRA_CFLAGS += -Wno-error -DMOC_BIG_ENDIAN
+
+	KERNEL ?= 2.6.34
+	KDIR ?= /opt/XOG_OS_DEV-for.mocana/os/explorer55.platform/distros/wrl40-wrt40-sr1/linux
+	MODDIR ?= /lib/modules/$(KERNEL)/kernel/mocana
+
+	KBUILD_EXTRA_SYMBOLS := $(PWD)/../moc_platform_module/Module.symvers
+  endif
+
+  ifeq (__RTOS_LINUX__, $(OS_NAME))
+    KDIR         ?= /lib/modules/$(shell uname -r)/build
+    ARCH         ?= x86
+    ifeq ($(shell uname -m),x86_64)
+      EXTRA_CFLAGS += -D__ENABLE_DIGICERT_64_BIT__
+    endif
+    ifeq ($(shell (uname -m | cut -b -3)),arm)
+      ARCH = arm
+    endif
+  endif
+endif
+
+# Some sane defaults for the EXTRA_CFLAGS
+EXTRA_CFLAGS += -D__ENABLE_DIGICERT_IPSEC_LINUX_EXAMPLE__
+IMG_EXT      ?= linux.native
+
+
+# if NO_CRYPTO is true, the crypto module symbols will not be included.
+include $(PWD)/../Makefile.ipsec-obj.inc
+
+# Linux kernel build
+ifneq ($(KERNELRELEASE),)
+
+# Note: the Linux kbuild system expects kernel moduels to be specified in
+# this way, with obj-m indicating that this is a kernel module build,
+# and moc_ipsec-y indicating the modules that are required to be built
+ifeq ($(BUILD_IPSEC_MOD),y)
+obj-m := moc_ipsec.o
+else
+obj-m := _mocana_ipsec.o
+endif
+
+ccflags-y := -I$(PWD)/../../.. -I$(DSF_CORE_DIR)/src -I$(DSF_PROTOCOLS_DIR)/src -I$(DSF_PROJECTS_DIR)/src $(EXTRA_CFLAGS)
+
+# Regression watch: this was previously moc_ipsec-objs, but the Linux
+# kernel build uses that convention for compiling host programs, not
+# kernel modules.
+ifeq ($(BUILD_IPSEC_MOD),y)
+moc_ipsec-y := \
+	$(IPSEC_OBJS)
+else
+_mocana_ipsec-y := \
+	$(IPSEC_OBJS)
+endif
+
+# Mocana build system
+else
+
+all: links all_modules
+ifeq ($(BUILD_IPSEC_MOD),y)
+	cp moc_ipsec.ko $(DSF_CORE_DIR)/bin/moc_ipsec.ko
+else
+	cp _mocana_ipsec.o ../gpl/_mocana_ipsec.o_shipped
+endif
+
+clean_extra:
+	-rm -f *.ko
+	-rm -f Module.symvers
+	-rm -f modules.order
+	-rm -f *.mod.c
+	-rm -f .*.cmd
+	-rm -rf .tmp_versions
+
+clean: clean_extra clean_links
+	-rm -f missiu
+	-rm -f *.o
+
+# This defines the 'links' and 'clean_links' targets
+include $(PWD)/../Makefile.links.inc
+
+# This adds the all_modules and clean_modules targets
+# include $(PWD)/../../../../../make/Makefile.linux.modules
+all_modules:
+ifeq ($(HW_ACCEL_DEV),)
+  ifeq (CROSS_e500v2_WRLINUX, $(OS_NAME))
+	make V=1 KBUILD_MODPOST_WARN=1 -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+  else
+    ifeq (CROSS_ANDROID2_ARM, $(OS_NAME))
+	  make V=1 KBUILD_MODPOST_WARN=1 -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+    else
+	  make V=1 KBUILD_MODPOST_WARN=1 -C $(KDIR) M=$(PWD) modules
+    endif
+  endif
+else
+	make V=1 KBUILD_MODPOST_WARN=1 -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+endif
+
+
+endif
