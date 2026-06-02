@@ -27,3 +27,4 @@ MSS_SRC_DIR/ssh/ssh_ecdsa.c
 MSS_SRC_DIR/ssh/ssh_rsa.c
 MSS_SRC_DIR/ssh/ssh_mpint.c
 MSS_SRC_DIR/ssh/ssh_key.c
+MSS_SRC_DIR/platform/linux_rtos.c
