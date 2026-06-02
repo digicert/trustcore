@@ -15853,7 +15853,8 @@ static MSTATUS OSSL_certCallback(
     X509_STORE_CTX *pStoreCtx = NULL;
     sbyte4 certIndex;
     ubyte *pCertEntry = NULL;
-    int osslStatus;
+    int initStatus;
+    int verifyStatus;
 
     status = ERR_NULL_POINTER;
     if (NULL == pCertChain)
@@ -15949,9 +15950,9 @@ static MSTATUS OSSL_certCallback(
      * certificate chain. The stack of certificates will also be provided. They
      * will effectively be the certificate chain that will be verified.
      */
-    osslStatus = X509_STORE_CTX_init(
+    initStatus = X509_STORE_CTX_init(
         pStoreCtx, pS->ssl_ctx->cert_store, pCert, pStack);
-    if (1 != osslStatus)
+    if (1 != initStatus)
         goto exit;
 
     X509_STORE_CTX_set_ex_data(
@@ -15977,12 +15978,12 @@ static MSTATUS OSSL_certCallback(
 
     if (pS->ssl_ctx->app_verify_callback)
     {
-        osslStatus = pS->ssl_ctx->app_verify_callback(
+        verifyStatus = pS->ssl_ctx->app_verify_callback(
             pStoreCtx, pS->ssl_ctx->app_verify_arg);
     }
     else
     {
-        osslStatus = X509_verify_cert(pStoreCtx);
+        verifyStatus = X509_verify_cert(pStoreCtx);
     }
 
     pS->verify_result = pStoreCtx->error;
@@ -15993,7 +15994,8 @@ static MSTATUS OSSL_certCallback(
         pS->verified_chain = X509_STORE_CTX_get1_chain(pStoreCtx);
         if (pS->verified_chain == NULL) {
             SSLerr(SSL_F_SSL_VERIFY_CERT_CHAIN, ERR_R_MALLOC_FAILURE);
-            osslStatus = 0;
+            status = ERR_MEM_ALLOC_FAIL;
+            goto exit;
         }
     }
 #endif
@@ -16001,7 +16003,7 @@ static MSTATUS OSSL_certCallback(
 #ifdef __ENABLE_DIGICERT_SSL_NONTRUSTED_CERT__
     status = OK;
 #else
-    if ( (0 < osslStatus) || ((SSL_VERIFY_NONE == pS->ssl_ctx->verify_mode) && (SSL_VERIFY_NONE == pS->orig_s.verify_mode))
+    if ( (0 < verifyStatus) || ((SSL_VERIFY_NONE == pS->ssl_ctx->verify_mode) && (SSL_VERIFY_NONE == pS->orig_s.verify_mode))
 #if defined(__ENABLE_DIGICERT_SSL_CERT_STATUS_OVERRIDE__)
          || (OK == nsslCertStatus)
 #endif
@@ -20042,7 +20044,7 @@ exit:
 size_t SSL_get_num_tickets(const SSL *pSsl)
 {
     ubyte4 numTickets = 0;
-    MSTATUS status = 0;
+    size_t status = 0;
 
     if (NULL == pSsl)
         goto exit;
