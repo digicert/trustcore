@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true
         run: |
           rm -rf build lib/* samples/bin/*
-          cmake -DBUILD_SAMPLES=ON -DENABLE_MQTT_CLIENT=ON -DWITH_LOGGING=ON -B build -S .
+          cmake -DBUILD_SAMPLES=ON -DENABLE_MQTT_CLIENT=ON -DWITH_LOGGING=ON -DDISABLE_SSL_CLIENT=OFF -DDISABLE_SSL_SERVER=OFF -B build -S .
           cmake --build build
           test -f samples/bin/mqtt_client
           test -f samples/bin/ssl_server
