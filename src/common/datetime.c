@@ -28,15 +28,29 @@
 
 /*-------------------------------------------------------------------------*/
 
+/* The day number algorithm (from alcor.concordia.ca) uses y/4 - y/100 + y/400 to count
+ * leap days. This formula assumes year 0 is a leap year (which it is in the proleptic
+ * Gregorian calendar). However, our TimeDate struct stores years relative to 1970,
+ * and 1970 is NOT a leap year (1970 % 4 = 2). This mismatch causes y/4 to miscount
+ * leap days. Fix: use calendar year (y+1970) for leap calculations, then subtract
+ * EPOCH_ADJUSTMENT to keep day numbers epoch-relative.
+ * EPOCH_ADJUSTMENT = 1970/4 - 1970/100 + 1970/400 = 492 - 19 + 4 = 477 */
+#define EPOCH_ADJUSTMENT 477
+
 static sbyte4
 DATETIME_calculateDayNumber( sbyte4 y, sbyte4 m, sbyte4 d)
 {
     /* this routine converts a year, month, day into a day number */
     /* day number can just be used to compare quantities */
     /* http://alcor.concordia.ca/~gpkatch/ */
+    sbyte4 cy; /* calendar year for correct leap year calculation */
+
     m = (m + 9)%12;         /* mar=0, feb=11 */
     y = y - m/10;           /* if Jan/Feb, year-- */
-    return y*365 + y/4 - y/100 + y/400 + (m*306 + 5)/10 + (d - 1);
+    /* FIX: Convert to calendar year for leap calculation since algorithm expects
+     * year 0 to be a leap year, but our epoch (1970) is not a leap year */
+    cy = y + 1970;
+    return y*365 + cy/4 - cy/100 + cy/400 - EPOCH_ADJUSTMENT + (m*306 + 5)/10 + (d - 1);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -46,14 +60,17 @@ DATETIME_calculateFromDayNumber(sbyte4 g, ubyte2 *pY, ubyte *pM, ubyte *pD)
 {
     /* this routine converts  a day number into a year, month, day, hour, and seconds */
     /* http://alcor.concordia.ca/~gpkatch/ */
-    sbyte4 y, ddd, mi, mm, dd;
+    sbyte4 y, cy, ddd, mi, mm, dd;
 
     y = (10000*g + 14780)/3652425;
-    ddd = g - (365*y + y/4 - y/100 + y/400);
+    /* FIX: Convert to calendar year for leap calculation (same fix as forward function) */
+    cy = y + 1970;
+    ddd = g - (365*y + cy/4 - cy/100 + cy/400 - EPOCH_ADJUSTMENT);
     if (ddd < 0)
     {
         y = y - 1;
-        ddd = g - (365*y + y/4 - y/100 + y/400);
+        cy = y + 1970;
+        ddd = g - (365*y + cy/4 - cy/100 + cy/400 - EPOCH_ADJUSTMENT);
     }
     mi = (100*ddd + 52)/3060;
     mm = (mi + 2)%12 + 1;
