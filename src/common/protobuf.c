@@ -660,7 +660,6 @@ static MSTATUS PROTOBUF_getCurrentTimeStamp(ubyte8 *pTimeStamp)
     epochTime.m_minute = 0;
     epochTime.m_second = 0;
 
-    currentTime.m_day += 1;
     status = DATETIME_diffTime(&currentTime, &epochTime, &totalSeconds);
     if (OK != status)
         goto exit;
