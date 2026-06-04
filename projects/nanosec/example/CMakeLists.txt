@@ -576,6 +576,7 @@ if(CM_ENABLE_TAP_LOCAL)
         ${INITIALIZE_LIB}
         ${DATAPROTECT_LIB}
         ${IKE_LIB}
+        ${LIB_PTHREAD}
         ${FIPS_LIB}
         ${WSOCK_LIB}
         )
@@ -596,6 +597,7 @@ elseif(CM_ENABLE_TAP_REMOTE)
         ${INITIALIZE_LIB}
         ${DATAPROTECT_LIB}
         ${IKE_LIB}
+        ${LIB_PTHREAD}
         ${FIPS_LIB}
         ${WSOCK_LIB}
         )
@@ -613,6 +615,7 @@ else()
         ${INITIALIZE_LIB}
         ${DATAPROTECT_LIB}
         ${IKE_LIB}
+        ${LIB_PTHREAD}
         ${FIPS_LIB}
         ${WSOCK_LIB}
         )
