@@ -1,0 +1,386 @@
+NANOCRYPTO_ARCHIVE_FILES=libasn1.a libcommon.a libcryptointerface.a libinitialize.a libnanocap.a libnanocert.a libnanocrypto.a libplatform.a
+
+NANOCRYPTO_LIB=libnanocrypto
+NANOSSL_LIB = libnanossl
+OPENSSL_SHIM_LIB = libopenssl_shim
+
+dir := bin
+dir_static := bin_static
+
+SEP = /
+PRJ_DIR ?= $(shell pwd)
+AR_CMD = $(word 1, $(AR))
+
+# Setting osdetect_inline=true includes Makefile.osdetect. Makefile.osdetect
+# will set the appropriate OS variables. If Makefile.osdetect is not included
+# then the user must set all the appropriate variables.
+ifeq ($(osdetect_inline), true)
+	include $(PRJ_DIR)/make/Makefile.osdetect
+	include make/$(MAKE_FILE)
+else
+	CC ?=gcc
+	AR ?=ar
+ifeq ($(toolchain),)
+	LD =gcc
+endif
+endif
+
+MSS_DIR ?=$(PRJ_DIR)
+SCRIPT_DIR ?=$(MSS_DIR)/scripts/nanossl/openssl_connector
+SCRIPT ?=./build_openssl_connector_cap.sh
+
+LINK_FLAG_PREFIX=-Wl,
+ifeq ($(no_linker_prefix), true)
+	LINK_FLAG_PREFIX=
+endif
+ARGS = --static --ocsp
+
+# Default to openssl-3.0.12 version
+OSSL_V_SUFF = 3
+OSSL_VERSION = --openssl_3_0_12
+OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=src/openssl_wrapper/openssl-3.0.12.ld
+OSSL_LINK_FLAGS_EXTRA = ${LINK_FLAG_PREFIX}-znodelete
+OPENSSL_DIR = openssl-3.0.12
+OSSL_SO_NAME =
+LINK_LIBS =
+XEROX_POKY=0
+
+ifeq ($(SYSROOT),)
+	SYSROOT_ARG=
+else
+	SYSROOT_ARG=--sysroot=${SYSROOT} -L${SYSROOT}/lib -L${SYSROOT}/usr/lib
+endif
+
+ifeq ($(gdb), true)
+	ARGS += --gdb
+endif
+
+ifeq ($(debug), true)
+	ARGS += --debug
+endif
+
+ifeq ($(tap),true)
+	ARGS += --no_tpm2
+	NANOCRYPTO_ARCHIVE_FILES+=libnanotap2.a libnanotap2_common.a libnanotap2_configparser.a
+	SCRIPT =./build_openssl_connector_tap_local.sh
+endif
+
+ifeq ($(fips), true)
+	ARGS += --fips
+        ifeq ($(fips_700_compat), true)
+		ARGS += --fips-700-compat
+        endif
+endif
+
+ifneq ($(toolchain), android)
+	LINK_LIBS = -lpthread
+endif
+
+ifeq ($(custom_entropy), true)
+	ARGS += --custom-entropy
+endif
+
+ifeq ($(force_entropy_example), true)
+	ARGS += --force-entropy-example
+endif
+
+ifeq ($(dtls), true)
+	ARGS += --dtls
+ifeq ($(srtp),true)
+	ARGS += --srtp
+endif
+endif
+
+ifeq ($(redefine), true)
+	ARGS += --redefine
+endif
+
+ifeq ($(disable_rc5), true)
+	ARGS += --disable-rc5
+endif
+
+ifeq ($(openssl_1_1_1i), true)
+	OSSL_VERSION = --openssl_1_1_1i
+	OSSL_V_SUFF = 1.1
+	OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=src/openssl_wrapper/openssl-1.1.1i.ld
+	OSSL_LINK_FLAGS_EXTRA = ${LINK_FLAG_PREFIX}-znodelete
+	OPENSSL_DIR = openssl-1.1.1i
+endif
+
+ifeq ($(openssl_1_1_1k), true)
+	OSSL_VERSION = --openssl_1_1_1k
+	OSSL_V_SUFF = 1.1
+	OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=src/openssl_wrapper/openssl-1.1.1k.ld
+	OSSL_LINK_FLAGS_EXTRA = ${LINK_FLAG_PREFIX}-znodelete
+	OPENSSL_DIR = openssl-1.1.1k
+endif
+
+ifeq ($(openssl_3_0_7), true)
+	OSSL_VERSION = --openssl_3_0_7
+	OSSL_V_SUFF = 3
+	OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=src/openssl_wrapper/openssl-3.0.7.ld
+	OSSL_LINK_FLAGS_EXTRA = ${LINK_FLAG_PREFIX}-znodelete
+	OPENSSL_DIR = openssl-3.0.7
+endif
+
+ifeq ($(openssl_3_0_12), true)
+	OSSL_VERSION = --openssl_3_0_12
+	OSSL_V_SUFF = 3
+	OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=src/openssl_wrapper/openssl-3.0.12.ld
+	OSSL_LINK_FLAGS_EXTRA = ${LINK_FLAG_PREFIX}-znodelete
+	OPENSSL_DIR = openssl-3.0.12
+endif
+
+ifeq ($(openssl_3_5_0), true)
+	OSSL_VERSION = --openssl_3_5_0
+	OSSL_V_SUFF = 3
+	OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=src/openssl_wrapper/openssl-3.5.0.ld
+	OSSL_LINK_FLAGS_EXTRA = ${LINK_FLAG_PREFIX}-znodelete
+	OPENSSL_DIR = openssl-3.5.0
+endif
+
+ifeq ($(rsa1024), true)
+	ARGS += --rsa1024
+endif
+
+ifeq ($(rsa_8k), true)
+	ARGS += --rsa_8k
+endif
+
+ifeq ($(sha1), true)
+	ARGS += --sha1
+endif
+
+ifeq ($(disable_servername_validation), true)
+	ARGS += --disable-servername-validation
+endif
+
+ifeq ($(disable_client_commonname_validation), true)
+	ARGS += --disable-client-commonname-validation
+endif
+
+ifeq ($(dsa), true)
+	ARGS += --dsa
+endif
+
+ifeq ($(enable_3des), true)
+	ARGS += --enable_3des
+endif
+
+ifeq ($(strict_dh), true)
+	ARGS += --strict_dh
+endif
+
+ifeq ($(openssl_load_algos), true)
+	ARGS += --openssl_load_algos
+endif
+
+ifeq ($(multipacket_read), true)
+	ARGS += --ossl_multipacket_read
+endif
+
+ifeq ($(multipacket_bio_retry), true)
+	ARGS += --ossl_multipacket_bio_retry
+endif
+
+ifeq ($(ossl_log), true)
+	ARGS += --ossl_log
+endif
+
+ifeq ($(osslc_thread_safe), true)
+	ARGS += --osslc_thread_safe
+endif
+
+ifeq ($(ossl_rx_buf_8k), true)
+	ARGS += --ossl_rx_buf_8k
+else
+ifeq ($(ossl_rx_buf_4k), true)
+	ARGS += --ossl_rx_buf_4k
+else
+ifeq ($(ossl_rx_buf_2k), true)
+	ARGS += --ossl_rx_buf_2k
+endif
+endif
+endif
+
+ifeq ($(ossl_read_ahead), false)
+	ARGS += --ossl_disable_read_ahead
+endif
+
+ifeq ($(force_cert_chain),true)
+	ARGS += --force_cert_chain
+endif
+
+ifeq ($(enable_ticket_tls12), true)
+	ARGS += --enable_ticket_tls12
+endif
+
+ifeq ($(selfsigned), true)
+	ARGS += --self_signed
+endif
+
+ifeq ($(nontrusted), true)
+	ARGS += --non_trusted
+endif
+
+ifeq ($(cert_status_override), true)
+	ARGS += --cert_status_override
+endif
+
+ifeq ($(ocsp_cert),true)
+	ARGS += --ocsp_cert
+endif
+
+ifeq ($(rehandshake), true)
+	ARGS += --rehandshake
+endif
+
+ifeq ($(srp), true)
+	ARGS += --srp
+endif
+
+ifeq ($(disable_chachapoly_tls12), true)
+	ARGS += --disable_polychacha_tls12
+endif
+
+ifeq ($(extended_key), true)
+	ARGS += --extended-key
+endif
+
+ifeq ($(disable_peek_error), true)
+	ARGS += --disable_peek_error
+endif
+
+ifeq ($(disable_ossl_default_trust_certs), true)
+	ARGS += --disable_ossl_default_trust_certs
+endif
+
+ifeq ($(disable_strict_ca_check), true)
+	ARGS += --disable-strict-ca-check
+endif
+
+ifeq ($(disable_cert_ext_check),true)
+	ARGS += --disable_cert_ext_check
+endif
+
+ifeq ($(keylog), true)
+	ARGS += --keylog
+endif
+
+ifeq ($(version_logging), true)
+	ARGS += --version-logging
+endif
+
+ifeq ($(redirect_log), true)
+	ARGS += --redirect-log
+endif
+
+ifeq ($(ossl_single_read), true)
+	ARGS += --ossl_single_read
+endif
+
+ifeq ($(enable_extended_mastersecret), true)
+	ARGS += --enable_extended_master_secret
+endif
+
+ifeq ($(dh_pub_pad),true)
+	ARGS += --dh_pub_pad
+endif
+
+ifeq ($(disable_tcp_init),true)
+        ARGS += --disable-tcp-init
+endif
+
+OSSL_NANOSSL_LINK_OPTIONS=-lnanossl
+OSSL_NANOSSL_OBJ_LINK=
+OSSL_NANOSSL_OBJ_DIR=nanossl
+ifeq ($(include_nanossl),true)
+	OSSL_NANOSSL_LINK_OPTIONS=
+	OSSL_NANOSSL_OBJ_LINK=obj/$(OSSL_NANOSSL_OBJ_DIR)/*.o
+endif
+
+# Override version script if using LD override file
+ifeq ($(opensslld_override), true)
+	ARGS += --opensslld_override
+	OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=thirdparty/$(OPENSSL_DIR)/openssl-override.ld
+endif
+
+OSSL_LINK_FLAGS = $(OSSL_LINK_FLAGS_VERSION_SCRIPT) $(OSSL_LINK_FLAGS_EXTRA)
+
+ifneq ($(toolchain),)
+ifeq ($(toolchain), android)
+    ARGS += --android-platform "$(android_platform)" --android-abi "$(android_abi)"
+ifeq ($(tap),true)
+	SCRIPT =./build_openssl_connector_tap_local_android.sh
+else
+	SCRIPT =./build_openssl_connector_cap_android.sh
+endif
+else
+	ARGS += --toolchain "$(toolchain)"
+endif
+ifeq ($(toolchain), poky_x32)
+	XEROXPOKY=1
+	LINK_LIBS+= -lc
+endif
+ifeq ($(toolchain), xerox_poky_x32)
+	XEROXPOKY=1
+	LINK_LIBS+= -lc
+endif
+endif
+
+ifeq ($(toolchain),android)
+	OSSL_SO_NAME = ${LINK_FLAG_PREFIX}-soname,libssl.so.${OSSL_V_SUFF}
+endif
+
+ifeq ($(XEROXPOKY), 1)
+	OSSL_LINK_FLAGS=
+endif
+
+ARGS += ${OSSL_VERSION}
+
+all: nanocrypto nanossl openssl_shim
+
+cmake_build_libs:
+ifneq ($(ossl_config_cmd),)
+	cd $(SCRIPT_DIR); ${SCRIPT} $(ARGS) --ossl_config_cmd "$(ossl_config_cmd)"
+else
+	cd $(SCRIPT_DIR); ${SCRIPT} $(ARGS)
+endif
+
+nanocrypto: $(foreach archive,$(NANOCRYPTO_ARCHIVE_FILES),$(dir_static)/$(archive))
+	rm -f obj/*.o
+	cd obj; \
+	for file in $(NANOCRYPTO_ARCHIVE_FILES); do \
+		$(AR_CMD) -xv ../$(dir_static)/$$file; \
+	done
+ifeq ($(fips),true)
+	$(CC) $(SYSROOT_ARG) -shared -o $(dir)/$(NANOCRYPTO_LIB).so obj/*.o -Lbin -lmss $(LINK_LIBS)
+else
+	$(CC) $(SYSROOT_ARG) -shared -o $(dir)/$(NANOCRYPTO_LIB).so obj/*.o $(LINK_LIBS)
+endif
+	rm -f obj/*.o
+
+nanossl: $(dir_static)/$(NANOSSL_LIB).a
+	rm -f obj/*.o
+	cd obj && $(AR_CMD) -xv ../$(dir_static)/$(NANOSSL_LIB).a
+	$(LD) $(SYSROOT_ARG) -shared -o $(dir)/$(NANOSSL_LIB).so obj/*.o -Lbin -lnanocrypto
+	rm -f obj/*.o
+
+openssl_shim: $(dir_static)/$(OPENSSL_SHIM_LIB).a
+	rm -f obj/*.o
+	cd obj && $(AR_CMD) -xv ../$(dir_static)/$(OPENSSL_SHIM_LIB).a
+ifeq ($(include_nanossl),true)
+	cd obj && rm -rf $(OSSL_NANOSSL_OBJ_DIR) && mkdir $(OSSL_NANOSSL_OBJ_DIR) && cd $(OSSL_NANOSSL_OBJ_DIR) && $(AR_CMD) -xv ../../$(dir_static)/libnanossl.a
+endif
+	$(LD) $(SYSROOT_ARG) $(OSSL_LINK_FLAGS) -shared -o $(dir)/$(OPENSSL_SHIM_LIB).so obj/*.o $(OSSL_NANOSSL_OBJ_LINK) -Lbin -lnanocrypto $(OSSL_NANOSSL_LINK_OPTIONS) -lcrypto $(OSSL_SO_NAME)
+	cd bin; ln -sf libcrypto.so libcrypto.so.$(OSSL_V_SUFF)
+	cd bin; ln -sf libopenssl_shim.so libssl.so
+	cd bin; ln -sf libssl.so libssl.so.$(OSSL_V_SUFF)
+	rm -f obj/*.o
+	rm -rf obj/$(OSSL_NANOSSL_OBJ_DIR)
+
+clean:
+	rm -f obj/*.o
+	rm -rf obj/$(OSSL_NANOSSL_OBJ_DIR)
+	rm -f bin/$(OPENSSL_SHIM_LIB).so*
+	rm -f bin/$(NANOSSL_LIB).so*
