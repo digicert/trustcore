@@ -309,7 +309,8 @@ if (CM_BUILD_SSH_SERVER)
         ${PLATFORM_LIB}
         ${SMPTPM2_LIB}
         ${TPM2_LIB}
-        ${WS32_LIB})
+        ${WS32_LIB}
+        pthread)
 
     if (NOT CM_DISABLE_PQC)
       set(srclist ${srclist} "${CMAKE_CURRENT_SOURCE_DIR}/pqc/mss_sources.txt")
