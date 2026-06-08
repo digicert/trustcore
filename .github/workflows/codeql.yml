@@ -68,6 +68,7 @@ jobs:
         cmake \
           -DWITH_LOGGING=ON \
           -DBUILD_SAMPLES=ON \
+          -DCM_ENABLE_POSIX_SUPPORT=ON \
           -DENABLE_MQTT_CLIENT=ON \
           -DENABLE_MQTT_STREAMING=ON \
           -DENABLE_SSH_CLIENT=ON \

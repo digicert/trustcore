@@ -72,7 +72,7 @@ jobs:
 
     - name: Build OpenSSL Connector with TAP
       run: |
-        ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --openssl_${{ matrix.openssl_version }}
+        ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --openssl_${{ matrix.openssl_version }} --build-for-osi --enable-posix
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2
