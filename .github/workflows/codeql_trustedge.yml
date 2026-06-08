@@ -36,7 +36,7 @@ jobs:
 
     - name: Build Trustedge
       run: |
-        ./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --cvc --proxy --pqc --pqc-composite --enable-pc
+        ./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --cvc --proxy --pqc --pqc-composite --enable-pc --enable-posix
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2
