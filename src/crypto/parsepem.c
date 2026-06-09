@@ -1,8 +1,6 @@
 /*
  * parsepem.c
  *
- * Functions that parse PEM messages.
- *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
@@ -14,7 +12,6 @@
  *
  * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
  * *Contact DigiCert at sales@digicert.com for more details.*
- *
  */
 
 #include "../crypto/mocsym.h"

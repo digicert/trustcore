@@ -1,5 +1,5 @@
 /*
- * crypto_interface_ecc_tap_priv.c
+ * crypto_interface_ecc_tap.c
  *
  * Cryptographic Interface file containing implementations of ECC TAP functions
  * for internal use by the Crypto Interface.

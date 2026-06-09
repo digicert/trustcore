@@ -18,6 +18,7 @@
  */
 
 #include "../../../crypto/mocasymkeys/tap/sstap.h"
+#include "../../../crypto/mocasymkeys/tap/idtap.h"
 
 #if defined(__ENABLE_DIGICERT_ASYM_KEY__) && \
     defined(__ENABLE_DIGICERT_TAP__)
@@ -61,9 +62,10 @@ MOC_EXTERN MSTATUS KeyOperatorSSTap (
       break;
     
     case MOC_ASYM_OP_GET_PARAMS:
-      status = SSTapGetTapInfo (
+      status = IdTapGetTapInfo (
         (MKeyOperatorData *) pInputInfo,
-        (MKeyObjectInfo *) pOutputInfo);
+        (MKeyObjectInfo *) pOutputInfo,
+        TRUE);
       break;
   }
 

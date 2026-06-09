@@ -2205,6 +2205,7 @@ ASN1CERT_Sign(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignedHead,
                                     rngFun, rngFunArg,
                                     ppRetDEREncoding, pRetDEREncodingLen);
 #endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+#endif /* __ENABLE_DIGICERT_ECC__ */
 #if (defined(__ENABLE_DIGICERT_PQC__))
         case akt_hybrid:
             return ASN1CERT_hybridSign(MOC_ASYM(hwAccelCtx) pSignedHead,
@@ -2212,12 +2213,14 @@ ASN1CERT_Sign(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignedHead,
                                        rngFun, rngFunArg,
                                        ppRetDEREncoding, pRetDEREncodingLen);
         case akt_qs:
+#ifdef __ENABLE_DIGICERT_TAP__
+        case akt_tap_qs:
+#endif
             return ASN1CERT_qsSign(MOC_HASH(hwAccelCtx) pSignedHead,
                                    (AsymmetricKey *) pSignKey,
                                    rngFun, rngFunArg,
                                    ppRetDEREncoding, pRetDEREncodingLen);
-#endif
-#endif /* __ENABLE_DIGICERT_ECC__ */
+#endif /* __ENABLE_DIGICERT_PQC__ */
 #if (defined(__ENABLE_DIGICERT_ASYM_KEY__))
         case akt_moc:
           return (ASN1CERT_mocAsymSign (
@@ -2896,8 +2899,23 @@ ASN1CERT_storePublicKeyInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) const AsymmetricKe
             break;
         }
 #endif
+#if (defined(__ENABLE_DIGICERT_PQC__))
+        case akt_tap_qs:
+        {
+            MSTATUS status;
+            QS_CTX *pCtx = NULL;
+            status = CRYPTO_INTERFACE_getQsPublicKey((AsymmetricKey*)pPublicKey, &pCtx);
+            if (OK == status)
+            {
+                status = ASN1CERT_storeQsPublicKeyInfo(MOC_ASYM(hwAccelCtx) pCtx, pCertificate);
+                CRYPTO_INTERFACE_QS_deleteCtx(&pCtx);
+                return status;
+            }
+            break;
+        }
 #endif
 #endif
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
         default:
         {
             break;
@@ -3068,6 +3086,9 @@ extern MSTATUS ASN1CERT_sha1PublicKey(MOC_ASYM(hwAccelDescr hwAccelCtx) Asymmetr
             break;
         }
         case akt_qs:
+#if defined(__ENABLE_DIGICERT_TAP__)
+        case akt_tap_qs:
+#endif        
         {
             status = CRYPTO_INTERFACE_QS_getPublicKeyAlloc(pKey->pQsCtx, &ptBuffer, (ubyte4 *) &ptBufferLen);
             if (OK != status)
@@ -3296,6 +3317,7 @@ ASN1CERT_generateCertificateEx(MOC_ASYM(hwAccelDescr hwAccelCtx)
                 break;
             }
 #endif
+#endif /* ECC */
 #ifdef __ENABLE_DIGICERT_PQC__
             case akt_hybrid:
             {
@@ -3308,6 +3330,9 @@ ASN1CERT_generateCertificateEx(MOC_ASYM(hwAccelDescr hwAccelCtx)
                 break;
             }
             case akt_qs:
+#ifdef __ENABLE_DIGICERT_TAP__
+            case akt_tap_qs:
+#endif
             {
                 if (OK > ( status = CRYPTO_INTERFACE_QS_getAlg(pSignKey->pQsCtx, &qsAlgId)))
                     goto exit;
@@ -3317,8 +3342,7 @@ ASN1CERT_generateCertificateEx(MOC_ASYM(hwAccelDescr hwAccelCtx)
 
                 break;
             }
-#endif
-#endif /* __ENABLE_DIGICERT_ECC__ */
+#endif /* PQC */
 #if (defined(__ENABLE_DIGICERT_DSA__))
             case akt_dsa:
             {

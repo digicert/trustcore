@@ -101,6 +101,25 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_loadAsymmetricKey (
       break;
 #endif
 
+#if (defined(__ENABLE_DIGICERT_PQC__))
+    case akt_qs:
+      pAsymKey->pQsCtx = (QS_CTX *)(*ppAlgKey);
+      pAsymKey->type = akt_qs;
+      break;
+
+    case akt_tap_qs:
+      status = CRYPTO_INTERFACE_QS_loadKey (
+        (QS_CTX **)&pNewKey, (MocAsymKey *)ppAlgKey);
+      if (OK != status)
+        goto exit;
+
+      /* Set the pointer within the AsymmetricKey */
+      pAsymKey->pQsCtx = (QS_CTX *)(pNewKey);
+      pAsymKey->type = akt_tap_qs;
+      pNewKey = NULL;
+      break;
+#endif
+
     case akt_moc:
     case akt_custom:
       pAsymKey->key.pMocAsymKey = (MocAsymKey )(*ppAlgKey);

@@ -2040,6 +2040,8 @@ sbyte4 setSupportedGroupForConnection(sbyte4 connectionInstance)
         else if (!strcmp("ffdhe8192", sslc_supportedGroup))
             pSupportedGroupList[0] = tlsExtNamedCurves_ffdhe8192;
 #ifdef __ENABLE_DIGICERT_PQC__
+        else if (!strcmp("MLKEM1024", sslc_supportedGroup))
+            pSupportedGroupList[0] = tlsExtPqc_MLKEM1024;
         else if (!strcmp("X25519MLKEM768", sslc_supportedGroup))
             pSupportedGroupList[0] = tlsExtHybrid_X25519MLKEM768;
         else if (!strcmp("secp256r1MLKEM768", sslc_supportedGroup))

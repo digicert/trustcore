@@ -118,9 +118,20 @@ extern "C" {
 #define MOC_LOCAL_KEY_ECC_PRI_TAP \
     (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_KEY_HW | MOC_LOCAL_TYPE_TAP | \
     MOC_LOCAL_KEY_ASYM | MOC_LOCAL_KEY_ECC | MOC_LOCAL_KEY_PRI )
+/* We need something in the COM bits to be set, so set those bits to MOC_LOCAL_KEY_QS_SIG for now
+   If KEM TAP support gets added we'll need to decide whether to use the same operator or a new one */
+#define MOC_LOCAL_KEY_QS_PUB_TAP \
+    (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_KEY_HW | MOC_LOCAL_TYPE_TAP | \
+    MOC_LOCAL_KEY_ASYM | MOC_LOCAL_KEY_QS | MOC_LOCAL_KEY_QS_SIG)
+#define MOC_LOCAL_KEY_QS_PRI_TAP \
+    (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_KEY_HW | MOC_LOCAL_TYPE_TAP | \
+    MOC_LOCAL_KEY_ASYM | MOC_LOCAL_KEY_QS | MOC_LOCAL_KEY_QS_SIG | MOC_LOCAL_KEY_PRI )
 
 #define MOC_LOCAL_TYPE_SS_TAP \
-    (MOC_LOCAL_TYPE_MOCANA | MOC_LOCAL_TYPE_TAP)
+    (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_TYPE_TAP)
+
+#define MOC_LOCAL_TYPE_ID_TAP \
+    (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_TYPE_TAP)
 
 #define MOC_LOCAL_KEY_RSA_PUB_OPERATOR \
     (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_KEY_SW | MOC_LOCAL_KEY_ASYM | \
@@ -164,6 +175,11 @@ extern "C" {
 #define MOC_LOCAL_KEY_ECC_P521_PRI_OPERATOR \
     (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_KEY_SW | MOC_LOCAL_KEY_ASYM | \
     MOC_LOCAL_KEY_ECC | MOC_LOCAL_KEY_P521 | MOC_LOCAL_KEY_PRI )
+/* We need something in the COM bits to be set, so set those bits to MOC_LOCAL_KEY_QS_SIG for now
+   If KEM TAP support gets added we'll need to decide whether to use the same operator or a new one */
+#define MOC_LOCAL_KEY_QS_OPERATOR_TAP \
+    (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_TYPE_TAP | MOC_LOCAL_KEY_ASYM | \
+    MOC_LOCAL_KEY_QS | MOC_LOCAL_KEY_QS_SIG)
 
 /* Operator local types still use oqs-0.9.0 terminology, kyber, dilithium
    etc. When OQS is updated we can change these to mlkem, mldsa, etc. */
@@ -291,10 +307,35 @@ MOC_EXTERN MSTATUS KeyOperatorEccTap (
   );
 
 /** Implements MKeyOperator.
+ * This is an Operator that performs QS operations through TAP.
+ */
+MOC_EXTERN MSTATUS KeyOperatorQsTap (
+  MocAsymKey pMocAsymKey,
+  MocCtx pMocCtx,
+  keyOperation keyOp,
+  void *pInputInfo,
+  void *pOutputInfo,
+  struct vlong **ppVlongQueue
+  );
+
+/** Implements MKeyOperator.
  * This is an Operator that performs serialization of objects (usually private keys) to be
  * obtained or written to secure storage through the TAP layer.
  */
 MOC_EXTERN MSTATUS KeyOperatorSSTap (
+  MocAsymKey pMocAsymKey,
+  MocCtx pMocCtx,
+  keyOperation keyOp,
+  void *pInputInfo,
+  void *pOutputInfo,
+  struct vlong **ppVlongQueue
+  );
+
+/** Implements MKeyOperator.
+ * This is an Operator that performs serialization of objects (usually private keys) to be
+ * obtained through a TAP identifier (ID).
+ */
+MOC_EXTERN MSTATUS KeyOperatorIdTap (
   MocAsymKey pMocAsymKey,
   MocCtx pMocCtx,
   keyOperation keyOp,

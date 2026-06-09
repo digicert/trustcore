@@ -92,8 +92,6 @@
 /* [v2] EAP */
 #if (defined(__ENABLE_DIGICERT_EAP_AUTH__) || defined(__ENABLE_DIGICERT_EAP_PEER__)) && !defined(__DISABLE_DIGICERT_IKE_EAP__)
 #include "../eap/eap.h"
-#include "../crypto/md4.h"
-#include "../common/mbitmap.h"
 
 extern ubyte4 g_ikeEapInstId;
 #endif

@@ -40,16 +40,23 @@
 
 #ifndef __ENABLE_DIGICERT_TAP_REMOTE__
 
+#if defined(__ENABLE_DIGICERT_TPM2__)
+#include "../../common/tpm2_path.h"
+#elif defined(__ENABLE_DIGICERT_TEE__)
+#include "../../smp/smp_tee/smp_tap_tee.h"
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#include "../../smp/smp_nanoroot/smp_nanoroot.h"
+#include "../../tap/tap_common.h"
+#endif
+
 #ifndef TRUSTEDGE_TAP_CONFIG_PATH
 #if defined(__ENABLE_DIGICERT_SMP_PKCS11__)
 #define TRUSTEDGE_TAP_CONFIG_PATH "/etc/digicert/pkcs11_smp.conf"
 #elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
 #define TRUSTEDGE_TAP_CONFIG_PATH "/etc/digicert/nanoroot_smp.conf"
 #elif defined(__ENABLE_DIGICERT_TPM2__)
-#include "../../common/tpm2_path.h"
 #define TRUSTEDGE_TAP_CONFIG_PATH TPM2_CONFIGURATION_FILE
 #elif defined(__ENABLE_DIGICERT_TEE__)
-#include "../../smp/smp_tee/smp_tap_tee.h"
 #define TRUSTEDGE_TAP_CONFIG_PATH "/etc/digicert/tee_smp.conf"
 #else
 #error "SMP flag not specified. Cannot set default path to TAP config file."

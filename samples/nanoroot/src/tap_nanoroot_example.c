@@ -164,22 +164,23 @@ MOC_STATIC void printHelp()
 
     LOG_MESSAGE("  --keyId                 Hexadecimal key identifier (required for sign/verify operations)");
     LOG_MESSAGE("                          Supported values:");
-    LOG_MESSAGE("                            RSA 2K   → 0x01000002");
-    LOG_MESSAGE("                            RSA 3K   → 0x01000003");
-    LOG_MESSAGE("                            RSA 4K   → 0x01000004");
-    LOG_MESSAGE("                            RSA 8K   → 0x01000005");
-    LOG_MESSAGE("                            MLDSA44  → 0x02000001");
-    LOG_MESSAGE("                            MLDSA65  → 0x02000002");
-    LOG_MESSAGE("                            MLDSA87  → 0x02000003");
-    LOG_MESSAGE("                            P-256    → 0x03000001");
-    LOG_MESSAGE("                            P-384    → 0x03000002");
-    LOG_MESSAGE("                            P-521    → 0x03000003");
+    LOG_MESSAGE("                            RSA 2K   → 0x02000001");
+    LOG_MESSAGE("                            RSA 3K   → 0x04000001");
+    LOG_MESSAGE("                            RSA 4K   → 0x03000001");
+    LOG_MESSAGE("                            RSA 8K   → 0x05000001");
+    LOG_MESSAGE("                            MLDSA44  → 0x11000008");
+    LOG_MESSAGE("                            MLDSA65  → 0x12000008");
+    LOG_MESSAGE("                            MLDSA87  → 0x13000008");
+    LOG_MESSAGE("                            P-256    → 0x03000002");
+    LOG_MESSAGE("                            P-384    → 0x04000002");
+    LOG_MESSAGE("                            P-521    → 0x05000002");
 
     LOG_MESSAGE("  --hashType              Hash type required for sign/verify operations");
     LOG_MESSAGE("                          Supported values:");
     LOG_MESSAGE("                            None     → 0 (Use for MLDSA algorithms)");
-    LOG_MESSAGE("                            SHA-256  → 1 (Use for RSA 2K, RSA 3K, ECC P-256, ECC P-384)");
+    LOG_MESSAGE("                            SHA-256  → 1 (Use for RSA 2K, RSA 3K, ECC P-256)");
     LOG_MESSAGE("                            SHA-512  → 2 (Use for RSA 4K, RSA 8K, ECC P-521)");
+    LOG_MESSAGE("                            SHA-384  → 3 (Use for ECC P-384)");
 
     LOG_MESSAGE("  --pubKey                Required for sign/verify operations");
     LOG_MESSAGE("                          - Sign:    Saves public key to the specified file");
@@ -270,7 +271,8 @@ MOC_STATIC int validateCmdLineOpts(cmdLineOpts *pOpts)
             PRINT_ERR(status, "Missing required option: specify hash type using \"--hashType\" for sign or verify operations.");
             goto exit;
         }
-        if ( !(pOpts->hashType == 0 ||pOpts->hashType == 1 || pOpts->hashType == 2))
+        if ( !(pOpts->hashType == 0 || pOpts->hashType == 1 ||
+            pOpts->hashType == 2 || pOpts->hashType == 3))
         {
             PRINT_ERR(status, "Invalid hashType.");
             goto exit;
@@ -807,6 +809,11 @@ MSTATUS getHashAlgo(ubyte4 hashType, ubyte4 *pHashAlgo)
             DB_PRINT("Hash Algo : ht_sha512\n");
             break;
 
+        case 3:
+            *pHashAlgo = ht_sha384;
+            DB_PRINT("Hash Algo : ht_sha384\n");
+            break;
+
         default:
             return ERR_INVALID_ARG;
     }
@@ -848,6 +855,10 @@ MSTATUS getSigScheme(TAP_KEY_ALGORITHM keyAlgorithm, ubyte4 hashType, TAP_SIG_SC
                 {
                     case 1:
                         *pSigScheme = TAP_SIG_SCHEME_ECDSA_SHA256;
+                        break;
+
+                    case 3:
+                        *pSigScheme = TAP_SIG_SCHEME_ECDSA_SHA384;
                         break;
 
                     case 2:
@@ -1410,15 +1421,15 @@ MSTATUS publishMLDSAPublicKey(TAP_Key *pTapKey,
         return status;
     }
 
-    status = CRYPTO_INTERFACE_QS_newCtx(&pCtx, pTapKey->keyData.publicKey.publicKey.mldsaKey.qsAlg);
+    status = CRYPTO_INTERFACE_QS_newCtx(&pCtx, pTapKey->keyData.publicKey.publicKey.pqcKey.qsAlg);
     if (OK != status)
     {
         PRINT_ERR(status, "CRYPTO_INTERFACE_QS_newCtx() failed");
         goto exit;
     }
     status = CRYPTO_INTERFACE_QS_setPublicKey(pCtx,
-                                pTapKey->keyData.publicKey.publicKey.mldsaKey.pPublicKey,
-                                pTapKey->keyData.publicKey.publicKey.mldsaKey.publicKeyLen);
+                                pTapKey->keyData.publicKey.publicKey.pqcKey.pPublicKey,
+                                pTapKey->keyData.publicKey.publicKey.pqcKey.publicKeyLen);
     if (OK != status)
     {
         PRINT_ERR(status, "CRYPTO_INTERFACE_QS_setPublicKey() failed");
@@ -1453,7 +1464,7 @@ exit:
     return status;
 }
 
-MSTATUS verifyMLDSASignature(QS_CTX *pCtx,
+MSTATUS verifypqcSignature(QS_CTX *pCtx,
                            TAP_Buffer *pDataToSign,
                            TAP_Buffer *pSignature,
                            intBoolean *pIsSigValid
@@ -1466,7 +1477,7 @@ MSTATUS verifyMLDSASignature(QS_CTX *pCtx,
     if(NULL == pCtx || NULL == pDataToSign || NULL == pSignature || NULL == pIsSigValid)
     {
         status = ERR_NULL_POINTER;
-        PRINT_ERR(status, "verifyMLDSASignature() failed");
+        PRINT_ERR(status, "verifypqcSignature() failed");
         return status;
     }
 
@@ -1579,6 +1590,17 @@ MSTATUS testAsymSignVerify( TAP_Key *pTapKey,
             }
             digestBuffer.bufferLen = SHA256_RESULT_SIZE;
         }
+        else if(sigScheme == TAP_SIG_SCHEME_ECDSA_SHA384)
+        {
+            status = CRYPTO_INTERFACE_SHA384_completeDigest(MOC_HASH(hwAccelCtx) pDataToSign->pBuffer,
+                                pDataToSign->bufferLen, digestBuffer.pBuffer);
+            if (OK != status)
+            {
+                DB_PRINT("SHA384_completeDigest failed with status %d\n", status);
+                goto exit;
+            }
+            digestBuffer.bufferLen = SHA384_RESULT_SIZE;
+        }
         else if(sigScheme == TAP_SIG_SCHEME_PKCS1_5_SHA512 || sigScheme ==  TAP_SIG_SCHEME_ECDSA_SHA512)
         {
             status = CRYPTO_INTERFACE_SHA512_completeDigest(MOC_HASH(hwAccelCtx) pDataToSign->pBuffer,
@@ -1668,15 +1690,15 @@ MSTATUS testAsymSignVerify( TAP_Key *pTapKey,
                     goto exit;
                 }
 
-                pSignature->pBuffer = tapSignature.signature.mldsaSignature.pSignature;
-                pSignature->bufferLen = tapSignature.signature.mldsaSignature.signatureLen;
-                tapSignature.signature.mldsaSignature.pSignature = NULL;
-                tapSignature.signature.mldsaSignature.signatureLen = 0;
+                pSignature->pBuffer = tapSignature.signature.pqcSignature.pSignature;
+                pSignature->bufferLen = tapSignature.signature.pqcSignature.signatureLen;
+                tapSignature.signature.pqcSignature.pSignature = NULL;
+                tapSignature.signature.pqcSignature.signatureLen = 0;
 
-                status = verifyMLDSASignature(pCtx, pDataToSign, pSignature, &isSigValid);
+                status = verifypqcSignature(pCtx, pDataToSign, pSignature, &isSigValid);
                 if (OK != status)
                 {
-                    PRINT_ERR(status,"verifyMLDSASignature() failed");
+                    PRINT_ERR(status,"verifypqcSignature() failed");
                     goto exit;
                 }
             }
@@ -1771,7 +1793,7 @@ MSTATUS getKeyId(char *pKeyId, TAP_Buffer *pKeyIdBuf)
     idBuf = pKeyIdBuf->pBuffer;
     for (i = 0; i < sizeof(ubyte4); i++)
     {
-        idBuf[i] = (hexValue >> (8 * i)) & 0xFF;
+        idBuf[i] = (hexValue >> (8 * (sizeof(ubyte4) - 1 - i))) & 0xFF;
     }
 
     return OK;
@@ -1793,7 +1815,7 @@ MSTATUS signData(   TAP_Context *pTapContext,
     MSTATUS status = OK;
     TAP_KEY_ALGORITHM keyAlgorithm = TAP_KEY_ALGORITHM_UNDEFINED;
     TAP_KEY_SIZE keySize = 0;
-    ubyte4 subKeyType = 0;
+    ubyte subKeyType = 0;
     TAP_Key *pTapKey = NULL;
 
     if(NULL == pTapContext || NULL == pDataToSign || NULL == pSignature || NULL == pubKeyFile || NULL ==pKeyId)
@@ -1803,7 +1825,7 @@ MSTATUS signData(   TAP_Context *pTapContext,
         return status;
     }
 
-    status = TAP_NanoROOT_parse_algorithm_info(*(ubyte4*)pKeyId->pBuffer, &keyAlgorithm, &keySize, &subKeyType);
+    status = TAP_parse_algorithm_info(*(ubyte4*)pKeyId->pBuffer, &keyAlgorithm, &keySize, &subKeyType);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unsupported Alogrithm status = %d\n",
@@ -2109,7 +2131,7 @@ MSTATUS verifyData( TAP_Buffer *pDataToVerify,
     TAP_Buffer pubKeyData = {0};
     TAP_KEY_ALGORITHM keyAlgo = TAP_KEY_ALGORITHM_UNDEFINED;
     TAP_KEY_SIZE keySize = 0;
-    ubyte4 subKeyType = 0;
+    ubyte subKeyType = 0;
     *pIsSigValid = FALSE;
     ubyte4 hashAlgo = 0;
 
@@ -2134,7 +2156,7 @@ MSTATUS verifyData( TAP_Buffer *pDataToVerify,
         goto exit;
     }
 
-    status = TAP_NanoROOT_parse_algorithm_info(*(ubyte4*)pKeyId->pBuffer, &keyAlgo, &keySize, &subKeyType);
+    status = TAP_parse_algorithm_info(*(ubyte4*)pKeyId->pBuffer, &keyAlgo, &keySize, &subKeyType);
     if (OK != status)
     {
         DB_PRINT("%s.%d Unsupported Alogrithm status = %d\n",
@@ -2178,7 +2200,7 @@ MSTATUS verifyData( TAP_Buffer *pDataToVerify,
 
         case TAP_KEY_ALGORITHM_MLDSA:
             {
-                status = verifyMLDSASignFromFile(pDataToVerify, &signBuf, &pubKeyData, subKeyType, hashType, pIsSigValid);
+                status = verifyMLDSASignFromFile(pDataToVerify, &signBuf, &pubKeyData, (ubyte4) subKeyType, hashType, pIsSigValid);
                 if (OK != status)
                 {
                     PRINT_ERR(status, "verifyMLDSASignFromFile() failed ");

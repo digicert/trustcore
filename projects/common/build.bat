@@ -152,6 +152,39 @@ IF %VERBOSE_MODE% NEQ 0 (
 goto:EOF
 
 
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: printLogOnFailure() - call this to print log file contents when VERBOSE_BUILD_LOG is set
+:: Usage: call :printLogOnFailure "path\to\logfile.log"
+:: Note: Prints last 200 lines to avoid GitHub Actions truncation
+
+:printLogOnFailure
+if defined VERBOSE_BUILD_LOG (
+    if "%VERBOSE_BUILD_LOG%"=="1" (
+        echo.
+        echo ================================================================================
+        echo BUILD LOG - ERRORS AND WARNINGS SUMMARY
+        echo ================================================================================
+        if exist "%~1" (
+            findstr /i /c:"error" /c:"fatal" /c:"failed" "%~1" 2>nul
+        )
+        echo.
+        echo ================================================================================
+        echo BUILD LOG - LAST 200 LINES - %~1
+        echo ================================================================================
+        if exist "%~1" (
+            powershell -NoProfile -Command "Get-Content '%~1' -Tail 200"
+        ) else (
+            echo Log file not found: %~1
+        )
+        echo ================================================================================
+        echo END OF BUILD LOG
+        echo ================================================================================
+        echo.
+    )
+)
+goto:EOF
+
+
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: -- Function to parse arguments
 
@@ -546,6 +579,7 @@ exit /b %ERRORLEVEL%
            echo Build failed
            echo Exited with error !ERRORLEVEL!
            echo Refer file "!LOG_FILE!" for details.
+           call :printLogOnFailure "!LOG_FILE!"
            exit /b !ERRORLEVEL!
         )
 
@@ -556,11 +590,13 @@ exit /b %ERRORLEVEL%
         if !ERRORLEVEL! NEQ 0 (
            echo Failure: CMake Failed to create Makefile
            echo Refer file "!LOG_FILE!" for details.
+           call :printLogOnFailure "!LOG_FILE!"
            exit /b !ERRORLEVEL!
         )
         if not exist "Makefile" (
            echo Failure: CMake Failed to create Makefile
            echo Refer file "!LOG_FILE!" for details.
+           call :printLogOnFailure "!LOG_FILE!"
            exit /b 2
         )
 
@@ -574,12 +610,14 @@ exit /b %ERRORLEVEL%
            echo Failure: NMake Failed to build "%libCommonFileName%" from "Makefile"
            echo Failure: NMAKE exited with error !ERRORLEVEL!
            echo Refer file "!LOG_FILE!" for details.
+           call :printLogOnFailure "!LOG_FILE!"
            exit /b !ERRORLEVEL!
         )
 
         if NOT exist %libCommonFileName% (
            echo Failure: NMake Failed to build "%libCommonFileName%" from "Makefile"
            echo Refer file "!LOG_FILE!" for details.
+           call :printLogOnFailure "!LOG_FILE!"
            exit /b 2
         )
 

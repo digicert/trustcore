@@ -920,6 +920,22 @@ MSTATUS MQTT_parseConnAck(sbyte connInst, MqttCtx *pCtx, ubyte *pBuffer, ubyte4 
     msg.dataLen = bufferLen;
     msg.finished = TRUE;
 
+    /* Update outbound max packet size if server provided one */
+    if (TRUE == info.maxPacketSizeSet)
+    {
+        /* Use server's limit, capped to our protocol maximum.
+         * Server's Maximum Packet Size is defined over total on-wire bytes,
+         * so it can be up to MQTT_MAX_PACKET_SIZE (268,435,460). */
+        if (info.maxPacketSize <= MQTT_MAX_PACKET_SIZE)
+        {
+            pCtx->outboundMaxPacketSize = info.maxPacketSize;
+        }
+        else
+        {
+            pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
+        }
+    }
+
     /* Logically at open state */
     if (0 == info.reasonCode)
     {
@@ -3192,9 +3208,9 @@ static MSTATUS MQTT_computeConnectLen(MqttCtx *pCtx, MqttConnectOptions *pOption
 {
     MSTATUS status = OK;
     ubyte4 i = 0;
-    ubyte4 len = 0;
-    ubyte4 propLen = 0;
-    ubyte4 willPropLen = 0;
+    ubyte8 len = 0;          /* 64-bit accumulator to prevent overflow */
+    ubyte8 propLen = 0;      /* 64-bit accumulator to prevent overflow */
+    ubyte8 willPropLen = 0;  /* 64-bit accumulator to prevent overflow */
     ubyte encoded[4];
     ubyte bytesUsed = 0;
 
@@ -3265,16 +3281,22 @@ static MSTATUS MQTT_computeConnectLen(MqttCtx *pCtx, MqttConnectOptions *pOption
                            2 + ((pOptions->pProps[i]).data.pair.value.dataLen);
         }
 
-        status = MQTT_encodeVariableByteInt(propLen, encoded, &bytesUsed);
+        /* Check property length doesn't exceed the effective outbound packet-size limit */
+        if (propLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+
+        status = MQTT_encodeVariableByteInt((ubyte4)propLen, encoded, &bytesUsed);
         if (OK != status)
             goto exit;
 
         len += propLen;
-
         len += bytesUsed;
     }
 
-    *pPropLen = propLen;
+    *pPropLen = (ubyte4)propLen;
 
     /* BEGIN payload len computation */
 
@@ -3342,10 +3364,17 @@ static MSTATUS MQTT_computeConnectLen(MqttCtx *pCtx, MqttConnectOptions *pOption
                                2 + ((pOptions->willInfo.pProps[i]).data.pair.value.dataLen);
         }
 
-        *pWillPropLen = willPropLen;
+        /* Check will property length doesn't exceed MQTT maximum */
+        if (willPropLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+
+        *pWillPropLen = (ubyte4)willPropLen;
         len += willPropLen;
 
-        status = MQTT_encodeVariableByteInt(willPropLen, encoded, &bytesUsed);
+        status = MQTT_encodeVariableByteInt((ubyte4)willPropLen, encoded, &bytesUsed);
         if (OK != status)
             goto exit;
 
@@ -3378,7 +3407,18 @@ static MSTATUS MQTT_computeConnectLen(MqttCtx *pCtx, MqttConnectOptions *pOption
         len += 2 + pOptions->passwordLen;
     }
 
-    *pTotalLen = len;
+    /* Final check: ensure total packet size doesn't exceed server's maximum */
+    {
+        ubyte remLenBytes = 0;
+        if (OK != MQTT_encodeVariableByteInt((ubyte4)len, NULL, &remLenBytes) ||
+            1 + remLenBytes + len > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+    }
+
+    *pTotalLen = (ubyte4)len;
 
 exit:
     return status;
@@ -3913,8 +3953,8 @@ static MSTATUS MQTT_computeSubscribeLen(
 {
     MSTATUS status = OK;
     ubyte4 i;
-    ubyte4 len;
-    ubyte4 propLen = 0;
+    ubyte8 len;        /* 64-bit accumulator to prevent overflow */
+    ubyte8 propLen = 0; /* 64-bit accumulator to prevent overflow */
     ubyte bytesUsed = 0;
     MqttSubscribeTopic *pCurTopic;
     MqttProperty *pCurProp;
@@ -3954,16 +3994,23 @@ static MSTATUS MQTT_computeSubscribeLen(
             }
         }
 
+        /* Check property length doesn't exceed MQTT maximum */
+        if (propLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+
         len += propLen;
 
-        status = MQTT_encodeVariableByteInt(propLen, NULL, &bytesUsed);
+        status = MQTT_encodeVariableByteInt((ubyte4)propLen, NULL, &bytesUsed);
         if (OK != status)
             goto exit;
 
         len += bytesUsed;
     }
 
-    *pPropLen = propLen;
+    *pPropLen = (ubyte4)propLen;
 
     /* payload - topics */
     for (i = 0; i < topicCount; i++)
@@ -3979,7 +4026,18 @@ static MSTATUS MQTT_computeSubscribeLen(
         len += 2 + pCurTopic->topicLen + 1;
     }
 
-    *pSubscribeLen = len;
+    /* Final check: ensure total packet size doesn't exceed server's maximum */
+    {
+        ubyte remLenBytes = 0;
+        if (OK != MQTT_encodeVariableByteInt((ubyte4)len, NULL, &remLenBytes) ||
+            1 + remLenBytes + len > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+    }
+
+    *pSubscribeLen = (ubyte4)len;
 
 exit:
 
@@ -4153,8 +4211,8 @@ MSTATUS MQTT_buildUnsubscribeMsg(
     MqttMessage **ppMsg)
 {
     MSTATUS status;
-    ubyte4 msgLen = 0;
-    ubyte4 propLen = 0;
+    ubyte8 msgLen = 0;   /* 64-bit accumulator to prevent overflow */
+    ubyte8 propLen = 0;  /* 64-bit accumulator to prevent overflow */
     ubyte4 i, temp;
     ubyte len;
     MqttUnsubscribeTopic *pCurTopic;
@@ -4187,10 +4245,17 @@ MSTATUS MQTT_buildUnsubscribeMsg(
                             2 + pCurProp->data.pair.value.dataLen;
             }
 
+            /* Check property length doesn't exceed MQTT maximum */
+            if (propLen > pCtx->outboundMaxPacketSize)
+            {
+                status = ERR_MQTT_PACKET_TOO_LARGE;
+                goto exit;
+            }
+
             msgLen += propLen;
         }
 
-        status = MQTT_encodeVariableByteInt(propLen, NULL, &len);
+        status = MQTT_encodeVariableByteInt((ubyte4)propLen, NULL, &len);
         if (OK != status)
             goto exit;
 
@@ -4205,13 +4270,24 @@ MSTATUS MQTT_buildUnsubscribeMsg(
         msgLen += 2 + pTopics[i].topicLen;
     }
 
-    status = MQTT_encodeVariableByteInt(msgLen - 1, NULL, &len);
+    /* Final check: ensure total packet size doesn't exceed server's maximum */
+    {
+        ubyte remLenBytes = 0;
+        if (OK != MQTT_encodeVariableByteInt((ubyte4)(msgLen - 1), NULL, &remLenBytes) ||
+            1 + remLenBytes + (msgLen - 1) > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+    }
+
+    status = MQTT_encodeVariableByteInt((ubyte4)(msgLen - 1), NULL, &len);
     if (OK != status)
         goto exit;
 
     msgLen += len;
 
-    status = DIGI_MALLOC((void **) &pMsg, msgLen);
+    status = DIGI_MALLOC((void **) &pMsg, (ubyte4)msgLen);
     if (OK != status)
         goto exit;
 
@@ -4325,8 +4401,8 @@ static MSTATUS MQTT_computePublishLen(
     ubyte4 *pPropLen)
 {
     MSTATUS status = OK;
-    ubyte4 msgLen = 0;
-    ubyte4 propLen = 0;
+    ubyte8 msgLen = 0;   /* 64-bit accumulator to prevent overflow */
+    ubyte8 propLen = 0;  /* 64-bit accumulator to prevent overflow */
     ubyte len = 0;
     ubyte4 i;
     MqttProperty *pCurProp;
@@ -4375,7 +4451,7 @@ static MSTATUS MQTT_computePublishLen(
                 pCurProp = &pOptions->pProps[i];
 
                 propLen += 1 + 2 + pCurProp->data.pair.name.dataLen +
-                            2 + pCurProp->data.pair.value.dataLen;
+                               2 + pCurProp->data.pair.value.dataLen;
             }
 
             /* subscription identifier */
@@ -4402,9 +4478,16 @@ static MSTATUS MQTT_computePublishLen(
 
         }
 
+        /* Check property length doesn't exceed MQTT maximum */
+        if (propLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+
         msgLen += propLen;
 
-        status = MQTT_encodeVariableByteInt(propLen, NULL, &len);
+        status = MQTT_encodeVariableByteInt((ubyte4)propLen, NULL, &len);
         if (OK != status)
             goto exit;
 
@@ -4414,8 +4497,19 @@ static MSTATUS MQTT_computePublishLen(
 
     msgLen += dataLen;
 
-    *pPropLen = propLen;
-    *pTotalLen = msgLen;
+    /* Final check: ensure total packet size doesn't exceed server's maximum */
+    {
+        ubyte remLenBytes = 0;
+        if (OK != MQTT_encodeVariableByteInt((ubyte4)msgLen, NULL, &remLenBytes) ||
+            1 + remLenBytes + msgLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+    }
+
+    *pPropLen = (ubyte4)propLen;
+    *pTotalLen = (ubyte4)msgLen;
 
 exit:
 
@@ -4643,10 +4737,10 @@ exit:
 MSTATUS MQTT_buildAuthMsg(MqttCtx *pCtx, MqttAuthOptions *pOptions, MqttMessage **ppMsg)
 {
     MSTATUS status;
-    ubyte4 remLen = 0;
+    ubyte8 remLen = 0;   /* 64-bit accumulator to prevent overflow */
     ubyte *pMsg = NULL;
-    ubyte4 msgLen = 0;
-    ubyte4 propLen = 0;
+    ubyte8 msgLen = 0;   /* 64-bit accumulator to prevent overflow */
+    ubyte8 propLen = 0;  /* 64-bit accumulator to prevent overflow */
     ubyte *pIter = NULL;
     ubyte4 offset = 0;
     ubyte bytesUsed = 0;
@@ -4685,20 +4779,38 @@ MSTATUS MQTT_buildAuthMsg(MqttCtx *pCtx, MqttAuthOptions *pOptions, MqttMessage 
                        2 + ((pOptions->pProps[i]).data.pair.value.dataLen);
     }
 
-    status = MQTT_encodeVariableByteInt(propLen, encodedPropLen, &propBytesUsed);
+    /* Check property length doesn't exceed MQTT maximum */
+    if (propLen > pCtx->outboundMaxPacketSize)
+    {
+        status = ERR_MQTT_PACKET_TOO_LARGE;
+        goto exit;
+    }
+
+    status = MQTT_encodeVariableByteInt((ubyte4)propLen, encodedPropLen, &propBytesUsed);
     if (OK != status)
         goto exit;
 
     remLen = 1 + propLen + propBytesUsed;
 
-    status = MQTT_encodeVariableByteInt(remLen, encodedLen, &bytesUsed);
+    /* Check total packet size doesn't exceed server's maximum */
+    {
+        ubyte remLenBytes = 0;
+        if (OK != MQTT_encodeVariableByteInt((ubyte4)remLen, NULL, &remLenBytes) ||
+            1 + remLenBytes + remLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+    }
+
+    status = MQTT_encodeVariableByteInt((ubyte4)remLen, encodedLen, &bytesUsed);
     if (OK != status)
         goto exit;
 
     msgLen = 1 + bytesUsed + remLen;
 
     /* Length computed, alloc space for the packet and begin construction */
-    status = DIGI_CALLOC((void **)&pMsg, msgLen, 1);
+    status = DIGI_CALLOC((void **)&pMsg, (ubyte4)msgLen, 1);
     if (OK != status)
         goto exit;
 
@@ -4829,10 +4941,10 @@ exit:
 MSTATUS MQTT_buildDisconnectMsg(MqttCtx *pCtx, MqttDisconnectOptions *pOptions, MqttMessage **ppMsg)
 {
     MSTATUS status;
-    ubyte4 remLen = 0;
+    ubyte8 remLen = 0;   /* 64-bit accumulator to prevent overflow */
     ubyte *pMsg = NULL;
-    ubyte4 msgLen = 0;
-    ubyte4 propLen = 0;
+    ubyte8 msgLen = 0;   /* 64-bit accumulator to prevent overflow */
+    ubyte8 propLen = 0;  /* 64-bit accumulator to prevent overflow */
     ubyte *pIter = NULL;
     ubyte4 offset = 0;
     ubyte bytesUsed = 0;
@@ -4883,21 +4995,39 @@ MSTATUS MQTT_buildDisconnectMsg(MqttCtx *pCtx, MqttDisconnectOptions *pOptions, 
                     2 + ((pOptions->pProps[i]).data.pair.value.dataLen);
         }
 
-        status = MQTT_encodeVariableByteInt(propLen, encodedPropLen, &propBytesUsed);
+        /* Check property length doesn't exceed MQTT maximum */
+        if (propLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+
+        status = MQTT_encodeVariableByteInt((ubyte4)propLen, encodedPropLen, &propBytesUsed);
         if (OK != status)
             goto exit;
 
         remLen = 1 + propLen + propBytesUsed;
     }
 
-    status = MQTT_encodeVariableByteInt(remLen, encodedLen, &bytesUsed);
+    /* Check total packet size doesn't exceed server's maximum */
+    {
+        ubyte remLenBytes = 0;
+        if (OK != MQTT_encodeVariableByteInt((ubyte4)remLen, NULL, &remLenBytes) ||
+            1 + remLenBytes + remLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+    }
+
+    status = MQTT_encodeVariableByteInt((ubyte4)remLen, encodedLen, &bytesUsed);
     if (OK != status)
         goto exit;
 
     msgLen = 1 + bytesUsed + remLen;
 
     /* Length computed, alloc space for the packet and begin construction */
-    status = DIGI_CALLOC((void **)&pMsg, msgLen, 1);
+    status = DIGI_CALLOC((void **)&pMsg, (ubyte4)msgLen, 1);
     if (OK != status)
         goto exit;
 
@@ -4992,10 +5122,10 @@ exit:
 MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMessage **ppMsg)
 {
     MSTATUS status;
-    ubyte4 remLen = 0;
+    ubyte8 remLen = 0;   /* 64-bit accumulator to prevent overflow */
     ubyte *pMsg = NULL;
-    ubyte4 msgLen = 0;
-    ubyte4 propLen = 0;
+    ubyte8 msgLen = 0;   /* 64-bit accumulator to prevent overflow */
+    ubyte8 propLen = 0;  /* 64-bit accumulator to prevent overflow */
     ubyte *pIter = NULL;
     ubyte4 offset = 0;
     ubyte bytesUsed = 0;
@@ -5049,7 +5179,14 @@ MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMe
                    2 + ((pOptions->pProps[i]).data.pair.value.dataLen);
     }
 
-    status = MQTT_encodeVariableByteInt(propLen, encodedPropLen, &propBytesUsed);
+    /* Check property length doesn't exceed MQTT maximum */
+    if (propLen > pCtx->outboundMaxPacketSize)
+    {
+        status = ERR_MQTT_PACKET_TOO_LARGE;
+        goto exit;
+    }
+
+    status = MQTT_encodeVariableByteInt((ubyte4)propLen, encodedPropLen, &propBytesUsed);
     if (OK != status)
         goto exit;
     
@@ -5062,7 +5199,18 @@ MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMe
         remLen = 2;
     }
 
-    status = MQTT_encodeVariableByteInt(remLen, encodedLen, &bytesUsed);
+    /* Check total packet size doesn't exceed server's maximum */
+    {
+        ubyte remLenBytes = 0;
+        if (OK != MQTT_encodeVariableByteInt((ubyte4)remLen, NULL, &remLenBytes) ||
+            1 + remLenBytes + remLen > pCtx->outboundMaxPacketSize)
+        {
+            status = ERR_MQTT_PACKET_TOO_LARGE;
+            goto exit;
+        }
+    }
+
+    status = MQTT_encodeVariableByteInt((ubyte4)remLen, encodedLen, &bytesUsed);
     if (OK != status)
         goto exit;
 
@@ -5074,7 +5222,7 @@ MSTATUS MQTT_buildPubRespMsg(MqttCtx *pCtx, MqttPubRespOptions *pOptions, MqttMe
     }
 
     /* Length computed, alloc space for the packet and begin construction */
-    status = DIGI_CALLOC((void **)&pMsg, msgLen, 1);
+    status = DIGI_CALLOC((void **)&pMsg, (ubyte4)msgLen, 1);
     if (OK != status)
         goto exit;
 

@@ -117,6 +117,10 @@ extern const OSSL_DISPATCH digiprov_cmac_keymgmt_functions[];
 extern const OSSL_DISPATCH digiprov_mlkem512_keymgmt_functions[];
 extern const OSSL_DISPATCH digiprov_mlkem768_keymgmt_functions[];
 extern const OSSL_DISPATCH digiprov_mlkem1024_keymgmt_functions[];
+extern const OSSL_DISPATCH digiprov_mlx_x25519_mlkem768_keymgmt_functions[];
+extern const OSSL_DISPATCH digiprov_mlx_x448_mlkem1024_keymgmt_functions[];
+extern const OSSL_DISPATCH digiprov_mlx_p256_mlkem768_keymgmt_functions[];
+extern const OSSL_DISPATCH digiprov_mlx_p384_mlkem1024_keymgmt_functions[];
 extern const OSSL_DISPATCH digiprov_mldsa44_keymgmt_functions[];
 extern const OSSL_DISPATCH digiprov_mldsa65_keymgmt_functions[];
 extern const OSSL_DISPATCH digiprov_mldsa87_keymgmt_functions[];
@@ -151,6 +155,7 @@ extern const OSSL_DISPATCH digiprov_x25519_keyexch_functions[];
 extern const OSSL_DISPATCH digiprov_x448_keyexch_functions[];
 
 extern const OSSL_DISPATCH digiprov_pqc_kem_functions[];
+extern const OSSL_DISPATCH digiprov_pqc_mlx_kem_functions[];
 
 extern const OSSL_DISPATCH digiprov_drbg_ctr_functions[];
 extern const OSSL_DISPATCH digiprov_drbg_hash_functions[];

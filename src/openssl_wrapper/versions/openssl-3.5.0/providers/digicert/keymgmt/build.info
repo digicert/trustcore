@@ -8,6 +8,7 @@ $ECX_GOAL=../../libdigiprov.a
 $RSA_GOAL=../../libdigiprov.a
 $MAC_GOAL=../../libdigiprov.a
 $PQC_GOAL=../../libdigiprov.a
+$MLX_GOAL=../../libdigiprov.a
 
 IF[{- !$disabled{dh} -}]
   SOURCE[$DH_GOAL]=digi_dh_kmgmt.c
@@ -26,3 +27,4 @@ ENDIF
 SOURCE[$RSA_GOAL]=digi_rsa_kmgmt.c
 SOURCE[$MAC_GOAL]=digi_mac_kmgmt.c
 SOURCE[$PQC_GOAL]=digi_pqc_kmgmt.c
+SOURCE[$MLX_GOAL]=digi_mlx_kmgmt.c

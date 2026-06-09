@@ -130,10 +130,14 @@
 #include "../../crypto/mocasym.h"
 #include "../../crypto/mocasymkeys/tap/rsatap.h"
 #include "../../crypto/mocasymkeys/tap/ecctap.h"
+#include "../../crypto/mocasymkeys/tap/qstap.h"
 #include "../../crypto_interface/cryptointerface.h"
 #include "../../crypto_interface/crypto_interface_tap.h"
 #ifdef __ENABLE_DIGICERT_TEE__
 #include "../../smp/smp_tee/smp_tap_tee.h"
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#include "../../smp/smp_nanoroot/smp_nanoroot.h"
+#include "../../tap/tap_common.h"
 #endif
 #endif
 #include "../../est/est_client_api.h"
@@ -1105,7 +1109,7 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
     ubyte4 contentsLen = 0;
     ubyte *pSerializedPemKey = NULL;
     ubyte4 serializedPemKeyLen = 0;
-    AsymmetricKey asymKey;
+    AsymmetricKey asymKey = {0};
     RSAKey *pRsaKey = NULL;
     ECCKey *pEccKey = NULL;
     edECCKey *pEdEccKey = NULL;
@@ -1168,15 +1172,29 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
     else if(DIGI_STRCMP((const sbyte *)pKeyType, (const sbyte *)KEY_TYPE_EDDSA) == 0)
     {
         keyType = akt_ecc_ed;
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__)
+#if defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
         if (pKeyArgs->gTap)
+        {
+            status = ERR_EC_UNSUPPORTED_CURVE;
+            goto exit;
+        }
+#elif !defined(__ENABLE_DIGICERT_TEE__)
+        if (pKeyArgs->gTap)
+        {
             keyType = akt_tap_ecc;
+        }
+#endif
 #endif
     }
 #ifdef __ENABLE_DIGICERT_PQC__
     else if(DIGI_STRCMP((const sbyte *)pKeyType, (const sbyte *)KEY_TYPE_QS) == 0)
     {
         keyType = akt_qs;
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+        if (pKeyArgs->gTap)
+            keyType = akt_tap_qs;
+#endif
     }
 #endif
 
@@ -1200,176 +1218,180 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
         { /* No PEM file also found, new Key to be generated */
            /* .pem or .der files not found. generate a new key and convert it
               to .pem and .der files */
+            foundOldKey = FALSE;
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+            if (pKeyArgs->gTap)
             {
-                foundOldKey = FALSE;
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
-                if (pKeyArgs->gTap)
+                ubyte *pKeyData = NULL;
+                ubyte4 keyDataLen = 0;
+                sbyte *pTapKeyBinFileName = NULL;
+                sbyte *pFullPathbinW = NULL;
+                AsymmetricKey tapAsymKey = { 0 };
+                TAP_Key *pTapKey = NULL;
+                ubyte *pBlob = NULL;
+                ubyte4 blobLen = 0;
+
+                ubyte *pSerializedPri = NULL;
+                ubyte4 serializedPriLen = 0;
+
+                if (OK != (status = TRUSTEDGE_EST_createTapAsymKey(pEstArgs, pKeyArgs, &tapAsymKey, pKeyType, keySize, (KeyGenTapArgs *)pEstTapContext)))
                 {
-                    ubyte *pKeyData = NULL;
-                    ubyte4 keyDataLen = 0;
-                    sbyte *pTapKeyBinFileName = NULL;
-                    sbyte *pFullPathbinW = NULL;
-                    AsymmetricKey tapAsymKey = { 0 };
-                    TAP_Key *pTapKey = NULL;
-                    ubyte *pBlob = NULL;
-                    ubyte4 blobLen = 0;
+                    verbosePrintError("Unable to create TAP asymmetric key.", status);
+                    goto exit_tap_gen;
+                }
 
-                    ubyte *pSerializedPri = NULL;
-                    ubyte4 serializedPriLen = 0;
+                /*Serialize the key */
+                /* Write out the TAP key in PKCS8 format here. TAP keys
+                * ignore the PKCS8 password argument. */
+                if (OK != (status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx) &tapAsymKey, privateKeyInfoDer, &pKeyBlob, &keyBlobLen)))
+                {
 
-                    if (OK != (status = TRUSTEDGE_EST_createTapAsymKey(pEstArgs, pKeyArgs, &tapAsymKey, pKeyType, keySize, (KeyGenTapArgs *)pEstTapContext)))
-                    {
-                        verbosePrintError("Unable to create TAP asymmetric key.", status);
-                        goto exit;
-                    }
+                    verbosePrintError("Unable to serialize TAP asymmetric key.", status);
+                    goto exit_tap_gen;
+                }
 
-                    /*Serialize the key */
-                    /* Write out the TAP key in PKCS8 format here. TAP keys
-                    * ignore the PKCS8 password argument. */
-                    if (OK != (status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx) &tapAsymKey, privateKeyInfoDer, &pKeyBlob, &keyBlobLen)))
-                    {
+                /* Write key to file */
+                if ( OK > ( status = DIGICERT_writeFile(
+                                EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pFileName,
+                                    (char **)&pFullPathW), pKeyBlob, keyBlobLen)))
+                {
+                    verbosePrintStringError("Unable to write DER-formatted TAP key to file", pFullPathW);
+                    verbosePrintError("Unable to write DER-formatted TAP key to file.", status);
+                    goto exit_tap_gen;
+                }
 
-                        verbosePrintError("Unable to serialize TAP asymmetric key.", status);
-                        goto exit;
-                    }
-
-                    /* Write key to file */
-                    if ( OK > ( status = DIGICERT_writeFile(
-                                    EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pFileName,
-                                        (char **)&pFullPathW), pKeyBlob, keyBlobLen)))
-                    {
-                        verbosePrintStringError("Unable to write DER-formatted TAP key to file", pFullPathW);
-                        verbosePrintError("Unable to write DER-formatted TAP key to file.", status);
-                        goto exit;
-                    }
-
-                    /* Serialize to PEM Format */
+                /* Serialize to PEM Format */
 #ifdef __ENABLE_DIGICERT_EST_TAP_PEM_FILE__
-                    /* Create TAP PEM key with TAP PEM header */
-                    status = BASE64_makePemMessageAlloc(
-                        MOC_PEM_TYPE_PRI_TAP_KEY, pKeyBlob, keyBlobLen,
-                        &pSerializedPri, &serializedPriLen);
-                    if (OK > status)
-                    {
-                        verbosePrintError("Unable to create PEM TAP key with TAP header format.", status);
-                        goto exit;
-                    }
+                /* Create TAP PEM key with TAP PEM header */
+                status = BASE64_makePemMessageAlloc(
+                    MOC_PEM_TYPE_PRI_TAP_KEY, pKeyBlob, keyBlobLen,
+                    &pSerializedPri, &serializedPriLen);
+                if (OK > status)
+                {
+                    verbosePrintError("Unable to create PEM TAP key with TAP header format.", status);
+                    goto exit_tap_gen;
+                }
 
-                    if (OK > ( status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pTapPemFileName, (char **)&pFullPathPemW),
-                                    pSerializedPri, serializedPriLen)))
-                    {
-                        verbosePrintError("Unable to write PEM-formatted TAP key to file.", status);
-                        goto exit;
-                    }
-                    DIGI_FREE((void **) &pFullPathPemW);
+                if (OK > ( status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pTapPemFileName, (char **)&pFullPathPemW),
+                                pSerializedPri, serializedPriLen)))
+                {
+                    verbosePrintError("Unable to write PEM-formatted TAP key to file.", status);
+                    goto exit_tap_gen;
+                }
+                DIGI_FREE((void **) &pFullPathPemW);
 
-                    if (pSerializedPri != NULL && (OK != (status = DIGI_MEMSET_FREE ((ubyte **)&pSerializedPri, serializedPriLen))))
-                    {
-                        verbosePrintError("Unable to free TAP key serialized data.", status);
-                        goto exit;
-                    }
+                if (pSerializedPri != NULL && (OK != (status = DIGI_MEMSET_FREE ((ubyte **)&pSerializedPri, serializedPriLen))))
+                {
+                    verbosePrintError("Unable to free TAP key serialized data.", status);
+                    goto exit_tap_gen;
+                }
 #endif /* __ENABLE_DIGICERT_EST_TAP_PEM_FILE__ */
 
-                    if (OK != (status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx) &tapAsymKey, privateKeyPem, &pSerializedPri, &serializedPriLen)))
-                    {
-                        verbosePrintError("Unable to serialize TAP asymmetric key.", status);
-                        goto exit;
-                    }
-
-                    /* Write out the TAP key in PKCS8 format here. TAP keys
-                     * ignore the PKCS8 password argument. */
-                    if (OK > ( status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pPemFileName, (char **)&pFullPathPemW),
-                                    pSerializedPri, serializedPriLen)))
-                    {
-                        verbosePrintError("Unable to write PEM-formatted TAP key to file.", status);
-                        goto exit;
-                    }
-
-                    if (pSerializedPri != NULL && (OK != (status = DIGI_MEMSET_FREE ((ubyte **)&pSerializedPri, serializedPriLen))))
-                    {
-                        verbosePrintError("Unable to free TAP key serialized data.", status);
-                        goto exit;
-                    }
-
-                    /* Write TAP key in BIN format */
-                    status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx)
-                        &tapAsymKey, mocanaBlobVersion2, &pKeyData,
-                        &keyDataLen);
-                    if (OK != status)
-                    {
-                        verbosePrintError("Unable to serialize TAP asymmetric key.", status);
-                        goto exit;
-                    }
-
-                    /* Write private key to file */
-                    if (OK > (status = DIGI_MALLOC((void**)&pTapKeyBinFileName, (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
-                    {
-                        goto exit;
-                    }
-
-                    if (OK > (status = DIGI_MEMSET((ubyte*)pTapKeyBinFileName, 0x00,
-                                                    (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
-                    {
-                        goto exit;
-                    }
-                    DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)pKeyAlias);
-
-                    DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)ESTC_EXT_TAPKEY);
-                    (pTapKeyBinFileName)[(keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY))] = '\0';
-                    if(akt_tap_ecc == keyType)
-                    {
-                        pBlob = pKeyData + MOC_ECC_TAP_BLOB_START_LEN;
-                        blobLen = keyDataLen - MOC_ECC_TAP_BLOB_START_LEN;
-                    }
-                    else
-                    {
-                        pBlob = pKeyData + MOC_RSA_TAP_BLOB_START_LEN;
-                        blobLen = keyDataLen - MOC_RSA_TAP_BLOB_START_LEN;
-                    }
-
-                    status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pTapKeyBinFileName,
-                                        (char **)&pFullPathbinW), pBlob, blobLen);
-                    if (OK != status)
-                    {
-                        verbosePrintStringError("Unable to write binary format TAP key to file", pFullPathbinW);
-                        verbosePrintError("Unable to write binary format TAP key to file.", status);
-                        goto exit;
-                    }
-
-                    if (FALSE == pEstArgs->tapKeyPrimary)
-                    {
-                        status = TRUSTEDGE_utilsWriteSMPBlob(
-                            pKeyPath, pKeyAlias, &tapAsymKey,
-                            KEY_FORMAT_TAP_PRIVATE_BLOB | KEY_FORMAT_TAP_PUBLIC_BLOB);
-                        if (OK != status)
-                        {
-                            verbosePrintError("Unable to write TAP key to keystore.", status);
-                            goto exit;
-                        }
-                    }
-
-                    status = CRYPTO_INTERFACE_getTapKey(&tapAsymKey, &pTapKey);
-                    if (OK != status)
-                        goto exit;
-
-                    status = TAP_unloadKey(pTapKey, NULL);
-                    if (OK != status)
-                        goto exit;
-
-                    CRYPTO_uninitAsymmetricKey(&tapAsymKey, NULL);
-
-                    if (pTapKeyBinFileName)
-                        DIGI_FREE((void **)&pTapKeyBinFileName);
-
-                    if (pFullPathbinW)
-                        DIGI_FREE((void **)&pFullPathbinW);
-
-                    if (NULL != pKeyData)
-                        DIGI_FREE((void **)&pKeyData);
-                }
-                else
-#endif
+                if (OK != (status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx) &tapAsymKey, privateKeyPem, &pSerializedPri, &serializedPriLen)))
                 {
+                    verbosePrintError("Unable to serialize TAP asymmetric key.", status);
+                    goto exit_tap_gen;
+                }
+
+                /* Write out the TAP key in PKCS8 format here. TAP keys
+                    * ignore the PKCS8 password argument. */
+                if (OK > ( status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pPemFileName, (char **)&pFullPathPemW),
+                                pSerializedPri, serializedPriLen)))
+                {
+                    verbosePrintError("Unable to write PEM-formatted TAP key to file.", status);
+                    goto exit_tap_gen;
+                }
+
+                /* Write TAP key in BIN format */
+                status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx)
+                    &tapAsymKey, mocanaBlobVersion2, &pKeyData,
+                    &keyDataLen);
+                if (OK != status)
+                {
+                    verbosePrintError("Unable to serialize TAP asymmetric key.", status);
+                    goto exit_tap_gen;
+                }
+
+                /* Write private key to file */
+                if (OK > (status = DIGI_MALLOC((void**)&pTapKeyBinFileName, (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
+                {
+                    goto exit_tap_gen;
+                }
+
+                if (OK > (status = DIGI_MEMSET((ubyte*)pTapKeyBinFileName, 0x00,
+                                                (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
+                {
+                    goto exit_tap_gen;
+                }
+                DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)pKeyAlias);
+
+                DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)ESTC_EXT_TAPKEY);
+                (pTapKeyBinFileName)[(keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY))] = '\0';
+                if(akt_tap_ecc == keyType)
+                {
+                    pBlob = pKeyData + MOC_ECC_TAP_BLOB_START_LEN;
+                    blobLen = keyDataLen - MOC_ECC_TAP_BLOB_START_LEN;
+                }
+#ifdef __ENABLE_DIGICERT_PQC__
+                else if (akt_tap_qs == keyType)
+                {
+                    pBlob = pKeyData + MOC_QS_TAP_BLOB_START_LEN;
+                    blobLen = keyDataLen - MOC_QS_TAP_BLOB_START_LEN;
+                }
+#endif
+                else
+                {
+                    pBlob = pKeyData + MOC_RSA_TAP_BLOB_START_LEN;
+                    blobLen = keyDataLen - MOC_RSA_TAP_BLOB_START_LEN;
+                }
+
+                status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pTapKeyBinFileName,
+                                    (char **)&pFullPathbinW), pBlob, blobLen);
+                if (OK != status)
+                {
+                    verbosePrintStringError("Unable to write binary format TAP key to file", pFullPathbinW);
+                    verbosePrintError("Unable to write binary format TAP key to file.", status);
+                    goto exit_tap_gen;
+                }
+
+                if (FALSE == pEstArgs->tapKeyPrimary)
+                {
+                    status = TRUSTEDGE_utilsWriteSMPBlob(
+                        pKeyPath, pKeyAlias, &tapAsymKey,
+                        KEY_FORMAT_TAP_PRIVATE_BLOB | KEY_FORMAT_TAP_PUBLIC_BLOB);
+                    if (OK != status)
+                    {
+                        verbosePrintError("Unable to write TAP key to keystore.", status);
+                        goto exit_tap_gen;
+                    }
+                }
+
+exit_tap_gen:
+                if (OK == CRYPTO_INTERFACE_getTapKey(&tapAsymKey, &pTapKey))
+                {
+                    (void) TAP_unloadKey(pTapKey, NULL);
+                }
+
+                (void) CRYPTO_uninitAsymmetricKey(&tapAsymKey, NULL);
+
+                if (NULL != pTapKeyBinFileName)
+                    (void) DIGI_FREE((void **)&pTapKeyBinFileName);
+
+                if (NULL != pFullPathbinW)
+                    (void) DIGI_FREE((void **)&pFullPathbinW);
+
+                if (NULL != pKeyData)
+                    (void) DIGI_FREE((void **)&pKeyData);
+
+                if (NULL != pSerializedPri)
+                    (void) DIGI_MEMSET_FREE(&pSerializedPri, serializedPriLen);
+
+                if (OK != status)
+                    goto exit;
+            }
+            else
+#endif
+            {
 
 #ifdef __ENABLE_DIGICERT_TEE__
                 /* For secure storage, before generating a key, make sure we have a keyHandle */
@@ -1380,121 +1402,225 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
                     goto exit;
                 }
 #endif
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+                if (pEstArgs->useNanoRoot)
+                {
+                    sbyte *pTapKeyBinFileName = NULL;
+                    sbyte *pFullPathbinW = NULL;
+                    AsymmetricKey tapAsymKey = { 0 };
+                    ubyte *pBlob = NULL;
+                    ubyte4 blobLen = 0;
 
+                    /* For nanoroot, before obtaining a key, make sure we have a keyHandle */
+                    if (NULL == pEstArgs->tapKeyHandle.pBuffer || 0 == pEstArgs->tapKeyHandle.bufferLen)
+                    {
+                        status = ERR_INVALID_INPUT;
+                        verbosePrintError("ERROR: Must provide key handle for generating a new key with source NANOROOT.", status);
+                        goto exit_nanoroot_gen;
+                    }
+
+                    /* No key is actually generated, just serialize the id to PEM */
+                    status = CRYPTO_serializeKeyId(pEstArgs->tapKeyHandle.pBuffer, pEstArgs->tapKeyHandle.bufferLen, NanoROOTTOKEN_ID,
+                            privateKeyPem, &pSerializedPemKey, &serializedPemKeyLen);
+                    if (OK != status)
+                    {
+                        verbosePrintError("ERROR: Unable to PEM serialize ID for the new key with source NANOROOT.", status);
+                        goto exit_nanoroot_gen;
+                    }
+
+                    status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pPemFileName,
+                        (char **)&pFullPathPemW), pSerializedPemKey, serializedPemKeyLen);
+                    if (OK != status)
+                    {
+                        goto exit_nanoroot_gen;
+                    }
+
+                    /* Write TAP key in BIN format, we need to deserialize it first */
+                    status = CRYPTO_deserializeAsymKey (pSerializedPemKey, serializedPemKeyLen, NULL, &tapAsymKey);
+                    if (OK != status)
+                    {
+                        verbosePrintError("Unable to deserialize TAP asymmetric key.", status);
+                        goto exit_nanoroot_gen;
+                    }
+
+                    status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx)
+                        &tapAsymKey, mocanaBlobVersion2, &pKeyBlob,
+                        &keyBlobLen);
+                    if (OK != status)
+                    {
+                        verbosePrintError("Unable to serialize TAP asymmetric key.", status);
+                        goto exit_nanoroot_gen;
+                    }
+
+                    if (OK > (status = DIGI_MALLOC((void**)&pTapKeyBinFileName, (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
+                    {
+                        goto exit_nanoroot_gen;
+                    }
+
+                    if (OK > (status = DIGI_MEMSET((ubyte*)pTapKeyBinFileName, 0x00,
+                                                    (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
+                    {
+                        goto exit_nanoroot_gen;
+                    }
+                    DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)pKeyAlias);
+
+                    DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)ESTC_EXT_TAPKEY);
+                    (pTapKeyBinFileName)[(keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY))] = '\0';
+                    if(akt_tap_ecc == keyType)
+                    {
+                        pBlob = pKeyBlob + MOC_ECC_TAP_BLOB_START_LEN;
+                        blobLen = keyBlobLen - MOC_ECC_TAP_BLOB_START_LEN;
+                    }
 #ifdef __ENABLE_DIGICERT_PQC__
-                if (akt_qs == keyType)
-                {
-                    if (OK > (status = CA_MGMT_generateNakedKeyPQC(keyType, keySize, pKeyArgs->gQsAlg, &pKeyBlob, &keyBlobLen)))
+                    else if (akt_tap_qs == keyType)
                     {
-                        verbosePrintError("Unable to generate new QS key.", status);
-                        goto exit;
+                        pBlob = pKeyBlob + MOC_QS_TAP_BLOB_START_LEN;
+                        blobLen = keyBlobLen - MOC_QS_TAP_BLOB_START_LEN;
                     }
+#endif
+                    else
+                    {
+                        pBlob = pKeyBlob + MOC_RSA_TAP_BLOB_START_LEN;
+                        blobLen = keyBlobLen - MOC_RSA_TAP_BLOB_START_LEN;
+                    }
+
+                    status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pTapKeyBinFileName,
+                                        (char **)&pFullPathbinW), pBlob, blobLen);
+                    if (OK != status)
+                    {
+                        verbosePrintStringError("Unable to write binary format TAP key to file", pFullPathbinW);
+                        verbosePrintError("Unable to write binary format TAP key to file.", status);
+                        goto exit_nanoroot_gen;
+                    }
+                    
+exit_nanoroot_gen:
+
+                    (void) CRYPTO_uninitAsymmetricKey(&tapAsymKey, NULL);
+
+                    if (NULL != pTapKeyBinFileName)
+                        (void) DIGI_FREE((void **)&pTapKeyBinFileName);
+
+                    if (NULL != pFullPathbinW)
+                        (void) DIGI_FREE((void **)&pFullPathbinW);
+
+                    if (OK != status)
+                        goto exit;
                 }
                 else
 #endif
                 {
-                    if (OK > (status = CA_MGMT_generateNakedKey(keyType, keySize, &pKeyBlob, &keyBlobLen)))
+#ifdef __ENABLE_DIGICERT_PQC__
+                    if (akt_qs == keyType)
                     {
-                        verbosePrintError("Unable to generate new key.", status);
-                        goto exit;
-                    }
-                }
-
-                 /* Only write out Mocana key blob if the caller does not want
-                 * a password protected key file (and we are not TEE)*/
-#ifdef __ENABLE_DIGICERT_TEE__
-                if (NULL == pEstArgs->pPkcs8Pw && !pEstArgs->useTEE)
-#else
-                if (NULL == pEstArgs->pPkcs8Pw)
-#endif
-                {
-                    if ( OK > ( status = DIGICERT_writeFile(
-                                    EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pFileName,
-                                        (char **)&pFullPathW), pKeyBlob, keyBlobLen)))
-                    {
-                        verbosePrintStringError("Unable to write key data to file", pFullPathW);
-                        verbosePrintError("Unable to write key data to file.", status);
-                        goto exit;
-                    }
-                }
-                /* Convert pem key to keyblob and write to the keystore. */
-
-                if (OK > (status = CRYPTO_initAsymmetricKey (&asymKey)))
-                {
-                    goto exit;
-                }
-
-                if (OK > (status = KEYBLOB_extractKeyBlobEx(pKeyBlob, keyBlobLen,&asymKey)))
-                {
-                    goto exit;
-                }
-
-                /* Serialize into PEM Format */
-                if (NULL != pEstArgs->pPkcs8Pw)
-                {
-#ifdef __ENABLE_DIGICERT_TEE__
-                    if (pEstArgs->useTEE)
-                    {
-                        status = ERR_NOT_IMPLEMENTED;
-                        goto exit;
-                    }
-#endif
-                    status = PKCS8_encodePrivateKeyPEM(
-                        g_pRandomContext, pKeyBlob, keyBlobLen,
-                        pEstArgs->pkcs8EncType, PKCS8_PrfType_undefined /* uses default */,
-                        (ubyte *)pEstArgs->pPkcs8Pw, DIGI_STRLEN(pEstArgs->pPkcs8Pw),
-                        &pSerializedPemKey, &serializedPemKeyLen);
-                }
-                else
-                {
-#ifdef __ENABLE_DIGICERT_TEE__
-                    if (pEstArgs->useTEE)
-                    {
-                        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(gHwAccelCtx) &asymKey,
-                            privateKeyPem, pEstArgs->tapKeyHandle.pBuffer, pEstArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE,
-                            &pSerializedPemKey, &serializedPemKeyLen);
+                        if (OK > (status = CA_MGMT_generateNakedKeyPQC(keyType, keySize, pKeyArgs->gQsAlg, &pKeyBlob, &keyBlobLen)))
+                        {
+                            verbosePrintError("Unable to generate new QS key.", status);
+                            goto exit;
+                        }
                     }
                     else
 #endif
                     {
-                        status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx)
-                            &asymKey, privateKeyPem, &pSerializedPemKey,
-                            &serializedPemKeyLen);
+                        if (OK > (status = CA_MGMT_generateNakedKey(keyType, keySize, &pKeyBlob, &keyBlobLen)))
+                        {
+                            verbosePrintError("Unable to generate new key.", status);
+                            goto exit;
+                        }
+                    }
+
+                    /* Only write out Mocana key blob if the caller does not want
+                     * a password protected key file (and we are not TEE)*/
+#ifdef __ENABLE_DIGICERT_TEE__
+                    if (NULL == pEstArgs->pPkcs8Pw && !pEstArgs->useTEE)
+#else
+                    if (NULL == pEstArgs->pPkcs8Pw)
+#endif
+                    {
+                        if ( OK > ( status = DIGICERT_writeFile(
+                                        EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pFileName,
+                                            (char **)&pFullPathW), pKeyBlob, keyBlobLen)))
+                        {
+                            verbosePrintStringError("Unable to write key data to file", pFullPathW);
+                            verbosePrintError("Unable to write key data to file.", status);
+                            goto exit;
+                        }
+                    }
+                    /* Convert pem key to keyblob and write to the keystore. */
+
+                    if (OK > (status = CRYPTO_initAsymmetricKey (&asymKey)))
+                    {
+                        goto exit;
+                    }
+
+                    if (OK > (status = KEYBLOB_extractKeyBlobEx(pKeyBlob, keyBlobLen,&asymKey)))
+                    {
+                        goto exit;
+                    }
+
+                    /* Serialize into PEM Format */
+                    if (NULL != pEstArgs->pPkcs8Pw)
+                    {
+#ifdef __ENABLE_DIGICERT_TEE__
+                        if (pEstArgs->useTEE)
+                        {
+                            status = ERR_NOT_IMPLEMENTED;
+                            goto exit;
+                        }
+#endif
+                        status = PKCS8_encodePrivateKeyPEM(
+                            g_pRandomContext, pKeyBlob, keyBlobLen,
+                            pEstArgs->pkcs8EncType, PKCS8_PrfType_undefined /* uses default */,
+                            (ubyte *)pEstArgs->pPkcs8Pw, DIGI_STRLEN(pEstArgs->pPkcs8Pw),
+                            &pSerializedPemKey, &serializedPemKeyLen);
+                    }
+                    else
+                    {
+#ifdef __ENABLE_DIGICERT_TEE__
+                        if (pEstArgs->useTEE)
+                        {
+                            status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(gHwAccelCtx) &asymKey,
+                                privateKeyPem, pEstArgs->tapKeyHandle.pBuffer, pEstArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE,
+                                &pSerializedPemKey, &serializedPemKeyLen);
+                        }
+                        else
+#endif
+                        {
+                            status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx)
+                                &asymKey, privateKeyPem, &pSerializedPemKey,
+                                &serializedPemKeyLen);
+                        }
+                    }
+                    if (OK != status)
+                    {
+                        goto exit;
+                    }
+
+                    if (OK > ( status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pPemFileName,
+                                        (char **)&pFullPathPemW),
+                                    pSerializedPemKey,
+                                    serializedPemKeyLen)))
+                    {
+                        goto exit;
+                    }
+                    if (OK != (status = CRYPTO_uninitAsymmetricKey(&asymKey, NULL)))
+                    {
+                        goto exit;
                     }
                 }
-                if (OK != status)
-                {
-                    goto exit;
-                }
-
-                if (OK > ( status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pPemFileName,
-                                    (char **)&pFullPathPemW),
-                                pSerializedPemKey,
-                                serializedPemKeyLen)))
-                {
-                    goto exit;
-                }
-                if (OK != (status = CRYPTO_uninitAsymmetricKey(&asymKey, NULL)))
-                {
-                    goto exit;
-                }
-               }
-              }
-
+            }
         } /* .pem or .der files does not exists */
         else
         { /*.pem file exists */
 
             /* .pem file exists. Get the keyblob and write to .der file */
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
             if (pKeyArgs->gTap)
             {
                 ubyte *pSerializedPri = NULL;
                 ubyte4 serializedPriLen = 0;
-                AsymmetricKey asymKey = {0};
                 status = CRYPTO_deserializeAsymKey(MOC_ASYM(gHwAccelCtx) pKeyContent, keyContentLen, NULL, &asymKey);
                 if (status < OK)
-                    goto exit;
+                    goto exit_tap_pem;
                 /*Serialize the key */
                 /* Write out the TAP key in PKCS8 format here. TAP keys
                  * ignore the PKCS8 password argument. */
@@ -1502,157 +1628,281 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
                 {
 
                     verbosePrintError("Unable to serialize TAP asymmetric key.", status);
-                    goto exit;
+                    goto exit_tap_pem;
                 }
-
+                
                 /* Write key to file */
-                pKeyBlob = pSerializedPri;
-                keyBlobLen = serializedPriLen;
+                pKeyBlob = pSerializedPri; pSerializedPri = NULL;
+                keyBlobLen = serializedPriLen; 
                 if ( OK > ( status = DIGICERT_writeFile(
                                 EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pFileName,
                                     (char **)&pFullPathW), pKeyBlob, keyBlobLen)))
                 {
                     verbosePrintStringError("Unable to write TAP key data to file", pFullPathW);
                     verbosePrintError("Unable to write TAP key data to file.", status);
-                    goto exit;
+                    goto exit_tap_pem;
                 }
 
-                CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
-                if (pKeyContent != NULL)
-                    DIGI_FREE((void**)&pKeyContent);
+exit_tap_pem:
+                (void) CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
+                
+                if (NULL != pKeyContent)
+                    (void) DIGI_FREE((void**)&pKeyContent);
+
+                if (NULL != pSerializedPri)
+                    (void) DIGI_FREE((void**)&pSerializedPri);
+
+                if (OK != status)
+                    goto exit;
             }
             else
 #endif
             {
-                /* TPM1.2 and SW Key */
-                if (OK > (status = CRYPTO_initAsymmetricKey (&asymKey)))
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+                if (pEstArgs->useNanoRoot)
                 {
-                    goto exit;
-                }
-                /* Pem file exists - deserialize to keyblob write the Keyblob file */
-                status = TRUSTEDGE_EST_deserializeAsymKey(
-                    MOC_ASYM(gHwAccelCtx) pKeyContent, keyContentLen,
-                    (ubyte *)pEstArgs->pPkcs8Pw, pEstArgs->pPkcs8Pw ? DIGI_STRLEN(pEstArgs->pPkcs8Pw) : 0,
-                    &asymKey);
-                if (OK != status)
-                {
-                    goto exit;
-                }
-                if (OK > (status = KEYBLOB_makeKeyBlobEx(&asymKey, &pKeyBlob, &keyBlobLen)))
-                {
-                    goto exit;
-                }
+                    sbyte *pTapKeyBinFileName = NULL;
+                    sbyte *pFullPathbinW = NULL;
+                    AsymmetricKey tapAsymKey = { 0 };
+                    ubyte *pBlob = NULL;
+                    ubyte4 blobLen = 0;
 
-                /* Only write out key blob if file is not password protected (and not TEE) */
-#ifdef __ENABLE_DIGICERT_TEE__
-                if (NULL == pEstArgs->pPkcs8Pw && !pEstArgs->useTEE)
-#else
-                if (NULL == pEstArgs->pPkcs8Pw)
+                    /* Write TAP key in BIN format, we need to deserialize it first */
+                    status = CRYPTO_deserializeAsymKey (pKeyContent, keyContentLen, NULL, &tapAsymKey);
+                    if (OK != status)
+                    {
+                        verbosePrintError("Unable to deserialize TAP asymmetric key.", status);
+                        goto exit_nanoroot_pem;
+                    }
+
+                    /* validate we have the correct keytype */
+                    if (keyType != tapAsymKey.type)
+                    {
+                        CRYPTO_uninitAsymmetricKey(&tapAsymKey, NULL);
+                        status = ERR_KEY_TYPE_MISMATCH;
+                        verbosePrintError("Existing key type and keyType argument not matching.", status);
+                        goto exit_nanoroot_pem;
+                    }
+                    /* previous TAP flow had no keysize validation, need it here? */
+
+                    status = CRYPTO_serializeAsymKey(MOC_ASYM(gHwAccelCtx)
+                        &tapAsymKey, mocanaBlobVersion2, &pKeyBlob,
+                        &keyBlobLen);
+                    if (OK != status)
+                    {
+                        verbosePrintError("Unable to serialize TAP asymmetric key.", status);
+                        goto exit_nanoroot_pem;
+                    }
+
+                    if (OK > (status = DIGI_MALLOC((void**)&pTapKeyBinFileName, (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
+                    {
+                        goto exit_nanoroot_pem;
+                    }
+
+                    if (OK > (status = DIGI_MEMSET((ubyte*)pTapKeyBinFileName, 0x00,
+                                                    (keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY) + 1))))
+                    {
+                        goto exit_nanoroot_pem;
+                    }
+                    DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)pKeyAlias);
+
+                    DIGI_STRCAT(pTapKeyBinFileName, (const sbyte *)ESTC_EXT_TAPKEY);
+                    (pTapKeyBinFileName)[(keyAliasLen + DIGI_STRLEN((sbyte*)ESTC_EXT_TAPKEY))] = '\0';
+                    if(akt_tap_ecc == keyType)
+                    {
+                        pBlob = pKeyBlob + MOC_ECC_TAP_BLOB_START_LEN;
+                        blobLen = keyBlobLen - MOC_ECC_TAP_BLOB_START_LEN;
+                    }
+#ifdef __ENABLE_DIGICERT_PQC__
+                    else if (akt_tap_qs == keyType)
+                    {
+                        pBlob = pKeyBlob + MOC_QS_TAP_BLOB_START_LEN;
+                        blobLen = keyBlobLen - MOC_QS_TAP_BLOB_START_LEN;
+                    }
+#endif
+                    else
+                    {
+                        pBlob = pKeyBlob + MOC_RSA_TAP_BLOB_START_LEN;
+                        blobLen = keyBlobLen - MOC_RSA_TAP_BLOB_START_LEN;
+                    }
+
+                    status = DIGICERT_writeFile(EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pTapKeyBinFileName,
+                                        (char **)&pFullPathbinW), pBlob, blobLen);
+                    if (OK != status)
+                    {
+                        verbosePrintStringError("Unable to write binary format TAP key to file", pFullPathbinW);
+                        verbosePrintError("Unable to write binary format TAP key to file.", status);
+                        goto exit_nanoroot_pem;
+                    }
+                    
+exit_nanoroot_pem:
+
+                    (void) CRYPTO_uninitAsymmetricKey(&tapAsymKey, NULL);
+
+                    if (NULL != pTapKeyBinFileName)
+                        (void) DIGI_FREE((void **)&pTapKeyBinFileName);
+
+                    if (NULL != pFullPathbinW)
+                        (void) DIGI_FREE((void **)&pFullPathbinW);
+
+                    if (NULL != pKeyContent)
+                        (void) DIGI_FREE((void**)&pKeyContent);    
+                    
+                    if (OK != status)
+                        goto exit;
+                }
+                else
 #endif
                 {
-                    if ( OK > ( status = DIGICERT_writeFile(
-                                    EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pFileName,
-                                        (char **)&pFullPathW), pKeyBlob, keyBlobLen)))
+                    /* TPM1.2 and SW Key */
+                    if (OK > (status = CRYPTO_initAsymmetricKey (&asymKey)))
                     {
-                        verbosePrintStringError("Unable to write key data to file", pFullPathW);
-                        verbosePrintError("Unable to write key data to file.", status);
-                        goto exit;
+                        goto exit_pem;
                     }
+                    /* Pem file exists - deserialize to keyblob write the Keyblob file */
+                    status = TRUSTEDGE_EST_deserializeAsymKey(
+                        MOC_ASYM(gHwAccelCtx) pKeyContent, keyContentLen,
+                        (ubyte *)pEstArgs->pPkcs8Pw, pEstArgs->pPkcs8Pw ? DIGI_STRLEN(pEstArgs->pPkcs8Pw) : 0,
+                        &asymKey);
+                    if (OK != status)
+                    {
+                        goto exit_pem;
+                    }
+                    if (OK > (status = KEYBLOB_makeKeyBlobEx(&asymKey, &pKeyBlob, &keyBlobLen)))
+                    {
+                        goto exit_pem;
+                    }
+
+                    /* Only write out key blob if file is not password protected (and not TEE nor NanoRoot) */
+#ifdef __ENABLE_DIGICERT_TEE__
+                    if (NULL == pEstArgs->pPkcs8Pw && !pEstArgs->useTEE)
+#else
+                    if (NULL == pEstArgs->pPkcs8Pw)
+#endif
+                    {
+                        if ( OK > ( status = DIGICERT_writeFile(
+                                        EST_CERT_UTIL_getFullPath((const char *)pKeyPath, (const char *)pFileName,
+                                            (char **)&pFullPathW), pKeyBlob, keyBlobLen)))
+                        {
+                            verbosePrintStringError("Unable to write key data to file", pFullPathW);
+                            verbosePrintError("Unable to write key data to file.", status);
+                            goto exit_pem;
+                        }
+                    }
+exit_pem:
+                    (void) CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
+
+                    if (NULL != pKeyContent)
+                        (void) DIGI_FREE((void**) &pKeyContent);
+
+                    if (OK != status)
+                        goto exit;
                 }
-                if (OK != (status = CRYPTO_uninitAsymmetricKey(&asymKey, NULL)))
-                {
-                    goto exit;
-                }
-                if (pKeyContent != NULL)
-                    DIGI_FREE((void**)&pKeyContent);
             }
         }/*Pem file exists */
 
     }/*.der file does not exits */
     else
     { /* .der file exists. Read KeyBlob file */
-        pKeyBlob = pReadKeyBlob;
-        keyBlobLen = readKeyBlobLen;
-    }
-
-    if (OK > (status = CRYPTO_initAsymmetricKey (&asymKey)))
-    {
-        goto exit;
-    }
-    /* Pem file exists - deserialize to keyblob write the Keyblob file */
-    status = CRYPTO_deserializeAsymKey(MOC_ASYM(gHwAccelCtx)
-        pKeyBlob, keyBlobLen, NULL, &asymKey);
-    if (OK != status)
-    {
-        goto exit;
-    }
-
-    if (keyType != asymKey.type)
-    {
-        CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
-        status = ERR_KEY_TYPE_MISMATCH;
-        verbosePrintError("Existing key type and keyType argument not matching.", status);
-        goto exit;
-    }
-    else if (TRUE == foundOldKey)
-    {
-        if (keyType == akt_rsa)
+#ifdef __ENABLE_DIGICERT_TEE__
+        if (pEstArgs->useTEE) /* For TEE we just use PEM format, pKeyBlob is the (software key) Mocana format */
         {
-            pRsaKey = asymKey.key.pRSA;
-            if (OK != RSA_getKeyParametersAlloc(pRsaKey, &rsaTemplate, MOC_GET_PUBLIC_KEY_DATA))
-            {
-                verbosePrintError("Failed to get RSA public key length.", status);
-                goto exit;
-            }
-
-            getKeySize = rsaTemplate.nLen * 8;
-        }
-        else if (keyType == akt_ecc)
-        {
-            pEccKey = asymKey.key.pECC;
-            if (NULL == pEccKey->pCurve || NULL == pEccKey->pCurve->pPF)
-            {
-                status = ERR_NULL_POINTER;
-                goto exit;
-            }
-
-            getKeySize = asymKey.key.pECC->pCurve->pPF->numBits;
-        }
-        else if (keyType == akt_ecc_ed)
-        {
-            pEdEccKey = (edECCKey *)asymKey.key.pECC->pEdECCKey;
-            if (NULL == pEdEccKey)
-            {
-                goto exit;
-            }
-
-            if (curveEd25519 == pEdEccKey->curve)
-            {
-                getKeySize = 255;
-            }
-            else if (curveEd448 == pEdEccKey->curve)
-            {
-                getKeySize = 448;
-            }
-            else
-            {
-                verbosePrintError("Unsupported Ed curve key.", status);
-                goto exit;
-            }
-        }
-
-        if (getKeySize != keySize)
-        {
-            CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
-            status = ERR_KEY_TYPE_MISMATCH;
-            verbosePrintError("Existing key size and keySize argument not matching.", status);
+            status = ERR_NOT_IMPLEMENTED;
+            verbosePrintError("DER format TEE keys not supported.", status);
             goto exit;
         }
+        else
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+        if (pEstArgs->useNanoRoot) /* For NanoROOT we just use PEM and .bin formats, pKeyBlob is the Mocana format */
+        {
+            status = ERR_NOT_IMPLEMENTED;
+            verbosePrintError("DER format NanoROOT keys not supported.", status);
+            goto exit;
+        }
+        else
+#endif
+        {
+            pKeyBlob = pReadKeyBlob;
+            keyBlobLen = readKeyBlobLen;
+        }
     }
 
-    if (OK != (status = CRYPTO_uninitAsymmetricKey(&asymKey, NULL)))
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    if (!pEstArgs->useNanoRoot)  /* For NanoROOT we do validations above so that we don't need to re-deserialize (ie re-init) */
+#endif
     {
-        goto exit;
+        if (OK > (status = CRYPTO_initAsymmetricKey (&asymKey)))
+        {
+            goto exit;
+        }
+        /* Pem file exists - deserialize to keyblob write the Keyblob file */
+        status = CRYPTO_deserializeAsymKey(MOC_ASYM(gHwAccelCtx)
+            pKeyBlob, keyBlobLen, NULL, &asymKey);
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        if (keyType != asymKey.type)
+        {
+            status = ERR_KEY_TYPE_MISMATCH;
+            verbosePrintError("Existing key type and keyType argument not matching.", status);
+            goto exit;
+        }
+        else if (TRUE == foundOldKey)
+        {
+            if (keyType == akt_rsa)
+            {
+                pRsaKey = asymKey.key.pRSA;
+                if (OK != RSA_getKeyParametersAlloc(pRsaKey, &rsaTemplate, MOC_GET_PUBLIC_KEY_DATA))
+                {
+                    verbosePrintError("Failed to get RSA public key length.", status);
+                    goto exit;
+                }
+
+                getKeySize = rsaTemplate.nLen * 8;
+            }
+            else if (keyType == akt_ecc)
+            {
+                pEccKey = asymKey.key.pECC;
+                if (NULL == pEccKey->pCurve || NULL == pEccKey->pCurve->pPF)
+                {
+                    status = ERR_NULL_POINTER;
+                    goto exit;
+                }
+
+                getKeySize = asymKey.key.pECC->pCurve->pPF->numBits;
+            }
+            else if (keyType == akt_ecc_ed)
+            {
+                pEdEccKey = (edECCKey *)asymKey.key.pECC->pEdECCKey;
+                if (NULL == pEdEccKey)
+                {
+                    goto exit;
+                }
+
+                if (curveEd25519 == pEdEccKey->curve)
+                {
+                    getKeySize = 255;
+                }
+                else if (curveEd448 == pEdEccKey->curve)
+                {
+                    getKeySize = 448;
+                }
+                else
+                {
+                    verbosePrintError("Unsupported Ed curve key.", status);
+                    goto exit;
+                }
+            }
+
+            if (getKeySize != keySize)
+            {
+                status = ERR_KEY_TYPE_MISMATCH;
+                verbosePrintError("Existing key size and keySize argument not matching.", status);
+                goto exit;
+            }
+        }
     }
 
     /*
@@ -1716,14 +1966,15 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
             {
                 if (OK > (status = CA_MGMT_decodeCertificate(pPemCert, pemCertLen, &pContents, &contentsLen)))
                 {
+                    (void) DIGI_FREE((void **)&pPemCert);
                     goto exit;
                 }
 
             }
-            if (pPemCert)
-                DIGI_FREE((void **)&pPemCert);
+            if (NULL != pPemCert)
+                (void) DIGI_FREE((void **)&pPemCert);
         }
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
         if (pKeyArgs->gTap)
         {
             if (OK != (status = TRUSTEDGE_EST_storeMocKeyInCertstore(pKeyBlob, keyBlobLen, pKeyAlias, keyAliasLen, pContents, contentsLen)))
@@ -1734,22 +1985,51 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
         else
 #endif
         {
-            if (OK > (status = CERT_STORE_addIdentityEx(pCertStore,
-                            pKeyAlias, keyAliasLen,
-                            pContents, contentsLen,
-                            pKeyBlob, keyBlobLen)))
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+            if (pEstArgs->useNanoRoot)
             {
-#if (defined(__ENABLE_DIGICERT_TAP__))
-                verbosePrintNL(MSG_LOG_INFO, "Failed to load the keys - please cleanup hardware keys from keystore if any");
+                /* Add the KeyBlob to the CERT STORE */
+                if (NULL == pContents)
+                {
+                    if (OK != (status = CERT_STORE_addIdentityNakedKeyEx(pCertStore,
+                                                                    pKeyAlias, keyAliasLen,
+                                                                    pKeyBlob, keyBlobLen)))
+                    {
+                        verbosePrintError("Unable to add naked key to certstore.", status);
+                        goto exit;
+                    }
+                }
+                else
+                {
+                    if (OK > (status = CERT_STORE_addIdentityEx(pCertStore,
+                                                                pKeyAlias, keyAliasLen,
+                                                                pContents, contentsLen,
+                                                                pKeyBlob, keyBlobLen)))
+                    {
+                        goto exit;
+                    }
+                }                
+            }
+            else
 #endif
-                verbosePrintError("Unable to load the keys. Please cleanup hardware keys from keystore if any.", status);
-                goto exit;
+            {
+                if (OK > (status = CERT_STORE_addIdentityEx(pCertStore,
+                                pKeyAlias, keyAliasLen,
+                                pContents, contentsLen,
+                                pKeyBlob, keyBlobLen)))
+                {
+#if (defined(__ENABLE_DIGICERT_TAP__))
+                    verbosePrintNL(MSG_LOG_INFO, "Failed to load the keys - please cleanup hardware keys from keystore if any");
+#endif
+                    verbosePrintError("Unable to load the keys. Please cleanup hardware keys from keystore if any.", status);
+                    goto exit;
+                }
             }
         }
     }
     else
     {
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
         if (pKeyArgs->gTap)
         {
             if (OK != (status = TRUSTEDGE_EST_storeMocKeyInCertstore(pKeyBlob, keyBlobLen, pKeyAlias, keyAliasLen, pContents, contentsLen)))
@@ -1760,21 +2040,40 @@ TRUSTEDGE_EST_loadCertsAndKeysIntoCertStore(TrustEdgeEstCtx *pEstArgs, KeyGenArg
         else
 #endif
         {
-            /*Add the key to the EST Client Cert Store*/
-            if(OK > (status = CERT_STORE_addIdentityNakedKeyEx(pCertStore,
-                            pKeyAlias, keyAliasLen,
-                            pKeyBlob, keyBlobLen)))
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+            if (pEstArgs->useNanoRoot)
             {
-#if (defined(__ENABLE_DIGICERT_TAP__))
-                verbosePrintNL(MSG_LOG_INFO, "Failed to load the keys - please cleanup hardware keys from keystore if any");
+                /* Add the KeyBlob to the CERT STORE */
+                if (OK != (status = CERT_STORE_addIdentityNakedKeyEx(pCertStore,
+                                                                     pKeyAlias, keyAliasLen,
+                                                                     pKeyBlob, keyBlobLen)))
+                {
+                    verbosePrintError("Unable to add naked key to certstore.", status);
+                    goto exit;
+                }               
+            }
+            else
 #endif
-                verbosePrintError("Unable to load the keys. Please cleanup hardware keys from keystore if any.", status);
-                goto exit;
+            {
+                /*Add the key to the EST Client Cert Store*/
+                if(OK > (status = CERT_STORE_addIdentityNakedKeyEx(pCertStore,
+                                pKeyAlias, keyAliasLen,
+                                pKeyBlob, keyBlobLen)))
+                {
+#if (defined(__ENABLE_DIGICERT_TAP__))
+                    verbosePrintNL(MSG_LOG_INFO, "Failed to load the keys - please cleanup hardware keys from keystore if any");
+#endif
+                    verbosePrintError("Unable to load the keys. Please cleanup hardware keys from keystore if any.", status);
+                    goto exit;
+                }
             }
         }
     }
 
 exit:
+
+    (void) CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
+
     if (pKeyBlob)
         DIGI_FREE((void **)&pKeyBlob);
     if (pKeyPath)
@@ -3689,11 +3988,31 @@ TRUSTEDGE_EST_prepareAndSendRequest(TrustEdgeEstCtx *pEstArgs, KeyGenArgs *pKeyA
         else if(DIGI_STRCMP((const sbyte *)pEstArgs->pKeyType, (const sbyte *)KEY_TYPE_EDDSA) == 0)
         {
             keyType = akt_ecc_ed;
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
-        if (pKeyArgs->gTap)
-            keyType = akt_tap_ecc;
+#if defined(__ENABLE_DIGICERT_TAP__)
+#if defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+            if (pKeyArgs->gTap)
+            {
+                status = ERR_EC_UNSUPPORTED_CURVE;
+                goto exit;
+            }
+#elif !defined(__ENABLE_DIGICERT_TEE__)
+            if (pKeyArgs->gTap)
+            {
+                keyType = akt_tap_ecc;
+            }
+#endif
 #endif
         }
+#ifdef __ENABLE_DIGICERT_PQC__
+        else if(DIGI_STRCMP((const sbyte *)pEstArgs->pKeyType, (const sbyte *)KEY_TYPE_QS) == 0)
+        {
+            keyType = akt_qs;
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+            if (pKeyArgs->gTap)
+               keyType = akt_tap_qs;
+#endif
+        }
+#endif
 
         if ((NULL == *ppCsrReqBytes) || (*pCsrReqLen == 0))
         { /* New Request generation */
@@ -3738,6 +4057,16 @@ TRUSTEDGE_EST_prepareAndSendRequest(TrustEdgeEstCtx *pEstArgs, KeyGenArgs *pKeyA
             keyType = akt_tap_ecc;
 #endif
         }
+#ifdef __ENABLE_DIGICERT_PQC__
+        else if(DIGI_STRCMP((const sbyte *)pEstArgs->pKeyType, (const sbyte *)KEY_TYPE_QS) == 0)
+        {
+            keyType = akt_qs;
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+            if (pKeyArgs->gTap)
+               keyType = akt_tap_qs;
+#endif
+        }
+#endif
 
 #if  !defined(__FREERTOS_RTOS__) && !defined(__AZURE_RTOS__)
         pCSRFile = FULLCMC_CSR_FILE;
@@ -5189,7 +5518,7 @@ MOC_STATIC MSTATUS TRUSTEDGE_EST_executeRequest(TrustEdgeEstCtx *pEstArgs, KeyGe
     byteBoolean isInvalidPem = FALSE;
     AsymmetricKey *pAsymKey = NULL;
 
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     byteBoolean tapAttest = FALSE;
 #endif
     switch (pEstArgs->requestType)
@@ -5599,7 +5928,7 @@ MOC_STATIC MSTATUS TRUSTEDGE_EST_executeRequest(TrustEdgeEstCtx *pEstArgs, KeyGe
                 verbosePrintError("Unable to filter PKCS7 message from HTTP response data.", status);
                 goto exit;
             }
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
             if (pKeyArgs->gTap)
             {
                 if ((NULL != strstr((const char *)pEstArgs->pUrl, EST_FULL_CMC_CMD)) &&
@@ -5865,6 +6194,8 @@ MOC_STATIC MSTATUS TRUSTEDGE_EST_executeRequest(TrustEdgeEstCtx *pEstArgs, KeyGe
 #if defined(__ENABLE_DIGICERT_TAP__)
 #if defined(__ENABLE_DIGICERT_TEE__)
             if (!pEstArgs->useTEE)
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+            if (!pEstArgs->useNanoRoot)
 #endif
             {
                 /* Only persist non-primary keys at this point. Primary keys are
@@ -6384,7 +6715,7 @@ MSTATUS TRUSTEDGE_EST_validateArguments(TrustEdgeEstCtx *pEstArgs, KeyGenArgs *p
         }
     }
 
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     if ( (NULL != strstr((const char *)pEstArgs->pUrl, EST_CACERTS_CMD)) ||
          (NULL != strstr((const char *)pEstArgs->pUrl, EST_CSR_ATTRS_CMD)) ||
          (NULL != strstr((const char *)pEstArgs->pUrl, EST_KEYGEN_CMD)) )
@@ -6684,7 +7015,7 @@ TRUSTEDGE_EST_main(KeyGenArgs *pKeyArgs, TrustEdgeEstCtx *pEstArgs, TrustEdgeSer
             {
                 verbosePrintStringNL(MSG_LOG_INFO, "TapKeyHandle: ", pEstArgs->pTapKeyHandleStr);
             }
-#ifndef __ENABLE_DIGICERT_TEE__
+#if !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
             if (0 != pEstArgs->tapKeyPrimary)
             {
                 verbosePrintString1Int1NL(MSG_LOG_INFO, "TapKeyPrimary: ", pEstArgs->tapKeyPrimary);

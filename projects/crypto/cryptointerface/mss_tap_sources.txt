@@ -3,6 +3,11 @@ MSS_SRC_DIR/crypto/mocsymalgs/tap/aestap.c
 MSS_SRC_DIR/crypto/mocsymalgs/tap/destap.c
 MSS_SRC_DIR/crypto/mocsymalgs/tap/tdestap.c
 MSS_SRC_DIR/crypto/mocsymalgs/tap/hmactap.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/qstapcreate.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/qstapload.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/qskeytap.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/qstapserial.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/qstapdeserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapcreate.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapload.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsakeytap.c
@@ -10,6 +15,10 @@ MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapgen.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapdeserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapsize.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/idkeytap.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/idtapserial.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/idtapdeserial.c
+MSS_SRC_DIR/crypto/mocasymkeys/tap/idtapload.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/sskeytap.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/sstapserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/sstapdeserial.c

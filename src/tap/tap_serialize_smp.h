@@ -278,7 +278,7 @@ extern const tap_shadow_struct TAP_SHADOW_TAP_ENC_SCHEME;
 extern const tap_shadow_struct TAP_SHADOW_TAP_SIG_SCHEME;
 
 extern const tap_shadow_struct TAP_SHADOW_TAP_ECC_CURVE;
-
+extern const tap_shadow_struct TAP_SHADOW_TAP_QS_ALG;
 
 extern const tap_shadow_struct TAP_SHADOW_TAP_RSAPublicKey;
 extern const tap_shadow_struct TAP_SHADOW_TAP_ECCPublicKey;

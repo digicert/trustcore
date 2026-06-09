@@ -58,9 +58,11 @@
 #include "../tap/tap_smp.h"
 #include "../crypto/mocasymkeys/tap/rsatap.h"
 #include "../crypto/mocasymkeys/tap/ecctap.h"
+#include "../crypto/mocasymkeys/tap/qstap.h"
 #include "../crypto_interface/crypto_interface_rsa_tap_priv.h"
 #include "../crypto_interface/crypto_interface_ecc_tap_priv.h"
-
+#include "../crypto_interface/crypto_interface_qs_tap_priv.h"
+#include "../crypto_interface/crypto_interface_qs.h"
 #if (defined(__ENABLE_DIGICERT_TAP_EXTERN__))
 #include "../crypto_interface/tap_extern.h"
 #endif
@@ -383,8 +385,27 @@ CRYPTO_INTERFACE_getKeyUsage(void *pKey, ubyte4 keyType, ubyte *pKeyUsage)
         goto exit;
     }
 #endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    if (keyType == akt_tap_qs)
+    {
+        MQsTapKeyData *pInfo = NULL;
+        TAP_Key *pTapKey = NULL;
+
+        pMocAsymKey = (MocAsymKey) ((QS_CTX *)(pKey))->pPublicKey;
+        if ( (NULL == pMocAsymKey) || (NULL == pMocAsymKey->pKeyData) )
+        {
+            status = ERR_NULL_POINTER;
+            goto exit;
+        }
+
+        pInfo = (MQsTapKeyData *)(pMocAsymKey->pKeyData);
+        pTapKey = (TAP_Key *)pInfo->pKey;
+        *pKeyUsage = pTapKey->keyData.keyUsage;
+        goto exit;
+    }
 #endif
-    if ((keyType == akt_rsa) || (keyType == akt_ecc) || (keyType == akt_ecc_ed) ||
+#endif
+    if ((keyType == akt_rsa) || (keyType == akt_ecc) || (keyType == akt_ecc_ed) || (keyType == akt_qs) ||
              (keyType == akt_hsm_rsa))
     {
         *pKeyUsage = 0;
@@ -438,12 +459,16 @@ CRYPTO_INTERFACE_getKeyType(void *pKey, ubyte4 *keyType)
 
     switch(pTapKey->keyData.keyAlgorithm)
     {
-        case 1:
+        case TAP_KEY_ALGORITHM_RSA:
             *keyType = akt_tap_rsa;
             break;
 
-        case 2:
+        case TAP_KEY_ALGORITHM_ECC:
             *keyType = akt_tap_ecc;
+            break;
+
+        case TAP_KEY_ALGORITHM_MLDSA:
+            *keyType = akt_tap_qs;
             break;
 
         default:
@@ -483,7 +508,7 @@ CRYPTO_INTERFACE_asymmetricKeyAddCreds(AsymmetricKey *pKey, sbyte *pPassword, sb
         goto exit;
     }
 
-    if ((pKey->type != akt_tap_rsa) && (pKey->type != akt_tap_ecc))
+    if ((pKey->type != akt_tap_rsa) && (pKey->type != akt_tap_ecc) && (pKey->type != akt_tap_qs))
     {
         status = ERR_BAD_KEY_TYPE;
         goto exit;
@@ -497,6 +522,12 @@ CRYPTO_INTERFACE_asymmetricKeyAddCreds(AsymmetricKey *pKey, sbyte *pPassword, sb
     else if (pKey->type == akt_tap_ecc)
     {
         pMocKey = pKey->key.pECC->pPublicKey;
+    }
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    else if (pKey->type == akt_tap_qs)
+    {
+        pMocKey = (MocAsymKey) pKey->pQsCtx->pPublicKey;
     }
 #endif
 
@@ -552,6 +583,12 @@ CRYPTO_INTERFACE_asymmetricKeyAddCreds(AsymmetricKey *pKey, sbyte *pPassword, sb
         ((MEccTapKeyData*)pMocKey->pKeyData)->pKeyCredentials = pCredList;
     }
 #endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    else if (pKey->type == akt_tap_qs)
+    {
+        ((MQsTapKeyData*)pMocKey->pKeyData)->pKeyCredentials = pCredList;
+    }
+#endif
     pCredList = NULL;
 
 exit:
@@ -596,6 +633,12 @@ extern MSTATUS CRYPTO_INTERFACE_asymmetricKeyRemoveCreds(
         pMocKey = pKey->key.pECC->pPublicKey;
     }
 #endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    else if (akt_tap_qs == pKey->type)
+    {
+        pMocKey = (MocAsymKey) pKey->pQsCtx->pPublicKey;
+    }
+#endif
     else
     {
         status = OK;
@@ -625,6 +668,12 @@ extern MSTATUS CRYPTO_INTERFACE_asymmetricKeyRemoveCreds(
     else if (akt_tap_ecc == pKey->type)
     {
         ppCredList = &(((MEccTapKeyData*)pMocKey->pKeyData)->pKeyCredentials);
+    }
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    else if (akt_tap_qs == pKey->type)
+    {
+        ppCredList = &(((MQsTapKeyData*)pMocKey->pKeyData)->pKeyCredentials);
     }
 #endif
 
@@ -660,6 +709,9 @@ CRYPTO_INTERFACE_copyAsymmetricKey(AsymmetricKey* pNew, const AsymmetricKey* pSr
 #ifdef __ENABLE_DIGICERT_ECC__
     ECCKey *pNewEccKey = NULL;
 #endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    QS_CTX *pNewQsCtx = NULL;
+#endif
 #endif
 
     if ((pNew == NULL) || (pSrc == NULL))
@@ -670,7 +722,7 @@ CRYPTO_INTERFACE_copyAsymmetricKey(AsymmetricKey* pNew, const AsymmetricKey* pSr
 
     CRYPTO_uninitAsymmetricKey( pNew, 0);
 
-    if ((pSrc->type == akt_tap_rsa) || (pSrc->type == akt_tap_ecc))
+    if ((pSrc->type == akt_tap_rsa) || (pSrc->type == akt_tap_ecc) || (pSrc->type == akt_tap_qs))
     {
 #if defined(__ENABLE_DIGICERT_TAP__)
         TAP_Key *pTapKey = NULL;
@@ -687,9 +739,15 @@ CRYPTO_INTERFACE_copyAsymmetricKey(AsymmetricKey* pNew, const AsymmetricKey* pSr
             pKey = pSrc->key.pRSA->pPublicKey;
         }
 #ifdef __ENABLE_DIGICERT_ECC__
-        else
+        else if (pSrc->type == akt_tap_ecc)
         {
             pKey = pSrc->key.pECC->pPublicKey;
+        }
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+        else
+        {
+            pKey = (MocAsymKey) pSrc->pQsCtx->pPublicKey;
         }
 #endif
 
@@ -749,7 +807,7 @@ CRYPTO_INTERFACE_copyAsymmetricKey(AsymmetricKey* pNew, const AsymmetricKey* pSr
             goto exit;
 #endif
         }
-        else
+        else if (pSrc->type == akt_tap_ecc)
         {
 #ifdef __ENABLE_DIGICERT_ECC__
             MEccTapKeyData *pEccInfo = (MEccTapKeyData *)(pKey->pKeyData);
@@ -772,6 +830,34 @@ CRYPTO_INTERFACE_copyAsymmetricKey(AsymmetricKey* pNew, const AsymmetricKey* pSr
 
             pNew->key.pECC = pNewEccKey;
             pNewEccKey = NULL;
+#else
+            status = ERR_UNSUPPORTED_OPERATION;
+            goto exit;
+#endif
+        }
+        else if (pSrc->type == akt_tap_qs)
+        {
+#ifdef __ENABLE_DIGICERT_PQC__
+            MQsTapKeyData *pQsInfo = (MQsTapKeyData *)(pKey->pKeyData);
+            pTapKey = (TAP_Key *)pQsInfo->pKey;
+
+            if (OK > (status = TAP_copyKey(&pNewTapKey, pTapKey)))
+                goto exit;
+
+            if (OK > (status = QsTapCreate(pNewMocAsymKey, NULL, MOC_ASYM_KEY_TYPE_PRIVATE)))
+                goto exit;
+
+            if (OK > (status = QsTapLoadKeyData(&pNewTapKey, NULL, 0, NULL, NULL, pNewMocAsymKey)))
+                goto exit;
+
+            pNewMocAsymKey->pMocCtx = ((MocAsymKey) pSrc->pQsCtx->pPublicKey)->pMocCtx;
+
+            status = CRYPTO_INTERFACE_QS_loadKey(&pNewQsCtx, &pNewMocAsymKey);
+            if (OK != status)
+                goto exit;
+
+            pNew->pQsCtx = pNewQsCtx;
+            pNewQsCtx = NULL;
 #else
             status = ERR_UNSUPPORTED_OPERATION;
             goto exit;
@@ -814,6 +900,12 @@ exit:
     if (NULL != pNewEccKey)
     {
         EC_deleteKeyEx(&pNewEccKey);
+    }
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    if (NULL != pNewQsCtx)
+    {
+        (void) CRYPTO_INTERFACE_QS_deleteCtx(&pNewQsCtx);
     }
 #endif
 #endif
@@ -871,18 +963,68 @@ CRYPTO_INTERFACE_getECCPublicKey(AsymmetricKey *pKey, ECCKey **ppPub)
         goto exit;
     }
     *ppPub = pECCKey;
-    pECCKey = NULL;
 
 exit:
-    if ((NULL != pKey) && (akt_tap_ecc == pKey->type))
-    {
-        if (NULL != pECCKey)
-            EC_deleteKeyEx(&pECCKey);
-    }
+
     return status;
 }
 
 #endif /* if (defined(__ENABLE_DIGICERT_ECC__)) */
+
+/*---------------------------------------------------------------------------*/
+
+#if (defined(__ENABLE_DIGICERT_PQC__))
+MSTATUS
+CRYPTO_INTERFACE_getQsPublicKey(AsymmetricKey *pKey, QS_CTX **ppPub)
+{
+    MSTATUS status = OK;
+    QS_CTX *pCtx = NULL;
+
+    if ((NULL == pKey) || (NULL == ppPub))
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    if (akt_tap_qs == pKey->type)
+    {
+#if defined(__ENABLE_DIGICERT_TAP__)
+
+        /* Ensure we dont dereference a NULL pointer */
+        if (NULL == pKey->pQsCtx)
+        {
+            status = ERR_NULL_POINTER;
+            goto exit;
+        }
+
+        /* TAP Key */
+        MocAsymKey pMocAsymKey = pKey->pQsCtx->pPublicKey;
+        status = CRYPTO_INTERFACE_TAP_QS_getSwPubFromTap(pMocAsymKey, &pCtx);
+#else
+        status = ERR_TAP_UNSUPPORTED;
+#endif
+    }
+    else if(akt_qs == pKey->type)
+    {
+        /* SW Key */
+        if (NULL == pKey->pQsCtx)
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
+        pCtx = pKey->pQsCtx;
+    }
+    else
+    {
+        status = ERR_BAD_KEY_TYPE;
+        goto exit;
+    }
+    *ppPub = pCtx;
+
+exit:
+    return status;
+}
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -1034,23 +1176,19 @@ CRYPTO_INTERFACE_getRSAPublicKey(AsymmetricKey *pKey, RSAKey **ppPub)
         goto exit;
     }
     *ppPub = pRsaKey;
-    pRsaKey = NULL;
 
 exit:
-    if ((NULL != pKey) && (akt_tap_rsa == pKey->type))
-    {
-        if (NULL != pRsaKey)
-        {
-            RSA_freeKey(&pRsaKey, NULL);
-        }
-    }
+
     return status;
 }
 #endif /* __DISABLE_DIGICERT_RSA__ */
 
+
+
+
 /*---------------------------------------------------------------------------*/
 
-#if !defined(__DISABLE_DIGICERT_RSA__) || defined(__ENABLE_DIGICERT_ECC__)
+#if !defined(__DISABLE_DIGICERT_RSA__) || defined(__ENABLE_DIGICERT_ECC__) || defined(__ENABLE_DIGICERT_PQC__)
 
 extern MSTATUS CRYPTO_INTERFACE_getPublicKey(
     AsymmetricKey *pKey, AsymmetricKey *pPubKey)
@@ -1085,6 +1223,17 @@ extern MSTATUS CRYPTO_INTERFACE_getPublicKey(
         case akt_ecc_ed:
             status = CRYPTO_INTERFACE_getECCPublicKey(
                 pKey, &(pPubKey->key.pECC));
+            if (OK != status)
+            {
+                goto exit;
+            }
+            pPubKey->type = (pKey->type) & 0xFF;
+            break;
+#endif
+#if defined(__ENABLE_DIGICERT_PQC__)
+        case akt_qs:
+            status = CRYPTO_INTERFACE_getQsPublicKey(
+                pKey, &(pPubKey->pQsCtx));
             if (OK != status)
             {
                 goto exit;
@@ -1163,6 +1312,29 @@ CRYPTO_INTERFACE_TAP_AsymDeferUnload(AsymmetricKey *pKey, byteBoolean deferredTo
 
             break;   
 
+#ifdef __ENABLE_DIGICERT_PQC__
+        case akt_tap_qs:
+
+            if (NULL == pKey->pQsCtx)
+                goto exit; /* still ERR_NULL_POINTER */
+
+            status = OK;
+
+            /* Only mark keys that are there and TAP */
+            if (NULL != pKey->pQsCtx->pSecretKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pKey->pQsCtx->pSecretKey)->localType) )
+            {
+                status = CRYPTO_INTERFACE_TAP_qsDeferUnloadMocAsym((MocAsymKey) pKey->pQsCtx->pSecretKey, deferredTokenUnload);
+                if (OK != status)
+                    goto exit;
+            }
+
+            if (NULL != pKey->pQsCtx->pPublicKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pKey->pQsCtx->pPublicKey)->localType))
+            { 
+                status = CRYPTO_INTERFACE_TAP_qsDeferUnloadMocAsym((MocAsymKey) pKey->pQsCtx->pPublicKey, deferredTokenUnload);
+            }
+
+            break;
+#endif
         default:
             status = ERR_TAP_INVALID_KEY_TYPE;
             break;
@@ -1226,6 +1398,28 @@ CRYPTO_INTERFACE_TAP_AsymGetKeyInfo(AsymmetricKey *pKey, ubyte4 keyType, TAP_Tok
 
             break;   
 
+#ifdef __ENABLE_DIGICERT_PQC__
+        case akt_tap_qs:
+
+            if (NULL == pKey->pQsCtx)
+                goto exit; /* still ERR_NULL_POINTER */
+
+            status = ERR_TAP_INVALID_KEY_TYPE;
+
+            if (MOC_ASYM_KEY_TYPE_PRIVATE == keyType && NULL != pKey->pQsCtx->pSecretKey && 
+                0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pKey->pQsCtx->pSecretKey)->localType) )
+            {
+                status = CRYPTO_INTERFACE_TAP_qsGetKeyInfoMocAsym((MocAsymKey) pKey->pQsCtx->pSecretKey, pTokenHandle, pKeyHandle);
+            }
+            else if (MOC_ASYM_KEY_TYPE_PUBLIC == keyType && NULL != pKey->pQsCtx->pPublicKey && 
+                     0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pKey->pQsCtx->pPublicKey)->localType) )
+            {
+                status = CRYPTO_INTERFACE_TAP_qsGetKeyInfoMocAsym((MocAsymKey) pKey->pQsCtx->pPublicKey, pTokenHandle, pKeyHandle);
+            }
+
+            break;
+#endif
+
         default:
             status = ERR_TAP_INVALID_KEY_TYPE;
             break;
@@ -1260,10 +1454,9 @@ CRYPTO_INTERFACE_TAP_rsaDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferred
     return OK;
 }
 
-#if defined(__ENABLE_DIGICERT_ECC__)
-
 /*---------------------------------------------------------------------------*/
 
+#if defined(__ENABLE_DIGICERT_ECC__)
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_TAP_eccDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferredTokenUnload)
 {
@@ -1286,6 +1479,32 @@ CRYPTO_INTERFACE_TAP_eccDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferred
     return OK;
 }
 #endif /* __ENABLE_DIGICERT_ECC__ */
+
+/*---------------------------------------------------------------------------*/
+
+#if defined(__ENABLE_DIGICERT_PQC__)
+MOC_EXTERN MSTATUS
+CRYPTO_INTERFACE_TAP_qsDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferredTokenUnload)
+{
+    if (NULL == pKey || NULL == pKey->pKeyData)
+        return ERR_NULL_POINTER;
+
+    if (0 == (MOC_LOCAL_TYPE_TAP & pKey->localType) )
+        return ERR_TAP_INVALID_KEY_TYPE;
+
+    ((MQsTapKeyData *) pKey->pKeyData)->isDeferUnload = TRUE;
+
+    if (TRUE == deferredTokenUnload)
+    {
+        if (NULL == ((MQsTapKeyData *) pKey->pKeyData)->pKey)
+            return ERR_NULL_POINTER;
+
+        ((MQsTapKeyData *) pKey->pKeyData)->pKey->deferredTokenUnload = TRUE;
+    }
+    
+    return OK;
+}
+#endif /* __ENABLE_DIGICERT_PQC__ */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1326,10 +1545,9 @@ exit:
     return status;
 }
 
-#if defined(__ENABLE_DIGICERT_ECC__)
-
 /*---------------------------------------------------------------------------*/
 
+#if defined(__ENABLE_DIGICERT_ECC__)
 MOC_EXTERN MSTATUS 
 CRYPTO_INTERFACE_TAP_eccGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTokenHandle, TAP_KeyHandle *pKeyHandle)
 {
@@ -1366,8 +1584,48 @@ exit:
 
     return status;
 }
-
 #endif /* __ENABLE_DIGICERT_ECC__ */
+
+/*---------------------------------------------------------------------------*/
+
+#if defined(__ENABLE_DIGICERT_PQC__)
+MOC_EXTERN MSTATUS 
+CRYPTO_INTERFACE_TAP_qsGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTokenHandle, TAP_KeyHandle *pKeyHandle)
+{
+    MSTATUS status = ERR_NULL_POINTER;
+    MQsTapKeyData *pTapData = NULL;
+    TAP_Key *pTapKey = NULL;
+
+    if (NULL == pKey || NULL == pTokenHandle || NULL == pKeyHandle || NULL == pKey->pKeyData)
+        goto exit;
+
+    status = ERR_TAP_INVALID_KEY_TYPE;
+    if ( 0 == (MOC_LOCAL_TYPE_TAP & pKey->localType) )
+        goto exit;
+
+    pTapData = (MQsTapKeyData *) pKey->pKeyData;
+    pTapKey = (TAP_Key *) pTapData->pKey;
+
+    if (pTapData->isKeyLoaded)
+    {
+        *pTokenHandle = pTapKey->tokenHandle;
+        *pKeyHandle = pTapKey->keyHandle;
+
+         status = OK;
+    }
+    else
+    {
+        *pTokenHandle = 0;
+        *pKeyHandle = 0;
+
+        status = ERR_TAP_KEY_NOT_INITIALIZED;
+    }
+
+exit:
+
+    return status;
+}
+#endif /* __ENABLE_DIGICERT_PQC__ */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1454,7 +1712,11 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_getTapKey(AsymmetricKey *pKey, TAP_Key **ppT
             status = CRYPTO_INTERFACE_ECC_getTapKey(pKey->key.pECC, ppTapKey);
             break;
 #endif
-
+#ifdef __ENABLE_DIGICERT_PQC__
+        case akt_tap_qs:
+            status = CRYPTO_INTERFACE_QS_getTapKey(pKey->pQsCtx, ppTapKey);
+            break;
+#endif
         default:
             goto exit;
     }
@@ -1623,6 +1885,43 @@ exit:
 }
 #endif
 
+/*---------------------------------------------------------------------------*/
+
+#ifdef __ENABLE_DIGICERT_PQC__
+MOC_EXTERN MSTATUS
+CRYPTO_INTERFACE_QS_getTapKey(QS_CTX *pCtx, TAP_Key **ppTapKey)
+{
+    MSTATUS status = ERR_NULL_POINTER;
+    MQsTapKeyData *pData = NULL;
+
+    if ( (NULL == ppTapKey) || (NULL == pCtx) || (NULL == pCtx->pPublicKey) )
+    {
+        goto exit;
+    }
+
+    /* Ensure this is a TAP key */
+    status = ERR_INVALID_ARG;
+    if (0 == (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pCtx->pPublicKey)->localType))
+    {
+        goto exit;
+    }
+
+    pData = (MQsTapKeyData *) ((MocAsymKey) pCtx->pPublicKey)->pKeyData;
+
+    status = ERR_NULL_POINTER;
+    if (NULL == pData)
+    {
+        goto exit;
+    }
+
+    *ppTapKey = pData->pKey;
+    status = OK;
+
+exit:
+
+    return status;
+}
+#endif
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
 /*---------------------------------------------------------------------------*/

@@ -441,6 +441,27 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, initObject,
 
 /**
  * @ingroup smp_functions
+ * @brief Function to import an object into the module.
+ * @details Function to import an object into the module (stub implementation).
+ * @param [in]  moduleHandle  Handle to the Module Context
+ * @param [in]  tokenHandle Handle to the Token Context
+ * @param [in]  pBlob Pointer to the object blob to import
+ * @param [in]  pObjectAttributes Optional object attributes
+ * @param [in]  pCredentialList Optional credentials list
+ * @param [out] pObjectHandle Pointer to receive the object handle
+ * @return OK on success
+ */
+MOC_EXTERN MSTATUS SMP_API(NanoROOT, importObject,
+        TAP_ModuleHandle moduleHandle,
+        TAP_TokenHandle tokenHandle,
+        TAP_Blob *pBlob,
+        TAP_ObjectCapabilityAttributes *pObjectAttributes,
+        TAP_EntityCredentialList *pCredentialList,
+        TAP_ObjectHandle *pObjectHandle
+);
+
+/**
+ * @ingroup smp_functions
  * @brief Function to free resources allocated to the object context.
  * @details Function to free resources allocated to the object context.
  * @param [in]  moduleHandle  Handle to the Module Context
@@ -472,6 +493,23 @@ MOC_EXTERN MSTATUS SMP_API(NanoROOT, getObjectList,
         TAP_TokenHandle tokenHandle,
         TAP_ObjectCapabilityAttributes *pObjectAttributes,
         TAP_EntityList *pObjectIdList
+);
+
+/**
+ * @ingroup smp_functions
+ * @brief Function serializes an object to a TAP_Blob format.
+ * @details Function serializes an object to a TAP_Blob format.
+ * @param [in]  moduleHandle  Handle to the Module Context
+ * @param [in]  tokenHandle Handle to the Token Context
+ * @param [in]  objectHandle Handle to the Object to be serialized
+ * @param [out] pExportedObject Contents will be set to the serialization of the object.
+ * @return OK on success
+ */
+MOC_EXTERN MSTATUS SMP_API(NanoROOT, exportObject,
+        TAP_ModuleHandle moduleHandle,
+        TAP_TokenHandle tokenHandle,
+        TAP_ObjectHandle objectHandle,
+        TAP_Blob *pExportedObject
 );
 
 #ifdef __cplusplus

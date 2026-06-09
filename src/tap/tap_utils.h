@@ -580,15 +580,15 @@ MOC_EXTERN MSTATUS TAP_UTILS_freeRSAPublicKeyFields(TAP_RSAPublicKey *pPublicKey
 /**
  * @ingroup tap_functions
  *
- * @details Function to free the fields of a TAP_MLDSAPublicKey structure.
+ * @details Function to free the fields of a TAP_PQCPublicKey structure.
  *
- * @param [in,out] pPublicKey   Pointer to the TAP_MLDSAPublicKey whose fields are to be freed 
+ * @param [in,out] pPublicKey   Pointer to the TAP_PQCPublicKey whose fields are to be freed 
  *
  * @return OK on success
  *
  * @memory This function frees the underlying key fields, but does NOT free the public key itself.
  */
-MOC_EXTERN MSTATUS TAP_UTILS_freeMLDSAPublicKeyFields(TAP_MLDSAPublicKey *pPublicKey);
+MOC_EXTERN MSTATUS TAP_UTILS_freePQCPublicKeyFields(TAP_PQCPublicKey *pPublicKey);
 
 /**
  * @ingroup tap_functions
@@ -680,17 +680,17 @@ MOC_EXTERN MSTATUS TAP_UTILS_copyDSAPublicKey(TAP_DSAPublicKey *pDestKey, TAP_DS
 /**
  * @ingroup tap_functions
  *
- * @details Function to copy a TAP_MLDSAPublicKey structure
+ * @details Function to copy a TAP_PQCPublicKey structure
  *
- * @param [in,out] pDestKey       New TAP_MLDSAPublicKey structure
- * @param [in]     pSrcKey        TAP_MLDSAPublicKey to be copied
+ * @param [in,out] pDestKey       New TAP_PQCPublicKey structure
+ * @param [in]     pSrcKey        TAP_PQCPublicKey to be copied
  *
  * @return OK on success
  * @return
  *
- * @memory This memory allocates memory for the underlying buffers.  These must be freed by TAP_UTILS_freeMLDSAPublicKeyFields
+ * @memory This memory allocates memory for the underlying buffers.  These must be freed by TAP_UTILS_freePQCPublicKeyFields
  */
-MOC_EXTERN MSTATUS TAP_UTILS_copyMLDSAPublicKey(TAP_MLDSAPublicKey *pDestKey, TAP_MLDSAPublicKey *pSrcKey);
+MOC_EXTERN MSTATUS TAP_UTILS_copyPQCPublicKey(TAP_PQCPublicKey *pDestKey, TAP_PQCPublicKey *pSrcKey);
 
 /**
  * @ingroup tap_functions

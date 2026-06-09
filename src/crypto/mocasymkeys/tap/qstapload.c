@@ -1,0 +1,277 @@
+/*
+ * qstapload.c
+ *
+ * Load and free QS info in an object with MQsTapKeyData as pKey.
+ *
+ * Copyright 2026 DigiCert, Inc. All Rights Reserved.
+ *
+ * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
+ *
+ * 1. **Open Source License**: GNU Affero General Public License v3.0 (AGPL v3).
+ * See: https://github.com/digicert/trustcore/blob/main/LICENSE.md
+ * 2. **Commercial License**: Available under DigiCert's Master Services Agreement.
+ * See: https://www.digicert.com/master-services-agreement/
+ *
+ * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
+ * *Contact DigiCert at sales@digicert.com for more details.*
+ *
+ */
+
+#include "../../../crypto/mocasymkeys/tap/qstap.h"
+
+#ifdef __ENABLE_DIGICERT_PKCS11_DEBUG_PURGE_ALL_OBJ__
+#include "../../../crypto_interface/cryptointerface.h"
+#endif
+
+#if defined(__ENABLE_DIGICERT_ASYM_KEY__) && \
+    defined(__ENABLE_DIGICERT_PQC__) && \
+    defined(__ENABLE_DIGICERT_TAP__)
+
+MSTATUS QsTapLoadKeyData (
+  TAP_Key **ppNewKey,
+  ubyte *pAlgId,
+  ubyte4 algIdLen,
+  MocSymCtx *ppDigestCtx,
+  StandardParams paramsCall,
+  MocAsymKey pMocAsymKey
+  )
+{
+  MSTATUS status;
+  MQsTapKeyData *pNewData = NULL;
+  MQsTapKeyData *pData = (MQsTapKeyData *)(pMocAsymKey->pKeyData);
+
+#ifdef __ENABLE_DIGICERT_PKCS11_DEBUG_PURGE_ALL_OBJ__
+  TAP_CredentialList *pKeyCredentials = NULL;
+  TAP_EntityCredentialList *pEntityCredentials = NULL;
+  TAP_Context *pTapContext = NULL;
+  TAP_Key *pTapKey = NULL;
+  TAP_ErrorContext errContext = {0};
+  TAP_ErrorContext *pErrContext = &errContext;
+#endif
+
+  if (NULL == pData)
+  {
+    status = DIGI_CALLOC (
+      (void **)&pNewData, 1, sizeof(MQsTapKeyData));
+    if (OK != status)
+      goto exit;
+
+    /* pNewData->isDeferUnload is already FALSE from the CALLOC above */
+    pData = pNewData;
+    pMocAsymKey->pKeyData = (void *)pNewData;
+    pNewData = NULL;
+  }
+
+  if (NULL != ppNewKey)
+  {
+    if (NULL != *ppNewKey)
+    {
+      if (NULL != pData->pKey)
+      {
+#ifdef __ENABLE_DIGICERT_PKCS11_DEBUG_PURGE_ALL_OBJ__
+        pTapKey = (TAP_Key *)pData->pKey;
+        if (g_pFuncPtrGetTapContext != NULL)
+        {
+          if (OK > (status = g_pFuncPtrGetTapContext(&pTapContext,
+                          &pEntityCredentials,
+                          &pKeyCredentials,
+                          (void *)pMocAsymKey, tap_qs_sign, 1/*get context*/)))
+          {
+            goto exit;
+          }
+        }
+        else
+        {
+          status = ERR_NOT_IMPLEMENTED;
+          goto exit;
+        }
+
+        if (!pData->isKeyLoaded)
+        {
+          status = TAP_loadKey(pTapContext, pEntityCredentials, pTapKey, pKeyCredentials, NULL, pErrContext);
+          if (OK != status)
+              goto exit;
+
+          pData->isKeyLoaded = TRUE;
+        }
+#endif
+
+        TAP_freeKey(&(pData->pKey));
+      }
+
+      pData->pKey = *ppNewKey;
+      *ppNewKey = NULL;
+    }
+  }
+
+  status = LoadCommonKeyData (
+    pMocAsymKey, pAlgId, algIdLen, ppDigestCtx);
+
+exit:
+
+#ifdef __ENABLE_DIGICERT_PKCS11_DEBUG_PURGE_ALL_OBJ__
+  if (g_pFuncPtrGetTapContext != NULL)
+  {
+      g_pFuncPtrGetTapContext(&pTapContext,
+                      &pEntityCredentials,
+                      &pKeyCredentials,
+                      (void *)pMocAsymKey, tap_qs_sign, 0/*release context*/);
+  }
+#endif
+
+  if (NULL != pNewData)
+  {
+    DIGI_FREE ((void **)&pNewData);
+  }
+
+  return status;
+}
+
+/*----------------------------------------------------------------------------*/
+
+MSTATUS QsTapFreeKey (
+  MocAsymKey pMocAsymKey
+  )
+{
+  MSTATUS status, fStatus;
+  MQsTapKeyData *pKeyData;
+
+#ifdef __ENABLE_DIGICERT_PKCS11_DEBUG_PURGE_ALL_OBJ__
+  TAP_CredentialList *pKeyCredentials = NULL;
+  TAP_EntityCredentialList *pEntityCredentials = NULL;
+  TAP_Context *pTapContext = NULL;
+  TAP_Key *pTapKey = NULL;
+  TAP_ErrorContext errContext = {0};
+  TAP_ErrorContext *pErrContext = &errContext;
+#endif
+
+  /* Anything to free?
+   */
+  status = OK;
+  if (NULL == pMocAsymKey)
+    goto exit;
+  if (NULL == pMocAsymKey->pKeyData)
+    goto exit;
+
+  status = FreeCommonKeyData (pMocAsymKey);
+
+  pKeyData = (MQsTapKeyData *)(pMocAsymKey->pKeyData);
+
+  /* The caller may have overwritten or modified internal data
+   * during prior callback execution so let them have the first shot
+   * at freeing this data up through the callback */
+  if (NULL != pKeyData->Callback)
+  {
+    fStatus = pKeyData->Callback (
+      pMocAsymKey->pMocCtx, MOC_ASYM_OP_FREE, (void *)pKeyData);
+    if (OK == status)
+      status = fStatus;
+  }
+
+  if (NULL != pKeyData->pKey)
+  {
+#ifdef __ENABLE_DIGICERT_PKCS11_DEBUG_PURGE_ALL_OBJ__
+    pTapKey = (TAP_Key *)pKeyData->pKey;
+    if (g_pFuncPtrGetTapContext != NULL)
+    {
+      if (OK > (status = g_pFuncPtrGetTapContext(&pTapContext,
+                      &pEntityCredentials,
+                      &pKeyCredentials,
+                      (void *)pMocAsymKey, tap_qs_sign, 1/*get context*/)))
+      {
+        goto exit;
+      }
+    }
+    else
+    {
+      status = ERR_NOT_IMPLEMENTED;
+      goto exit;
+    }
+
+    if (!pKeyData->isKeyLoaded)
+    {
+      status = TAP_loadKey(pTapContext, pEntityCredentials, pTapKey, pKeyCredentials, NULL, pErrContext);
+      if (OK != status)
+          goto exit;
+
+      pKeyData->isKeyLoaded = TRUE;
+    }
+#endif
+
+    fStatus = TAP_freeKey (&(pKeyData->pKey));
+    if (OK == status)
+      status = fStatus;
+  }
+
+  fStatus = DIGI_FREE (&(pMocAsymKey->pKeyData));
+  if (OK == status)
+    status = fStatus;
+
+exit:
+
+#ifdef __ENABLE_DIGICERT_PKCS11_DEBUG_PURGE_ALL_OBJ__
+  if (g_pFuncPtrGetTapContext != NULL)
+  {
+      g_pFuncPtrGetTapContext(&pTapContext,
+                      &pEntityCredentials,
+                      &pKeyCredentials,
+                      (void *)pMocAsymKey, tap_qs_sign, 0/*release context*/);
+  }
+#endif
+
+  return (status);
+
+} /* QsTapFreeKey */
+
+/*----------------------------------------------------------------------------*/
+
+MSTATUS QsTapGetPubFromPri (
+  MocAsymKey pMocAsymKey,
+  MocAsymKey *ppPubKey
+  )
+{
+  MSTATUS status;
+  MocAsymKey pNewPub = NULL;
+
+  status = ERR_NULL_POINTER;
+  if ((NULL == pMocAsymKey) || (NULL == ppPubKey) ||
+      (NULL == pMocAsymKey->pKeyData))
+    goto exit;
+
+  /* Create an empty MocAsymKey shell */
+  status = DIGI_CALLOC((void **)&pNewPub, 1, sizeof(MocAsymmetricKey));
+  if (OK != status)
+    goto exit;
+
+  if (NULL != pMocAsymKey->pMocCtx)
+  {
+    /* Acquire a reference to the MocCtx. This is necessary because when freeing
+     * the new public key the reference count for the MocCtx it has a pointer to
+     * will be decremented. If we dont acquire a reference here then the count
+     * will be off which would likely lead to the MocCtx being freed to early. */
+    status = AcquireMocCtxRef(pMocAsymKey->pMocCtx);
+    if (OK != status)
+      goto exit;
+  }
+
+  /* This public key only has references to the local data of the private key */
+  pNewPub->KeyOperator = KeyOperatorQsTap;
+  pNewPub->pMocCtx = pMocAsymKey->pMocCtx;
+  pNewPub->pKeyData = pMocAsymKey->pKeyData;
+  pNewPub->localType = MOC_LOCAL_KEY_QS_PUB_TAP;
+
+  *(ppPubKey) = pNewPub;
+  pNewPub = NULL;
+
+exit:
+
+  if (NULL != pNewPub)
+  {
+    DIGI_FREE((void **)&pNewPub);
+  }
+
+  return status;
+
+} /* QsTapGetPubFromPri */
+
+#endif /* (defined(__ENABLE_DIGICERT_ASYM_KEY__)) etc */

@@ -78,7 +78,9 @@ typedef enum tapOperation
     tap_key_unload   = 18,
     tap_key_import   = 19,
     tap_key_load     = 20,
-    tap_key_store    = 21
+    tap_key_store    = 21,
+    tap_qs_sign      = 22,
+    tap_qs_verify    = 23
 
 } TapOperation;
 
@@ -345,15 +347,15 @@ typedef struct
 
 /**
  * @ingroup tap_definitions
- * @details The information needed by all security modules to generate an MLDSA key.
+ * @details The information needed by all security modules to generate a quantum safe key.
  */
 typedef struct
 {
-    /*! MLDSA cid */
-    ubyte4     qsAlg;
+    /*! QS cid */
+    TAP_MLDSA_SIZE    qsAlg;
     /*! Signature scheme.  Must be a valid TAP_SIG_SCHEME value. */
     TAP_SIG_SCHEME    sigScheme;
-} TAP_KeyInfo_MLDSA;
+} TAP_KeyInfo_PQC;
 
 /**
  * @ingroup tap_definitions
@@ -402,8 +404,8 @@ typedef union
     TAP_KeyInfo_TDES  tdesInfo;
     /*! The key info for an HMAC Key */
     TAP_KeyInfo_HMAC  hmacInfo;
-    /*! The key info for an MLDSA Key */
-    TAP_KeyInfo_MLDSA  mldsaInfo;
+    /*! The key info for a Post Quantum Key */
+    TAP_KeyInfo_PQC   pqcInfo;
 
 } TAP_KeyInfo_Union;
 

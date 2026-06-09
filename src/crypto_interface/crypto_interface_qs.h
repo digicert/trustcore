@@ -314,6 +314,18 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_serializeKeyAlloc(QS_CTX *pCtx, ubyte4 ke
  */
 MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_deserializeKey(QS_CTX *pCtx, ubyte4 keyType, ubyte *pSerKey, ubyte4 serKeyLen);
 
+/* TODO docs */
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_loadKeys (
+  QS_CTX **ppNewKey,
+  MocAsymKey *ppPriKey,
+  MocAsymKey *ppPubKey
+  );
+
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_loadKey (
+  QS_CTX **ppNewKey,
+  MocAsymKey *ppKey
+  );
+
 /**
  * @brief    Deletes a QS context.
  *

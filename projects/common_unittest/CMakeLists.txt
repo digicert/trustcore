@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.5)
 
 option(CM_ENABLE_DPDK       "Enable dpdk"                   OFF)
 
-project(common_unittest)
+project(common_unittest C)
 
 ## The library name of the tested code
 set(MSS_LIB_NAME common)

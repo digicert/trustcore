@@ -1162,6 +1162,65 @@ exit:
     return status;
 }
 
+static MSTATUS TRUSTEDGE_isSamePath(
+    const sbyte *pPath1,
+    const sbyte *pPath2,
+    byteBoolean *pIsSame)
+{
+    MSTATUS status = OK;
+    sbyte *pAbsPath1 = NULL;
+    sbyte *pAbsPath2 = NULL;
+
+    if (NULL == pPath1 || NULL == pPath2 || NULL == pIsSame)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    *pIsSame = FALSE;
+
+    /* First try simple string comparison */
+    if (0 == DIGI_STRCMP(pPath1, pPath2))
+    {
+        *pIsSame = TRUE;
+        goto exit;
+    }
+
+    /* Resolve to absolute paths and compare */
+    status = FMGMT_getFullPathAlloc(pPath1, &pAbsPath1);
+    if (OK != status)
+    {
+        goto exit;
+    }
+
+    status = FMGMT_getFullPathAlloc(pPath2, &pAbsPath2);
+    if (OK != status)
+    {
+        goto exit;
+    }
+
+#if defined(__RTOS_WIN32__)
+    if (0 == DIGI_STRNICMP(pAbsPath1, pAbsPath2, DIGI_STRLEN(pAbsPath1)))
+#else
+    if (0 == DIGI_STRCMP(pAbsPath1, pAbsPath2))
+#endif
+    {
+        *pIsSame = TRUE;
+    }
+
+exit:
+    if (NULL != pAbsPath1)
+    {
+        DIGI_FREE((void **) &pAbsPath1);
+    }
+    if (NULL != pAbsPath2)
+    {
+        DIGI_FREE((void **) &pAbsPath2);
+    }
+
+    return status;
+}
+
 static MSTATUS TRUSTEDGE_agentMainConfigure(TrustEdgeConfig *pConfig, TrustEdgeAgentMainCtx *pMainCtx)
 {
     MSTATUS status = OK, tmpStatus = OK;
@@ -1178,6 +1237,7 @@ static MSTATUS TRUSTEDGE_agentMainConfigure(TrustEdgeConfig *pConfig, TrustEdgeA
     sbyte *pKeyCertFile = NULL;
     byteBoolean outerConfigFound = FALSE;
     byteBoolean sigFound = FALSE;
+    byteBoolean isSamePath = FALSE;
     DirectoryEntry dirEnt;
     DirectoryDescriptor pDirDesc = NULL;
     ubyte4 numTokens;
@@ -1704,13 +1764,30 @@ static MSTATUS TRUSTEDGE_agentMainConfigure(TrustEdgeConfig *pConfig, TrustEdgeA
                         goto exit;
                     }
 
-                    status = DIGICERT_copyFile((const char *) pKeyCertFile, (const char *) pTmpPath);
+                    isSamePath = FALSE;
+                    status = TRUSTEDGE_isSamePath(pKeyCertFile, pTmpPath, &isSamePath);
                     if (OK != status)
                     {
                         DB_PRINT(
-                            "ERROR: DIGICERT_readFile failed with status = %s (%d)\n",
+                            "ERROR: TRUSTEDGE_isSamePath failed with status = %s (%d)\n",
                             MERROR_lookUpErrorCode(status), status);
                         goto exit;
+                    }
+
+                    if (TRUE == isSamePath)
+                    {
+                        DB_PRINT("INFO: Skipping copy, source and destination are the same: %s\n", pKeyCertFile);
+                    }
+                    else
+                    {
+                        status = DIGICERT_copyFile((const char *) pKeyCertFile, (const char *) pTmpPath);
+                        if (OK != status)
+                        {
+                            DB_PRINT(
+                                "ERROR: DIGICERT_copyFile failed with status = %s (%d)\n",
+                                MERROR_lookUpErrorCode(status), status);
+                            goto exit;
+                        }
                     }
 #if defined(__RTOS_LINUX__) && !defined(__RTOS_ZEPHYR__)
                     if ((NULL != pMainCtx->pUser) || (NULL != pMainCtx->pGroup))
@@ -1770,15 +1847,32 @@ static MSTATUS TRUSTEDGE_agentMainConfigure(TrustEdgeConfig *pConfig, TrustEdgeA
             goto exit;
         }
 
-        DB_PRINT("Copying bootstrap configuration file %s to %s\n", pConfig->pBootstrapConfig, pPath);
-
-        status = DIGICERT_copyFile((const char *) pConfig->pBootstrapConfig, (const char *) pPath);
+        isSamePath = FALSE;
+        status = TRUSTEDGE_isSamePath(pConfig->pBootstrapConfig, pPath, &isSamePath);
         if (OK != status)
         {
             DB_PRINT(
-                "ERROR: DIGICERT_readFile failed with status = %s (%d)\n",
+                "ERROR: TRUSTEDGE_isSamePath failed with status = %s (%d)\n",
                 MERROR_lookUpErrorCode(status), status);
             goto exit;
+        }
+
+        if (TRUE == isSamePath)
+        {
+            DB_PRINT("INFO: Skipping copy, source and destination are the same: %s\n", pConfig->pBootstrapConfig);
+        }
+        else
+        {
+            DB_PRINT("Copying bootstrap configuration file %s to %s\n", pConfig->pBootstrapConfig, pPath);
+
+            status = DIGICERT_copyFile((const char *) pConfig->pBootstrapConfig, (const char *) pPath);
+            if (OK != status)
+            {
+                DB_PRINT(
+                    "ERROR: DIGICERT_copyFile failed with status = %s (%d)\n",
+                    MERROR_lookUpErrorCode(status), status);
+                goto exit;
+            }
         }
 #if defined(__RTOS_LINUX__) && !defined(__RTOS_ZEPHYR__)
         if ((NULL != pMainCtx->pUser) || (NULL != pMainCtx->pGroup))
@@ -1820,15 +1914,32 @@ static MSTATUS TRUSTEDGE_agentMainConfigure(TrustEdgeConfig *pConfig, TrustEdgeA
                 goto exit;
             }
 
-            DB_PRINT("Copying bootstrap signature file %s to %s\n", pBootstrapSig, pPath);
-
-            status = DIGICERT_copyFile((const char *) pBootstrapSig, (const char *) pPath);
+            isSamePath = FALSE;
+            status = TRUSTEDGE_isSamePath(pBootstrapSig, pPath, &isSamePath);
             if (OK != status)
             {
                 DB_PRINT(
-                    "ERROR: DIGICERT_readFile failed with status = %s (%d)\n",
+                    "ERROR: TRUSTEDGE_isSamePath failed with status = %s (%d)\n",
                     MERROR_lookUpErrorCode(status), status);
                 goto exit;
+            }
+
+            if (TRUE == isSamePath)
+            {
+                DB_PRINT("INFO: Skipping copy, source and destination are the same: %s\n", pBootstrapSig);
+            }
+            else
+            {
+                DB_PRINT("Copying bootstrap signature file %s to %s\n", pBootstrapSig, pPath);
+
+                status = DIGICERT_copyFile((const char *) pBootstrapSig, (const char *) pPath);
+                if (OK != status)
+                {
+                    DB_PRINT(
+                        "ERROR: DIGICERT_copyFile failed with status = %s (%d)\n",
+                        MERROR_lookUpErrorCode(status), status);
+                    goto exit;
+                }
             }
 #if defined(__RTOS_LINUX__) && !defined(__RTOS_ZEPHYR__)
             if ((NULL != pMainCtx->pUser) || (NULL != pMainCtx->pGroup))
@@ -1876,15 +1987,32 @@ static MSTATUS TRUSTEDGE_agentMainConfigure(TrustEdgeConfig *pConfig, TrustEdgeA
             goto exit;
         }
 
-        DB_PRINT("Copying credential certificate file %s to %s\n", pMainCtx->pCredsCert, pPath);
-
-        status = DIGICERT_copyFile((const char *) pMainCtx->pCredsCert, (const char *) pPath);
+        isSamePath = FALSE;
+        status = TRUSTEDGE_isSamePath(pMainCtx->pCredsCert, pPath, &isSamePath);
         if (OK != status)
         {
             DB_PRINT(
-                "ERROR: DIGICERT_readFile failed with status = %s (%d)\n",
+                "ERROR: TRUSTEDGE_isSamePath failed with status = %s (%d)\n",
                 MERROR_lookUpErrorCode(status), status);
             goto exit;
+        }
+
+        if (TRUE == isSamePath)
+        {
+            DB_PRINT("INFO: Skipping copy, source and destination are the same: %s\n", pMainCtx->pCredsCert);
+        }
+        else
+        {
+            DB_PRINT("Copying credential certificate file %s to %s\n", pMainCtx->pCredsCert, pPath);
+
+            status = DIGICERT_copyFile((const char *) pMainCtx->pCredsCert, (const char *) pPath);
+            if (OK != status)
+            {
+                DB_PRINT(
+                    "ERROR: DIGICERT_copyFile failed with status = %s (%d)\n",
+                    MERROR_lookUpErrorCode(status), status);
+                goto exit;
+            }
         }
 #if defined(__RTOS_LINUX__) && !defined(__RTOS_ZEPHYR__)
         if ((NULL != pMainCtx->pUser) || (NULL != pMainCtx->pGroup))
@@ -1931,15 +2059,32 @@ static MSTATUS TRUSTEDGE_agentMainConfigure(TrustEdgeConfig *pConfig, TrustEdgeA
             goto exit;
         }
 
-        DB_PRINT("Copying credential key file %s to %s\n", pMainCtx->pCredsKey, pPath);
-
-        status = DIGICERT_copyFile((const char *) pMainCtx->pCredsKey, (const char *) pPath);
+        isSamePath = FALSE;
+        status = TRUSTEDGE_isSamePath(pMainCtx->pCredsKey, pPath, &isSamePath);
         if (OK != status)
         {
             DB_PRINT(
-                "ERROR: DIGICERT_readFile failed with status = %s (%d)\n",
+                "ERROR: TRUSTEDGE_isSamePath failed with status = %s (%d)\n",
                 MERROR_lookUpErrorCode(status), status);
             goto exit;
+        }
+
+        if (TRUE == isSamePath)
+        {
+            DB_PRINT("INFO: Skipping copy, source and destination are the same: %s\n", pMainCtx->pCredsKey);
+        }
+        else
+        {
+            DB_PRINT("Copying credential key file %s to %s\n", pMainCtx->pCredsKey, pPath);
+
+            status = DIGICERT_copyFile((const char *) pMainCtx->pCredsKey, (const char *) pPath);
+            if (OK != status)
+            {
+                DB_PRINT(
+                    "ERROR: DIGICERT_copyFile failed with status = %s (%d)\n",
+                    MERROR_lookUpErrorCode(status), status);
+                goto exit;
+            }
         }
 #if defined(__RTOS_LINUX__) && !defined(__RTOS_ZEPHYR__)
         if ((NULL != pMainCtx->pUser) || (NULL != pMainCtx->pGroup))

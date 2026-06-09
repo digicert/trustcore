@@ -322,6 +322,7 @@ MSTATUS KEYBLOB_parseHeader(
         case keyblob_type_hsm_ecc:
         case keyblob_tap_rsa:
         case keyblob_tap_ecc:
+        case keyblob_tap_qs:
 
             status = OK;
             break;

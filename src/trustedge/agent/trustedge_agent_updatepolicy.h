@@ -99,9 +99,12 @@ typedef struct TrustEdgeArtifactManifest
 #define JSON_STR_CHECKSUM        "checksum"
 
 #define JSON_STR_PREINSTALL      "preinstall"
+#define JSON_STR_PREINSTALL_ALT  "pre_install"
 #define JSON_STR_INSTALL         "install"
 #define JSON_STR_POSTINSTALL     "postinstall"
+#define JSON_STR_POSTINSTALL_ALT "post_install"
 #define JSON_STR_ROLLBACK        "rollback"
+#define JSON_STR_ROLLBACK_ALT    "roll_back"
 
 #define JSON_STR_HTYPE_SCRIPT    "Script"
 #define JSON_STR_HTYPE_EXE       "Exe"
@@ -115,6 +118,7 @@ typedef struct TrustEdgeArtifactManifest
 #define JSON_STR_TEXT            "text"
 #define JSON_STR_RPM             "rpm"
 #define JSON_STR_DPKG            "dpkg"
+#define JSON_STR_CMD             "cmd"
 
 #define JSON_STR_SIGNATURE       "signature"
 #define JSON_STR_SIGALG          "sigAlg"

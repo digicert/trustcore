@@ -21,9 +21,9 @@
 
 #if (defined (__ENABLE_DIGICERT_SMP__) && defined (__ENABLE_DIGICERT_SMP_NANOROOT__))
 
-#include "common/moptions.h"
-#include "common/mtypes.h"
-#include "common/merrors.h"
+#include "../../common/moptions.h"
+#include "../../common/mtypes.h"
+#include "../../common/merrors.h"
 
 #define NanoROOTKDF_NIST_CTR  0
 #define NanoROOTKDF_NIST_FB   1

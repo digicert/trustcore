@@ -4123,6 +4123,9 @@ extern MSTATUS CRYPTO_UTILS_getAsymmetricKeyAttributes(
 
 #ifdef __ENABLE_DIGICERT_PQC__
         case akt_qs:
+#ifdef __ENABLE_DIGICERT_TAP__
+        case akt_tap_qs:
+#endif
             status = CRYPTO_INTERFACE_QS_getPublicKeyLen(pAsymKey->pQsCtx, &length);
             if (OK != status)
                 goto exit;

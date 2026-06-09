@@ -39,14 +39,14 @@ int test_pqc_kem_standard(OSSL_LIB_CTX *pLibCtx, const char *pAlg)
     int ret = 0;
     sbyte4 cmp = -1;
 
-    char pPub[1568]; /* big enough for all modes */ 
+    char pPub[1568 + 97]; /* big enough for all modes */ 
     
     unsigned char *pCipher = NULL;
-    size_t cipherLen = 0;
+    size_t cipherLen =  1568 + 97; /* Composite requires length or buffer passed in */
     
-    unsigned char pSS1[32];   /* big enough for all modes */
-    unsigned char pSS2[32];   /* big enough for all modes */
-    size_t ssLen = 0;
+    unsigned char pSS1[32 + 56];   /* big enough for all modes */
+    unsigned char pSS2[32 + 56];   /* big enough for all modes */
+    size_t ssLen = 32 + 56;
 
     EVP_PKEY_CTX *pEncapsCtx = NULL;
     EVP_PKEY_CTX *pDecapsCtx = NULL;
@@ -71,7 +71,7 @@ int test_pqc_kem_standard(OSSL_LIB_CTX *pLibCtx, const char *pAlg)
     }
     
     /* get the public key */
-    params[0] = OSSL_PARAM_construct_octet_string(OSSL_PKEY_PARAM_PUB_KEY, pPub, sizeof(pPub));
+    params[0] = OSSL_PARAM_construct_octet_string(OSSL_PKEY_PARAM_ENCODED_PUBLIC_KEY, pPub, sizeof(pPub));
     params[1] = OSSL_PARAM_construct_end();
 
     if (1 != EVP_PKEY_get_params(pDecapsKey, params))
@@ -106,13 +106,6 @@ int test_pqc_kem_standard(OSSL_LIB_CTX *pLibCtx, const char *pAlg)
     if (1 != EVP_PKEY_encapsulate(pEncapsCtx, NULL, &cipherLen, NULL, &ssLen))
     {
         printf("ERROR EVP_PKEY_encapsulate\n");
-        goto exit;         
-    }
-
-    /* sanity check the ssLen */
-    if (ssLen != 32)
-    {
-        printf("ERROR invalid shared secret len\n");
         goto exit;         
     }
 
@@ -197,12 +190,12 @@ int test_pqc_kem_one_key(OSSL_LIB_CTX *pLibCtx, const char *pAlg)
     int ret = 0;
     sbyte4 cmp = -1;
 
-    unsigned char pCipher[1568]; /* big enough for all modes */
-    size_t cipherLen = 0;
+    unsigned char pCipher[1568 + 97]; /* big enough for all modes */
+    size_t cipherLen = 1568 + 97;
     
-    unsigned char pSS1[32];   /* big enough for all modes */
-    unsigned char pSS2[32];   /* big enough for all modes */
-    size_t ssLen = 0;
+    unsigned char pSS1[32 + 56];   /* big enough for all modes */
+    unsigned char pSS2[32 + 56];   /* big enough for all modes */
+    size_t ssLen = 32 + 56;
 
     EVP_PKEY_CTX *pCtx = NULL;
     

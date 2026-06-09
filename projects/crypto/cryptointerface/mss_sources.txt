@@ -55,4 +55,4 @@ MSS_SRC_DIR/crypto_interface/crypto_interface_qs.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_qs_kem.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_qs_sig.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_qs_composite.c
-
+MSS_SRC_DIR/crypto_interface/crypto_interface_qs_tap.c

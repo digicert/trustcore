@@ -1,6 +1,7 @@
-/**
+/*
  * @file   initmocana.c
  * @brief  Mocana Initialization Routines
+ *
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

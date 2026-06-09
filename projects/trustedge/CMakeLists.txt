@@ -447,6 +447,51 @@ if (NOT CM_ENABLE_ZEPHYR_OS AND NOT CM_ENABLE_ZEPHYR_PACKAGING)
 ## Define target and add sources
 builder_add_sources(TRUSTEDGE_MAIN_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/main/mss_sources.txt")
 builder_finialize_sources(TRUSTEDGE_MAIN_SOURCES)
+
+# Add Windows service support source file
+if(WIN32)
+    list(APPEND TRUSTEDGE_MAIN_SOURCES "${MSS_SRC_DIR}/trustedge/trustedge_service_win.c")
+    list(APPEND TRUSTEDGE_MAIN_SOURCES "${MSS_SRC_DIR}/trustedge/trustedge_eventlog.c")
+
+    # Find message compiler for Windows Event Log support
+    get_filename_component(sdk_dir
+                           "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\WindowsKits\\Installed Roots;KitsRoot10]"
+                           REALPATH)
+    find_program(CMAKE_MC_COMPILER mc.exe HINTS "${sdk_dir}"
+                 DOC "path to message compiler")
+
+    if(CMAKE_MC_COMPILER)
+        message(STATUS "Found message compiler: ${CMAKE_MC_COMPILER}")
+
+        # Compile trustedge_events.mc to generate .h and .rc files
+        set(TRUSTEDGE_EVENTS_SOURCES
+            ${PROJECT_BINARY_DIR}/trustedge_events.h
+            ${PROJECT_BINARY_DIR}/trustedge_events.rc)
+
+        add_custom_command(
+            OUTPUT ${TRUSTEDGE_EVENTS_SOURCES}
+            DEPENDS ${MSS_SRC_DIR}/trustedge/trustedge_events.mc
+            COMMAND ${CMAKE_MC_COMPILER}
+            ARGS -h ${PROJECT_BINARY_DIR}
+                 -r ${PROJECT_BINARY_DIR}
+                 ${MSS_SRC_DIR}/trustedge/trustedge_events.mc
+            VERBATIM
+        )
+
+        # Add generated files to sources
+        list(APPEND TRUSTEDGE_MAIN_SOURCES ${TRUSTEDGE_EVENTS_SOURCES})
+
+        # Add include path for generated header
+        include_directories(${PROJECT_BINARY_DIR})
+
+        # Enable event log support
+        add_definitions(-D__ENABLE_TRUSTEDGE_WIN32_EVENTS__)
+        message(STATUS "Windows Event Log support enabled for TrustEdge")
+    else()
+        message(WARNING "Message compiler not found - Windows Event Log support disabled")
+    endif()
+endif()
+
 if(CM_BUILD_LIBRARY)
     add_library(trustedge_main SHARED "${TRUSTEDGE_MAIN_SOURCES}")
     builder_add_flags(TRUSTEDGE_MAIN_FLAGS "${CMAKE_CURRENT_SOURCE_DIR}/main/mocana_library_flags.txt")
@@ -463,14 +508,14 @@ builder_finalize_library_link(TRUSTEDGE_BIN_LINK_LIBS)
 if(CM_ENABLE_MONOLITHIC_BUILD)
     target_link_libraries(trustedge_main PRIVATE ${ARCHIVE_TO_SHARED_LIB_LINK_FLAG_START} ${TRUSTEDGE_BIN_LINK_LIBS} ${TRUSTEDGE_LIBS} ${ARCHIVE_TO_SHARED_LIB_LINK_FLAG_END} ${TRUSTEDGE_DEP_LIBS})
     if(WIN32)
-        target_link_libraries(trustedge_main PRIVATE ws2_32 shlwapi tbs ncrypt crypt32 bcrypt)
+        target_link_libraries(trustedge_main PRIVATE ws2_32 shlwapi tbs ncrypt crypt32 bcrypt advapi32)
     else()
         target_link_libraries(trustedge_main PRIVATE pthread dl)
     endif()
 else()
     if(WIN32)
         # On Windows, link static libraries directly since DLL symbol export isn't configured
-        target_link_libraries(trustedge_main PUBLIC ${TRUSTEDGE_BIN_LINK_LIBS} ${TRUSTEDGE_LIBS} ${TRUSTEDGE_DEP_LIBS} ws2_32 shlwapi tbs)
+        target_link_libraries(trustedge_main PUBLIC ${TRUSTEDGE_BIN_LINK_LIBS} ${TRUSTEDGE_LIBS} ${TRUSTEDGE_DEP_LIBS} ws2_32 shlwapi tbs advapi32)
     else()
         target_link_libraries(trustedge_main PUBLIC ${TRUSTEDGE_BIN_LINK_LIBS} trustedge_lib pthread dl)
     endif()
@@ -543,6 +588,7 @@ if(DEFINED CM_GENERATOR_BUILD AND NOT CM_ENABLE_ZEPHYR_OS)
         message(STATUS "Using PowerShell: ${POWERSHELL_EXECUTABLE}")
 
         # WIX/MSI specific configuration
+        set(CPACK_PACKAGE_NAME "DigiCert TrustEdge")
         set(CPACK_WIX_UPGRADE_GUID "A1B2C3D4-E5F6-7890-ABCD-EF1234567890")
         set(CPACK_WIX_PROGRAM_MENU_FOLDER "DigiCert TrustEdge")
         set(CPACK_WIX_PROPERTY_ARPHELPLINK "https://www.digicert.com/support")
@@ -550,19 +596,23 @@ if(DEFINED CM_GENERATOR_BUILD AND NOT CM_ENABLE_ZEPHYR_OS)
         set(CPACK_WIX_CULTURES "en-US")
         set(CPACK_WIX_PROPERTY_ARPCOMMENTS "TrustEdge - Device Identity and Certificate Management")
         
-        # Use standard WiX minimal UI - simple install with license agreement
-        # Installs to fixed paths: Program Files and ProgramData
+        # Custom WiX template with AllowDowngrades enabled for rollback support
+        set(CPACK_WIX_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/installer/MSI/WIX.template.in")
+        
+        # Use standard WiX minimal UI
+        # Note: EULA is shown on both fresh install and upgrade
         set(CPACK_WIX_UI_REF "WixUI_Minimal")
 
         # WIX extra sources for ProgramData directory structure
         # Use configure_file to substitute CMake variables in the WXS templates
+        set(CPACK_WIX_EXTRA_SOURCES "")
         if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/installer/MSI/programdata_dirs.wxs.in")
             configure_file(
                 "${CMAKE_CURRENT_SOURCE_DIR}/installer/MSI/programdata_dirs.wxs.in"
                 "${CMAKE_BINARY_DIR}/programdata_dirs.wxs"
                 @ONLY
             )
-            set(CPACK_WIX_EXTRA_SOURCES "${CMAKE_BINARY_DIR}/programdata_dirs.wxs")
+            list(APPEND CPACK_WIX_EXTRA_SOURCES "${CMAKE_BINARY_DIR}/programdata_dirs.wxs")
         endif()
         
         # WIX extensions needed for utility functions
@@ -746,8 +796,10 @@ if(DEFINED CM_GENERATOR_BUILD AND NOT CM_ENABLE_ZEPHYR_OS)
     endif()
     endif() # NOT CM_GENERATOR_BUILD STREQUAL MSI
 
-    set(CPACK_PACKAGE_NAME                  "trustedge")
-    set(CPACK_PACKAGE_VENDOR                "Digicert Inc.")
+    if(NOT CM_GENERATOR_BUILD STREQUAL MSI)
+        set(CPACK_PACKAGE_NAME              "trustedge")
+    endif()
+    set(CPACK_PACKAGE_VENDOR                "DigiCert Inc.")
     # TODO: Update contact email
     set(CPACK_PACKAGE_CONTACT               "trustedge@digicert.com")
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY   "TrustEdge package for security and device management.")

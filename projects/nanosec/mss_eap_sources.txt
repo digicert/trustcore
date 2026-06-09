@@ -14,6 +14,3 @@ MSS_SRC_DIR/eap/eap_srp.c
 MSS_SRC_DIR/eap/eap_tls.c
 MSS_SRC_DIR/eap/eap_ttls.c
 MSS_SRC_DIR/eap/eap_ttls_peer_eap.c
-MSS_SRC_DIR/common/timer.c
-MSS_SRC_DIR/common/mbitmap.c
-MSS_SRC_DIR/crypto/md4.c

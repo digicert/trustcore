@@ -78,6 +78,7 @@ enum
     
     akt_tap_rsa = 0x00020001,
     akt_tap_ecc = 0x00020002,
+    akt_tap_qs  = 0x00020072, /* 114 prefixed */
     akt_hsm_rsa = 0x00010001,
     akt_hsm_ecc = 0x00010002
 };

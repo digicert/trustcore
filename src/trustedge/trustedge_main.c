@@ -67,6 +67,10 @@
 #include "../est/est_client_api.h"
 #include "../common/msignal.h"
 
+#ifdef __RTOS_WIN32__
+#include "trustedge_service_win.h"
+#endif
+
 #ifdef __RTOS_ZEPHYR__
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(trustedge, LOG_LEVEL_DBG);
@@ -144,6 +148,10 @@ static void TRUSTEDGE_displayHelp(
     DB_PRINT("  --version       Display TrustEdge version\n");
     DB_PRINT("  --daemon        Run TrustEdge agent in daemon mode\n");
     DB_PRINT("                  Arguments are read from trustedge configuration file\n");
+#ifdef __RTOS_WIN32__
+    DB_PRINT("  --install-service    Install TrustEdge as a Windows service\n");
+    DB_PRINT("  --uninstall-service  Uninstall TrustEdge Windows service\n");
+#endif
     DB_PRINT("\n");
     DB_PRINT("Commands:\n");
     DB_PRINT("  agent             Agent mode - connected to Device Trust Manager\n");
@@ -2767,11 +2775,7 @@ extern int TRUSTEDGE_deinit(void)
 
 /*----------------------------------------------------------------------------*/
 
-#if defined(__ENABLE_DIGICERT_TRUSTEDGE_LIBRARY_MODE__)
-extern int TRUSTEDGE_main(int argc, char *ppArgv[])
-#else
-int main(int argc, char *ppArgv[])
-#endif
+int TRUSTEDGE_main(int argc, char *ppArgv[])
 {
     MSTATUS status = OK;
     TrustEdgeConfig *pConfig = NULL;
@@ -2790,6 +2794,7 @@ int main(int argc, char *ppArgv[])
 #ifdef __RTOS_LINUX__
 #ifndef __ENABLE_DIGICERT_TRUSTEDGE_LIBRARY_MODE__
     byteBoolean isServiceMode = FALSE;
+    byteBoolean pidFileCreated = FALSE;
     FileDescriptorInfo fileDescr = {0};
     sbyte4 pidFd;
 #endif
@@ -2805,7 +2810,28 @@ int main(int argc, char *ppArgv[])
 #endif
 #endif
 
+    /* Track initialization state to avoid calling shutdown on uninitialized stacks */
+    byteBoolean mqttInitialized = FALSE;
+    byteBoolean httpInitialized = FALSE;
+    byteBoolean sslInitialized = FALSE;
+
 #ifndef __ENABLE_DIGICERT_TRUSTEDGE_LIBRARY_MODE__
+#ifdef __RTOS_WIN32__
+    /* Handle Windows service install/uninstall commands early,
+     * before any initialization that would require cleanup.
+     */
+    if (argc > 1 && 0 == DIGI_STRCMP((const sbyte *) ppArgv[1], (const sbyte *) "--install-service"))
+    {
+        status = TRUSTEDGE_serviceInstall();
+        return (OK == status) ? 0 : -1;
+    }
+    else if (argc > 1 && 0 == DIGI_STRCMP((const sbyte *) ppArgv[1], (const sbyte *) "--uninstall-service"))
+    {
+        status = TRUSTEDGE_serviceUninstall();
+        return (OK == status) ? 0 : -1;
+    }
+#endif
+
     status = DIGICERT_initDigicert();
     if (OK != status)
     {
@@ -2830,13 +2856,40 @@ int main(int argc, char *ppArgv[])
         isServiceMode = TRUE;
     }
 
+#ifdef __RTOS_WIN32__
+    /* When running as --daemon on Windows, try to start as a service
+     * If not started by SCM, fall through to run in console mode.
+     * Skip service registration if already running as service callback
+     * (prevents recursion when TRUSTEDGE_serviceMain calls back).
+     */
+    if (TRUE == isServiceMode && !TRUSTEDGE_serviceIsRunningAsService())
+    {
+        status = TRUSTEDGE_serviceRun(argc, ppArgv);
+        if (OK == status)
+        {
+            /* Successfully ran as service, exit */
+            goto exit;
+        }
+        else if (ERR_TRUSTEDGE_AGENT_FEATURE_NOT_AVAILABLE == status)
+        {
+            /* Not started by SCM, continue in console mode */
+            status = OK;
+            DB_PRINT("%s", "Running in console daemon mode (not started by SCM)\n");
+        }
+        else
+        {
+            goto exit;
+        }
+    }
+#endif /* __RTOS_WIN32__ */
+
 #ifdef __RTOS_LINUX__
     if (TRUE == isServiceMode && TRUE == TRUSTEDGE_isServiceRunning())
     {
         DB_PRINT(
             "%s", "TrustEdge Agent is already running.. \n");
         status = OK;
-        goto nocleanup;
+        goto exit;
     }
 
     if (TRUE == isServiceMode)
@@ -2855,6 +2908,7 @@ int main(int argc, char *ppArgv[])
 
             dprintf(pidFd, "%d\n", getpid());
             close(pidFd);
+            pidFileCreated = TRUE;
         }
         else
         {
@@ -2869,6 +2923,7 @@ int main(int argc, char *ppArgv[])
 
             dprintf(pidFd, "%d\n", getpid());
             close(pidFd);
+            pidFileCreated = TRUE;
         }
     }
 #endif /* __RTOS_LINUX__ */
@@ -2882,6 +2937,7 @@ int main(int argc, char *ppArgv[])
             MERROR_lookUpErrorCode(status), status);
         goto exit;
     }
+    mqttInitialized = TRUE;
 
     status = HTTP_init();
     if (OK != status)
@@ -2891,6 +2947,7 @@ int main(int argc, char *ppArgv[])
             MERROR_lookUpErrorCode(status), status);
         goto exit;
     }
+    httpInitialized = TRUE;
 
     status = SSL_init(MAX_SSL_SERVER_CONNECTIONS, MAX_SSL_CLIENT_CONNECTIONS);
     if (OK != status)
@@ -2900,6 +2957,7 @@ int main(int argc, char *ppArgv[])
             MERROR_lookUpErrorCode(status), status);
         goto exit;
     }
+    sslInitialized = TRUE;
 
     /* Initialize logging early so errors during config parsing are visible */
     status = MSG_LOG_init(MSG_LOG_INFO);
@@ -3313,24 +3371,23 @@ int main(int argc, char *ppArgv[])
 
 exit:
 
-#ifdef __RTOS_LINUX__
-    if (RTOS_THREAD_INVALID != agentTid)
-    {
-        pthread_join((uintptr) agentTid, NULL);
-    }
-
-    if (RTOS_THREAD_INVALID != certTid)
-    {
-        pthread_join((uintptr) certTid, NULL);
-    }
-
+    /* Wait for threads to complete before cleanup */
 #ifndef __DISABLE_TRUSTEDGE_REST_API__
     if (RTOS_THREAD_INVALID != agentRestApiTid)
     {
-        pthread_join((uintptr) agentRestApiTid, NULL);
+        RTOS_joinThread(agentRestApiTid, NULL);
     }
 #endif
-#endif
+
+    if (RTOS_THREAD_INVALID != certTid)
+    {
+        RTOS_joinThread(certTid, NULL);
+    }
+
+    if (RTOS_THREAD_INVALID != agentTid)
+    {
+        RTOS_joinThread(agentTid, NULL);
+    }
 
     JSON_releaseContext (&pJCtx);
     if (NULL != pConfig)
@@ -3356,15 +3413,29 @@ exit:
 #endif
 #endif
 
-    SSL_shutdownStack();
-    HTTP_stop();
-    MQTT_shutdownStack();
+    /* Only shutdown stacks that were successfully initialized.
+     * Calling shutdown on uninitialized stacks may crash (e.g., freeing uninitialized mutexes). */
+    if (TRUE == sslInitialized)
+    {
+        SSL_shutdownStack();
+    }
+    if (TRUE == httpInitialized)
+    {
+        HTTP_stop();
+    }
+    if (TRUE == mqttInitialized)
+    {
+        MQTT_shutdownStack();
+    }
 
 #if !defined(__ENABLE_DIGICERT_TRUSTEDGE_LIBRARY_MODE__)
     TRUSTEDGE_deinit();
 
 #ifdef __RTOS_LINUX__
-    if (TRUE == isServiceMode)
+    /* Only remove PID files if this process created them.
+     * Prevents deleting another instance's PID file when exiting early
+     * due to service already running. */
+    if (TRUE == isServiceMode && TRUE == pidFileCreated)
     {
         (void) FMGMT_remove((const sbyte *) TRUSTEDGE_PID_FILE, FALSE);
         (void) FMGMT_remove((const sbyte *) TRUSTEDGE_LEGACY_PID_FILE, FALSE);
@@ -3374,11 +3445,18 @@ exit:
 
     RTOS_mutexFree(&gCertMutex);
 
-#ifndef __ENABLE_DIGICERT_TRUSTEDGE_LIBRARY_MODE__
-nocleanup:
-#endif
     return (OK == status) ? 0 : -1;
 }
+
+/*----------------------------------------------------------------------------*/
+
+#if !defined(__ENABLE_DIGICERT_TRUSTEDGE_LIBRARY_MODE__)
+/* Entry point for executable mode - calls TRUSTEDGE_main */
+int main(int argc, char *ppArgv[])
+{
+    return TRUSTEDGE_main(argc, ppArgv);
+}
+#endif /* !__ENABLE_DIGICERT_TRUSTEDGE_LIBRARY_MODE__ */
 
 /*----------------------------------------------------------------------------*/
 

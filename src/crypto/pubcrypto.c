@@ -329,6 +329,7 @@ CRYPTO_copyAsymmetricKey(AsymmetricKey* pNew, const AsymmetricKey* pSrc)
         
         /* fallthrough */
         case akt_qs:
+        case akt_tap_qs:
             status = CRYPTO_INTERFACE_QS_cloneCtx(&pNew->pQsCtx, pSrc->pQsCtx);
             break;
 #endif
@@ -438,6 +439,7 @@ CRYPTO_uninitAsymmetricKey(AsymmetricKey* pKey, vlong** ppVlongQueue)
             break;
         }
         case akt_qs:
+        case akt_tap_qs:
         {
             status = CRYPTO_INTERFACE_QS_deleteCtx(&pKey->pQsCtx);
             break;
@@ -751,6 +753,7 @@ extern MSTATUS CRYPTO_deserializeKey (
   if ( (akt_moc == pDeserializedKey->type) ||
        (akt_tap_rsa == pDeserializedKey->type) ||
        (akt_tap_ecc == pDeserializedKey->type) ||
+       (akt_tap_qs == pDeserializedKey->type) ||
        (akt_custom == pDeserializedKey->type) )
   {
     /* If the input key was already a MocAsymKey, then just have it deserialize
@@ -861,6 +864,23 @@ extern MSTATUS CRYPTO_serializeAsymKey (
       pKeyToUse, format, ppSerializedKey, pSerializedKeyLen);
   }
 #endif /* __ENABLE_DIGICERT_ECC__ */
+#ifdef __ENABLE_DIGICERT_PQC__
+  else if (akt_tap_qs == pKeyToSerialize->type)
+  {
+    if ( (NULL != pKeyToSerialize->pQsCtx->pSecretKey) &&
+         (NULL != ((MocAsymKey) pKeyToSerialize->pQsCtx->pSecretKey)->pKeyData) )
+    {
+      pKeyToUse = (MocAsymKey) pKeyToSerialize->pQsCtx->pSecretKey;
+    }
+    else
+    {
+      pKeyToUse = (MocAsymKey) pKeyToSerialize->pQsCtx->pPublicKey;
+    }
+
+    status = CRYPTO_serializeMocAsymKeyAlloc (
+      pKeyToUse, format, ppSerializedKey, pSerializedKeyLen);
+  }
+#endif
   else
 #endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
   {
@@ -903,7 +923,7 @@ extern MSTATUS CRYPTO_getKeyTapInfo(
 
     *pIsTap = TRUE;   
   }
-  else /* See if it is a secure storage key */
+  else /* See if it is a serialized key id (secure storage or nanoroot for example) */
   {
     ubyte *pKeyDer = NULL;
     ubyte4 keyDerLen = 0;
@@ -934,7 +954,7 @@ extern MSTATUS CRYPTO_getKeyTapInfo(
     }
 
     /* Call the operator directly */
-    status = KeyOperatorSSTap (NULL, NULL, MOC_ASYM_OP_GET_PARAMS, &inputInfo, &tapInfo, NULL);
+    status = KeyOperatorIdTap (NULL, NULL, MOC_ASYM_OP_GET_PARAMS, &inputInfo, &tapInfo, NULL);
 
     /* Regardless of status free der key if needbe */
     if (NULL != pKeyDer)
@@ -961,6 +981,76 @@ exit:
   {
     (void) CRYPTO_freeMocAsymKey(&pNewKey, NULL);
   }  
+
+  return status;
+}
+
+extern MSTATUS CRYPTO_serializeKeyId(
+  ubyte *pId,
+  ubyte4 idLen,
+  ubyte4 tokenId,
+  serializedKeyFormat format,
+  ubyte **ppSerializedKey,
+  ubyte4 *pSerializedKeyLen
+)
+{
+  MSTATUS status = ERR_NULL_POINTER;
+
+  MKeyOperatorData inputInfo = {0};
+  MKeyOperatorDataReturn outputInfo = {0};
+  MKeyObjectInfo objInfo = {0}; 
+
+  MSerializeInfo serialInfo = {
+    .ppSerializedKey = ppSerializedKey,
+    .pSerializedKeyLen = pSerializedKeyLen,
+    .derLen = 0, .headerLen = 0, .footerLen = 0,
+    .formatToUse = format,
+    .pDerEncoding = NULL, .pHeader = NULL, .pFooter = NULL,
+    .pPubHeader = MOC_PUB_PEM_HEADER,
+    .pPubFooter = MOC_PUB_PEM_FOOTER,
+    .pPriHeader = MOC_PRI_PEM_HEADER,
+    .pPriFooter = MOC_PRI_PEM_FOOTER,
+    .dataToReturn = {0}
+  };
+
+  if (NULL == pId || NULL == ppSerializedKey || NULL == pSerializedKeyLen)
+    goto exit;
+
+  status = ERR_INVALID_ARG;
+  if (noFormat == format || mocanaBlobVersion2 == format || deserialize == format)
+    goto exit;
+
+  /* Execute initialization code common to all serialization routines */
+  status = SerializeCommonInit(&serialInfo, format);
+  if (OK != status)
+    goto exit;
+
+  inputInfo.pAdditionalOpInfo = (void *) &objInfo;
+
+  objInfo.pId = pId;
+  objInfo.idLen = idLen;
+  objInfo.tokenId = tokenId;
+
+  outputInfo.ppData = serialInfo.dataToReturn.ppData;
+  outputInfo.pLength = serialInfo.dataToReturn.pLength;
+
+  /* Call the operator directly */
+  status = KeyOperatorIdTap (NULL, NULL, MOC_ASYM_OP_SERIALIZE, &inputInfo, &outputInfo, NULL);
+  if (OK != status)
+    goto exit;
+
+  /* if we wanted DER form then we are done, otherwise */
+  if (publicKeyPem == format || privateKeyPem == format)
+  {
+    status = SerializeCommon(&serialInfo);
+  }
+
+exit:
+
+  if (NULL != serialInfo.pDerEncoding)
+  {
+    (void) DIGI_MEMSET_FREE (&serialInfo.pDerEncoding, serialInfo.derLen);
+  }
 
   return status;
 }
@@ -1122,6 +1212,13 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
           keyType = akt_tap_ecc;
           break;
 
+        case MOC_ASYM_ALG_PQC_MLDSA:
+        case MOC_ASYM_ALG_PQC_FNDSA:
+        case MOC_ASYM_ALG_PQC_SLHDSA:
+        case MOC_ASYM_ALG_PQC_MLKEM:
+          keyType = akt_tap_qs;
+          break;
+
         default:
           goto exit;
       }
@@ -1166,27 +1263,43 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
     outputInfo.ppData = &pInnerKey;
     outputInfo.pLength = &innerKeyLen;
 
-    /* Call the operator directly */
-    status = KeyOperatorSSTap (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &outputInfo, NULL);
-    
-    /* Regardless of status free der key if needbe */
-    if (NULL != pKeyDer)
-    {
-      (void) DIGI_MEMSET_FREE(&pKeyDer, keyDerLen);
-    }
-
+    /* Call the operator for a TAP ID directly to see if it's that kind of key */
+    status = KeyOperatorIdTap (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &outputInfo, NULL);
     if (OK == status)
     {
-      /* recursive call to this method for the inner key */
-      status = CRYPTO_deserializeAsymKey (MOC_ASYM(hwAccelCtx) pInnerKey, innerKeyLen, pMocCtx, pDeserializedKey);
+      if (NULL != pKeyDer)
+      {
+        (void) DIGI_MEMSET_FREE(&pKeyDer, keyDerLen);
+      }
+      
+      /* pInnerKey now has the id of the inner key */
+      status = CRYPTO_INTERFACE_TAP_getKeyById(pInnerKey, innerKeyLen, pDeserializedKey);
       (void) DIGI_MEMSET_FREE(&pInnerKey, innerKeyLen);
     }
     else
     {
-      /* Try for a software only deserialization */
-      status = CRYPTO_deserializeKey ( MOC_ASYM(hwAccelCtx)
-        pSerializedKey, serializedKeyLen, pSupportedAlgorithms,
-        supportedAlgorithmCount, pDeserializedKey);      
+      /* Call the operator for a TAP Secure Storage directly to see if it's that kind of key */
+      status = KeyOperatorSSTap (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &outputInfo, NULL);
+      
+      /* Regardless of status free der key if needbe */
+      if (NULL != pKeyDer)
+      {
+        (void) DIGI_MEMSET_FREE(&pKeyDer, keyDerLen);
+      }
+
+      if (OK == status)
+      {
+        /* recursive call to this method for the inner key */
+        status = CRYPTO_deserializeAsymKey (MOC_ASYM(hwAccelCtx) pInnerKey, innerKeyLen, pMocCtx, pDeserializedKey);
+        (void) DIGI_MEMSET_FREE(&pInnerKey, innerKeyLen);
+      }
+      else
+      {
+        /* Try for a software only deserialization */
+        status = CRYPTO_deserializeKey ( MOC_ASYM(hwAccelCtx)
+          pSerializedKey, serializedKeyLen, pSupportedAlgorithms,
+          supportedAlgorithmCount, pDeserializedKey);     
+      }
     }
   }
 #else
@@ -1294,11 +1407,24 @@ extern MSTATUS CRYPTO_deserializeAsymKeyWithCreds (
 
       case akt_ecc:
       case akt_ecc_ed:
+        break;
 #endif
 #ifdef __ENABLE_DIGICERT_DSA__
       case akt_dsa:
+        break;
 #endif
 #ifdef __ENABLE_DIGICERT_PQC__
+      case akt_tap_qs:
+
+        if (NULL == pDeserializedKey->pQsCtx)
+        {
+          status = ERR_NULL_POINTER;
+          goto exit;
+        }
+
+        status = CRYPTO_INTERFACE_TAP_loadWithCreds((MocAsymKey) pDeserializedKey->pQsCtx->pSecretKey, pPassword, passwordLen, pLoadCtx);
+        break;
+
       case akt_qs:
       case akt_hybrid:
 #endif
@@ -2012,8 +2138,9 @@ extern MSTATUS CRYPTO_loadAsymmetricKey (
       break;
       
     case akt_qs:
+    case akt_tap_qs:
       pAsymKey->pQsCtx = (QS_CTX *)(*ppAlgKey);
-      pAsymKey->type = akt_qs;
+      pAsymKey->type = keyType;
       break;
 #endif
 

@@ -83,9 +83,7 @@ typedef struct _KeyGenArgs
     ubyte4 gSigScheme;
     TAP_Buffer *gpKeyHandle;
     ubyte8 gKeyNonceHandle;
-#ifdef __ENABLE_DIGICERT_TEE__
     TAP_Buffer tapKeyHandle;
-#endif
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
     sbyte *gpOutFile;

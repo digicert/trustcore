@@ -8288,16 +8288,16 @@ MSTATUS TAP_freeKey(TAP_Key **ppKey)
     if ((*ppKey)->keyData.keyAlgorithm == TAP_KEY_ALGORITHM_MLDSA)
     {
         /* Free MLDSA-specific public key memory */
-        if ((*ppKey)->keyData.publicKey.publicKey.mldsaKey.pPublicKey)
+        if ((*ppKey)->keyData.publicKey.publicKey.pqcKey.pPublicKey)
         {
-            exitStatus = DIGI_FREE((void **)&((*ppKey)->keyData.publicKey.publicKey.mldsaKey.pPublicKey));
+            exitStatus = DIGI_FREE((void **)&((*ppKey)->keyData.publicKey.publicKey.pqcKey.pPublicKey));
             if (OK != exitStatus)
             {
                 DB_PRINT("%s.%d Failed to free MLDSA public key buffer, status %d = %s\n",
                         __FUNCTION__, __LINE__, exitStatus, MERROR_lookUpErrorCode(exitStatus));
             }
-            (*ppKey)->keyData.publicKey.publicKey.mldsaKey.pPublicKey = (void *)NULL;
-            (*ppKey)->keyData.publicKey.publicKey.mldsaKey.publicKeyLen = 0;
+            (*ppKey)->keyData.publicKey.publicKey.pqcKey.pPublicKey = (void *)NULL;
+            (*ppKey)->keyData.publicKey.publicKey.pqcKey.publicKeyLen = 0;
         }
     }
 #endif
@@ -13223,6 +13223,30 @@ MSTATUS TAP_importKeyFromID(TAP_Context *pTapContext,
                 case TAP_ATTR_KEY_USAGE:
                     (*ppTapKey)->keyData.keyUsage = *(TAP_KEY_USAGE *)(pNewKeyAttributes->pAttributeList[i].pStructOfType);
                     break;
+
+                case TAP_ATTR_OBJECT_ID_BYTESTRING:
+                    status = DIGI_MALLOC ( (void **)&((*ppTapKey)->providerObjectData.objectBlob.blob.pBuffer),
+                        ((TAP_Buffer *)(pNewKeyAttributes->pAttributeList[i].pStructOfType))->bufferLen);
+                    if (OK != status)
+                    {
+                        DB_PRINT(__func__, __LINE__, "Failed to copy key id into new key %d = %s\n",
+                                    status, MERROR_lookUpErrorCode(status));
+                        goto exit;
+                    }
+
+                    status = DIGI_MEMCPY ( (*ppTapKey)->providerObjectData.objectBlob.blob.pBuffer, 
+                        ((TAP_Buffer *)(pNewKeyAttributes->pAttributeList[i].pStructOfType))->pBuffer,
+                        ((TAP_Buffer *)(pNewKeyAttributes->pAttributeList[i].pStructOfType))->bufferLen);
+                    if (OK != status)
+                    {
+                        DB_PRINT(__func__, __LINE__, "Failed to copy object blob into new key %d = %s\n",
+                                    status, MERROR_lookUpErrorCode(status));
+                        goto exit;
+                    }
+
+                    (*ppTapKey)->providerObjectData.objectBlob.blob.bufferLen = 
+                        ((TAP_Buffer *)(pNewKeyAttributes->pAttributeList[i].pStructOfType))->bufferLen;
+                    break;
             }
         }
     }
@@ -13255,8 +13279,8 @@ MSTATUS TAP_importKeyFromID(TAP_Context *pTapContext,
 #ifdef __ENABLE_DIGICERT_PQC__
         case TAP_KEY_ALGORITHM_MLDSA:
         {
-            (*ppTapKey)->keyData.algKeyInfo.mldsaInfo.sigScheme = pKeyInfo->algKeyInfo.mldsaInfo.sigScheme;
-            (*ppTapKey)->keyData.algKeyInfo.mldsaInfo.qsAlg = pKeyInfo->algKeyInfo.mldsaInfo.qsAlg;
+            (*ppTapKey)->keyData.algKeyInfo.pqcInfo.sigScheme = pKeyInfo->algKeyInfo.pqcInfo.sigScheme;
+            (*ppTapKey)->keyData.algKeyInfo.pqcInfo.qsAlg = pKeyInfo->algKeyInfo.pqcInfo.qsAlg;
         }
         break;
 #endif

@@ -703,15 +703,41 @@ MOC_EXTERN MSTATUS CRYPTO_getKeyTapInfo(
   ubyte4 *pModuleId
 );
 
+/** Serializes the identifier for a TAP key to a structured PEM or DER format.
+ *
+ * @param pId     Buffer holding the identifier for the key.
+ * @param idLen   The length of the id in bytes.
+ * @param tokenId The token (ie application id) to be used.
+ * @param format  The format into which you want the key's identifier to be serialized.
+ * @param ppSerializedKey The address where the function will deposit a pointer
+ * to allocated memory containing the serialized key. It is the responsiblity of
+ * the caller to free that memory using DIGI_FREE.
+ * @param pSerializedKeyLen the address where the function will deposit the
+ * length, in bytes, of the serialized key.
+ *
+ * @return     \c OK (0) if successful; otherwise a negative number error code
+ *             definition from merrors.h. To retrieve a string containing an
+ *             English text error identifier corresponding to the function's
+ *             returned error status, use the \c DISPLAY_ERROR macro.
+ */
+MOC_EXTERN MSTATUS CRYPTO_serializeKeyId(
+  ubyte *pId,
+  ubyte4 idLen,
+  ubyte4 tokenId,
+  serializedKeyFormat format,
+  ubyte **ppSerializedKey,
+  ubyte4 *pSerializedKeyLen
+);
+
 /** Serialize an asymmetric key to secure storage with a given token 
  * and identifier.
  *
  * @param pKeyToSerialize The AsymmetricKey you want serialized.
- * @param format The format into which you want the key's outer identifier to be serialized.
- *               The inner key will always be serialized in DER form.
- * @param pId    Buffer holding the identifier for the key.
- * @param idLen  The length of the id in bytes.
- * @param token  The token (ie secure storage application id) to be used.
+ * @param format  The format into which you want the key's outer identifier to be serialized.
+ *                The inner key will always be serialized in DER form.
+ * @param pId     Buffer holding the identifier for the key.
+ * @param idLen   The length of the id in bytes.
+ * @param tokenId The token (ie secure storage application id) to be used.
  * @param ppSerializedKey The address where the function will deposit a pointer
  * to allocated memory containing the serialized key. It is the responsiblity of
  * the caller to free that memory using DIGI_FREE.

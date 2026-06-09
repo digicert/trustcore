@@ -67,6 +67,9 @@
 #include "../tap/tap_smp.h"
 #ifdef __ENABLE_DIGICERT_TEE__
 #include "../smp/smp_tee/smp_tap_tee.h"
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#include "../smp/smp_nanoroot/smp_nanoroot.h"
+#include "../tap/tap_common.h"
 #endif
 #endif
 
@@ -120,6 +123,8 @@ void MLDSA_setLongFormPrivKeyFormat(byteBoolean format);
 #define TRUSTEDGE_TAP_PROVIDER_NAME " TPM2"
 #elif defined(__ENABLE_DIGICERT_TEE__)
 #define TRUSTEDGE_TAP_PROVIDER_NAME " TEE"
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#define TRUSTEDGE_TAP_PROVIDER_NAME " NanoROOT"
 #else
 #define KEYGEN_TAP_PROVIDER_NAME ""
 #endif
@@ -1076,6 +1081,15 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
                 pEstArgs->useTEE = 1;
             }
 #endif
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+            pArgs->gTapProvider = TAP_PROVIDER_NANOROOT;
+#ifndef __DISABLE_TRUSTEDGE_EST__
+            if (EST_MODE == pMainCtx->mode)
+            {
+                pEstArgs->pKeySource = KEY_SOURCE_NANOROOT;
+                pEstArgs->useNanoRoot = 1;
+            }
+#endif
 #else
             pArgs->gTapProvider = TAP_PROVIDER_TPM2;
 #ifndef __DISABLE_TRUSTEDGE_EST__
@@ -1097,7 +1111,7 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
                 }
             }
 #endif
-#endif /* __ENABLE_DIGICERT_TEE__ */
+#endif /* else of __ENABLE_DIGICERT_TEE__ */
         }
         else if (0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"-tm") || 0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"--tap-modnum"))
         {
@@ -1138,6 +1152,15 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
                               MERROR_lookUpErrorCode(status), status);
                     goto exit;
                 }
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+                /* pArgs->gTapProvider is already set to TAP_PROVIDER_NANOROOT, just make sure they don't try to change it */
+                if (!(0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"NANOROOT") || 0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"nanoroot") || 0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"NanoRoot") || 0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"NanoROOT")))
+                {
+                    status = ERR_INVALID_ARG;
+                    MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE", "Invalid -tpr or --tap-provider option: %s, status = %s (%d)\n", ppArgv[i],
+                              MERROR_lookUpErrorCode(status), status);
+                    goto exit;
+                }
 #else
                 if (0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"TPM2") || 0 == DIGI_STRCMP(ppArgv[i], (sbyte *)"tpm2"))
                 {
@@ -1155,16 +1178,6 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
 #endif
                 }
 #endif /* __ENABLE_DIGICERT_SMP_PKCS11__ */
-                else if (0 == DIGI_STRNICMP(ppArgv[i], (sbyte *)"nanoroot", DIGI_STRLEN((const sbyte *)"nanoroot")))
-                {
-                    pArgs->gTapProvider = TAP_PROVIDER_NANOROOT;
-#ifndef __DISABLE_TRUSTEDGE_EST__
-                    if (EST_MODE == pMainCtx->mode)
-                    {
-                        pEstArgs->pKeySource = KEY_SOURCE_NANOROOT;
-                    }
-#endif
-                }
                 /* else leave default */
 #endif /* __ENABLE_DIGICERT_TEE__ */
             }
@@ -2805,7 +2818,7 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
 
         pEstArgs->cacertTag = 1;
 
-#ifdef __ENABLE_DIGICERT_TEE__
+#if defined(__ENABLE_DIGICERT_TEE__) || defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
         if (TRUE == pEstArgs->pkcs8InteractivePass)
 #else
         if (TRUE == pEstArgs->pkcs8InteractivePass && FALSE == pArgs->gTap)
@@ -3354,7 +3367,7 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
     }
 
 #ifdef __ENABLE_DIGICERT_TAP__
-#ifdef __ENABLE_DIGICERT_TEE__
+#if defined(__ENABLE_DIGICERT_TEE__) || defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
 #ifndef __DISABLE_TRUSTEDGE_EST__
     if (pArgs->gTap && ((EST_MODE == pMainCtx->mode && FALSE == pEstArgs->tapKeyHandleSet) || (EST_MODE != pMainCtx->mode && NULL == pArgs->tapKeyHandle.pBuffer)))
 #else
@@ -3362,18 +3375,18 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
 #endif
     {
         status = ERR_INVALID_ARG;
-        MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE", "Must enter a -tkh/--tap-key-handle option for TEE. status = %s (%d)\n",
+        MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE", "Must enter a -tkh/--tap-key-handle option. status = %s (%d)\n",
             MERROR_lookUpErrorCode(status), status);
         goto exit;
     }
 #else
-    if (pArgs->gTap && (akt_rsa == pArgs->gKeyType || akt_ecc == pArgs->gKeyType) )
+    if (pArgs->gTap && (akt_rsa == pArgs->gKeyType || akt_ecc == pArgs->gKeyType || akt_qs == pArgs->gKeyType) )
     {
-        pArgs->gKeyType |= 0x00020000; /* will modify gKeyType to akt_tap_rsa or akt_tap_ecc */
+        pArgs->gKeyType |= 0x00020000; /* will modify gKeyType to akt_tap_rsa, akt_tap_ecc, or akt_tap_qs */
     }
     else if(pArgs->gTap)
     {
-        MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE", "-t/--tap option only available for ECC or RSA. status = %s (%d)\n",
+        MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE", "-t/--tap option only available for ECC, RSA, or MLDSA. status = %s (%d)\n",
                     MERROR_lookUpErrorCode(status), status);
         goto exit;
     }
@@ -3384,7 +3397,97 @@ static MSTATUS TRUSTEDGE_certificateMainProcessArgs(
                     MERROR_lookUpErrorCode(status), status);
         goto exit;
     }
-#endif
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    if (pArgs->gTap)
+    {
+        ubyte4 id = 0;
+        ubyte4 algo = 0;
+        ubyte4 subtype = 0;
+
+        switch (pArgs->gKeyType)
+        {
+            case akt_tap_ecc:
+                algo = NanoROOT_ALGO_ECC;
+                if (cid_EC_P256 == pArgs->gCurve)
+                    subtype = NanoROOT_ECC_P256;
+                else if (cid_EC_P384 == pArgs->gCurve)
+                    subtype = NanoROOT_ECC_P384;
+                else if (cid_EC_P521 == pArgs->gCurve)
+                    subtype = NanoROOT_ECC_P521;
+                else
+                {
+                    status = ERR_INVALID_ARG;
+                    MSG_LOG_printEx(MSG_LOG_ERROR, "ERROR: Only P256, P384, and P521 are available for TAP NanoROOT. status = %s (%d)\n",
+                        MERROR_lookUpErrorCode(status), status);
+                    goto exit;
+                }
+                break;
+            
+            case akt_tap_rsa:
+                algo = NanoROOT_ALGO_RSA;
+                switch(pArgs->gKeySize)
+                {
+                    case 2048:
+                        subtype = NanoROOT_RSA_2048;
+                        break;
+                    case 3072:
+                        subtype = NanoROOT_RSA_3072;
+                        break;
+                    case 4096:
+                        subtype = NanoROOT_RSA_4096;
+                        break;
+                    case 8192:
+                        subtype = NanoROOT_RSA_8192;
+                        break;
+                    default:
+                        status = ERR_INVALID_ARG;
+                        MSG_LOG_printEx(MSG_LOG_ERROR, "ERROR: Only RSA 2048, 3072, 4096, and 8192 is available for TAP NanoROOT. status = %s (%d)\n",
+                            MERROR_lookUpErrorCode(status), status);
+                        goto exit;
+                }
+            
+                break;
+            
+            case akt_tap_qs:
+                algo = NanoROOT_ALGO_MLDSA;
+                if (cid_PQC_MLDSA_44 == pArgs->gQsAlg)
+                    subtype = NanoROOT_MLDSA_44;
+                else if (cid_PQC_MLDSA_65 == pArgs->gQsAlg)
+                    subtype = NanoROOT_MLDSA_65;
+                else if (cid_PQC_MLDSA_87 == pArgs->gQsAlg)
+                    subtype = NanoROOT_MLDSA_87;
+                else
+                {
+                    status = ERR_INVALID_ARG;
+                    MSG_LOG_printEx(MSG_LOG_ERROR, "ERROR: Only MLDSA 44, 65, and 87 are available for TAP NanoROOT. status = %s (%d)\n",
+                        MERROR_lookUpErrorCode(status), status);
+                    goto exit;
+                }
+                break;
+
+            default:
+                /* error already printed */
+                status = ERR_INVALID_ARG;
+                goto exit;
+        }
+
+        id = NanoROOT_MAKE_ALGO_ID(algo, subtype);
+        status = DIGI_MALLOC((void *) &pArgs->tapKeyHandle.pBuffer, 4);
+        if (OK != status)
+        {
+            MSG_LOG_printEx(MSG_LOG_ERROR, "ERROR: Out of memory. status = %s (%d)\n", MERROR_lookUpErrorCode(status), status);
+            goto exit;
+        }
+
+        /* TODO should this be big endian instead? Or always an int or always a buffer? */
+        pArgs->tapKeyHandle.pBuffer[3] = (ubyte) ((id >> 24) & 0xff);
+        pArgs->tapKeyHandle.pBuffer[2] = (ubyte) ((id >> 16) & 0xff);
+        pArgs->tapKeyHandle.pBuffer[1] = (ubyte) ((id >> 8) & 0xff);
+        pArgs->tapKeyHandle.pBuffer[0] = (ubyte) (id & 0xff);
+        pArgs->tapKeyHandle.bufferLen = 4;
+    }
+#endif /* __ENABLE_DIGICERT_SMP_NANOROOT__ */
+#endif /* else of __ENABLE_DIGICERT_TEE__ or __ENABLE_DIGICERT_SMP_NANOROOT__ */
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
     if (FORMAT_SSH == pArgs->gOutPubForm && NULL == pArgs->gpOutPubFile)
@@ -3588,9 +3691,11 @@ static MSTATUS TRUSTEDGE_ENROLL_parseRequestJson(TrustEdgecertificateMainCtx *pM
     ubyte4 ndxKcaCheck = 0;
     sbyte *pProtocol = NULL;
 #if defined(__ENABLE_DIGICERT_TAP__)
-    ubyte4 ndxLvl3;
+#if !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     sbyte *pKeyTokenHierarchy = NULL;
+#endif
     sbyte *pHandle = NULL;
+    ubyte4 ndxLvl3;
     sbyte *pExtEnrollFlow = NULL;
 #endif
 
@@ -4290,7 +4395,8 @@ static MSTATUS TRUSTEDGE_ENROLL_parseRequestJson(TrustEdgecertificateMainCtx *pM
             if (EST_MODE == pMainCtx->mode)
             {
                 pMainCtx->estCtx.pKeySource = KEY_SOURCE_TEE;
-                if ((sbyte *)KEY_TYPE_ECDSA == pMainCtx->estCtx.pKeyType && 256 == pMainCtx->estCtx.usKeySize)
+                if ((DIGI_STRCMP((const sbyte *)pMainCtx->estCtx.pKeyType, (const sbyte *)KEY_TYPE_ECDSA) == 0) &&
+                     256 == pMainCtx->estCtx.usKeySize)
                 {
                     MSG_LOG_printEx(MSG_LOG_INFO, "TRUSTEDGE-CERTIFICATE", "%s\n", "Setting default tap signing scheme: ECDSA_SHA256");
                     pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA256;
@@ -4352,6 +4458,7 @@ static MSTATUS TRUSTEDGE_ENROLL_parseRequestJson(TrustEdgecertificateMainCtx *pM
                     }
                 }
 
+                /* TODO this should likely be under the EST mode if statement too. Don't think it's used otherwise */
                 status = JSON_getJsonObjectIndex(pJCtx, ndxLvl2, "handles", &ndxLvl3, TRUE);
                 if (OK == status)
                 {
@@ -4408,6 +4515,250 @@ static MSTATUS TRUSTEDGE_ENROLL_parseRequestJson(TrustEdgecertificateMainCtx *pM
                 goto exit;
             }
         }
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+        else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pKeySource, KEY_SOURCE_NANOROOT))
+        {
+            pMainCtx->keyGenArgs.gTap = TRUE;
+            pMainCtx->keyGenArgs.gTapProvider = TAP_PROVIDER_NANOROOT;
+
+            /* TODO EST mode, what's left is general to pMainCtx but not sure this is needed outside est.
+               the code that follows is actually not used on key generation as no key is actually generated. 
+               We may need this when we go to import and use the key though, say for a self-signed cert,
+               so will leave this code enabled for now. TODO validate that or delete this code etc. The 
+               problem is that in import we call a general CRYPTO_deserializeAsymKey API hence there is
+               no way to input this information */
+
+            if (EST_MODE == pMainCtx->mode)
+            {
+                pMainCtx->estCtx.pKeySource = KEY_SOURCE_NANOROOT;
+                if ((DIGI_STRCMP((const sbyte *)pMainCtx->estCtx.pKeyType, (const sbyte *)KEY_TYPE_ECDSA) == 0) &&
+                     256 == pMainCtx->estCtx.usKeySize)
+                {
+                    MSG_LOG_printEx(MSG_LOG_INFO, "TRUSTEDGE-CERTIFICATE", "%s\n", "Setting default tap signing scheme: ECDSA_SHA256");
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA256;
+                }
+            }
+
+            status = JSON_getJsonObjectIndex(
+                pJCtx, ndxLvl1, "TAPAttributes", &ndxLvl2, TRUE);
+            if (OK == status)
+            {
+                status = JSON_getJsonIntegerValue(
+                    pJCtx, ndxLvl2, "tapProvider", &pMainCtx->srvCtx.tapProvider, TRUE);
+                if (OK == status)
+                {
+                    pMainCtx->keyGenArgs.gTapProvider = pMainCtx->srvCtx.tapProvider;
+                }
+
+                status = JSON_getJsonIntegerValue(
+                    pJCtx, ndxLvl2, "secureModuleId", &pMainCtx->srvCtx.modNum, TRUE);
+                if (OK == status)
+                {
+                    pMainCtx->keyGenArgs.gModNum = pMainCtx->srvCtx.modNum;
+                }
+
+                /* TODO this should likely be under the EST mode if statement too. Don't think it's used otherwise */
+                status = JSON_getJsonObjectIndex(pJCtx, ndxLvl2, "handles", &ndxLvl3, TRUE);
+                if (OK == status)
+                {
+                    status = JSON_getJsonStringValue(
+                        pJCtx, ndxLvl3, "key", &pHandle, TRUE);
+                    if (OK == status)
+                    {
+                        status = KEYGEN_readId((sbyte *) pHandle, &(pMainCtx->estCtx.tapKeyHandle), &(pMainCtx->estCtx.isIdHex));
+                        if (OK != status)
+                        {
+                            DIGI_FREE((void **) &pHandle);
+                            MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE", "Failed to process key handle in request json, status = %s (%d)\n",
+                                    MERROR_lookUpErrorCode(status), status);
+                            goto exit;
+                        }
+                        pMainCtx->estCtx.pTapKeyHandleStr = pHandle; pHandle = NULL;
+                        pMainCtx->estCtx.tapKeyHandleSet = TRUE;
+                    }
+                    else if (ERR_NOT_FOUND != status)
+                    {
+                        goto exit;
+                    }
+                    else
+                    {
+                        status = OK;
+                    }
+
+                    DIGI_FREE((void **) &pHandle);
+                }
+                else if (ERR_NOT_FOUND != status)
+                {
+                    goto exit;
+                }
+                else
+                {
+                    status = OK;
+                }
+            }
+
+            status = JSON_getJsonStringValue(
+                pJCtx, ndxLvl2, "keyUsage", &pMainCtx->srvCtx.pKeyUsage, TRUE);
+            if (OK == status)
+            {
+                if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pKeyUsage, (sbyte *)"TAP_KEY_USAGE_SIGNING"))
+                {
+                    pMainCtx->keyGenArgs.gKeyUsage = TAP_KEY_USAGE_SIGNING;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pKeyUsage, (sbyte *)"TAP_KEY_USAGE_DECRYPT"))
+                {
+                    pMainCtx->keyGenArgs.gKeyUsage = TAP_KEY_USAGE_DECRYPT;
+                }
+                else if (EST_MODE == pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pKeyUsage, (sbyte *)"TAP_KEY_USAGE_ATTESTATION"))
+                {
+                    pMainCtx->keyGenArgs.gKeyUsage = TAP_KEY_USAGE_ATTESTATION;
+                }
+                else if (EST_MODE == pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pKeyUsage, (sbyte *)"TAP_KEY_USAGE_GENERAL"))
+                {
+                    pMainCtx->keyGenArgs.gKeyUsage = TAP_KEY_USAGE_GENERAL;
+                }
+                else
+                {
+                    status = ERR_INVALID_ARG;
+                    MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE",
+                        "keyUsage field invalid in request json: %s line %d status: %d = %s\n",
+                        __func__, __LINE__, status,
+                        MERROR_lookUpErrorCode(status));
+                    goto exit;
+                }
+            }
+
+            status = JSON_getJsonStringValue(
+                pJCtx, ndxLvl2, "sigScheme", &pMainCtx->srvCtx.pSignScheme, TRUE);
+            if (OK == status)
+            {
+                if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PKCS1_5"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PKCS1_5;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PKCS1_5_SHA1"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PKCS1_5_SHA1;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PKCS1_5_SHA256"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PKCS1_5_SHA256;
+                }
+                else if (SCEP_MODE == pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PKCS1_5_SHA384"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PKCS1_5_SHA384;
+                }
+                else if (SCEP_MODE == pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PKCS1_5_SHA512"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PKCS1_5_SHA512;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PKCS1_5_DER"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PKCS1_5_DER;
+                }
+                else if (SCEP_MODE == pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PSS"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PSS;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PSS_SHA1"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PSS_SHA1;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PSS_SHA256"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PSS_SHA256;
+                }
+                else if (SCEP_MODE == pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PSS_SHA384"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PSS_SHA384;
+                }
+                else if (SCEP_MODE == pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_PSS_SHA512"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_PSS_SHA512;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_ECDSA_SHA1"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA1;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_ECDSA_SHA224"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA224;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_ECDSA_SHA256"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA256;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_ECDSA_SHA384"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA384;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_ECDSA_SHA512"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA512;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pSignScheme, (sbyte *)"TAP_SIG_SCHEME_NONE"))
+                {
+                    pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_NONE;
+                }
+                else
+                {
+                    status = ERR_INVALID_ARG;
+                    MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE",
+                        "sigScheme field invalid in request json: %s line %d status: %d = %s\n",
+                        __func__, __LINE__, status,
+                        MERROR_lookUpErrorCode(status));
+                    goto exit;
+                }
+            }
+
+            status = JSON_getJsonStringValue(
+                pJCtx, ndxLvl2, "encScheme", &pMainCtx->srvCtx.pEncScheme, TRUE);
+            if (OK == status)
+            {
+                if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pEncScheme, (sbyte *)"TAP_ENC_SCHEME_PKCS1_5"))
+                {
+                    pMainCtx->keyGenArgs.gEncScheme = TAP_ENC_SCHEME_PKCS1_5;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pEncScheme, (sbyte *)"TAP_ENC_SCHEME_OAEP_SHA1"))
+                {
+                    pMainCtx->keyGenArgs.gEncScheme = TAP_ENC_SCHEME_OAEP_SHA1;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pEncScheme, (sbyte *)"TAP_ENC_SCHEME_OAEP_SHA256"))
+                {
+                    pMainCtx->keyGenArgs.gEncScheme = TAP_ENC_SCHEME_OAEP_SHA256;
+                }
+                else if (EST_MODE != pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pEncScheme, (sbyte *)"TAP_ENC_SCHEME_OAEP_SHA384"))
+                {
+                    pMainCtx->keyGenArgs.gEncScheme = TAP_ENC_SCHEME_OAEP_SHA384;
+                }
+                else if (EST_MODE != pMainCtx->mode && 0 == DIGI_STRCMP(pMainCtx->srvCtx.pEncScheme, (sbyte *)"TAP_ENC_SCHEME_OAEP_SHA512"))
+                {
+                    pMainCtx->keyGenArgs.gEncScheme = TAP_ENC_SCHEME_OAEP_SHA512;
+                }
+                else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pEncScheme, (sbyte *)"TAP_ENC_SCHEME_NONE"))
+                {
+                    pMainCtx->keyGenArgs.gEncScheme = TAP_ENC_SCHEME_NONE;
+                }
+                else
+                {
+                    status = ERR_INVALID_ARG;
+                    MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE",
+                        "encScheme field invalid in request json: %s line %d status: %d = %s\n",
+                        __func__, __LINE__, status,
+                        MERROR_lookUpErrorCode(status));
+                    goto exit;
+                }
+            }
+
+            status = TAP_checkProviderModule(pMainCtx);
+            if (OK != status)
+            {
+                MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE",
+                    "TAP_checkProviderModule failed with status = %s (%d)\n",
+                    MERROR_lookUpErrorCode(status), status);
+                goto exit;
+            }
+        }
 #else
         else if (0 == DIGI_STRCMP(pMainCtx->srvCtx.pKeySource, KEY_SOURCE_TPM2) || 0 == DIGI_STRCMP(pMainCtx->srvCtx.pKeySource, KEY_SOURCE_PKCS11)  )
         {
@@ -4431,7 +4782,8 @@ static MSTATUS TRUSTEDGE_ENROLL_parseRequestJson(TrustEdgecertificateMainCtx *pM
 
             if (EST_MODE == pMainCtx->mode)
             {
-                if ((sbyte *)KEY_TYPE_ECDSA == pMainCtx->estCtx.pKeyType && 256 == pMainCtx->estCtx.usKeySize)
+                if ((DIGI_STRCMP((const sbyte *)pMainCtx->estCtx.pKeyType, (const sbyte *)KEY_TYPE_ECDSA) == 0) &&
+                     256 == pMainCtx->estCtx.usKeySize)
                 {
                     MSG_LOG_printEx(MSG_LOG_INFO, "TRUSTEDGE-CERTIFICATE", "%s\n", "Setting default tap signing scheme: ECDSA_SHA256");
                     pMainCtx->keyGenArgs.gSigScheme = TAP_SIG_SCHEME_ECDSA_SHA256;
@@ -6239,7 +6591,7 @@ static MSTATUS TRUSTEDGE_ENROLL_parseKeygenApiJson(TrustEdgecertificateMainCtx *
     sbyte *pKeyOutFormat = NULL;
     sbyte *pKeyAlias = NULL;
     sbyte *pPkcs8Pw = NULL;
-#ifdef __ENABLE_DIGICERT_TEE__
+#if defined(__ENABLE_DIGICERT_TEE__) || defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     sbyte *pHandle = NULL;
 #endif
 
@@ -6412,6 +6764,51 @@ static MSTATUS TRUSTEDGE_ENROLL_parseKeygenApiJson(TrustEdgecertificateMainCtx *
         {
             pMainCtx->keyGenArgs.gTap = TRUE;
             pMainCtx->keyGenArgs.gTapProvider = TAP_PROVIDER_TEE;
+
+            status = JSON_getJsonObjectIndex(
+                pJCtx, 0, "TAPAttributes", &ndx, TRUE);
+            if (OK == status)
+            {
+                status = JSON_getJsonObjectIndex(pJCtx, ndx, "handles", &ndx, TRUE);
+                if (OK == status)
+                {
+                    status = JSON_getJsonStringValue(
+                        pJCtx, ndx, "key", &pHandle, TRUE);
+                    if (OK == status)
+                    {
+                        status = KEYGEN_readId((sbyte *) pHandle, &(pMainCtx->keyGenArgs.tapKeyHandle), NULL);
+                        if (OK != status)
+                        {
+                            MSG_LOG_printEx(MSG_LOG_ERROR, "TRUSTEDGE-CERTIFICATE", "Failed to process key handle in request json, status = %s (%d)\n",
+                                    MERROR_lookUpErrorCode(status), status);
+                            goto exit;
+                        }
+                    }
+                    else if (ERR_NOT_FOUND != status)
+                    {
+                        goto exit;
+                    }
+                    else
+                    {
+                        status = OK;
+                    }
+                }
+                else if (ERR_NOT_FOUND != status)
+                {
+                    goto exit;
+                }
+                else
+                {
+                    status = OK;
+                }
+            }
+            /* TODO do we error if no handle? */
+        }
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+        else if (0 == DIGI_STRCMP(pKeySource, KEY_SOURCE_NANOROOT))
+        {
+            pMainCtx->keyGenArgs.gTap = TRUE;
+            pMainCtx->keyGenArgs.gTapProvider = TAP_PROVIDER_NANOROOT;
 
             status = JSON_getJsonObjectIndex(
                 pJCtx, 0, "TAPAttributes", &ndx, TRUE);
@@ -6714,7 +7111,7 @@ exit:
     {
         (void) DIGI_FREE((void **)&pPkcs8Pw);
     }
-#ifdef __ENABLE_DIGICERT_TEE__
+#if defined(__ENABLE_DIGICERT_TEE__) || defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     if (NULL != pHandle)
     {
         (void) DIGI_FREE((void **) &pHandle);
@@ -7220,7 +7617,12 @@ if (mainCtx.keyGenArgs.gIsPrintCert)
     }
 
 #ifdef __ENABLE_DIGICERT_TAP__
-    status = KEYGEN_generateKey(&mainCtx.keyGenArgs, (void *) &tapArgs, &key, pRand);
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    if (FALSE == mainCtx.keyGenArgs.gTap) /* for NanoRoot we don't actually generate a key */
+#endif
+    {
+        status = KEYGEN_generateKey(&mainCtx.keyGenArgs, (void *) &tapArgs, &key, pRand);
+    }
 #else
     status = KEYGEN_generateKey(&mainCtx.keyGenArgs, NULL, &key, pRand);
 #endif
@@ -7413,7 +7815,7 @@ exit:
     }
 #endif
 
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     /* If the generated key is a TAP key and was not used to sign a (self signed) cert, it needs to be unloaded */
     if ((CERT_MODE == mainCtx.mode) && mainCtx.keyGenArgs.gTap && (NULL == mainCtx.keyGenArgs.gpOutCertFile || (NULL != mainCtx.keyGenArgs.gpOutCertFile && NULL != mainCtx.keyGenArgs.gpSigningKey)))
     {

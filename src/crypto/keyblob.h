@@ -75,7 +75,8 @@ typedef enum
     keyblob_type_hsm_ecc = 0x010002,
 
     keyblob_tap_rsa = 0x00020001,
-    keyblob_tap_ecc = 0x00020002
+    keyblob_tap_ecc = 0x00020002,
+    keyblob_tap_qs  = 0x00020072
 
 } KEYBLOB_TYPE;
 

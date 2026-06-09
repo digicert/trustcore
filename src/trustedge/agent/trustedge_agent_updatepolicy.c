@@ -223,6 +223,9 @@ extern sbyte *TRUSTEDGE_actionHandlerSubTypeToString(TrustEdgeAgentActionHandler
         case TE_ACTION_HANDLER_SUBTYPE_DPKG:
             pType = JSON_STR_DPKG;
             break;
+        case TE_ACTION_HANDLER_SUBTYPE_BATCH:
+            pType = JSON_STR_CMD;
+            break;
         default:
             pType = JSON_STR_UNDEFINED;
             break;
@@ -1094,14 +1097,25 @@ exit:
 static TrustEdgeAgentActionType TRUSTEDGE_getActionType(sbyte *pActionTypeStr)
 {
     TrustEdgeAgentActionType actionType = TE_ACTION_UNKNOWN;
+    ubyte4 inputLen = DIGI_STRLEN(pActionTypeStr);
 
-    if (DIGI_STRNICMP(pActionTypeStr, JSON_STR_PREINSTALL, DIGI_STRLEN(JSON_STR_PREINSTALL)) == 0)
+    if ((inputLen == DIGI_STRLEN(JSON_STR_PREINSTALL) &&
+         DIGI_STRNICMP(pActionTypeStr, JSON_STR_PREINSTALL, inputLen) == 0) ||
+        (inputLen == DIGI_STRLEN(JSON_STR_PREINSTALL_ALT) &&
+         DIGI_STRNICMP(pActionTypeStr, JSON_STR_PREINSTALL_ALT, inputLen) == 0))
         actionType = TE_ACTION_PREINSTALL;
-    else if (DIGI_STRNICMP(pActionTypeStr, JSON_STR_INSTALL, DIGI_STRLEN(JSON_STR_INSTALL)) == 0)
+    else if (inputLen == DIGI_STRLEN(JSON_STR_INSTALL) &&
+             DIGI_STRNICMP(pActionTypeStr, JSON_STR_INSTALL, inputLen) == 0)
         actionType = TE_ACTION_INSTALL;
-    else if (DIGI_STRNICMP(pActionTypeStr, JSON_STR_POSTINSTALL, DIGI_STRLEN(JSON_STR_POSTINSTALL)) == 0)
+    else if ((inputLen == DIGI_STRLEN(JSON_STR_POSTINSTALL) &&
+              DIGI_STRNICMP(pActionTypeStr, JSON_STR_POSTINSTALL, inputLen) == 0) ||
+             (inputLen == DIGI_STRLEN(JSON_STR_POSTINSTALL_ALT) &&
+              DIGI_STRNICMP(pActionTypeStr, JSON_STR_POSTINSTALL_ALT, inputLen) == 0))
         actionType = TE_ACTION_POSTINSTALL;
-    else if (DIGI_STRNICMP(pActionTypeStr, JSON_STR_ROLLBACK, DIGI_STRLEN(JSON_STR_ROLLBACK)) == 0)
+    else if ((inputLen == DIGI_STRLEN(JSON_STR_ROLLBACK) &&
+              DIGI_STRNICMP(pActionTypeStr, JSON_STR_ROLLBACK, inputLen) == 0) ||
+             (inputLen == DIGI_STRLEN(JSON_STR_ROLLBACK_ALT) &&
+              DIGI_STRNICMP(pActionTypeStr, JSON_STR_ROLLBACK_ALT, inputLen) == 0))
         actionType = TE_ACTION_ROLLBACK;
 
     MSG_LOG_print(MSG_LOG_VERBOSE, "TRUSTEDGE_getActionType returning %d\n", actionType);
@@ -1112,26 +1126,40 @@ static TrustEdgeAgentActionType TRUSTEDGE_getActionType(sbyte *pActionTypeStr)
 static TrustEdgeAgentActionHandler TRUSTEDGE_getHandler(sbyte *pHandlerType, sbyte *pHandlerSubType)
 {
     TrustEdgeAgentActionHandler handler = {TE_ACTION_HANDLER_UNKNOWN, TE_ACTION_HANDLER_SUBTYPE_UNKNOWN};
+    ubyte4 typeLen = DIGI_STRLEN(pHandlerType);
+    ubyte4 subTypeLen = DIGI_STRLEN(pHandlerSubType);
 
-    if (DIGI_STRNICMP(pHandlerType, JSON_STR_HTYPE_SCRIPT, DIGI_STRLEN(JSON_STR_HTYPE_SCRIPT)) == 0)
+    if (typeLen == DIGI_STRLEN(JSON_STR_HTYPE_SCRIPT) &&
+        DIGI_STRNICMP(pHandlerType, JSON_STR_HTYPE_SCRIPT, typeLen) == 0)
         handler.type = TE_ACTION_HANDLER_SCRIPT;
-    else if (DIGI_STRNICMP(pHandlerType, JSON_STR_HTYPE_EXE, DIGI_STRLEN(JSON_STR_HTYPE_EXE)) == 0)
+    else if (typeLen == DIGI_STRLEN(JSON_STR_HTYPE_EXE) &&
+             DIGI_STRNICMP(pHandlerType, JSON_STR_HTYPE_EXE, typeLen) == 0)
         handler.type = TE_ACTION_HANDLER_EXE;
-    else if (DIGI_STRNICMP(pHandlerType, JSON_STR_HTYPE_PKGMGR, DIGI_STRLEN(JSON_STR_HTYPE_PKGMGR)) == 0)
+    else if (typeLen == DIGI_STRLEN(JSON_STR_HTYPE_PKGMGR) &&
+             DIGI_STRNICMP(pHandlerType, JSON_STR_HTYPE_PKGMGR, typeLen) == 0)
         handler.type = TE_ACTION_HANDLER_PKG_MGR_TYPE;
 
-    if (DIGI_STRNICMP(pHandlerSubType, JSON_STR_PYTHON3, DIGI_STRLEN(JSON_STR_PYTHON3)) == 0)
+    if (subTypeLen == DIGI_STRLEN(JSON_STR_PYTHON3) &&
+        DIGI_STRNICMP(pHandlerSubType, JSON_STR_PYTHON3, subTypeLen) == 0)
         handler.subtype = TE_ACTION_HANDLER_SUBTYPE_PYTHON3;
-    else if (DIGI_STRNICMP(pHandlerSubType, JSON_STR_BASH, DIGI_STRLEN(JSON_STR_BASH)) == 0)
+    else if (subTypeLen == DIGI_STRLEN(JSON_STR_BASH) &&
+             DIGI_STRNICMP(pHandlerSubType, JSON_STR_BASH, subTypeLen) == 0)
         handler.subtype = TE_ACTION_HANDLER_SUBTYPE_BASH;
-    else if(DIGI_STRNICMP(pHandlerSubType, JSON_STR_NODEJS, DIGI_STRLEN(JSON_STR_NODEJS)) == 0)
+    else if (subTypeLen == DIGI_STRLEN(JSON_STR_NODEJS) &&
+             DIGI_STRNICMP(pHandlerSubType, JSON_STR_NODEJS, subTypeLen) == 0)
         handler.subtype = TE_ACTION_HANDLER_SUBTYPE_NODEJS;
-    else if(DIGI_STRNICMP(pHandlerSubType, JSON_STR_TEXT, DIGI_STRLEN(JSON_STR_TEXT)) == 0)
+    else if (subTypeLen == DIGI_STRLEN(JSON_STR_TEXT) &&
+             DIGI_STRNICMP(pHandlerSubType, JSON_STR_TEXT, subTypeLen) == 0)
         handler.subtype = TE_ACTION_HANDLER_SUBTYPE_TEXT;
-    else if(DIGI_STRNICMP(pHandlerSubType, JSON_STR_DPKG, DIGI_STRLEN(JSON_STR_DPKG)) == 0)
+    else if (subTypeLen == DIGI_STRLEN(JSON_STR_DPKG) &&
+             DIGI_STRNICMP(pHandlerSubType, JSON_STR_DPKG, subTypeLen) == 0)
         handler.subtype = TE_ACTION_HANDLER_SUBTYPE_DPKG;
-    else if(DIGI_STRNICMP(pHandlerSubType, JSON_STR_RPM, DIGI_STRLEN(JSON_STR_RPM)) == 0)
+    else if (subTypeLen == DIGI_STRLEN(JSON_STR_RPM) &&
+             DIGI_STRNICMP(pHandlerSubType, JSON_STR_RPM, subTypeLen) == 0)
         handler.subtype = TE_ACTION_HANDLER_SUBTYPE_RPM;
+    else if (subTypeLen == DIGI_STRLEN(JSON_STR_CMD) &&
+             DIGI_STRNICMP(pHandlerSubType, JSON_STR_CMD, subTypeLen) == 0)
+        handler.subtype = TE_ACTION_HANDLER_SUBTYPE_BATCH;
 
     MSG_LOG_print(MSG_LOG_VERBOSE, "TRUSTEDGE_getHandler returning type:%s  subtype:%s\n",  TRUSTEDGE_actionHandlerTypeToString(handler.type), TRUSTEDGE_actionHandlerSubTypeToString(handler.subtype));
 
@@ -2092,7 +2120,7 @@ extern MSTATUS TRUSTEDGE_agentParseArtifactDownloadChunk(TrustEdgeAgentCtx *pCtx
 
     if (pCtx->chunkBufferOffset == totalWindowSize)
     {
-        MSG_LOG_print(MSG_LOG_INFO, "Processing recieved chunks of total size %d\n", pCtx->chunkBufferOffset);
+        MSG_LOG_print(MSG_LOG_INFO, "Processing received chunks of total size %d\n", pCtx->chunkBufferOffset);
 
         status = COMMON_UTILS_addPathComponent(
             pCtx->pWorkspaceDir, (sbyte *)"chunk-payload.zip", &pArtifactFile);
@@ -2176,13 +2204,13 @@ extern MSTATUS TRUSTEDGE_agentParseArtifactDownloadChunk(TrustEdgeAgentCtx *pCtx
 
 exit:
 
-    FMGMT_remove(pFilePath, FALSE);
-    DIGI_FREE((void **) &pFilePath);
-    
+    /* Close file before removing - Windows cannot delete open files */
     if (NULL != pFile)
     {
         FMGMT_fclose(&pFile);
     }
+    FMGMT_remove(pFilePath, FALSE);
+    DIGI_FREE((void **) &pFilePath);
 
     if (NULL != pCtx->curPolicy.pPolicy && NULL != pCtx->curPolicy.data.ups.pArtifact &&
         FALSE == pCtx->curPolicy.data.ups.pArtifact->isAsync)

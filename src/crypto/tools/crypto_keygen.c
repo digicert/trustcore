@@ -89,12 +89,30 @@
 #include "../../tap/tap_utils.h"
 #include "../../crypto/mocasymkeys/tap/rsatap.h"
 #include "../../crypto/mocasymkeys/tap/ecctap.h"
+#include "../../crypto_interface/crypto_interface_tap.h"
 #endif
 
 #include "../../cert_enroll/cert_enroll.h"
 
 #ifdef __ENABLE_DIGICERT_CV_CERT__
 #include "../../crypto/cvcert.h"
+#endif
+
+/* Most library mode builds will not use the TAP init function here,
+   but just in case, set a default of TPM2 */
+#if defined(__ENABLE_DIGICERT_CRYPTO_KEYGEN_LIB__) && defined(__ENABLE_DIGICERT_TAP__)
+#if !defined(__ENABLE_DIGICERT_SMP_PKCS11__) && !defined(__ENABLE_DIGICERT_TPM2__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#define __ENABLE_DIGICERT_TPM2__
+#endif
+#endif
+
+#if defined(__ENABLE_DIGICERT_TPM2__)
+#include "../../common/tpm2_path.h"
+#elif defined(__ENABLE_DIGICERT_TEE__)
+#include "../../smp/smp_tee/smp_tap_tee.h"
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#include "../../smp/smp_nanoroot/smp_nanoroot.h"
+#include "../../tap/tap_common.h"
 #endif
 
 #if defined(__RTOS_LINUX__)
@@ -174,14 +192,6 @@ typedef struct extKeyUsageInfo
     ubyte ocspSign;
 } extKeyUsageInfo;
 
-/* Most library mode builds will not use the TAP init function here,
-   but just in case, set a default of TPM2 */
-#if defined(__ENABLE_DIGICERT_CRYPTO_KEYGEN_LIB__) && defined(__ENABLE_DIGICERT_TAP__)
-#if !defined(__ENABLE_DIGICERT_SMP_PKCS11__) && !defined(__ENABLE_DIGICERT_TPM2__) && !defined(__ENABLE_DIGICERT_TEE__)
-#define __ENABLE_DIGICERT_TPM2__
-#endif
-#endif
-
 #ifdef __ENABLE_DIGICERT_TAP__
 
 #ifndef __ENABLE_DIGICERT_TAP_REMOTE__
@@ -190,11 +200,11 @@ typedef struct extKeyUsageInfo
 #if defined(__ENABLE_DIGICERT_SMP_PKCS11__)
 #define KEYGEN_TAP_CONFIG_PATH "/etc/digicert/pkcs11_smp.conf"
 #elif defined(__ENABLE_DIGICERT_TPM2__)
-#include "../../common/tpm2_path.h"
 #define KEYGEN_TAP_CONFIG_PATH TPM2_CONFIGURATION_FILE
 #elif defined(__ENABLE_DIGICERT_TEE__)
-#include "../../smp/smp_tee/smp_tap_tee.h"
 #define KEYGEN_TAP_CONFIG_PATH "/etc/digicert/tee_smp.conf"
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#define KEYGEN_TAP_CONFIG_PATH "/etc/digicert/nanoroot_smp.conf"
 #else
 #error "SMP flag not specified. Cannot set default path to TAP config file."
 #endif
@@ -207,6 +217,8 @@ typedef struct extKeyUsageInfo
 #define KEYGEN_TAP_PROVIDER TAP_PROVIDER_TPM2
 #elif defined(__ENABLE_DIGICERT_TEE__)
 #define KEYGEN_TAP_PROVIDER TAP_PROVIDER_TEE
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#define KEYGEN_TAP_PROVIDER TAP_PROVIDER_NANOROOT
 #else
 #error "SMP flag not specified. Cannot set TAP provider."
 #endif
@@ -218,6 +230,8 @@ typedef struct extKeyUsageInfo
 #define KEYGEN_TAP_PROVIDER_NAME " TPM2"
 #elif defined(__ENABLE_DIGICERT_TEE__)
 #define KEYGEN_TAP_PROVIDER_NAME " TEE"
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+#define KEYGEN_TAP_PROVIDER_NAME " NANOROOT"
 #else
 #define KEYGEN_TAP_PROVIDER_NAME ""
 #endif /* __ENABLE_DIGICERT_SMP_PKCS11__ */
@@ -2001,14 +2015,14 @@ MOC_EXTERN MSTATUS KEYGEN_createCSR(KeyGenArgs *pArgs)
     {
         if (0x2 != (signingCert.pKey->type >> 16))
         {
-            MSG_LOG_print(MSG_LOG_WARNING, "TAP signing key requested but key is not TAP. Continuing.%s\n","");
+            MSG_LOG_print(MSG_LOG_WARNING, "TAP signing key (-skt) requested but signing key is not TAP. Continuing.%s\n","");
         }
     }
     else
     {
         if (signingCert.pKey->type >> 16)
         {
-            MSG_LOG_print(MSG_LOG_WARNING, "TAP signing key not requested but key is TAP. Continuing.%s\n","");
+            MSG_LOG_print(MSG_LOG_WARNING, "TAP signing key (-skt) not requested but signing key is TAP. Continuing.%s\n","");
         }
     }
 #endif
@@ -2125,6 +2139,19 @@ MOC_EXTERN MSTATUS KEYGEN_generateCertificate(KeyGenArgs *pArgs, AsymmetricKey *
 
 #ifdef __ENABLE_KEYSTORE_PATH__
     sbyte *pFullPath = NULL;
+#endif
+
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    if (pArgs->gTap)
+    {
+        /* we don't actually have a key, we need to retrieve it! */
+        status = CRYPTO_INTERFACE_TAP_getKeyById(pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen, pKey);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR, "Unable to obtain the signing key: status = %d\n",status);
+            goto exit;
+        }
+    }
 #endif
 
     /* Get the signing key and certificate if there is one */
@@ -3199,16 +3226,20 @@ MOC_EXTERN MSTATUS KEYGEN_outputPrivKey(KeyGenArgs *pArgs, AsymmetricKey *pKey, 
         if (pArgs->gTap)
         {
             status = CRYPTO_serializeAsymKeyToStorage (pKey, privForm, pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE, &pPriv, &privLen);
-            if (OK != status)
-                goto exit;
+        }
+        else
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+        if (pArgs->gTap)
+        {
+            status = CRYPTO_serializeKeyId(pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen, NanoROOTTOKEN_ID, privForm, &pPriv, &privLen);
         }
         else
 #endif
         {
             status = CRYPTO_serializeAsymKey (pKey, privForm, &pPriv, &privLen);
-            if (OK != status)
-                goto exit;
         }
+        if (OK != status)
+            goto exit;
     }
 
     if (pArgs->gVerbose)
@@ -4918,13 +4949,13 @@ static MSTATUS KEYGEN_getArgs(KeyGenArgs *pArgs, int argc, char *argv[])
         return (MSTATUS) -1;
     }
 #else
-    if (pArgs->gTap && (akt_rsa == pArgs->gKeyType || akt_ecc == pArgs->gKeyType) )
+    if (pArgs->gTap && (akt_rsa == pArgs->gKeyType || akt_ecc == pArgs->gKeyType || akt_qs == pArgs->gKeyType) )
     {
-        pArgs->gKeyType |= 0x00020000; /* will modify gKeyType to akt_tap_rsa or akt_tap_ecc */
+        pArgs->gKeyType |= 0x00020000; /* will modify gKeyType to akt_tap_rsa, akt_tap_ecc, or akt_tap_qs */
     }
     else if(pArgs->gTap)
     {
-        DB_PRINT("ERROR: -t/--tap option only available for ECC or RSA.\n");
+        DB_PRINT("ERROR: -t/--tap option only available for ECC, RSA, or MLDSA.\n");
         KEYGEN_displayHelp();
         return (MSTATUS) -1;
     }
@@ -4935,7 +4966,90 @@ static MSTATUS KEYGEN_getArgs(KeyGenArgs *pArgs, int argc, char *argv[])
         KEYGEN_displayHelp();
         return (MSTATUS) -1;
     }
-#endif
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    if (pArgs->gTap)
+    {
+        ubyte4 id = 0;
+        ubyte4 algo = 0;
+        ubyte4 subtype = 0;
+
+        switch (pArgs->gKeyType)
+        {
+            case akt_tap_ecc:
+                algo = NanoROOT_ALGO_ECC;
+                if (cid_EC_P256 == pArgs->gCurve)
+                    subtype = NanoROOT_ECC_P256;
+                else if (cid_EC_P384 == pArgs->gCurve)
+                    subtype = NanoROOT_ECC_P384;
+                else if (cid_EC_P521 == pArgs->gCurve)
+                    subtype = NanoROOT_ECC_P521;
+                else
+                {
+                    DB_PRINT("ERROR: Only P256, P384, and P521 are available for TAP NanoROOT.\n");
+                    return (MSTATUS) -1;
+                }
+                break;
+            
+            case akt_tap_rsa:
+                algo = NanoROOT_ALGO_RSA;
+                switch(pArgs->gKeySize)
+                {
+                    case 2048:
+                       subtype = NanoROOT_RSA_2048;
+                       break;
+                    case 3072:
+                       subtype = NanoROOT_RSA_3072;
+                       break;
+                    case 4096:
+                       subtype = NanoROOT_RSA_4096;
+                       break;
+                    case 8192:
+                       subtype = NanoROOT_RSA_8192;
+                       break;
+                    default:
+                       DB_PRINT("ERROR: Only RSA 2048, 3072, 4096, and 8192 is available for TAP NanoROOT.\n");
+                       return (MSTATUS) -1;
+                }
+            
+                break;
+            
+            case akt_tap_qs:
+                algo = NanoROOT_ALGO_MLDSA;
+                if (cid_PQC_MLDSA_44 == pArgs->gQsAlg)
+                    subtype = NanoROOT_MLDSA_44;
+                else if (cid_PQC_MLDSA_65 == pArgs->gQsAlg)
+                    subtype = NanoROOT_MLDSA_65;
+                else if (cid_PQC_MLDSA_87 == pArgs->gQsAlg)
+                    subtype = NanoROOT_MLDSA_87;
+                else
+                {
+                    DB_PRINT("ERROR: Only MLDSA 44, 65, and 87 are available for TAP NanoROOT.\n");
+                    return (MSTATUS) -1;
+                }
+                break;
+
+            default:
+                /* error already printed */
+                return (MSTATUS) -1;
+        }
+
+        id = NanoROOT_MAKE_ALGO_ID(algo, subtype);
+        status = DIGI_MALLOC((void *) &pArgs->tapKeyHandle.pBuffer, 4);
+        if (OK != status)
+        {
+            DB_PRINT("ERROR: Out of memory.\n");
+            return (MSTATUS) -1;
+        }
+
+        /* TODO should this be big endian instead? Or always an int or always a buffer? */
+        pArgs->tapKeyHandle.pBuffer[3] = (ubyte) ((id >> 24) & 0xff);
+        pArgs->tapKeyHandle.pBuffer[2] = (ubyte) ((id >> 16) & 0xff);
+        pArgs->tapKeyHandle.pBuffer[1] = (ubyte) ((id >> 8) & 0xff);
+        pArgs->tapKeyHandle.pBuffer[0] = (ubyte) (id & 0xff);
+        pArgs->tapKeyHandle.bufferLen = 4;
+    }
+#endif /* __ENABLE_DIGICERT_SMP_NANOROOT__ */
+#endif /* else of __ENABLE_DIGICERT_TEE__ */
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
     if (FORMAT_SSH == pArgs->gOutPubForm && NULL == pArgs->gpOutPubFile)
@@ -4980,13 +5094,11 @@ MOC_EXTERN void KEYGEN_resetArgs(KeyGenArgs *pArgs)
     pArgs->gPort = KEYGEN_TAP_DEFAULT_PORT; /* set back to defaults */
     pArgs->gTapProvider = KEYGEN_TAP_DEFAULT_PROVIDER;
 #endif
-#ifdef __ENABLE_DIGICERT_TEE__
     if (NULL != pArgs->tapKeyHandle.pBuffer)
     {
         (void) DIGI_MEMSET_FREE(&pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen);
     }
     pArgs->tapKeyHandle.bufferLen = 0;
-#endif
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
     pArgs->gOutForm = FORMAT_PEM; /* default */
@@ -5179,7 +5291,12 @@ MOC_EXTERN MSTATUS KEYGEN_keyCertGen(
         goto exit;
 
 #ifdef __ENABLE_DIGICERT_TAP__
-    status = KEYGEN_generateKey(&gKeyGenArgs, (void *) &gTapArgs, &key, pRand);
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    if (FALSE == gKeyGenArgs.gTap) /* for NanoRoot we don't actually generate a key */
+#endif
+    {
+       status = KEYGEN_generateKey(&gKeyGenArgs, (void *) &gTapArgs, &key, pRand);
+    }
 #else
     status = KEYGEN_generateKey(&gKeyGenArgs, NULL, &key, pRand);
 #endif
@@ -5434,7 +5551,12 @@ int main(int argc, char *argv[])
         goto exit;
 
 #ifdef __ENABLE_DIGICERT_TAP__
-    status = KEYGEN_generateKey(&gKeyGenArgs, (void *) &gTapArgs, &key, pRand);
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    if (FALSE == gKeyGenArgs.gTap) /* for NanoRoot we don't actually generate a key */
+#endif
+    {
+        status = KEYGEN_generateKey(&gKeyGenArgs, (void *) &gTapArgs, &key, pRand);
+    }
 #else
     status = KEYGEN_generateKey(&gKeyGenArgs, NULL, &key, pRand);
 #endif
@@ -5527,7 +5649,7 @@ exit:
     }
 #endif
 
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     /* If the generated key is a TAP key and was not used to sign a (self signed) cert, it needs to be unloaded */
     if (gKeyGenArgs.gTap && (NULL == gKeyGenArgs.gpOutCertFile || (NULL != gKeyGenArgs.gpOutCertFile && NULL != gKeyGenArgs.gpSigningKey)))
     {
