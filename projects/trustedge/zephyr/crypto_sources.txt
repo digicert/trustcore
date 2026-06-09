@@ -143,5 +143,6 @@ MSS_SRC_DIR/crypto_interface/crypto_interface_ecc_tap.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_ecc_eg.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_eddsa.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_qs.c
+MSS_SRC_DIR/crypto_interface/crypto_interface_qs_tap.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_qs_kem.c
 MSS_SRC_DIR/crypto_interface/crypto_interface_qs_sig.c

@@ -189,6 +189,10 @@ static const OSSL_ALGORITHM digiprov_keymgmt[] = {
     { PROV_NAMES_ML_KEM_512, prov_name_fips, digiprov_mlkem512_keymgmt_functions},
     { PROV_NAMES_ML_KEM_768, prov_name_fips, digiprov_mlkem768_keymgmt_functions},
     { PROV_NAMES_ML_KEM_1024, prov_name_fips, digiprov_mlkem1024_keymgmt_functions},
+    { PROV_NAMES_X25519MLKEM768, prov_name_fips, digiprov_mlx_x25519_mlkem768_keymgmt_functions},
+    { PROV_NAMES_X448MLKEM1024, prov_name_fips, digiprov_mlx_x448_mlkem1024_keymgmt_functions},
+    { PROV_NAMES_SecP256r1MLKEM768, prov_name_fips, digiprov_mlx_p256_mlkem768_keymgmt_functions},
+    { PROV_NAMES_SecP384r1MLKEM1024, prov_name_fips, digiprov_mlx_p384_mlkem1024_keymgmt_functions},
     { PROV_NAMES_ML_DSA_44, prov_name_fips, digiprov_mldsa44_keymgmt_functions},
     { PROV_NAMES_ML_DSA_65, prov_name_fips, digiprov_mldsa65_keymgmt_functions},
     { PROV_NAMES_ML_DSA_87, prov_name_fips, digiprov_mldsa87_keymgmt_functions},
@@ -266,6 +270,10 @@ static const OSSL_ALGORITHM digiprov_asym_kem[] = {
     { PROV_NAMES_ML_KEM_512, prov_name_fips, digiprov_pqc_kem_functions},
     { PROV_NAMES_ML_KEM_768, prov_name_fips, digiprov_pqc_kem_functions},
     { PROV_NAMES_ML_KEM_1024, prov_name_fips, digiprov_pqc_kem_functions},
+    { PROV_NAMES_X25519MLKEM768, prov_name_fips, digiprov_pqc_mlx_kem_functions },
+    { PROV_NAMES_X448MLKEM1024, prov_name_fips, digiprov_pqc_mlx_kem_functions },
+    { PROV_NAMES_SecP256r1MLKEM768, prov_name_fips, digiprov_pqc_mlx_kem_functions },
+    { PROV_NAMES_SecP384r1MLKEM1024, prov_name_fips, digiprov_pqc_mlx_kem_functions },
     { NULL, NULL, NULL }
 };
 #endif

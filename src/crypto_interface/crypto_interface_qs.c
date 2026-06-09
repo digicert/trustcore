@@ -29,6 +29,7 @@
 #include "../crypto/pqc/pqc_ser.h"
 #include "../crypto_interface/crypto_interface_priv.h"
 #include "../crypto_interface/crypto_interface_qs.h"
+#include "../crypto_interface/crypto_interface_qs_tap_priv.h"
 
 #if defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_PQC_KEM__) || defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE_PQC_SIG__)
 
@@ -1213,6 +1214,21 @@ extern MSTATUS CRYPTO_INTERFACE_QS_getAlg(QS_CTX *pCtx, ubyte4 *pAlg)
     if (NULL == pCtx || NULL == pAlg)
         return ERR_NULL_POINTER;
 
+    /* Is this a crypto interface key? */
+    if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
+    {
+        /* If this is a TAP key, handle it separately */
+        if (NULL != pCtx->pSecretKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pCtx->pSecretKey)->localType))
+        {
+            return CRYPTO_INTERFACE_TAP_QS_getAlg((MocAsymKey) pCtx->pSecretKey, pAlg);
+        }
+        else if (NULL != pCtx->pPublicKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pCtx->pPublicKey)->localType))
+        {
+            return CRYPTO_INTERFACE_TAP_QS_getAlg((MocAsymKey) pCtx->pPublicKey, pAlg);
+        }
+        /* else we still assume the alg is set in pCtx */
+    }
+
     *pAlg = pCtx->alg;
 
     return OK;
@@ -1436,6 +1452,8 @@ extern MSTATUS CRYPTO_INTERFACE_QS_getPublicKeyLenFromAlgo(ubyte4 algo, ubyte4 *
     MSTATUS status = OK;
     QS_CTX *pCtx = NULL;
 
+    /* TODO should probably just be hardcoded table, ok for now to create sw temp ctx */
+
     /* Input validity is handled by the below calls */
     status = CRYPTO_INTERFACE_QS_newCtx(MOC_HASH(0) &pCtx, algo);
     if (OK != status)
@@ -1458,6 +1476,7 @@ exit:
 extern MSTATUS CRYPTO_INTERFACE_QS_getPublicKeyLen(QS_CTX *pCtx, ubyte4 *pPubLen)
 {
     MSTATUS status = ERR_NULL_POINTER;
+    ubyte4 algo;
 
     if (NULL == pCtx)
         goto exit;
@@ -1465,8 +1484,28 @@ extern MSTATUS CRYPTO_INTERFACE_QS_getPublicKeyLen(QS_CTX *pCtx, ubyte4 *pPubLen
     /* Is this a crypto interface key? */
     if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        /* pubLen and publicKey will be validated by the this call */
-        status = CRYPTO_getDomainParam ((MocAsymKey) pCtx->pPublicKey, MOC_ASYM_KEY_PARAM_PUBKEY_LEN, pPubLen);
+        /* If this is a TAP key, handle it separately */
+        if (NULL != pCtx->pSecretKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pCtx->pSecretKey)->localType))
+        {
+            status = CRYPTO_INTERFACE_TAP_QS_getAlg((MocAsymKey) pCtx->pSecretKey, &algo);
+            if (OK != status)
+                goto exit;
+
+            status = CRYPTO_INTERFACE_QS_getPublicKeyLenFromAlgo(algo, pPubLen);
+        }
+        else if (NULL != pCtx->pPublicKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pCtx->pPublicKey)->localType))
+        {
+            status = CRYPTO_INTERFACE_TAP_QS_getAlg((MocAsymKey) pCtx->pPublicKey, &algo);
+            if (OK != status)
+                goto exit;
+
+            status = CRYPTO_INTERFACE_QS_getPublicKeyLenFromAlgo(algo, pPubLen);
+        }
+        else
+        {
+            /* pubLen and publicKey will be validated by the this call */
+            status = CRYPTO_getDomainParam ((MocAsymKey) pCtx->pPublicKey, MOC_ASYM_KEY_PARAM_PUBKEY_LEN, pPubLen);
+        }
     }
     else
     {
@@ -1490,20 +1529,32 @@ extern MSTATUS CRYPTO_INTERFACE_QS_getPublicKey(QS_CTX *pCtx, ubyte *pPublicKey,
     /* Is this a crypto interface key? */
     if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        MPqcKeyTemplate template = {0};
-
-        if (NULL == pPublicKey)
-            goto exit;
-
-        template.pPublicKey = pPublicKey;
-        template.publicKeyLen = pubLen;
-
-        /* Get the public key data from the operator, this doesn't actually allocate any buffers in our case */
-        status = CRYPTO_getKeyDataAlloc ((MocAsymKey) pCtx->pPublicKey, (void *)&template, MOC_GET_PUBLIC_KEY_DATA);
-        if (OK != status)
+        /* If this is a TAP key, handle it separately */
+        if (NULL != pCtx->pSecretKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pCtx->pSecretKey)->localType))
         {
-            /* If we didn't find it then this might be a secret key, get the public key from the secret key */
-            status = CRYPTO_getKeyDataAlloc((MocAsymKey) pCtx->pSecretKey, (void *)&template, MOC_GET_PUBLIC_KEY_DATA);
+            status = CRYPTO_INTERFACE_TAP_QS_getPublicKey((MocAsymKey) pCtx->pSecretKey, pPublicKey, pubLen);
+        }
+        else if (NULL != pCtx->pPublicKey && 0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey) pCtx->pPublicKey)->localType))
+        {
+            status = CRYPTO_INTERFACE_TAP_QS_getPublicKey((MocAsymKey) pCtx->pPublicKey, pPublicKey, pubLen);
+        }
+        else
+        {
+            MPqcKeyTemplate template = {0};
+
+            if (NULL == pPublicKey)
+                goto exit;
+            
+            template.pPublicKey = pPublicKey;
+            template.publicKeyLen = pubLen;
+
+            /* Get the public key data from the operator, this doesn't actually allocate any buffers in our case */
+            status = CRYPTO_getKeyDataAlloc ((MocAsymKey) pCtx->pPublicKey, (void *)&template, MOC_GET_PUBLIC_KEY_DATA);
+            if (OK != status)
+            {
+                /* If we didn't find it then this might be a secret key, get the public key from the secret key */
+                status = CRYPTO_getKeyDataAlloc((MocAsymKey) pCtx->pSecretKey, (void *)&template, MOC_GET_PUBLIC_KEY_DATA);
+            }
         }
     }
     else
@@ -1899,9 +1950,192 @@ exit:
 
 /*----------------------------------------------------------------------------*/
 
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_loadKeys (
+  QS_CTX **ppNewKey,
+  MocAsymKey *ppPriKey,
+  MocAsymKey *ppPubKey
+  )
+{
+  MSTATUS status;
+  ubyte4 algoStatus, index;
+  MocCtx pMocCtx = NULL;
+  QS_CTX *pNewKey = NULL;
+  MocAsymKey pPriKeyToUse = NULL;
+  MocAsymKey pPubKeyToUse = NULL;
+  MocAsymKey pPriKey = NULL;
+  MocAsymKey pPubKey = NULL;
+
+  status = ERR_NULL_POINTER;
+  if (NULL == ppNewKey)
+    goto exit;
+
+  if (NULL != ppPriKey)
+    pPriKey = *ppPriKey;
+  if (NULL != ppPubKey)
+    pPubKey = *ppPubKey;
+
+  status = DIGI_CALLOC((void **)&pNewKey, 1, sizeof(QS_CTX));
+  if (OK != status)
+    goto exit;
+
+  if (NULL != pPriKey)
+  {
+    /* We have a private key to load, do we also have a public key? */
+    pPriKeyToUse = pPriKey;
+    if (NULL != pPubKey)
+    {
+      /* We also have a public key, set the pointer to simply load them in */
+      pPubKeyToUse = pPubKey;
+    }
+    else
+    {
+      /* We do not have a public key, get one from the operator */
+      status = CRYPTO_getPubFromPri(pPriKeyToUse, &pPubKeyToUse, NULL);
+      if (OK != status)
+        goto exit;
+    }
+
+    pNewKey->isPrivate = TRUE;
+  }
+  else
+  {
+    /* If the private key is NULL, we need a valid public key */
+    status = ERR_NULL_POINTER;
+    if (NULL == pPubKey)
+      goto exit;
+
+    pPubKeyToUse = pPubKey;
+
+    /* Is this a TAP key? */
+    if (0 != (MOC_LOCAL_TYPE_TAP & pPubKey->localType))
+    {
+      /* We need to create a shell for the underlying private MocAsymKey */
+      status = CRYPTO_INTERFACE_getTapMocCtx(&pMocCtx);
+      if (OK != status)
+        goto exit;
+
+      /* Determine the index at which the QS TAP operator lives */
+      status = CRYPTO_INTERFACE_checkTapAsymAlgoStatus (
+        moc_alg_qs_sig_mldsa, &algoStatus, &index); /* Operator is generic but local type alg defaults to mldsa */
+      if (OK != status)
+        goto exit;
+    }
+    else
+    {
+      /* We need to create a shell for the underlying private MocAsymKey */
+      status = CRYPTO_INTERFACE_getMocCtx(&pMocCtx);
+      if (OK != status)
+        goto exit;
+
+      /* Determine the index at which the QS operator lives */
+      status = CRYPTO_INTERFACE_checkAsymAlgoStatus (
+        moc_alg_qs_sig_mldsa, &algoStatus, &index); /* TODO should this not be mldsa by default? For ecc here we use p256. Might be a bug */
+      if (OK != status)
+        goto exit;
+    }
+
+    /* If the underlying operator is not enabled thats an error */
+    status = ERR_CRYPTO_INTERFACE;
+    if (CRYPTO_INTERFACE_ALGO_ENABLED != algoStatus)
+      goto exit;
+
+    /* Get a new private key shell */
+    status = CRYPTO_getAsymObjectFromIndex (
+      index, pMocCtx, NULL, MOC_ASYM_KEY_TYPE_PRIVATE, &pPriKeyToUse);
+    if (OK != status)
+      goto exit;
+  }
+
+  /* Set the keys inside of the ECCKey */
+  pNewKey->pSecretKey = pPriKeyToUse;
+  pNewKey->pPublicKey = pPubKeyToUse;
+  pPriKeyToUse = NULL;
+  pPubKeyToUse = NULL;
+
+  /* NULL out the callers reference */
+  if (NULL != ppPriKey)
+  {
+    *ppPriKey = NULL;
+  }
+  if (NULL != ppPubKey)
+  {
+    *ppPubKey = NULL;
+  }
+
+  /* Mark this object as crypto interface enabled */
+  pNewKey->enabled = CRYPTO_INTERFACE_ALGO_ENABLED;
+  
+  /* TODO only mldsa TAP support right now, otherwise need to get this from the mocasymkeys
+     could also set alg, might make getting pubkey size and sig size easier */
+  pNewKey->type = MOC_QS_SIG;
+
+  *ppNewKey = pNewKey;
+  pNewKey = NULL;
+
+exit:
+
+  if (NULL != pNewKey)
+  {
+    DIGI_FREE((void **)&pNewKey);
+  }
+  if (NULL != pPriKeyToUse)
+  {
+    CRYPTO_freeMocAsymKey(&pPriKeyToUse, NULL);
+  }
+  if (NULL != pPubKeyToUse)
+  {
+    CRYPTO_freeMocAsymKey(&pPubKeyToUse, NULL);
+  }
+
+  return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_QS_loadKey (
+  QS_CTX **ppNewKey,
+  MocAsymKey *ppKey
+  )
+{
+  MSTATUS status;
+  MocAsymKey pKey = NULL;
+  MocAsymKey pPriKey = NULL;
+  MocAsymKey pPubKey = NULL;
+
+  status = ERR_NULL_POINTER;
+  if ( (NULL == ppNewKey) || (NULL == ppKey) )
+    goto exit;
+
+  pKey = *ppKey;
+  if (NULL == pKey)
+    goto exit;
+
+  /* Is this a private key? */
+  if (0 != (MOC_LOCAL_TYPE_PRI & pKey->localType))
+  {
+    pPriKey = pKey;
+  }
+  else
+  {
+    pPubKey = pKey;
+  }
+
+  status = CRYPTO_INTERFACE_QS_loadKeys(ppNewKey, &pPriKey, &pPubKey);
+  if (OK != status)
+    goto exit;
+
+  *ppKey = NULL;
+
+exit:
+  return status;
+}
+
+/*----------------------------------------------------------------------------*/
+
 extern MSTATUS CRYPTO_INTERFACE_QS_deleteCtx(QS_CTX **ppCtx)
 {
     MSTATUS status = ERR_NULL_POINTER, fstatus = OK;
+    QS_CTX *pCtx;
 
     if (NULL == ppCtx)
         goto exit;
@@ -1910,18 +2144,12 @@ extern MSTATUS CRYPTO_INTERFACE_QS_deleteCtx(QS_CTX **ppCtx)
     if (NULL == *ppCtx)
         goto exit;  /* ok no-op */
 
+    pCtx = *ppCtx;
+
     /* Is this enabled */
-    if (CRYPTO_INTERFACE_ALGO_ENABLED == (*ppCtx)->enabled)
+    if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        status = CRYPTO_freeMocAsymKey((MocAsymKey *) &((*ppCtx)->pSecretKey), NULL);
-
-        fstatus = CRYPTO_freeMocAsymKey((MocAsymKey *) &((*ppCtx)->pPublicKey), NULL);
-        if (OK == status)
-            status = fstatus;
-
-        fstatus = DIGI_MEMSET_FREE((ubyte **) ppCtx, sizeof(QS_CTX));
-        if (OK == status)
-            status = fstatus;
+        status = CRYPTO_INTERFACE_freeAsymKeys ((void **)ppCtx, pCtx->pPublicKey, pCtx->pSecretKey);
     }
     else
     {

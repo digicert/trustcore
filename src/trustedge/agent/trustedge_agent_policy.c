@@ -1717,6 +1717,22 @@ extern MSTATUS TRUSTEDGE_agentPolicyClearCurrent(
             {
                 if (NULL != pState->data.cps.pNewKey)
                 {
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+                    TAP_KeyHandle keyHandle = 0;
+                    TAP_TokenHandle tokenHandle = 0;
+
+                    /* key was marked for deferred unload, unload it before deleting the outer AsymmetricKey structure */
+                    fstatus = CRYPTO_INTERFACE_TAP_AsymGetKeyInfo(pState->data.cps.pNewKey, MOC_ASYM_KEY_TYPE_PRIVATE, &tokenHandle, &keyHandle);
+                    if (OK == status)
+                        status = fstatus;
+
+                    if (0 != keyHandle)
+                    {
+                        fstatus = CRYPTO_INTERFACE_unloadTapKey(NULL, tokenHandle, keyHandle);
+                        if (OK == status)
+                            status = fstatus;
+                    }
+#endif
                     fstatus = CRYPTO_uninitAsymmetricKey(pState->data.cps.pNewKey, NULL);
                     if (OK == status)
                         status = fstatus;
@@ -2950,6 +2966,11 @@ static MSTATUS TRUSTEDGE_agentConstructCertificateRequest(
         {
             keySrc = TRUSTEDGE_KEY_SOURCE_TEE;
         }
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+        else if ((OK == TAP_checkForProvider(TAP_PROVIDER_NANOROOT, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_NANOROOT_LEN == token.len && 0 == DIGI_STRNCMP(KEY_SOURCE_NANOROOT, token.pStart, token.len))
+        {
+            keySrc = TRUSTEDGE_KEY_SOURCE_NANOROOT;
+        }
 #else
         else if ((OK == TAP_checkForProvider(TAP_PROVIDER_TPM2, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_TPM2_LEN == token.len && 0 == DIGI_STRNCMP(KEY_SOURCE_TPM2, token.pStart, token.len))
         {
@@ -3016,6 +3037,11 @@ static MSTATUS TRUSTEDGE_agentConstructCertificateRequest(
             else if ((OK == TAP_checkForProvider(TAP_PROVIDER_TEE, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_TEE_LEN == keySrcToken.len && 0 == DIGI_STRNCMP(KEY_SOURCE_TEE, keySrcToken.pStart, keySrcToken.len))
             {
                 keySrc = TRUSTEDGE_KEY_SOURCE_TEE;
+            }
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+            else if ((OK == TAP_checkForProvider(TAP_PROVIDER_NANOROOT, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_NANOROOT_LEN == keySrcToken.len && 0 == DIGI_STRNCMP(KEY_SOURCE_NANOROOT, keySrcToken.pStart, keySrcToken.len))
+            {
+                keySrc = TRUSTEDGE_KEY_SOURCE_NANOROOT;
             }
 #else
             else if ((OK == TAP_checkForProvider(TAP_PROVIDER_TPM2, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_TPM2_LEN == keySrcToken.len && 0 == DIGI_STRNCMP(KEY_SOURCE_TPM2, keySrcToken.pStart, keySrcToken.len))

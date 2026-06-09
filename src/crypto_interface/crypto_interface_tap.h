@@ -30,6 +30,11 @@ extern "C" {
 #endif
 
 #ifdef __ENABLE_DIGICERT_TAP__
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_getKeyById(
+    ubyte *pId,
+    ubyte4 idLen,
+    AsymmetricKey *pKey);
+
 MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_serializeKeyById(
     TAP_Context *pTapContext,
     TAP_EntityCredentialList *pUsageCredentials,

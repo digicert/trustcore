@@ -1,20 +1,20 @@
 # TrustCore SDK
 
-**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices. 
+**TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices.
 
 > [!NOTE]
-> DigiCert is in the process of completely open-sourcing the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use. Code will be open-sourced on a per-module basis and progress on which modules have been released can be tracked in the related [Github Project](https://github.com/orgs/digicert/projects/31). 
+> DigiCert is in the process of completely open-sourcing the code under the AGPL v3 license to support transparency, collaboration, and developer accessibility, while maintaining commercial licensing for commercial and proprietary use. Code will be open-sourced on a per-module basis and progress on which modules have been released can be tracked in the related [GitHub Project](https://github.com/orgs/digicert/projects/31).
 
-## TrustCore SDK Overview  
+## TrustCore SDK Overview
 
-TrustCore SDK is a powerful suite of security tools hardened over 15 years of usage, designed to simplify and enhance certificate-based authentication, encryption, and secure communications. Previously a closed-source solution, it is now being open-sourced to empower developers with greater flexibility in integrating robust security mechanisms into their applications.  
+TrustCore SDK is a powerful suite of security tools hardened over 15 years of usage, designed to simplify and enhance certificate-based authentication, encryption, and secure communications. Previously a closed-source solution, it is now being open-sourced to empower developers with greater flexibility in integrating robust security mechanisms into their applications.
 
 ### **Key Capabilities**
 
-- **Certificate Lifecycle Management** – Supports enrollment, renewal, revocation, and validation.  
-- **PKI Integration** – Seamless interaction with public key infrastructure for secure identity verification.  
-- **Broad Cryptographic Algorithm Support** – From message digests to symmetric and asymmetric algorithms, TrustCore [NanoCrypto](https://dev.digicert.com/en/trustcore-sdk/nanocrypto.html) has you covered.  
-- **Trusted Platform Integration** – Enables integration with TPMs and hardware security modules (HSMs).  
+- **Certificate Lifecycle Management** – Supports enrollment, renewal, revocation, and validation.
+- **PKI Integration** – Seamless interaction with public key infrastructure for secure identity verification.
+- **Broad Cryptographic Algorithm Support** – From message digests to symmetric and asymmetric algorithms, TrustCore [NanoCrypto](https://dev.digicert.com/en/trustcore-sdk/nanocrypto.html) has you covered.
+- **Trusted Platform Integration** – Enables integration with TPMs and hardware security modules (HSMs).
 - **EST & SCEP Protocol Support** – Implements industry-standard protocols for certificate provisioning and management.
 - **Secure Device Communications** - Delivers MQTT (MQTTs) over TLS 1.3 for securing device communications.
 - **PQC-ready** - Utilize the latest post-quantum cryptographic algorithms including: ML-KEM, ML-DSA and SLH-DSA, ensuring your devices are quantum-safe.
@@ -44,17 +44,17 @@ TrustCore SDK provides comprehensive support for various security and communicat
 
 ### **Documentation**
 
-All the TrustCore documentation is available at [TrustCore SDK documentation](https://dev.digicert.com/en/trustcore-sdk.html).  
+All the TrustCore documentation is available at [TrustCore SDK documentation](https://dev.digicert.com/en/trustcore-sdk.html).
 
 ## License
 
 This project is available under a **dual-license model**:
 
-- **Open Source License:**  
+- **Open Source License:**
   [GNU Affero General Public License v3 (AGPL v3)](./LICENSE.md)
   This license allows you to use, modify, and distribute the code for free in accordance with AGPL terms.
 
-- **Commercial License:**  
+- **Commercial License:**
 If you wish to use TrustCore SDK in a **proprietary** or **commercial** product (e.g., embedded in closed-source firmware or commercial SaaS applications), a commercial license is available under DigiCert’s [Master Services Agreement](https://www.digicert.com/master-services-agreement/) (MSA).  Contact us at [sales@digicert.com](mailto:sales@digicert.com) for commercial licensing details.
 
 ## Support

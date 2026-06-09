@@ -2351,14 +2351,21 @@ ubyte2 gSupportedNamedGroup[] = {
 #ifndef __DISABLE_DIGICERT_ECC_P256__
     tlsExtHybrid_SecP256r1MLKEM768,
 #endif
-#endif
+    tlsExtPqc_MLKEM1024,
+#endif /* __ENABLE_DIGICERT_PQC__ */
 };
 
-#define GROUP_BIT_MASK(group) (1 << (group & 0x1F))
 #define SUPPORTED_GROUP_MASK        (0xFF00)
 #define ECDH_SUPPORTED_GROUP_MASK   (0x0000)
 #define FFDH_SUPPORTED_GROUP_MASK   (0x0100)
+#define PQC_SUPPORTED_GROUP_MASK    (0x0200)    
 #define HYBRID_SUPPORTED_GROUP_MASK (0x1100)
+
+/* For SUPPORTED_GROUPS_FLAGS below, FFDH curves use bits 0,1,2 etc, 
+   we will use 8, 9, 10 for ML-KEM, ie shift an extra 8 bits */
+#define PQC_OFFSET 8
+
+#define GROUP_BIT_MASK(group) (PQC_SUPPORTED_GROUP_MASK == (group & SUPPORTED_GROUP_MASK) ? (1 << ((group & 0x1F) + PQC_OFFSET)) : (1 << (group & 0x1F)))
 
 /* so far tlsExtHybrid_X25519MLKEM768 is only group with PQC sig/key followed by the ECC one */
 #define HYBRID_IS_PQC_FIRST( x) (tlsExtHybrid_X25519MLKEM768 == x ? TRUE : FALSE)
@@ -2423,6 +2430,12 @@ ubyte2 gSupportedNamedGroup[] = {
 #define DH_FFDHE8192_FLAG   0
 #endif
 
+#if defined(__ENABLE_DIGICERT_PQC__)
+#define PQC_MLKEM1024_FLAG     (1 << ((tlsExtPqc_MLKEM1024 & 0x1F) + PQC_OFFSET))
+#else
+#define PQC_MLKEM1024_FLAG     0
+#endif
+
 #if defined(__ENABLE_DIGICERT_PQC__) && defined(__ENABLE_DIGICERT_ECC_EDDH_25519__)
 #define HYBRID_MLKEM768_X25519_FLAG        (1 << (tlsExtHybrid_X25519MLKEM768 & 0x1F))
 #else
@@ -2452,6 +2465,7 @@ ubyte2 gSupportedNamedGroup[] = {
      DH_FFDHE4096_FLAG | \
      DH_FFDHE6144_FLAG | \
      DH_FFDHE8192_FLAG | \
+     PQC_MLKEM1024_FLAG | \
      HYBRID_FLAG )
 #endif
 
@@ -2476,6 +2490,7 @@ ubyte2 gSupportedNamedGroup[] = {
      DH_FFDHE4096_FLAG | \
      DH_FFDHE6144_FLAG | \
      DH_FFDHE8192_FLAG | \
+     PQC_MLKEM1024_FLAG | \
      HYBRID_FLAG )
 #endif
 
@@ -5855,7 +5870,7 @@ SSL_SOCK_enforcePQCAlgorithm(SSLSocket *pSSLSock)
 
     for (i = 0; i < COUNTOF(gSupportedNamedGroup); i++)
     {
-        if (TLS_EXT_NAMED_CURVE_IS_PQC(gSupportedNamedGroup[i]))
+        if (TLS_EXT_NAMED_CURVE_IS_PQC(gSupportedNamedGroup[i]) || TLS_EXT_NAMED_CURVE_IS_PQC_COMPOSITE(gSupportedNamedGroup[i]))
         {
             pPQCKeyExchangeList[pqcKeyExchangeListLength] = gSupportedNamedGroup[i];
             pqcKeyExchangeListLength++;
@@ -16022,7 +16037,7 @@ constructTLSExtSupportedGroup(
 #ifdef __ENABLE_DIGICERT_PQC__
 static MSTATUS getNamedGroupCipherTextLen(ubyte4 namedGroup, ubyte4 *pLength)
 {
-    ubyte4 length;
+    ubyte4 length = 0;
 #ifdef __ENABLE_DIGICERT_PQC__
     ubyte4 qsLength      = 0;
     ubyte4 qsAlgo        = 0;
@@ -16095,6 +16110,11 @@ static MSTATUS getNamedGroupCipherTextLen(ubyte4 namedGroup, ubyte4 *pLength)
 #endif
 
 #if defined(__ENABLE_DIGICERT_PQC__)
+        case tlsExtPqc_MLKEM1024:
+            qsAlgo = cid_PQC_MLKEM_1024;
+            isQS = TRUE;
+            break;
+
 #ifndef __DISABLE_DIGICERT_ECC_P256__
         case tlsExtHybrid_SecP256r1MLKEM768:
 #endif
@@ -16131,17 +16151,17 @@ static MSTATUS getNamedGroupCipherTextLen(ubyte4 namedGroup, ubyte4 *pLength)
         {
             goto exit;
         }
+    }
+#endif
 
 #ifdef __ENABLE_DIGICERT_PQC__
-        if (TRUE == isQS)
+    if (TRUE == isQS)
+    {
+        if (OK > (status = CRYPTO_INTERFACE_QS_KEM_getCipherTextLenFromAlgo(qsAlgo, &qsLength)))
         {
-            if (OK > (status = CRYPTO_INTERFACE_QS_KEM_getCipherTextLenFromAlgo(qsAlgo, &qsLength)))
-            {
-                goto exit;
-            }
-            length += qsLength;
+            goto exit;
         }
-#endif
+        length += qsLength;
     }
 #endif
 
@@ -16157,7 +16177,7 @@ exit:
 
 static MSTATUS getNamedGroupLength(ubyte4 namedGroup, ubyte4 *pLength)
 {
-    ubyte4 length;
+    ubyte4 length = 0;
 #ifdef __ENABLE_DIGICERT_PQC__
     ubyte4 qsLength      = 0;
     ubyte4 qsAlgo        = 0;
@@ -16229,6 +16249,11 @@ static MSTATUS getNamedGroupLength(ubyte4 namedGroup, ubyte4 *pLength)
             break;
 #endif
 #if defined(__ENABLE_DIGICERT_PQC__)
+        case tlsExtPqc_MLKEM1024:
+            qsAlgo = cid_PQC_MLKEM_1024;
+            isQS = TRUE;
+            break;
+    
 #ifndef __DISABLE_DIGICERT_ECC_P256__
         case tlsExtHybrid_SecP256r1MLKEM768:
 #endif
@@ -16265,16 +16290,17 @@ static MSTATUS getNamedGroupLength(ubyte4 namedGroup, ubyte4 *pLength)
         {
             goto exit;
         }
-#if defined(__ENABLE_DIGICERT_PQC__)
-        if (TRUE == isQS)
-        {
-            if (OK > (status = CRYPTO_INTERFACE_QS_getPublicKeyLenFromAlgo(qsAlgo, &qsLength)))
-            {
-                goto exit;
-            }
-            length += qsLength;
-        }
+    }
 #endif
+
+#if defined(__ENABLE_DIGICERT_PQC__)
+    if (TRUE == isQS)
+    {
+        if (OK > (status = CRYPTO_INTERFACE_QS_getPublicKeyLenFromAlgo(qsAlgo, &qsLength)))
+        {
+            goto exit;
+        }
+        length += qsLength;
     }
 #endif
 
@@ -16365,14 +16391,24 @@ exit1:
             goto exit;
         }
     }
+#endif
 #ifdef __ENABLE_DIGICERT_PQC__
-    else if (akt_hybrid == pSharedKey->type)
+    else if (akt_qs == pSharedKey->type)
     {
         QS_CTX *pKemCtx = ((AsymmetricKey *) pSharedKey->pKey)->pQsCtx;
+
+        /* now write the qs public key */
+        status = CRYPTO_INTERFACE_QS_getPublicKey(pKemCtx, pPubKey, pubKeyLen);
+    }
+#endif
+#if defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__)
+    else if (akt_hybrid == pSharedKey->type)
+    {
+        
         ubyte4 eccKeyLen = 0;
         ubyte4 eccKeyOffset;
         ubyte4 pqcKeyOffset;
-
+        QS_CTX *pKemCtx = ((AsymmetricKey *) pSharedKey->pKey)->pQsCtx;
         pECCKey = ((AsymmetricKey *) pSharedKey->pKey)->key.pECC;
 
         status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(pECCKey, &eccKeyLen);
@@ -16398,7 +16434,6 @@ exit1:
         /* now write the qs public key */
         status = CRYPTO_INTERFACE_QS_getPublicKey(pKemCtx, pPubKey + pqcKeyOffset, pubKeyLen - eccKeyLen);
     }
-#endif
 #endif
 
 exit:
@@ -16446,7 +16481,19 @@ static MSTATUS getLengthFromSharedKeyEntry(sharedKey *pSharedKey, ubyte4 *pPubKe
 
         *pPubKeyLen = length;
     }
+#endif
 #ifdef __ENABLE_DIGICERT_PQC__
+    else if (akt_qs == pSharedKey->type)
+    {
+        QS_CTX *pQsCtx = ((AsymmetricKey *) pSharedKey->pKey)->pQsCtx;
+
+        if (OK > (status = CRYPTO_INTERFACE_QS_getPublicKeyLen(pQsCtx, &length)))
+            goto exit;
+
+        *pPubKeyLen = length;
+    }
+#endif
+#if defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__)
     else if (akt_hybrid == pSharedKey->type)
     {
         ubyte4 qsPubLen = 0;
@@ -16464,7 +16511,6 @@ static MSTATUS getLengthFromSharedKeyEntry(sharedKey *pSharedKey, ubyte4 *pPubKe
         *pPubKeyLen = length + qsPubLen;
     }
 #endif
-#endif /* __ENABLE_DIGICERT_ECC__ */
 
 exit:
     return status;
@@ -16608,7 +16654,8 @@ static MSTATUS deleteSharedKey(sharedKey* pSharedKey)
         goto exit;
 #endif
     }
-    else if((akt_ecc == pSharedKey->type) || (akt_ecc_ed == pSharedKey->type) || (akt_hybrid == pSharedKey->type))
+    else if((akt_ecc == pSharedKey->type) || (akt_ecc_ed == pSharedKey->type) || 
+            (akt_hybrid == pSharedKey->type) || (akt_qs == pSharedKey->type))
     {
         status = CRYPTO_uninitAsymmetricKey((AsymmetricKey *) pSharedKey->pKey, NULL);
         if (OK != status)
@@ -16683,6 +16730,11 @@ static MSTATUS generateSharedKey(SSLSocket* pSSLSock, ubyte4 namedGroup, sharedK
             break;
 #endif
 #ifdef __ENABLE_DIGICERT_PQC__
+        case tlsExtPqc_MLKEM1024:
+            type = akt_qs;
+            qsAlgo = cid_PQC_MLKEM_1024;
+            break;
+
         case tlsExtHybrid_SecP256r1MLKEM768:
 #ifdef __ENABLE_DIGICERT_ECC_EDDH_25519__
         case tlsExtHybrid_X25519MLKEM768:
@@ -16758,7 +16810,37 @@ static MSTATUS generateSharedKey(SSLSocket* pSSLSock, ubyte4 namedGroup, sharedK
         pSharedKey->pKey = (void *) pAsymKey;
     }
 #endif
+#endif /* __ENABLE_DIGICERT_ECC__ */
 #ifdef __ENABLE_DIGICERT_PQC__
+    else if(akt_qs == type)
+    {
+        pSharedKey->type = type;
+        pSharedKey->namedGroup = namedGroup;
+
+        status = DIGI_CALLOC((void **) &pAsymKey, 1, sizeof(AsymmetricKey));
+        if (OK != status)
+            goto exit;
+
+        status = CRYPTO_INTERFACE_QS_newCtx(MOC_HASH(pSSLSock->hwAccelCookie) &pAsymKey->pQsCtx, qsAlgo);
+        if (OK != status)
+        {
+            (void) DIGI_FREE((void **) &pAsymKey);
+            goto exit;
+        }
+
+        pAsymKey->type = akt_qs;
+        status = CRYPTO_INTERFACE_QS_generateKeyPair(MOC_HASH(pSSLSock->hwAccelCookie) pAsymKey->pQsCtx, pSSLSock->rngFun, pSSLSock->rngFunArg);
+        if (OK != status)
+        {
+            (void) CRYPTO_uninitAsymmetricKey(pAsymKey, NULL);
+            (void) DIGI_FREE((void **) &pAsymKey);
+            goto exit; 
+        }
+
+        pSharedKey->pKey = (void *) pAsymKey;
+    }
+#endif
+#if defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__)
     else if(akt_hybrid == type)
     {
         pSharedKey->type = type;
@@ -16771,18 +16853,24 @@ static MSTATUS generateSharedKey(SSLSocket* pSSLSock, ubyte4 namedGroup, sharedK
 
         status = CRYPTO_INTERFACE_QS_newCtx(MOC_HASH(pSSLSock->hwAccelCookie) &pAsymKey->pQsCtx, qsAlgo);
         if (OK != status)
+        {
+            (void) CRYPTO_uninitAsymmetricKey(pAsymKey, NULL);
+            (void) DIGI_FREE((void **) &pAsymKey);
             goto exit;
+        }
 
+        pAsymKey->type = akt_hybrid;
         status = CRYPTO_INTERFACE_QS_generateKeyPair(MOC_HASH(pSSLSock->hwAccelCookie) pAsymKey->pQsCtx, pSSLSock->rngFun, pSSLSock->rngFunArg);
         if (OK != status)
+        {
+            (void) CRYPTO_uninitAsymmetricKey(pAsymKey, NULL);
+            (void) DIGI_FREE((void **) &pAsymKey);
             goto exit;
-
-        pAsymKey->type = type;
-
+        }
+        
         pSharedKey->pKey = (void *) pAsymKey;
     }
 #endif
-#endif /* __ENABLE_DIGICERT_ECC__ */
 
 exit:
     return status;
@@ -16887,7 +16975,8 @@ constructTLSExtKeyShare(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte2 *pLength)
         else
         {
 #ifdef __ENABLE_DIGICERT_PQC__
-            if ( HYBRID_SUPPORTED_GROUP_MASK == ( pSSLSock->roleSpecificInfo.server.selectedGroup & SUPPORTED_GROUP_MASK ))
+            if ( HYBRID_SUPPORTED_GROUP_MASK == ( pSSLSock->roleSpecificInfo.server.selectedGroup & SUPPORTED_GROUP_MASK ) || 
+                 PQC_SUPPORTED_GROUP_MASK == ( pSSLSock->roleSpecificInfo.server.selectedGroup & SUPPORTED_GROUP_MASK ))
             {
                 status = getNamedGroupCipherTextLen(pSSLSock->roleSpecificInfo.server.selectedGroup, &curveLength);
                 if (OK != status)
@@ -17172,8 +17261,72 @@ constructTLSExtKeyShare(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte2 *pLength)
                 }
                 *ppPacket += pointLen;
             }
-#endif
+#endif /* __ENABLE_DIGICERT_ECC__ */
 #ifdef __ENABLE_DIGICERT_PQC__
+            else if (PQC_SUPPORTED_GROUP_MASK == ((SUPPORTED_GROUP_MASK & namedGroup)))
+            {
+                /* Set QS algo based on negotiated QS algorithm. */
+                ubyte4 qsAlgo = 0;
+                ubyte4 qsLength = 0;
+
+                if (tlsExtPqc_MLKEM1024 == pSSLSock->roleSpecificInfo.server.selectedGroup)
+                {
+                    qsAlgo = cid_PQC_MLKEM_1024;
+                }
+                /* only one supported now, newCtx call will act as a sanity check and error if different */
+
+                /* delete any old key */
+                status = CRYPTO_uninitAsymmetricKey(&pSSLSock->ecdheKey, NULL);
+                if (OK != status)
+                    goto exit;
+
+                status = CRYPTO_INTERFACE_QS_newCtx(MOC_HASH(pSSLSock->hwAccelCookie) &(pSSLSock->ecdheKey.pQsCtx), qsAlgo);
+                if (OK != status)
+                    goto exit;
+
+                pSSLSock->ecdheKey.type = akt_qs;
+
+                status = CRYPTO_INTERFACE_QS_setPublicKey(pSSLSock->ecdheKey.pQsCtx,
+                    pSSLSock->roleSpecificInfo.server.receivedPubKey, pSSLSock->roleSpecificInfo.server.receivedPubKeyLen);
+                if (OK != status)
+                    goto exit;
+
+                /* Generate QS cipher text and shared secret here, one shouldn't already exist but sanity check free */
+                if (NULL != pSSLSock->pQsSharedSecret)
+                {
+                    (void) DIGI_MEMSET_FREE(&pSSLSock->pQsSharedSecret, pSSLSock->qsSharedSecretLen);
+                }
+
+                status = CRYPTO_INTERFACE_QS_KEM_getSharedSecretLen(pSSLSock->ecdheKey.pQsCtx, &(pSSLSock->qsSharedSecretLen));
+                if (OK != status)
+                    goto exit;
+
+                status = DIGI_MALLOC((void **) &(pSSLSock->pQsSharedSecret), pSSLSock->qsSharedSecretLen);
+                if (OK != status)
+                    goto exit;
+
+                status = CRYPTO_INTERFACE_QS_KEM_getCipherTextLen(pSSLSock->ecdheKey.pQsCtx, &qsLength);
+                if (OK != status)
+                    goto exit;
+
+                /* Group name */
+                setShortValue(*ppPacket, (ubyte2) namedGroup);
+                *ppPacket += sizeof(ubyte2);
+
+                /* Length - QS ciphertext */
+                setShortValue(*ppPacket, (ubyte2) (qsLength));
+                *ppPacket += sizeof(ubyte2);
+
+                /* Generate ciphertext and shared secret */
+                status = CRYPTO_INTERFACE_QS_KEM_encapsulate(pSSLSock->ecdheKey.pQsCtx, pSSLSock->rngFun,
+                    pSSLSock->rngFunArg, *ppPacket, qsLength, pSSLSock->pQsSharedSecret, pSSLSock->qsSharedSecretLen);
+                if (OK != status)
+                    goto exit;
+
+                *ppPacket += qsLength;
+            }
+#endif /* __ENABLE_DIGICERT_PQC__ */
+#if defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__)
             else if (HYBRID_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & namedGroup))
             {
                 /* Set EC curve and QS algo based on negotiated QS
@@ -17230,7 +17383,12 @@ constructTLSExtKeyShare(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte2 *pLength)
                     goto exit;
                 }
 
-                /* Generate QS cipher text and shared secret here */
+                /* Generate QS cipher text and shared secret here, one shouldn't already exist but sanity check free */
+                if (NULL != pSSLSock->pQsSharedSecret)
+                {
+                    (void) DIGI_MEMSET_FREE(&pSSLSock->pQsSharedSecret, pSSLSock->qsSharedSecretLen);
+                }
+
                 status = CRYPTO_INTERFACE_QS_KEM_getSharedSecretLen(
                     pSSLSock->ecdheKey.pQsCtx, &(pSSLSock->qsSharedSecretLen));
                 if (OK != status)
@@ -17292,10 +17450,10 @@ constructTLSExtKeyShare(SSLSocket *pSSLSock, ubyte **ppPacket, ubyte2 *pLength)
                 }
                 *ppPacket += (qsLength + length);
             }
-#endif
+#endif /* defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__) */
         }
     }
-#endif
+#endif /* __ENABLE_DIGICERT_SSL_SERVER__ */
 exit:
 #ifdef __ENABLE_DIGICERT_SSL_CLIENT__
     if ((!pSSLSock->server) && (status >= OK))
@@ -19156,6 +19314,14 @@ SSL_SOCK_uninit(SSLSocket* pSSLSock)
         DIGI_FREE((void **)&(pSSLSock->pSupportedSignatureAlgoList));
         pSSLSock->supportedSignatureAlgoListLength = 0;
     }
+
+#if defined(__ENABLE_DIGICERT_PQC__)
+    if (NULL != pSSLSock->pQsSharedSecret)
+    {
+        (void) DIGI_MEMSET_FREE(&pSSLSock->pQsSharedSecret, pSSLSock->qsSharedSecretLen);
+        pSSLSock->qsSharedSecretLen = 0;
+    }
+#endif
 
 #if (defined(__ENABLE_DIGICERT_SSL_DHE_SUPPORT__) || defined(__ENABLE_DIGICERT_SSL_DH_ANON_SUPPORT__))
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
@@ -23155,34 +23321,12 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
 #if defined(__ENABLE_DIGICERT_SSL_SERVER__)
     if (pSSLSock->server)
     {
-#if defined (__ENABLE_DIGICERT_ECC__)
         /* ecdheKey was generated when processing key_share Extension;
          * The curve used to generate this key is stored in selectedCurveLength variable
          */
-
         if (NULL != pSSLSock->roleSpecificInfo.server.receivedPubKey)
         {
-
-            pECCKey = pSSLSock->ecdheKey.key.pECC;
-            if (ECDH_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
-            {
-#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
-                if (OK > (status = CRYPTO_INTERFACE_ECDH_generateSharedSecretFromPublicByteStringAux(
-                    MOC_ECC(pSSLSock->hwAccelCookie)
-                    pECCKey, pSSLSock->roleSpecificInfo.server.receivedPubKey,
-                    pSSLSock->roleSpecificInfo.server.receivedPubKeyLen,
-                    &pSharedSecret, &sharedSecretLen, ECDH_X_CORD_ONLY, NULL)))
-#else
-                if (OK > (status = ECDH_generateSharedSecret(MOC_ECC(pSSLSock->hwAccelCookie)
-                    pECCKey->pCurve, pSSLSock->roleSpecificInfo.server.receivedPubKey,
-                    pSSLSock->roleSpecificInfo.server.receivedPubKeyLen, pECCKey->k,
-                    &pSharedSecret, &sharedSecretLen)))
-#endif
-                {
-                    goto exit;
-                }
-            }
-            else if (FFDH_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
+            if (FFDH_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
             {
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 #ifdef __ENABLE_DIGICERT_DH_MODES__
@@ -23204,17 +23348,54 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                     pSSLSock->roleSpecificInfo.server.receivedPubKey,
                     pSSLSock->roleSpecificInfo.server.receivedPubKeyLen,
                     &pSharedSecret, &sharedSecretLen, NULL);
-#endif
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
                 if (OK != status)
+                    goto exit;
+            }
+#if defined (__ENABLE_DIGICERT_ECC__)
+            else if (ECDH_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
+            {
+                pECCKey = pSSLSock->ecdheKey.key.pECC;
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
+                if (OK > (status = CRYPTO_INTERFACE_ECDH_generateSharedSecretFromPublicByteStringAux(
+                    MOC_ECC(pSSLSock->hwAccelCookie)
+                    pECCKey, pSSLSock->roleSpecificInfo.server.receivedPubKey,
+                    pSSLSock->roleSpecificInfo.server.receivedPubKeyLen,
+                    &pSharedSecret, &sharedSecretLen, ECDH_X_CORD_ONLY, NULL)))
+#else
+                if (OK > (status = ECDH_generateSharedSecret(MOC_ECC(pSSLSock->hwAccelCookie)
+                    pECCKey->pCurve, pSSLSock->roleSpecificInfo.server.receivedPubKey,
+                    pSSLSock->roleSpecificInfo.server.receivedPubKeyLen, pECCKey->k,
+                    &pSharedSecret, &sharedSecretLen)))
+#endif
                 {
                     goto exit;
                 }
             }
+#endif /* __ENABLE_DIGICERT_ECC__ */
 #ifdef __ENABLE_DIGICERT_PQC__
+            else if (PQC_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
+            {
+                /* Server has already computed QS shared secret when QS key
+                 * share was sent */
+                sharedSecretLen = pSSLSock->qsSharedSecretLen;
+                status = DIGI_MALLOC((void **) &pSharedSecret, sharedSecretLen);
+                if (OK != status)
+                    goto exit;
+
+                status = DIGI_MEMCPY(pSharedSecret, pSSLSock->pQsSharedSecret, sharedSecretLen);
+                if (OK != status)
+                    goto exit;
+
+                DIGI_MEMSET_FREE(&pSSLSock->pQsSharedSecret, sharedSecretLen);
+            }
+#endif /* __ENABLE_DIGICERT_PQC__ */
+#if defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__)
             else if (HYBRID_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
             {
                 ubyte4 eccPubOffset;
                 pKemCtx = pSSLSock->ecdheKey.pQsCtx;
+                pECCKey = pSSLSock->ecdheKey.key.pECC;
 
                 status = CRYPTO_INTERFACE_EC_getPointByteStringLenAux(
                     pECCKey, &eccPubLen);
@@ -23273,9 +23454,9 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
 
                 DIGI_MEMSET_FREE(&pSSLSock->pQsSharedSecret, pSSLSock->qsSharedSecretLen);
             }
-#endif /* __ENABLE_DIGICERT_PQC__ */
+#endif /* defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__) */
         }
-#endif /* __ENABLE_DIGICERT_ECC__ */
+
         if (OK > (status = SSLSOCK_pskHandshakeSecretDerive(
             pSSLSock, pSSLSock->pHandshakeCipherSuite->pPRFHashAlgo, pSharedSecret,
             sharedSecretLen)))
@@ -23283,13 +23464,11 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
             goto exit;
         }
     }
-#endif
+#endif /* __ENABLE_DIGICERT_SSL_SERVER__ */
 
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (!pSSLSock->server)
     {
-
-#if defined (__ENABLE_DIGICERT_ECC__)
         if (NULL != pSSLSock->roleSpecificInfo.client.receivedPubKey)
         {
             sharedKey *pSharedKey = &pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex];
@@ -23328,6 +23507,7 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                 goto exit;
 #endif
             }
+#ifdef __ENABLE_DIGICERT_ECC__
             else if((akt_ecc == pSharedKey->type) || (akt_ecc_ed == pSharedKey->type))
             {
                 pECCKey = ((AsymmetricKey *) pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex].pKey)->key.pECC;
@@ -23347,7 +23527,29 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                     goto exit;
 
             }
+#endif /* __ENABLE_DIGICERT_ECC__ */
 #ifdef __ENABLE_DIGICERT_PQC__
+            else if (akt_qs == pSharedKey->type)
+            {
+                pKemCtx = ((AsymmetricKey *) pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex].pKey)->pQsCtx;
+
+                status = CRYPTO_INTERFACE_QS_KEM_getSharedSecretLen(pKemCtx, &sharedSecretLen);
+                if (OK != status)
+                    goto exit;
+
+                status = DIGI_MALLOC((void **) &pSharedSecret, sharedSecretLen);
+                if (OK != status)
+                    goto exit;
+
+                status = CRYPTO_INTERFACE_QS_KEM_decapsulate(
+                    pKemCtx, pSSLSock->roleSpecificInfo.client.receivedPubKey,
+                    pSSLSock->roleSpecificInfo.client.receivedPubKeyLen,
+                    pSharedSecret, sharedSecretLen);
+                if (OK != status)
+                    goto exit;
+            }
+#endif /* __ENABLE_DIGICERT_PQC__ */
+#if defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__)
             else if (akt_hybrid == pSharedKey->type)
             {
                 ubyte4 eccPubOffset;
@@ -23355,7 +23557,6 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                 ubyte4 eccSSOffset;
                 ubyte4 pqcSSOffset;
 
-                 /* TO DO, is this always the initiator flow? */
                 pECCKey = ((AsymmetricKey *) pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex].pKey)->key.pECC;
                 pKemCtx = ((AsymmetricKey *) pSSLSock->roleSpecificInfo.client.ppSharedKeys[pSSLSock->roleSpecificInfo.client.sharedKeyIndex].pKey)->pQsCtx;
 
@@ -23416,21 +23617,19 @@ SSLSOCK_computeHandshakeSecret(SSLSocket *pSSLSock)
                 if (OK != status)
                     goto exit;
 
-                /* TO DO how to put ciphertext after the server's public key? Just straight add it to pSSLSock->roleSpecificInfo..receivedPubKey, */
             }
-#endif /* __ENABLE_DIGICERT_PQC__ */
+#endif /* defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_PQC__) */
         }
-#endif /* __ENABLE_DIGICERT_ECC__ */
+
         status = SSLSOCK_pskHandshakeSecretDerive(
             pSSLSock, pSSLSock->pHandshakeCipherSuite->pPRFHashAlgo, pSharedSecret,
             sharedSecretLen);
         if (OK != status)
             goto exit;
     }
-#endif
-exit:
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
 
-#if defined (__ENABLE_DIGICERT_ECC__)
+exit:
 
 #if defined(__ENABLE_DIGICERT_SSL_SERVER__)
     if (NULL != pSSLSock->roleSpecificInfo.server.receivedPubKey)
@@ -23445,11 +23644,10 @@ exit:
         DIGI_FREE((void **) &pSSLSock->roleSpecificInfo.client.receivedPubKey);
     }
 #endif
-#endif
 
     if (pSharedSecret != NULL)
     {
-        DIGI_FREE((void **)&pSharedSecret);
+        DIGI_MEMSET_FREE(&pSharedSecret, sharedSecretLen);
     }
 
 #ifdef __ENABLE_DIGICERT_PQC__

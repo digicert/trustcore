@@ -566,6 +566,10 @@ test_start:
         ret += test_pqc_kem(pLibCtx, "ML-KEM-512");
         ret += test_pqc_kem(pLibCtx, "ML-KEM-768");
         ret += test_pqc_kem(pLibCtx, "ML-KEM-1024");
+        ret += test_pqc_kem(pLibCtx, "SecP256r1MLKEM768");
+        ret += test_pqc_kem(pLibCtx, "SecP384r1MLKEM1024");
+        ret += test_pqc_kem(pLibCtx, "X25519MLKEM768");
+        ret += test_pqc_kem(pLibCtx, "X448MLKEM1024");
 
         ret += test_pqc_sign(pLibCtx, "ML-DSA-44", NULL);
         ret += test_pqc_sign(pLibCtx, "ML-DSA-65", NULL);

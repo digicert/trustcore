@@ -384,9 +384,12 @@ MSTATUS CRYPTO_INTERFACE_initializeCore (
 #ifdef __ENABLE_DIGICERT_TAP__
   MKeyOperatorAndInfo pKeyTapOperators[] =
   {
-    { KeyOperatorRsaTap, NULL },
+    { KeyOperatorRsaTap, NULL }
 #ifdef __ENABLE_DIGICERT_ECC__
-    { KeyOperatorEccTap, NULL }
+    , { KeyOperatorEccTap, NULL }
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    , { KeyOperatorQsTap, NULL }
 #endif
   };
 
@@ -543,6 +546,9 @@ MSTATUS CRYPTO_INTERFACE_initializeCore (
 #endif /* __ENABLE_DIGICERT_KEY_OPERATORS__ */
 
 #if defined(__ENABLE_DIGICERT_TAP__) && defined (__ENABLE_DIGICERT_ECC__)
+  keyTapOpCount += 1;
+#endif
+#if defined(__ENABLE_DIGICERT_TAP__) && defined (__ENABLE_DIGICERT_PQC__)
   keyTapOpCount += 1;
 #endif
 

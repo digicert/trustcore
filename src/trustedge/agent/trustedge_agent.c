@@ -3356,6 +3356,7 @@ static MSTATUS TRUSTEDGE_agentCertSpecGenKey(
             /* generated key is actually a software key, TEE secure store applies to its serialization */
             break;
 #endif
+            /* this method is not called or needed for NANOROOT */
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
         default:
@@ -4030,6 +4031,11 @@ static MSTATUS TRUSTEDGE_agentParseCertificateSpecification(
         {
             keySrc = TRUSTEDGE_KEY_SOURCE_TEE;
         }
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+        else if ((OK == TAP_checkForProvider(TAP_PROVIDER_NANOROOT, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_NANOROOT_LEN == token.len && 0 == DIGI_STRNCMP(KEY_SOURCE_NANOROOT, token.pStart, token.len))
+        {
+            keySrc = TRUSTEDGE_KEY_SOURCE_NANOROOT;
+        }
 #else
         else if ((OK == TAP_checkForProvider(TAP_PROVIDER_TPM2, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_TPM2_LEN == token.len && 0 == DIGI_STRNCMP(KEY_SOURCE_TPM2, token.pStart, token.len))
         {
@@ -4097,6 +4103,11 @@ static MSTATUS TRUSTEDGE_agentParseCertificateSpecification(
             {
                 keySrc = TRUSTEDGE_KEY_SOURCE_TEE;
             }
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+            else if ((OK == TAP_checkForProvider(TAP_PROVIDER_NANOROOT, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_NANOROOT_LEN == keySrcToken.len && 0 == DIGI_STRNCMP(KEY_SOURCE_NANOROOT, keySrcToken.pStart, keySrcToken.len))
+            {
+                keySrc = TRUSTEDGE_KEY_SOURCE_NANOROOT;
+            }
 #else
             else if ((OK == TAP_checkForProvider(TAP_PROVIDER_TPM2, &foundProvider)) && (TRUE == foundProvider) && KEY_SOURCE_TPM2_LEN == keySrcToken.len && 0 == DIGI_STRNCMP(KEY_SOURCE_TPM2, keySrcToken.pStart, keySrcToken.len))
             {
@@ -4160,6 +4171,11 @@ static MSTATUS TRUSTEDGE_agentParseCertificateSpecification(
            tapAttributes.provider = TAP_PROVIDER_TEE;
         else
            tapAttributes.provider = 0; /* not needed */
+#elif defined (__ENABLE_DIGICERT_SMP_NANOROOT__)
+        if (TRUSTEDGE_KEY_SOURCE_NANOROOT == keySrc)
+           tapAttributes.provider = TAP_PROVIDER_NANOROOT;
+        else
+           tapAttributes.provider = 0; /* not needed */
 #endif
 
         status = CERT_ENROLL_parseTAPAttributes(
@@ -4203,6 +4219,19 @@ static MSTATUS TRUSTEDGE_agentParseCertificateSpecification(
 #endif
             }
         }
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+        if (TRUSTEDGE_KEY_SOURCE_NANOROOT == keySrc)
+        {
+            if (NULL == tapAttributes.pKeyHandle)
+            {
+                status = ERR_INVALID_INPUT;
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s. TAP key handle must be provided for NANOROOT Key source.\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+                goto exit;
+            }
+        }
 #endif
         MSG_LOG_print(MSG_LOG_VERBOSE, "TAP Module ID: %d\n", tapAttributes.moduleId);
         MSG_LOG_print(MSG_LOG_VERBOSE, "TAP Primary: %d\n", tapAttributes.primary);
@@ -4210,8 +4239,8 @@ static MSTATUS TRUSTEDGE_agentParseCertificateSpecification(
         MSG_LOG_print(MSG_LOG_VERBOSE, "TAP Key Usage: %d\n", tapAttributes.keyUsage);
         MSG_LOG_print(MSG_LOG_VERBOSE, "TAP Signature Scheme: %d\n", tapAttributes.sigScheme);
         MSG_LOG_print(MSG_LOG_VERBOSE, "TAP Encryption Scheme: %d\n", tapAttributes.encScheme);
-#if defined(__ENABLE_DIGICERT_TEE__)
-        if (TRUSTEDGE_KEY_SOURCE_TEE == keySrc)
+#if defined(__ENABLE_DIGICERT_TEE__) || defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+        if (TRUSTEDGE_KEY_SOURCE_TEE == keySrc || TRUSTEDGE_KEY_SOURCE_NANOROOT == keySrc)
         {
             MSG_LOG_print(MSG_LOG_VERBOSE, "TAP Provider: %d\n", tapAttributes.provider);
         }
@@ -4254,7 +4283,35 @@ static MSTATUS TRUSTEDGE_agentParseCertificateSpecification(
             MSG_LOG_print(MSG_LOG_VERBOSE, "%s", "Generating new key\n");
 
 #if defined(__ENABLE_DIGICERT_TAP__)
-            status = TRUSTEDGE_agentCertSpecGenKey(keyGenAlg, keySrc, &pNewKey, &tapAttributes);
+#if defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+            if (TRUSTEDGE_KEY_SOURCE_NANOROOT == keySrc) 
+            {
+                /* for NanoRoot we don't actually generate a key, allocate a shell though for the later imported key */
+                status = DIGI_MALLOC((void **) &pNewKey, sizeof(AsymmetricKey));
+                if (OK != status)
+                {
+                    MSG_LOG_print(MSG_LOG_ERROR,
+                        "%s line %d status: %d = %s\n",
+                        __func__, __LINE__, status,
+                        MERROR_lookUpErrorCode(status));
+                    goto exit;
+                }
+
+                status = CRYPTO_initAsymmetricKey(pNewKey);
+                if (OK != status)
+                {
+                    MSG_LOG_print(MSG_LOG_ERROR,
+                        "%s line %d status: %d = %s\n",
+                        __func__, __LINE__, status,
+                        MERROR_lookUpErrorCode(status));
+                    goto exit;
+                }
+            }
+            else
+#endif
+            {
+                status = TRUSTEDGE_agentCertSpecGenKey(keyGenAlg, keySrc, &pNewKey, &tapAttributes);
+            }
 #else
             status = TRUSTEDGE_agentCertSpecGenKey(keyGenAlg, keySrc, &pNewKey);
 #endif

@@ -36,6 +36,12 @@ extern "C" {
 
 #define MQTT_RECV_MAX_DEFLT 65535
 
+/* 
+ * Maximum total MQTT packet size per protocol specification:
+ * 268,435,455 bytes (max remaining length) + 5 bytes (fixed header overhead)
+ */
+#define MQTT_MAX_PACKET_SIZE (268435460U)
+
 /**
  * @struct MqttWillInfo
  * @brief Structure containing will information to be sent on connect.

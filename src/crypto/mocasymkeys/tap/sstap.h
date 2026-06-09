@@ -41,11 +41,6 @@ MOC_EXTERN MSTATUS SSTapDeserializeKey (
   MKeyOperatorDataReturn *pOutput
   );
 
-MOC_EXTERN MSTATUS SSTapGetTapInfo(
-  MKeyOperatorData *pInput,
-  MKeyObjectInfo *pTapInfo
-  );
-
 #endif /* defined(__ENABLE_DIGICERT_TAP__) */
 
 #ifdef __cplusplus

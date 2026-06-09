@@ -255,6 +255,30 @@ MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_getECCPublicKey(AsymmetricKey *pKey, ECCKey **ppPub);
 #endif
 
+#if (defined(__ENABLE_DIGICERT_PQC__))
+/**
+@ingroup    cryptowrapper_functions
+@brief      Get the QS Public key from the Asymmetric key.
+
+@details    This function creates a QS Public key from the Asymmetric Key.
+            It supports both TAP Key and SW Key.
+
+@param pKey    Pointer to the AsymmetricKey.
+@param ppPub   On return, Pointer to the QS public key context.
+
+@inc_file   cryptointerface.h
+
+@return     \c OK (0) if sucessful; otherwise a negative number error code
+            defintion from merrors.h. To retrieve a string containing an
+            English text error identifier corresponding to the function's
+            returned error status, use the \c DISPLAY_ERROR macro.
+
+@funcdoc    cryptointerface.h
+*/
+MOC_EXTERN MSTATUS
+CRYPTO_INTERFACE_getQsPublicKey(AsymmetricKey *pKey, QS_CTX **ppPub);
+#endif
+
 /**
 @ingroup    cryptowrapper_functions
 @brief      Get the RSA Public key from the Asymmetric key.
@@ -349,13 +373,18 @@ CRYPTO_INTERFACE_TAP_AsymDeferUnload(AsymmetricKey *pKey, byteBoolean deferredTo
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_TAP_rsaDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferredTokenUnload);
 
-#if defined(__ENABLE_DIGICERT_ECC__)
+#ifdef __ENABLE_DIGICERT_ECC__
 /**
  * @internal This API is for internal use. \c CRYPTO_INTERFACE_TAP_eccDeferUnload should be used.
  */
 MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_TAP_eccDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferredTokenUnload);
 #endif /* __ENABLE_DIGICERT_ECC__ */
+
+#ifdef __ENABLE_DIGICERT_PQC__
+MOC_EXTERN MSTATUS
+CRYPTO_INTERFACE_TAP_qsDeferUnloadMocAsym(MocAsymKey pKey, byteBoolean deferredTokenUnload);
+#endif
 
 /**
  * @brief   Gets the key handle and token handle for an internal TAP key.
@@ -381,16 +410,21 @@ CRYPTO_INTERFACE_TAP_AsymGetKeyInfo(AsymmetricKey *pKey, ubyte4 keyType, TAP_Tok
 MOC_EXTERN MSTATUS 
 CRYPTO_INTERFACE_TAP_rsaGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTokenHandle, TAP_KeyHandle *pKeyHandle);
 
-#if defined(__ENABLE_DIGICERT_ECC__)
-
+#ifdef __ENABLE_DIGICERT_ECC__
 /**
  * @internal This API is for internal use. \c CRYPTO_INTERFACE_TAP_eccGetKeyInfo should be used.
  */
 MOC_EXTERN MSTATUS 
 CRYPTO_INTERFACE_TAP_eccGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTokenHandle, TAP_KeyHandle *pKeyHandle);
-
 #endif /* __ENABLE_DIGICERT_ECC__ */
 
+#ifdef __ENABLE_DIGICERT_PQC__
+/**
+ * @internal This API is for internal use. \c CRYPTO_INTERFACE_TAP_qsGetKeyInfo should be used.
+ */
+MOC_EXTERN MSTATUS 
+CRYPTO_INTERFACE_TAP_qsGetKeyInfoMocAsym(MocAsymKey pKey, TAP_TokenHandle *pTokenHandle, TAP_KeyHandle *pKeyHandle);
+#endif /* __ENABLE_DIGICERT_PQC__ */
 
 /**
 @ingroup    cryptowrapper_functions
@@ -511,11 +545,6 @@ MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_RSA_getTapKey(RSAKey *pRsaKey, TAP_Key **ppTapKey);
 
 #if (defined(__ENABLE_DIGICERT_ECC__))
-
-MOC_EXTERN MSTATUS 
-CRYPTO_INTERFACE_TAP_eccGetKeyInfo(ECCKey *pECCKey, ubyte4 keyType,
-                                   TAP_TokenHandle *pTokenHandle,
-                                   TAP_KeyHandle *pKeyHandle);
 /**
 @ingroup    cryptowrapper_functions
 @brief      Get the TAP key from an ECC key.
@@ -542,6 +571,33 @@ MOC_EXTERN MSTATUS
 CRYPTO_INTERFACE_ECC_getTapKey(ECCKey *pEccKey, TAP_Key **ppTapKey);
 
 #endif /* if (defined(__ENABLE_DIGICERT_ECC__)) */
+
+#ifdef __ENABLE_DIGICERT_PQC__
+/**
+@ingroup    cryptowrapper_functions
+@brief      Get the TAP key from an QS_CTX context.
+
+@details    This function yields a reference to the TAP key within the
+            QS CTX. This function only supports TAP keys. Note
+            that this function does not allocate any data, upon return
+            the dereference of ppTapKey will point to the TAP key
+            previously allocated that lives within the AsymmetricKey.
+
+@param pCtx    Pointer to the QS Ctx.
+@param ppPub   On return, Pointer to the TAP key.
+
+@inc_file   cryptointerface.h
+
+@return     \c OK (0) if sucessful; otherwise a negative number error code
+            defintion from merrors.h. To retrieve a string containing an
+            English text error identifier corresponding to the function's
+            returned error status, use the \c DISPLAY_ERROR macro.
+
+@funcdoc    cryptointerface.h
+*/
+MOC_EXTERN MSTATUS
+CRYPTO_INTERFACE_QS_getTapKey(QS_CTX *pCtx, TAP_Key **ppTapKey);
+#endif
 #endif /* if defined(__ENABLE_DIGICERT_TAP__) */
 
 /**

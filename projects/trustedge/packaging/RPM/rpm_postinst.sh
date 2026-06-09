@@ -44,9 +44,11 @@ set_access_permission ()
 {
     dbg_msg "setting permissions"
     chown -R ${USERNAME}:trustedge ${KEYSTORE_DIR} ${CONF_DIR} ${INSTALL_DIR}
-    chmod g+w ${INSTALL_DIR}
-    chmod -R u=rwx,g=rwx,o=rx ${KEYSTORE_DIR}
-    chmod -R u=rwx,g=rwx,o=rx ${CONF_DIR}
+
+    # trustedge group members can write to Config and Keystore folders
+    chmod 775 ${INSTALL_DIR}
+    find ${KEYSTORE_DIR} ${CONF_DIR} -type d -exec chmod 775 {} \;
+    find ${KEYSTORE_DIR} ${CONF_DIR} -type f -exec chmod 664 {} \;
     chmod -R u=rwx,go=rx ${SCRIPTS_DIR}
 
     chown root:root "/usr/bin/trustedge"

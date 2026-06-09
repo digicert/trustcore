@@ -117,11 +117,13 @@ extern "C" {
 #define TPM12_CONFIGURATION            "tpm12.conf"
 #define PKCS11_CONFIGURATION           "pkcs11_smp.conf"
 #define TEE_CONFIGURATION              "tee_smp.conf"
+#define NANOROOT_CONFIGURATION         "nanoroot_smp.conf"
 #else
 #include "../../common/tpm2_path.h"
 #define TPM12_CONFIGURATION             "/etc/digicert/tpm12.conf"
 #define PKCS11_CONFIGURATION            "/etc/digicert/pkcs11_smp.conf"
 #define TEE_CONFIGURATION               "/etc/digicert/tee_smp.conf"
+#define NANOROOT_CONFIGURATION          "/etc/digicert/nanoroot_smp.conf"
 #endif
 #define ESTC_DEF_TAP_MODULEID           1
 #define DEFAULT_TAP_REMOTE_SERVER_NAME      "127.0.0.1"
@@ -294,6 +296,8 @@ typedef struct _TrustEdgeEstCtx {
     TAP_TokenId tapTokenHierarchy;
 #ifdef __ENABLE_DIGICERT_TEE__
     sbyte4 useTEE;
+#elif defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
+    sbyte4 useNanoRoot;
 #endif
 #endif
     sbyte *pAuthScheme;

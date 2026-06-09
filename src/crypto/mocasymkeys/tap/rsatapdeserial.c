@@ -19,6 +19,7 @@
 
 #include "../../../crypto/mocasymkeys/mocsw/commonrsa.h"
 #include "../../../crypto/mocasymkeys/tap/rsatap.h"
+#include "../../../crypto/mocasymkeys/tap/idtap.h"
 #include "../../../crypto/pkcs_key.h"
 #include "../../../asn1/mocasn1.h"
 
@@ -33,23 +34,64 @@ MSTATUS RsaTapDeserializeKey (
   MSTATUS status;
   intBoolean isPrivate = FALSE;
   TAP_Key *pNewKey = NULL;
+  TAP_Key *pLoadedNewKey = NULL;
+  MRsaTapKeyData *pData = NULL;
+  MRsaTapKeyData *pNewData = NULL;
 
   status = DeserializeRsaTapKey (
     pInputInfo->pData, pInputInfo->length, &isPrivate, &pNewKey);
   if (OK != status)
     goto exit;
 
-  /* Load the TAP key into a MocAsymKey */
-  status = RsaTapLoadKeyData(&pNewKey, NULL, 0, NULL, pMocAsymKey);
-  if (OK != status)
-    goto exit;
-
-  if (TRUE != isPrivate)
+  if (TAP_PROVIDER_NANOROOT == pNewKey->providerObjectData.objectInfo.providerType)
   {
-    pMocAsymKey->localType = MOC_LOCAL_KEY_RSA_PUB_TAP;
+    /* We only use the id from the deserialized key, then we properly import a loaded TAP_Key from the id */
+    TAP_Buffer keyId;
+    keyId.pBuffer = pNewKey->providerObjectData.objectBlob.blob.pBuffer + 4;
+    keyId.bufferLen = pNewKey->providerObjectData.objectBlob.blob.bufferLen - 4;
+
+    status = IdTapLoadKeyData(&keyId, TAP_KEY_ALGORITHM_RSA, pMocAsymKey, &pLoadedNewKey);
+    if (OK != status)
+      goto exit;
+
+    /* Now put the loaded key in the keyData */
+    pData = (MRsaTapKeyData *)(pMocAsymKey->pKeyData);
+    if (NULL == pData)
+    {
+      status = DIGI_CALLOC ((void **)&pNewData, 1, sizeof(MRsaTapKeyData));
+      if (OK != status)
+        goto exit;
+
+      pData = pNewData;
+      pMocAsymKey->pKeyData = (void *)pNewData; pNewData = NULL;
+    }
+    pData->pKey = pLoadedNewKey; pLoadedNewKey = NULL;
+    pData->isKeyLoaded = TRUE;
+  }
+  else
+  {
+    /* Load the TAP key into a MocAsymKey */
+    status = RsaTapLoadKeyData(&pNewKey, NULL, 0, NULL, pMocAsymKey);
+    if (OK != status)
+      goto exit;
+
+    if (TRUE != isPrivate)
+    {
+      pMocAsymKey->localType = MOC_LOCAL_KEY_RSA_PUB_TAP;
+    }
   }
 
 exit:
+
+  if (NULL != pLoadedNewKey)
+  {
+    TAP_freeKey(&pLoadedNewKey);
+  }
+
+  if (NULL != pNewData)
+  {
+    DIGI_FREE ((void **)&pNewData);
+  }
 
   if (NULL != pNewKey)
   {

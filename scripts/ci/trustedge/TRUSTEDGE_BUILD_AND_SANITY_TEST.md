@@ -53,16 +53,16 @@ Agent mode - bootstrap configuration file samples are located in `projects/trust
 
 1. Uninstall any existing Trustedge application
 
-2. Open command prompt with admin privleges
+2. Open command prompt with admin privileges
 
 3. Set the path to the MSI location. If using the build commands above, set the path as follows
 
         set MSI_DIR_PATH=.\dist
 
-2. Open command prompt with admin privleges and set environment variable to set API key against DTM backend (currently only works against DEMO environment)
+4. Set environment variable to set API key against DTM backend (currently only works against DEMO environment)
 
         set DEMO_API_KEY=<key>
 
-3. Run sanity test script
+5. Run sanity test script
 
         python3 scripts\ci\trustedge\trustedge_sanity_test.py --package-dir %MSI_DIR_PATH% --register-device

@@ -269,6 +269,19 @@ const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_ECC = {
 
 };
 
+const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_PQC = {
+        .handler = TAP_SERIALIZE_StructTypeHandler,
+        .structSize = sizeof(TAP_KeyInfo_PQC),
+        .numFields = 2,
+        .unionSelectorOffset = 0,
+        .unionSelectorSize = 0,
+        .pFieldList = {
+                {TAP_OFFSETOF(TAP_KeyInfo_PQC, qsAlg), &TAP_SHADOW_TAP_QS_ALG},
+                {TAP_OFFSETOF(TAP_KeyInfo_PQC, sigScheme), &TAP_SHADOW_TAP_SIG_SCHEME}
+        },
+
+};
+
 const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_AES = {
         .handler = TAP_SERIALIZE_StructTypeHandler,
         .structSize = sizeof(TAP_KeyInfo_AES),
@@ -324,7 +337,7 @@ const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_HMAC = {
 const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_Union = {
         .handler = TAP_SERIALIZE_UnionTypeHandler,
         .structSize = sizeof(TAP_KeyInfo_Union),
-        .numFields = 6,
+        .numFields = 7,
         .unionSelectorOffset = 0,
         .unionSelectorSize = 0,
         .pFieldList = {
@@ -334,8 +347,8 @@ const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_Union = {
                 {TAP_KEY_ALGORITHM_DES, &TAP_SHADOW_TAP_KeyInfo_DES},
                 {TAP_KEY_ALGORITHM_TDES, &TAP_SHADOW_TAP_KeyInfo_TDES},
                 {TAP_KEY_ALGORITHM_HMAC, &TAP_SHADOW_TAP_KeyInfo_HMAC},
+                {TAP_KEY_ALGORITHM_MLDSA, &TAP_SHADOW_TAP_KeyInfo_PQC},
         },
-
 };
 
 const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo = {

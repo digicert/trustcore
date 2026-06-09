@@ -502,12 +502,14 @@ enum keyUpdateRequest
 };
 #endif
 
-#define TLS_EXT_NAMED_CURVES_ECDHE  (0x0000)
-#define TLS_EXT_NAMED_CURVES_DHE    (0x0100)
-#define TLS_EXT_NAMED_CURVES_PQC    (0x1100)
-#define TLS_EXT_NAMED_CURVES_MASK   (0xFF00)
+#define TLS_EXT_NAMED_CURVES_ECDHE         (0x0000)
+#define TLS_EXT_NAMED_CURVES_DHE           (0x0100)
+#define TLS_EXT_NAMED_CURVES_PQC           (0x0200)
+#define TLS_EXT_NAMED_CURVES_PQC_COMPOSITE (0x1100)
+#define TLS_EXT_NAMED_CURVES_MASK          (0xFF00)
 
 #define TLS_EXT_NAMED_CURVE_IS_PQC(_curve)  ((_curve & TLS_EXT_NAMED_CURVES_MASK) == TLS_EXT_NAMED_CURVES_PQC)
+#define TLS_EXT_NAMED_CURVE_IS_PQC_COMPOSITE(_curve)  ((_curve & TLS_EXT_NAMED_CURVES_MASK) == TLS_EXT_NAMED_CURVES_PQC_COMPOSITE)
 
 /**
  * @dont_show
@@ -534,8 +536,12 @@ enum tlsExtNamedCurves
     tlsExtNamedCurves_ffdhe6144 = TLS_EXT_NAMED_CURVES_DHE | 0x0003,
     tlsExtNamedCurves_ffdhe8192 = TLS_EXT_NAMED_CURVES_DHE | 0x0004,
     
-    tlsExtHybrid_SecP256r1MLKEM768     = TLS_EXT_NAMED_CURVES_PQC | 0x00eb,
-    tlsExtHybrid_X25519MLKEM768        = TLS_EXT_NAMED_CURVES_PQC | 0x00ec,
+    /* ML-KEM Key Agreement Methods */
+    tlsExtPqc_MLKEM1024                = TLS_EXT_NAMED_CURVES_PQC | 0x0002,
+
+    /* Composite Key Agreement Methods */
+    tlsExtHybrid_SecP256r1MLKEM768     = TLS_EXT_NAMED_CURVES_PQC_COMPOSITE | 0x00eb,
+    tlsExtHybrid_X25519MLKEM768        = TLS_EXT_NAMED_CURVES_PQC_COMPOSITE | 0x00ec,
 };
 
 #ifdef __ENABLE_DIGICERT_INNER_APP__

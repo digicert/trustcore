@@ -90,6 +90,7 @@ extern const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_RSA;
 extern const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_ECC;
 extern const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_AES;
 extern const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_HMAC;
+extern const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_PQC;
 extern const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo_Union;
 extern const tap_shadow_struct TAP_SHADOW_TAP_KeyInfo;
 

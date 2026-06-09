@@ -43,6 +43,8 @@ static void mqtt_test_MQTT_buildConnectMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
 /*version 5 test*/
     pCtx->version = 5;
@@ -99,6 +101,8 @@ static void mqtt_test_MQTT_buildSubscribeMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
     DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
@@ -160,6 +164,8 @@ static void mqtt_test_MQTT_buildUnsubscribeMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
     DIGI_MALLOC_MEMCPY((void **)&pCtx->pClientId, 10, "testClient", 10);
     assert_non_null(pCtx->pClientId);
@@ -212,6 +218,8 @@ static void mqtt_test_MQTT_buildPublishMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -238,6 +246,7 @@ static void mqtt_test_MQTT_buildPublishMsg(void **ppState)
     assert_null(pMsg);
 
     DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
     pCtx->version = 5;  
 
     status = MQTT_buildPublishMsg(pCtx, &options, "testTopic", 9, "testData", 8, &pCtx->pktId, &pMsg);
@@ -290,6 +299,8 @@ static void mqtt_test_MQTT_buildPubRespMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -347,6 +358,8 @@ static void mqtt_test_MQTT_buildPingReqMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -381,6 +394,8 @@ static void mqtt_test_MQTT_buildDisconnectMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -480,6 +495,8 @@ static void mqtt_test_MQTT_buildAuthMsg(void **ppState)
 
     DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
     assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
 
     pCtx->version = 5;
     pCtx->pClientId = "testClient";
@@ -864,6 +881,143 @@ static void mqtt_test_MQTT_freeMsgList(void **ppState)
 }
 #endif
 
+/*
+ * Test outbound packet size enforcement (ERR_MQTT_PACKET_TOO_LARGE).
+ * This verifies that build functions return ERR_MQTT_PACKET_TOO_LARGE
+ * when the computed message length exceeds pCtx->outboundMaxPacketSize.
+ */
+static void mqtt_test_outbound_packet_size_enforcement(void **ppState)
+{
+    MqttCtx *pCtx = NULL;
+    MqttMessage *pMsg = NULL;
+    MSTATUS status;
+
+    DIGI_MALLOC((void **)&pCtx, sizeof(MqttCtx));
+    assert_non_null(pCtx);
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+
+    pCtx->version = 5;
+    pCtx->pClientId = (ubyte *)"testClient";
+    pCtx->clientIdLen = 10;
+
+    /* Test 1: MQTT_buildPublishMsg with small outboundMaxPacketSize */
+    pCtx->outboundMaxPacketSize = 10; /* Very small limit */
+
+    MqttPublishOptions pubOptions = {0};
+    ubyte *topic = (ubyte *)"test/topic/that/is/too/long";
+    ubyte4 topicLen = 27;
+    static const char payload[] = "This is a test payload that exceeds the limit";
+    ubyte4 payloadLen = sizeof(payload) - 1;
+    ubyte2 packetId = 0;
+
+    status = MQTT_buildPublishMsg(pCtx, &pubOptions, topic, topicLen,
+                                  (ubyte *)payload, payloadLen, &packetId, &pMsg);
+    assert_int_equal(ERR_MQTT_PACKET_TOO_LARGE, status);
+    assert_null(pMsg);
+
+    /* Test 2: MQTT_buildSubscribeMsg with small outboundMaxPacketSize */
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->version = 5;
+    pCtx->pClientId = (ubyte *)"testClient";
+    pCtx->clientIdLen = 10;
+    pCtx->outboundMaxPacketSize = 10; /* Very small limit */
+
+    MqttSubscribeTopic subTopics[1];
+    subTopics[0].pTopic = (ubyte *)"a/very/long/subscription/topic/name";
+    subTopics[0].topicLen = 35;
+    subTopics[0].qos = 0;
+
+    MqttSubscribeOptions subOptions = {0};
+
+    status = MQTT_buildSubscribeMsg(pCtx, subTopics, 1, &subOptions, &packetId, &pMsg);
+    assert_int_equal(ERR_MQTT_PACKET_TOO_LARGE, status);
+    assert_null(pMsg);
+
+    /* Test 3: MQTT_buildUnsubscribeMsg with small outboundMaxPacketSize */
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->version = 5;
+    pCtx->pClientId = (ubyte *)"testClient";
+    pCtx->clientIdLen = 10;
+    pCtx->outboundMaxPacketSize = 10; /* Very small limit */
+
+    MqttUnsubscribeTopic unsubTopics[1];
+    unsubTopics[0].pTopic = (ubyte *)"a/very/long/unsubscribe/topic/name";
+    unsubTopics[0].topicLen = 34;
+
+    MqttUnsubscribeOptions unsubOptions = {0};
+
+    status = MQTT_buildUnsubscribeMsg(pCtx, unsubTopics, 1, &unsubOptions, &packetId, &pMsg);
+    assert_int_equal(ERR_MQTT_PACKET_TOO_LARGE, status);
+    assert_null(pMsg);
+
+    /* Test 4: MQTT_buildAuthMsg with small outboundMaxPacketSize */
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->version = 5;
+    pCtx->pClientId = (ubyte *)"testClient";
+    pCtx->clientIdLen = 10;
+    pCtx->outboundMaxPacketSize = 10; /* Very small limit */
+
+    MqttAuthOptions authOptions = {0};
+    authOptions.pAuthMethod = (ubyte *)"SCRAM-SHA-256";
+    authOptions.authMethodLen = 13;
+    authOptions.pAuthData = (ubyte *)"some-auth-data-that-is-long-enough";
+    authOptions.authDataLen = 34;
+
+    status = MQTT_buildAuthMsg(pCtx, &authOptions, &pMsg);
+    assert_int_equal(ERR_MQTT_PACKET_TOO_LARGE, status);
+    assert_null(pMsg);
+
+    /* Test 5: MQTT_buildDisconnectMsg with small outboundMaxPacketSize */
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->version = 5;
+    pCtx->pClientId = (ubyte *)"testClient";
+    pCtx->clientIdLen = 10;
+    pCtx->outboundMaxPacketSize = 5; /* Very small limit */
+    pCtx->sessionExpiryInterval = 3600; /* Forces properties to be included */
+
+    MqttDisconnectOptions discOptions = {0};
+    discOptions.sendSessionExpiry = TRUE;
+    discOptions.sessionExpiryInterval = 3600;
+
+    status = MQTT_buildDisconnectMsg(pCtx, &discOptions, &pMsg);
+    assert_int_equal(ERR_MQTT_PACKET_TOO_LARGE, status);
+    assert_null(pMsg);
+
+    /* Test 6: MQTT_buildConnectMsg with small outboundMaxPacketSize */
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->version = 5;
+    pCtx->pClientId = (ubyte *)"aVeryLongClientIdentifierThatExceedsTheSmallLimit";
+    pCtx->clientIdLen = 49;
+    pCtx->outboundMaxPacketSize = 20; /* Very small limit */
+
+    MqttConnectOptions connOptions = {0};
+    connOptions.keepAliveInterval = 60;
+    connOptions.cleanStart = 1;
+
+    status = MQTT_buildConnectMsg(pCtx, &connOptions, &pMsg);
+    assert_int_equal(ERR_MQTT_PACKET_TOO_LARGE, status);
+    assert_null(pMsg);
+
+    /* Test 7: Verify normal operation with adequate outboundMaxPacketSize */
+    DIGI_MEMSET((ubyte *)pCtx, 0, sizeof(MqttCtx));
+    pCtx->version = 5;
+    pCtx->pClientId = (ubyte *)"testClient";
+    pCtx->clientIdLen = 10;
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE; /* Normal limit */
+
+    connOptions.keepAliveInterval = 60;
+    connOptions.cleanStart = 1;
+
+    status = MQTT_buildConnectMsg(pCtx, &connOptions, &pMsg);
+    assert_int_equal(OK, status);
+    assert_non_null(pMsg);
+
+    status = MQTT_freeMsg(&pMsg);
+    assert_int_equal(OK, status);
+
+    DIGI_FREE((void **)&pCtx);
+}
+
 static int testSetup(void **ppState)
 {
     MSTATUS status;
@@ -900,7 +1054,8 @@ int main(void)
         cmocka_unit_test(mqtt_test_MQTT_buildAuthMsg),
         cmocka_unit_test(mqtt_test_MQTT_buildDisconnectMsg),
         cmocka_unit_test(mqtt_test_MQTT_freeMsg),
-        cmocka_unit_test(mqtt_test_MQTT_parsePacket)
+        cmocka_unit_test(mqtt_test_MQTT_parsePacket),
+        cmocka_unit_test(mqtt_test_outbound_packet_size_enforcement)
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
         ,cmocka_unit_test(mqtt_test_MQTT_freeMsgNode),
         cmocka_unit_test(mqtt_test_MQTT_freeMsgList)

@@ -31,9 +31,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "common/mrtos.h"
-#include "common/debug_console.h"
-#include "smp_nanoroot_device_protect.h"
+#include "../../common/mrtos.h"
+#include "../../common/debug_console.h"
+#include "../../smp/smp_nanoroot/smp_nanoroot_device_protect.h"
 
 /* The id from which the unique identification for the
    object starts */

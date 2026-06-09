@@ -1627,8 +1627,8 @@ exit:
 /*------------------------------------------------------------------*/
 
 #ifdef __ENABLE_DIGICERT_PQC__
-MSTATUS TAP_UTILS_copyTapMLDSASignature(TAP_MLDSASignature *pDestSignature,
-                                      TAP_MLDSASignature *pSrcSignature)
+MSTATUS TAP_UTILS_copyTapPQCSignature(TAP_PQCSignature *pDestSignature,
+                                      TAP_PQCSignature *pSrcSignature)
 {
     MSTATUS status = OK;
 
@@ -1721,7 +1721,7 @@ MSTATUS TAP_UTILS_copyTapSignature(TAP_Signature *pDestSignature,
             break;
 #ifdef __ENABLE_DIGICERT_PQC__
         case TAP_KEY_ALGORITHM_MLDSA:
-            status = TAP_UTILS_copyTapMLDSASignature(&(pDestSignature->signature.mldsaSignature), &(pSrcSignature->signature.mldsaSignature));
+            status = TAP_UTILS_copyTapPQCSignature(&(pDestSignature->signature.pqcSignature), &(pSrcSignature->signature.pqcSignature));
             break;
 #endif
         default:
@@ -1757,7 +1757,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 #ifdef __ENABLE_DIGICERT_PQC__
-MSTATUS TAP_UTILS_freeTapMLDSASignatureFields(TAP_MLDSASignature *pSignature)
+MSTATUS TAP_UTILS_freeTapPQCSignatureFields(TAP_PQCSignature *pSignature)
 {
     MSTATUS status = OK;
 
@@ -1897,7 +1897,7 @@ MSTATUS TAP_UTILS_freeTapSignatureFields(TAP_Signature *pSignature)
             break;
 #ifdef __ENABLE_DIGICERT_PQC__
         case TAP_KEY_ALGORITHM_MLDSA:
-            status = TAP_UTILS_freeTapMLDSASignatureFields(&(pSignature->signature.mldsaSignature));
+            status = TAP_UTILS_freeTapPQCSignatureFields(&(pSignature->signature.pqcSignature));
             break;
 #endif
         default:
@@ -1993,7 +1993,7 @@ MSTATUS TAP_UTILS_freePublicKeyFields(TAP_PublicKey *pPublicKey)
             break;
 #ifdef __ENABLE_DIGICERT_PQC__
         case TAP_KEY_ALGORITHM_MLDSA:
-            status = TAP_UTILS_freeMLDSAPublicKeyFields(&(pPublicKey->publicKey.mldsaKey));
+            status = TAP_UTILS_freePQCPublicKeyFields(&(pPublicKey->publicKey.pqcKey));
             break;
 #endif
         default:
@@ -2047,7 +2047,7 @@ exit:
 
 
 #ifdef __ENABLE_DIGICERT_PQC__
-MSTATUS TAP_UTILS_freeMLDSAPublicKeyFields(TAP_MLDSAPublicKey *pPublicKey)
+MSTATUS TAP_UTILS_freePQCPublicKeyFields(TAP_PQCPublicKey *pPublicKey)
 {
     MSTATUS status = OK;
 
@@ -2167,7 +2167,7 @@ MSTATUS TAP_UTILS_copyPublicKey(TAP_PublicKey *pDestKey,
             break;
 #ifdef __ENABLE_DIGICERT_PQC__
         case TAP_KEY_ALGORITHM_MLDSA:
-            status = TAP_UTILS_copyMLDSAPublicKey(&(pDestKey->publicKey.mldsaKey), &(pSrcKey->publicKey.mldsaKey));
+            status = TAP_UTILS_copyPQCPublicKey(&(pDestKey->publicKey.pqcKey), &(pSrcKey->publicKey.pqcKey));
             break;
 #endif
         default:
@@ -2258,8 +2258,8 @@ exit:
 /*------------------------------------------------------------------*/
 
 #ifdef __ENABLE_DIGICERT_PQC__
-MSTATUS TAP_UTILS_copyMLDSAPublicKey(TAP_MLDSAPublicKey *pDestKey,
-                                   TAP_MLDSAPublicKey *pSrcKey)
+MSTATUS TAP_UTILS_copyPQCPublicKey(TAP_PQCPublicKey *pDestKey,
+                                   TAP_PQCPublicKey *pSrcKey)
 {
     MSTATUS status = OK;
 
@@ -2295,7 +2295,7 @@ MSTATUS TAP_UTILS_copyMLDSAPublicKey(TAP_MLDSAPublicKey *pDestKey,
     /* copy signature schemes */
     pDestKey->sigScheme = pSrcKey->sigScheme;
 
-    /* Copy MLDSA cid */
+    /* Copy qs cid */
     pDestKey->qsAlg = pSrcKey->qsAlg;
 
 exit:
@@ -2505,6 +2505,12 @@ MSTATUS TAP_UTILS_getPublicKeySize(const TAP_PublicKey *pPublicKey,
                            + pPublicKey->publicKey.dsaKey.baseLen
                            + pPublicKey->publicKey.dsaKey.pubValLen;
             break;
+#ifdef __ENABLE_DIGICERT_PQC__
+        case TAP_KEY_ALGORITHM_MLDSA:
+            serializedSize += sizeof(TAP_PQCPublicKey)
+                           + pPublicKey->publicKey.pqcKey.publicKeyLen;
+            break;
+#endif
         default:
             status = ERR_TAP_INVALID_ALGORITHM;
             break;
@@ -2568,6 +2574,9 @@ MSTATUS TAP_UTILS_getKeySize(const TAP_Key *pKey, ubyte4 *pKeySize)
         case TAP_KEY_ALGORITHM_RSA:
         case TAP_KEY_ALGORITHM_ECC:
         case TAP_KEY_ALGORITHM_DSA:
+#ifdef __ENABLE_DIGICERT_PQC__
+        case TAP_KEY_ALGORITHM_MLDSA:
+#endif
             status = TAP_UTILS_getPublicKeySize((const TAP_PublicKey *)&(pKey->keyData.publicKey), &tempSize);
             if (OK != status)
             {
@@ -2596,6 +2605,12 @@ MSTATUS TAP_UTILS_getKeySize(const TAP_Key *pKey, ubyte4 *pKeySize)
             /* Size of pTapKey.keyData.algKeyInfo.eccInfo */
             serializedSize += sizeof(TAP_KeyInfo_ECC);
             break;
+#ifdef __ENABLE_DIGICERT_PQC__
+        case TAP_KEY_ALGORITHM_MLDSA:
+            /* Size of pTapKey.keyData.algKeyInfo.pqcInfo */
+            serializedSize += sizeof(TAP_KeyInfo_PQC);
+            break;
+#endif
         case TAP_KEY_ALGORITHM_DSA:
             /* Size of pTapKey.keyData.algKeyInfo.dsaInfo */
             break;
@@ -2934,6 +2949,15 @@ exit:
 }
 #endif /*__ENABLE_DIGICERT_ECC__*/
 
+#ifdef __ENABLE_DIGICERT_PQC__
+static MSTATUS setPqcKeyParams(MOC_ASYM(hwAccelDescr hwAccelCtx) AsymmetricKey *pAsymKey,
+                                const TAP_KeyInfo_PQC *pPqcKeyInfo,
+                                const TAP_PQCPublicKey *pPqcKey)
+{
+    return ERR_NOT_IMPLEMENTED; /* TODO */
+}
+#endif /* __ENABLE_DIGICERT_PQC__ */
+
 #ifndef __ENABLE_TAP_MIN_SIZE__
 /* Internal util method to set RSA public parameters to AsymmetricKey
  * structure */
@@ -3095,6 +3119,9 @@ MOC_EXTERN MSTATUS TAP_UTILS_serializePubKeyToPEM(const TAP_KeyData *pKeyData,
     const TAP_ECCPublicKey *pEccKey = NULL;
 #endif
     const TAP_PublicKey *pPubKey = NULL;
+#ifdef __ENABLE_DIGICERT_PQC__
+    const TAP_PQCPublicKey *pPqcKey = NULL;
+#endif
 
 #if defined(__ENABLE_HARDWARE_ACCEL_SYNC_CRYPTO__) || defined(__ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__)
     /* just in case build uses both TAP and hwAccel */
@@ -3164,6 +3191,27 @@ MOC_EXTERN MSTATUS TAP_UTILS_serializePubKeyToPEM(const TAP_KeyData *pKeyData,
         }
         break;
 #endif /*__ENABLE_DIGICERT_ECC__*/
+#ifdef __ENABLE_DIGICERT_PQC__
+        case TAP_KEY_ALGORITHM_MLDSA:
+        {
+            pPqcKey = &(pPubKey->publicKey.pqcKey);
+            if (NULL == pPqcKey)
+            {
+                status = ERR_GENERAL;
+                goto exit;
+            }
+            /* Init asymmetric-key with PQC key parameters */
+            status = setPqcKeyParams(MOC_ASYM(hwAccelCtx) &asymKey,
+                             &(pKeyData->algKeyInfo.pqcInfo), pPqcKey);
+            if (OK != status)
+            {
+                DB_PRINT("%s.%d: Failed setting PQC key parameters, "
+                        "status = %d\n", __FUNCTION__, __LINE__, status);
+                goto exit;
+            }
+        }
+        break;
+#endif /*__ENABLE_DIGICERT_PQC__*/
         default:
             status = ERR_INVALID_ARG;
             break;

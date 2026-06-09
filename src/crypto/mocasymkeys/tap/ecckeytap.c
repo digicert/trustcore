@@ -1,5 +1,5 @@
 /*
- * ecckeysw.c
+ * ecckeytap.c
  *
  * Operator for TAP version of ECC Custom Key.
  *
@@ -45,6 +45,7 @@ MOC_EXTERN MSTATUS KeyOperatorEccTap (
       status = ERR_NULL_POINTER;
       if (NULL != pOutputInfo)
       {
+        /* Operator is generic for all curves but we need a default algo for the crypto interface core table, use p256 */
         status = OK;
         *((ubyte4 *)(pOutputInfo)) = (MOC_LOCAL_TYPE_ECC | MOC_LOCAL_TYPE_P256);
       }

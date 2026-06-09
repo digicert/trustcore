@@ -505,9 +505,9 @@ test_ecc_signatures() {
     print_header "Testing ECC Signature Operations"
     
     local -a ecc_tests=(
-        "256:0x3000001:1:sha256"
-        "384:0x3000002:1:sha256"
-        "521:0x3000003:2:sha512"
+        "256:0x03000002:1:sha256"
+        "384:0x04000002:3:sha384"
+        "521:0x05000002:2:sha512"
     )
     
     for test_config in "${ecc_tests[@]}"; do

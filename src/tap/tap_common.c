@@ -745,11 +745,10 @@ exit:
     return status;
 }
 
-
-#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
 /*
- * Parse the packed NanoROOT algorithm information contained in 'value'
- * and convert it into TAP-specific types.
+ * Parse the packed algorithm information contained in 'value'
+ * and convert it into TAP-specific types. Currently only
+ * implemented for NanoRoot.
  *
  * The 32-bit 'value' is expected to encode:
  *   - a high-level algorithm identifier (extracted via NanoROOT_GET_ALGO_ID)
@@ -758,20 +757,20 @@ exit:
  *     NanoROOT encoding specification.
  *
  * On success:
- *   - *keyAlgorithm is set to the corresponding TAP_KEY_ALGORITHM value
- *   - *keySize     is set to the corresponding TAP_KEY_SIZE value
- *   - *subKeyType  is set to a subtype identifier derived from 'value'
+ *   - *pKeyAlgorithm is set to the corresponding TAP_KEY_ALGORITHM value
+ *   - *pKeySize     is set to the corresponding TAP_KEY_SIZE value
+ *   - *pSubKeyType  is set to a subtype identifier derived from 'value'
  *
  * Parameters:
- *   value        Packed NanoROOT algorithm information word.
- *   keyAlgorithm Output parameter for the decoded TAP_KEY_ALGORITHM.
- *   keySize      Output parameter for the decoded TAP_KEY_SIZE.
- *   subKeyType   Output parameter for an algorithm-specific subtype or
- *                key type value.
+ *   value         Packed NanoROOT algorithm information word.
+ *   pKeyAlgorithm Output parameter for the decoded TAP_KEY_ALGORITHM.
+ *   pKeySize      (Optional) Output parameter for the decoded TAP_KEY_SIZE.
+ *   pSubKeyType   (Optional) Output parameter for an algorithm-specific subtype or
+ *                 key type value.
  *
  * Return value:
  *   - OK on successful parsing and mapping of all output fields.
- *   - An error status (for example, ERR_TAP_INVALID_PARAMETER or an
+ *   - An error status (for example, ERR_TAP_INVALID_ALGORITHM or an
  *     algorithm-specific error) if 'value' is zero, any output pointer is
  *     NULL, or if 'value' encodes an unsupported or unknown algorithm /
  *     key size combination.
@@ -780,16 +779,16 @@ exit:
  *   Callers should treat the output parameters as uninitialized if a
  *   non-OK status is returned.
  */
-MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte4 value,
-				TAP_KEY_ALGORITHM *keyAlgorithm,
-				TAP_KEY_SIZE *keySize,
-				ubyte4 *subKeyType
-			    )
+MSTATUS TAP_parse_algorithm_info(ubyte4 value,
+            TAP_KEY_ALGORITHM *pKeyAlgorithm,
+            TAP_KEY_SIZE *pKeySize,
+            ubyte *pSubKeyType /* either a TAP_ECC_CURVE or TAP_MLDSA_SIZE */
+            )
 {
-    ubyte4 algo = NanoROOT_GET_ALGO_ID(value);
-    ubyte4 subtype = NanoROOT_GET_SUBTYPE(value);
+#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
+    ubyte4 subType = 0;
 
-    if( 0 == value || NULL == keyAlgorithm || NULL == keySize || NULL == subKeyType)
+    if( 0 == value || NULL == pKeyAlgorithm) /* pKeySize and pSubKeyType optional */
     {
         DB_PRINT("%s.%d Error invalid input. status=%d\n",
                   __FUNCTION__,__LINE__, ERR_INVALID_INPUT);
@@ -798,106 +797,29 @@ MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte4 value,
 
     DB_PRINT("Raw 32-bit Value: 0x%08X\n", (unsigned int)value);
 
-    switch (algo) {
-        case NanoROOT_ALGO_RSA:
-            DB_PRINT("Algorithm       : RSA\n");
-            *keyAlgorithm = TAP_KEY_ALGORITHM_RSA;
-            switch (subtype) {
-                case NanoROOT_RSA_2048:
-                    DB_PRINT("Key Size        : 2048 bits\n");
-                    *keySize = TAP_KEY_SIZE_2048;
-                    *subKeyType = 2048;
-                    break;
+    *pKeyAlgorithm = (TAP_KEY_ALGORITHM) (NanoROOT_GET_ALGO_ID(value) & 0xff);
+    subType = NanoROOT_GET_SUBTYPE(value);
 
-                case NanoROOT_RSA_3072:
-                    DB_PRINT("Key Size        : 3072 bits\n");
-                    *keySize = TAP_KEY_SIZE_3072;
-                    *subKeyType = 3072;
-                    break;
-
-                case NanoROOT_RSA_4096:
-                    DB_PRINT("Key Size        : 4096 bits\n");
-                    *keySize = TAP_KEY_SIZE_4096;
-                    *subKeyType = 4096;
-                    break;
-
-                case NanoROOT_RSA_8192:
-                    DB_PRINT("Key Size        : 8192 bits\n");
-                    *keySize = TAP_KEY_SIZE_8192;
-                    *subKeyType = 8192;
-                    break;
-
-                default:
-                    DB_PRINT("Key Size        : Unknown (0x%08X)\n", subtype);
-                    return ERR_TAP_INVALID_ALGORITHM;
-            }
-            break;
-
-#ifdef __ENABLE_DIGICERT_PQC__
-        case NanoROOT_ALGO_MLDSA:
-            DB_PRINT("Algorithm       : MLDSA\n");
-            *keyAlgorithm = TAP_KEY_ALGORITHM_MLDSA;
-            switch (subtype) {
-                case NanoROOT_MLDSA_44:
-                    DB_PRINT("Subtype         : 44\n");
-                    *subKeyType = cid_PQC_MLDSA_44;
-                    break;
-
-                case NanoROOT_MLDSA_65:
-                    DB_PRINT("Subtype         : 65\n");
-                    *subKeyType = cid_PQC_MLDSA_65;
-                    break;
-
-                case NanoROOT_MLDSA_87:
-                    DB_PRINT("Subtype         : 87\n");
-                    *subKeyType = cid_PQC_MLDSA_87;
-                    break;
-
-                default:
-                    DB_PRINT("Subtype         : Unknown (0x%08X)\n", subtype);
-                    return ERR_TAP_INVALID_ALGORITHM;
-            }
-            break;
-#endif
-
-#ifdef __ENABLE_DIGICERT_ECC__
-        case NanoROOT_ALGO_ECC:
-            DB_PRINT("Algorithm       : ECC\n");
-            *keyAlgorithm = TAP_KEY_ALGORITHM_ECC;
-            switch (subtype) {
-                case NanoROOT_ECC_P256:
-                    DB_PRINT("Curve         : P256\n");
-                    *subKeyType = cid_EC_P256;
-                    break;
-
-                case NanoROOT_ECC_P384:
-                    DB_PRINT("Curve         : P384\n");
-                    *subKeyType = cid_EC_P384;
-                    break;
-
-                case NanoROOT_ECC_P521:
-                    DB_PRINT("Curve         : P521\n");
-                    *subKeyType = cid_EC_P521;
-                    break;
-
-                default:
-                    DB_PRINT("Curve         : Unknown (0x%08X)\n", subtype);
-                    return ERR_TAP_INVALID_ALGORITHM;
-            }
-            break;
-#endif
-
-        default:
-            DB_PRINT("Algorithm       : Unknown (0x%08X)\n", algo);
-            DB_PRINT("Subtype         : 0x%08X\n", subtype);
-            return ERR_TAP_INVALID_ALGORITHM;
+    if (NanoROOT_ALGO_RSA == *pKeyAlgorithm)
+    {
+        if (NULL != pKeySize) *pKeySize = (TAP_KEY_SIZE) (subType & 0xff);
+    }
+    else if (NanoROOT_ALGO_ECC == *pKeyAlgorithm || NanoROOT_ALGO_MLDSA == *pKeyAlgorithm)
+    {
+        if (NULL != pSubKeyType) *pSubKeyType = (ubyte) (subType & 0xff);
+    }
+    else
+    {
+        DB_PRINT("Algorithm       : Unknown (0x%08X)\n", *pKeyAlgorithm);
+        DB_PRINT("Subtype         : 0x%08X\n", subType);
+        return ERR_TAP_INVALID_ALGORITHM;
     }
 
     return OK;
-}
+#else
+    return ERR_NOT_IMPLEMENTED;
 #endif
-
-
+}
 
 /*------------------------------------------------------------------*/
 

@@ -1692,7 +1692,7 @@ typedef struct
 /**
  * @ingroup tap_definitions
  * @ingroup tap_smp_definitions
- * @details The signature structure for a TAP MLDSA key.
+ * @details The signature structure for a TAP QS key.
  */
 typedef struct
 {
@@ -1700,7 +1700,7 @@ typedef struct
     ubyte4 signatureLen;
     /*! The signature buffer. */
     ubyte *pSignature;
-} TAP_MLDSASignature;
+} TAP_PQCSignature;
 
 /**
  * @ingroup tap_definitions
@@ -1771,7 +1771,7 @@ typedef union
     /*! Signature, when keyAlgorithm is TAP_KEY_ALGORITHM_HMAC. */
     TAP_SymSignature  hmacSignature;
     /*! Signature, when keyAlgorithm is TAP_KEY_ALGORITHM_MLDSA. */
-    TAP_MLDSASignature  mldsaSignature;
+    TAP_PQCSignature  pqcSignature;
 
 } TAP_Signature_Union;
 
@@ -1940,6 +1940,28 @@ typedef ubyte TAP_ECC_CURVE;
 /*! TAP_ECC_CURVE_BRAINPOOL_P384 */
 #define TAP_ECC_CURVE_BRAINPOOL_P384   ((ubyte)7)
 
+/**
+ * @ingroup tap_definitions
+ * @ingroup tap_smp_definitions
+ * @brief Value to indicate the MLDSA matrix size.
+ * @details Value to indicate the MLDSA matrix size. Not all types are valid for all supported security modules.
+ *  <p> TAP_MLDSA_SIZE must be one of the following values:
+ *  - #TAP_MLDSA_SIZE_NONE
+ *  - #TAP_MLDSA_SIZE_44
+ *  - #TAP_MLDSA_SIZE_65
+ *  - #TAP_MLDSA_SIZE_87
+ */
+typedef ubyte TAP_MLDSA_SIZE;
+/*! TAP_MLDSA_SIZE_NONE */
+#define TAP_MLDSA_SIZE_NONE      ((ubyte)0)
+/*! TAP_MLDSA_SIZE_44 */
+#define TAP_MLDSA_SIZE_44        ((ubyte)17) /* happens to match algorithm OID suffix */
+/*! TAP_MLDSA_SIZE_65 */
+#define TAP_MLDSA_SIZE_65        ((ubyte)18)
+/*! TAP_MLDSA_SIZE_87 */
+#define TAP_MLDSA_SIZE_87        ((ubyte)19)
+
+
 /***************************************************************
    Signature Information Definitions
 ****************************************************************/
@@ -2084,19 +2106,19 @@ typedef struct
 /**
  * @ingroup tap_definitions
  * @ingroup tap_smp_definitions
- * @details The public key structure for a TAP MLDSA key.
+ * @details The public key structure for a TAP PQC key.
  */
 typedef struct
 {
-  /*! The length of the MLDSA publicKey*/
+  /*! The length of the PQC publicKey*/
   ubyte4  publicKeyLen;
-  /*! The MLDSA Public key */
+  /*! The PQC Public key */
   ubyte   *pPublicKey;
-  /*! MLDSA cid value */
-  ubyte4 qsAlg;
-  /*! The MLDSA key signature scheme.  Must be a valid #TAP_SIG_SCHEME value. */
+  /*! PQC cid value */
+  TAP_MLDSA_SIZE qsAlg;
+  /*! The PQC key signature scheme.  Must be a valid #TAP_SIG_SCHEME value. */
   TAP_SIG_SCHEME  sigScheme;
-} TAP_MLDSAPublicKey;
+} TAP_PQCPublicKey;
 
 /*! @cond */
 #pragma pack (pop)
@@ -2115,8 +2137,8 @@ typedef union
     TAP_ECCPublicKey  eccKey;
     /*! A DSA public key, when keyAlgorithm is TAP_KEY_ALGORITHM_DSA. */
     TAP_DSAPublicKey  dsaKey;
-    /*! A MLDSA public key, when keyAlgorithm is TAP_KEY_ALGORITHM_MLDSA. */
-    TAP_MLDSAPublicKey  mldsaKey;
+    /*! A PQC public key, when keyAlgorithm is TAP_KEY_ALGORITHM_MLDSA. */
+    TAP_PQCPublicKey  pqcKey;
     /*! Needed for compilers that do not accept an empty union */
     ubyte   nullKey;
 } TAP_PublicKey_Union;

@@ -1,7 +1,7 @@
 /*
  * trustedge_agent_zephyr.c
  *
- * Zephyr specific functionality for update package
+ * Zephyr specific functionality for update packages
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

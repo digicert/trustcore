@@ -223,13 +223,14 @@ do
             CRYPTO_BUILD_OPTIONS+=" --tap-hybrid-sign"
             ;;
         --nanoroot)
-            echo "-- Building with nanoroot enabled...";
+            echo "-- Building with NanoROOT enabled...";
             TAP_ARG=" --tap"
             TAP_MODE=" --tap-local"
             SMP_TPM2_ARG=""
             SMP_ARG=" --nanoroot"
             SMP_PKCS11_ARG=""
-            CRYPTO_BUILD_OPTIONS+=" --tap-hybrid-sign"
+            CRYPTO_BUILD_OPTIONS+=" --tap-hybrid-sign --nanoroot"
+            CERT_ENROLL_BUILD_OPTIONS+=" --tap"
             OCSP_ARG=" --ocsp"
             PQC_ARG=" --pqc"
             echo "Building with PQC support...";

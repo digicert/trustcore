@@ -173,6 +173,7 @@ static MSTATUS TRUSTEDGE_agentCreateStatusFile(TrustEdgeAgentCtx *pCtx)
         pTimestamp);
     if (len <= 0)
     {
+        status = ERR_TRUSTEDGE_AGENT;
         MSG_LOG_print(MSG_LOG_ERROR,
             "%s line %d status: %d = %s\n",
             __func__, __LINE__, status,
@@ -197,6 +198,7 @@ static MSTATUS TRUSTEDGE_agentCreateStatusFile(TrustEdgeAgentCtx *pCtx)
         pTimestamp);
     if (len <= 0)
     {
+        status = ERR_TRUSTEDGE_AGENT;
         MSG_LOG_print(MSG_LOG_ERROR,
             "%s line %d status: %d = %s\n",
             __func__, __LINE__, status,
@@ -282,7 +284,15 @@ static MSTATUS TRUSTEDGE_actionHandlerIsTrustedgeUpdateArtifact(
                 MSG_LOG_print(MSG_LOG_VERBOSE, "pDir: %s\n", pDir);
                 MSG_LOG_print(MSG_LOG_VERBOSE, "ppS[%d]: %s\n", i+1, ppS[i+1]);
 
-                snprintf(pStr, MAX_PATH_LENGTH, "%s/%s", pDir, ppS[i+1]);
+                {
+                    sbyte4 pathLen = snprintf(pStr, MAX_PATH_LENGTH + 1, "%s/%s", pDir, ppS[i+1]);
+                    if (pathLen < 0 || pathLen >= MAX_PATH_LENGTH + 1)
+                    {
+                        MSG_LOG_print(MSG_LOG_ERROR, "%s\n", "Dpkg path truncated or snprintf failed");
+                        status = ERR_TRUSTEDGE_AGENT;
+                        goto exit;
+                    }
+                }
                 MSG_LOG_print(MSG_LOG_VERBOSE, "dpkg file: %s\n", pStr);
 
                 if (FALSE == FMGMT_pathExists(pStr, NULL))

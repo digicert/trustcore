@@ -153,7 +153,8 @@ typedef struct MqttCtx
     void *pCookie;
     ubyte2 pktId;
     ubyte4 sessionExpiryInterval;
-    ubyte4 maxPacketSize;
+    ubyte4 maxPacketSize;           /* Max packet size client will accept (inbound) */
+    ubyte4 outboundMaxPacketSize;   /* Max packet size server will accept (outbound) */
     ubyte4 topicAliasMax;
     ubyte4 internalFlags;
     ubyte4 connInst;

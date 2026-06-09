@@ -32,7 +32,7 @@ typedef struct _DP_PQC_KEY
 {
     OSSL_LIB_CTX *libctx;
     char *propq;
-    void *pKeyData; /* QS_CTX * */
+    void *pKeyData; /* (QS_CTX *) */
     size_t cid;
     size_t secSize;
     int hasPrivKey;
@@ -41,6 +41,36 @@ typedef struct _DP_PQC_KEY
     CRYPTO_RWLOCK *lock;
 
 } DP_PQC_KEY;
+
+typedef struct _DP_MLX_KEY
+{
+    OSSL_LIB_CTX *libctx;
+    char *propq;
+    void *pPQCKeyData; /* (QS_CTX *) */
+    void *pECCKeyData; /* (ECCKey *) */
+    size_t cidECC;
+    size_t secSize;
+
+    size_t pqcPrivLen;
+    size_t pqcPubLen;
+    size_t pqcCipherLen;
+
+    size_t curvePrivLen;
+    size_t curvePubLen;
+    size_t curveSSLen;
+
+    int curveFirst;
+    unsigned int state;
+
+} DP_MLX_KEY;
+
+#define DP_MLX_HAVE_NOKEYS 0
+#define DP_MLX_HAVE_PUBKEY 1
+#define DP_MLX_HAVE_PRVKEY 2
+
+/* Both key parts have whatever the ML-KEM component has */
+#define digi_mlx_kem_have_pubkey(key) ((key)->state > 0)
+#define digi_mlx_kem_have_prvkey(key) ((key)->state > 1)
 
 #ifdef __cplusplus
 }

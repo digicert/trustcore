@@ -55,6 +55,7 @@ function show_usage
   echo "   --ssl             - Build with NanoSSL support."
   echo "   --tpm2            - Build with TPM2.0 support."
   echo "   --tee             - Build with TEE support."
+  echo "   --nanoroot        - Build with NanoROOT support."
   echo "   --scep            - Build with SCEP support."
   echo "   --ike             - Build with IKE support."
   echo "   --ipv6            - Build with IPV6 enabled."
@@ -343,6 +344,10 @@ do
         --tee)
             echo "Building with TEE support...";
             BUILD_OPTIONS+=" -DCM_ENABLE_TEE=ON"
+            ;;
+        --nanoroot)
+            echo "Building with NanoROOT support...";
+            BUILD_OPTIONS+=" -DCM_ENABLE_NANOROOT=ON"
             ;;
         --pss-var-salt)
             echo "Building with variable salt length for TAP...";

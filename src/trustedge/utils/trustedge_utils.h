@@ -140,6 +140,8 @@ typedef struct
 #define KEY_SOURCE_PKCS11_LEN        (6)
 #define KEY_SOURCE_TEE               "TEE"
 #define KEY_SOURCE_TEE_LEN           (3)
+#define KEY_SOURCE_NANOROOT          "NANOROOT"
+#define KEY_SOURCE_NANOROOT_LEN      (8)
 
 typedef enum
 {
@@ -148,7 +150,8 @@ typedef enum
     TRUSTEDGE_KEY_SOURCE_SW_SERVER,
     TRUSTEDGE_KEY_SOURCE_TPM2,
     TRUSTEDGE_KEY_SOURCE_PKCS11,
-    TRUSTEDGE_KEY_SOURCE_TEE
+    TRUSTEDGE_KEY_SOURCE_TEE,
+    TRUSTEDGE_KEY_SOURCE_NANOROOT
 } TrustEdgeAgentKeySource;
 
 typedef enum

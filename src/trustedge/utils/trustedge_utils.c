@@ -65,6 +65,10 @@
 #include "../../trustedge/utils/trustedge_tap.h"
 #ifdef __ENABLE_DIGICERT_TEE__
 #include "../../smp/smp_tee/smp_tap_tee.h"
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+#include "../../smp/smp_nanoroot/smp_nanoroot.h"
+#include "../../tap/tap_common.h"
+#include "../../crypto_interface/crypto_interface_tap.h"
 #endif
 #endif
 #include "../../crypto/sha1.h"
@@ -1722,7 +1726,7 @@ extern MSTATUS TRUSTEDGE_utilsWriteKeyAndCert(
     ubyte4 outCertLen = 0, outKeyLen = 0;
     sbyte *pFileName = NULL, *pOutFile = NULL, *pOldFile = NULL;
 
-#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__)
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_TEE__) && !defined(__ENABLE_DIGICERT_SMP_NANOROOT__)
     (void) pTapAttributes;
 #endif
 
@@ -1743,9 +1747,9 @@ extern MSTATUS TRUSTEDGE_utilsWriteKeyAndCert(
     if (NULL != pKey)
     {
 #ifdef __ENABLE_DIGICERT_TEE__
-        if (TAP_PROVIDER_TEE == pTapAttributes->provider)
+        if (NULL != pTapAttributes && TAP_PROVIDER_TEE == pTapAttributes->provider)
         {
-            if (NULL == pTapAttributes || NULL == pTapAttributes->pKeyHandle)
+            if (NULL == pTapAttributes->pKeyHandle)
             {
                 status = ERR_NULL_POINTER;
                 MSG_LOG_print(MSG_LOG_ERROR,
@@ -1757,20 +1761,69 @@ extern MSTATUS TRUSTEDGE_utilsWriteKeyAndCert(
             status = CRYPTO_serializeAsymKeyToStorage( pKey,
                 privateKeyPem, pTapAttributes->pKeyHandle->pBuffer, pTapAttributes->pKeyHandle->bufferLen, TEE_SECURE_STORAGE,
                 &pOutKey, &outKeyLen);
+            if (OK != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR, "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+                goto exit;
+            }
+        }
+        else
+#elif __ENABLE_DIGICERT_SMP_NANOROOT__
+        if (NULL != pTapAttributes && TAP_PROVIDER_NANOROOT == pTapAttributes->provider)
+        {
+            if (NULL == pTapAttributes->pKeyHandle)
+            {
+                status = ERR_NULL_POINTER;
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+                goto exit;
+            }
+            status = CRYPTO_serializeKeyId(pTapAttributes->pKeyHandle->pBuffer, pTapAttributes->pKeyHandle->bufferLen, NanoROOTTOKEN_ID,
+                         privateKeyPem, &pOutKey, &outKeyLen);
+            if (OK != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR, "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+                goto exit;
+            }
+
+            /* actually fill out the pKey shell as it may be needed for more operations */
+            status = CRYPTO_INTERFACE_TAP_getKeyById(pTapAttributes->pKeyHandle->pBuffer, pTapAttributes->pKeyHandle->bufferLen, pKey);
+            if (OK != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+                goto exit;
+            }
+            
+            /* hold on to the key and token until we are explicitly done */
+            status = CRYPTO_INTERFACE_TAP_AsymDeferUnload(pKey, TRUE);
+            if (OK != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+                goto exit;
+            }
         }
         else
 #endif
         {
             status = CRYPTO_serializeAsymKey(
                 pKey, privateKeyPem, &pOutKey, &outKeyLen);
-        }
-        if (OK != status)
-        {
-            MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-            goto exit;
+        
+            if (OK != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR, "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+                goto exit;
+            }
         }
     }
 

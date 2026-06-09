@@ -1213,7 +1213,8 @@ processKeyShareSupportedGroups(SSLSocket *pSSLSock,  enum tlsExtNamedCurves clie
                 }
 #endif /* __ENABLE_DIGICERT_ECC__*/
 #ifdef __ENABLE_DIGICERT_PQC__
-                else if ( HYBRID_SUPPORTED_GROUP_MASK == ( curve & SUPPORTED_GROUP_MASK ))
+                else if ( HYBRID_SUPPORTED_GROUP_MASK == ( curve & SUPPORTED_GROUP_MASK ) || 
+                          PQC_SUPPORTED_GROUP_MASK == (curve & SUPPORTED_GROUP_MASK))
                 {
                     if (NULL != pSSLSock->roleSpecificInfo.server.receivedPubKey)
                     {
@@ -5175,7 +5176,8 @@ fillServerHello(SSLSocket* pSSLSock, ubyte* pHSRec, ubyte versionMask, intBoolea
                     {
                         /* If it's not PSK then it will always send selected key_share entry */
 #ifdef __ENABLE_DIGICERT_PQC__
-                        if (HYBRID_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
+                        if (HYBRID_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup) || 
+                            PQC_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
                         {
                             /* On the server side, for KEM the ciphertext must
                              * be sent */
@@ -7516,7 +7518,8 @@ SSL_SERVER_sendServerHello(SSLSocket* pSSLSock)
 
         /* If sending PSK, psk_key_exchange_mode extensions is required */
 #ifdef __ENABLE_DIGICERT_PQC__
-        if (HYBRID_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
+        if (HYBRID_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup) ||
+            PQC_SUPPORTED_GROUP_MASK == (SUPPORTED_GROUP_MASK & pSSLSock->roleSpecificInfo.server.selectedGroup))
         {
             /* On the server side, for KEM the ciphertext must
                 * be sent */

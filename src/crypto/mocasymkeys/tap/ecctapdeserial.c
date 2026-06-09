@@ -18,6 +18,7 @@
  */
 
 #include "../../../crypto/mocasymkeys/tap/ecctap.h"
+#include "../../../crypto/mocasymkeys/tap/idtap.h"
 #include "../../../asn1/mocasn1.h"
 
 #if defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_TAP__)
@@ -31,17 +32,54 @@ MSTATUS EccTapDeserializeKey (
   MSTATUS status;
   intBoolean isPrivate = FALSE;
   TAP_Key *pNewKey = NULL;
+  TAP_Key *pLoadedNewKey = NULL;
+  MEccTapKeyData *pData = NULL;
+  MEccTapKeyData *pNewData = NULL;
 
   status = DeserializeEccTapKey (
     pInputInfo->pData, pInputInfo->length, &isPrivate, &pNewKey);
   if (OK != status)
     goto exit;
 
-  status = EccTapLoadKeyData(&pNewKey, NULL, 0, NULL, NULL, pMocAsymKey);
-
-  if (TRUE != isPrivate)
+  if (TAP_PROVIDER_NANOROOT == pNewKey->providerObjectData.objectInfo.providerType)
   {
-    pMocAsymKey->localType = MOC_LOCAL_KEY_ECC_PUB_TAP | MOC_LOCAL_KEY_P256;
+    /* We only use the id from the deserialized key, then we properly import a loaded TAP_Key from the id */
+    TAP_Buffer keyId;
+
+    /* pNewKey->providerObjectData.objectBlob.blob.pBuffer has the 4 byte idlen followed by 4 byte id, so for NanoRoot should be 8 bytes */ 
+    status = ERR_INVALID_INPUT;
+    if (8 != pNewKey->providerObjectData.objectBlob.blob.bufferLen)
+        goto exit;
+    
+    keyId.pBuffer = pNewKey->providerObjectData.objectBlob.blob.pBuffer + 4;
+    keyId.bufferLen = pNewKey->providerObjectData.objectBlob.blob.bufferLen - 4;
+
+    status = IdTapLoadKeyData(&keyId, TAP_KEY_ALGORITHM_ECC, pMocAsymKey, &pLoadedNewKey);
+    if (OK != status)
+      goto exit;
+
+    /* Now put the loaded key in the keyData */
+    pData = (MEccTapKeyData *)(pMocAsymKey->pKeyData);
+    if (NULL == pData)
+    {
+      status = DIGI_CALLOC ((void **)&pNewData, 1, sizeof(MEccTapKeyData));
+      if (OK != status)
+        goto exit;
+
+      pData = pNewData;
+      pMocAsymKey->pKeyData = (void *)pNewData; pNewData = NULL;
+    }
+    pData->pKey = pLoadedNewKey; pLoadedNewKey = NULL;
+    pData->isKeyLoaded = TRUE;
+  }
+  else
+  {
+    status = EccTapLoadKeyData(&pNewKey, NULL, 0, NULL, NULL, pMocAsymKey);
+
+    if (TRUE != isPrivate)
+    {
+      pMocAsymKey->localType = MOC_LOCAL_KEY_ECC_PUB_TAP | MOC_LOCAL_KEY_P256;
+    }
   }
 
 exit:
@@ -49,6 +87,16 @@ exit:
   if (NULL != pNewKey)
   {
     TAP_freeKey(&pNewKey);
+  }
+  
+  if (NULL != pLoadedNewKey)
+  {
+    TAP_freeKey(&pLoadedNewKey);
+  }
+
+  if (NULL != pNewData)
+  {
+    DIGI_FREE ((void **)&pNewData);
   }
 
   return status;

@@ -25,6 +25,7 @@
 #include "../common/initmocana.h"
 #include "../crypto_interface/crypto_interface_priv.h"
 #include "../crypto_interface/crypto_interface_qs_sig.h"
+#include "../crypto_interface/crypto_interface_qs_tap_priv.h"
 
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE_PQC_SIG__
 
@@ -667,8 +668,38 @@ extern MSTATUS CRYPTO_INTERFACE_QS_SIG_getSignatureLen(QS_CTX *pCtx, ubyte4 *pSi
     /* Is this a crypto interface key? */
     if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        /* pSigLen and pSecretKey will be validated by the this call */
-        status = CRYPTO_getDomainParam ((MocAsymKey) pCtx->pSecretKey, MOC_ASYM_KEY_PARAM_SIGNATURE_LEN, pSigLen);
+        /* If this is a TAP key, handle it separately */
+        if (0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey)(pCtx->pSecretKey))->localType))
+        {
+            ubyte4 algo;
+
+            status = CRYPTO_INTERFACE_TAP_QS_getAlg((MocAsymKey) pCtx->pSecretKey, &algo);
+            if (OK != status)
+                goto exit;
+
+            /* hardcoded for now. TODO better design? maybe not, same with public key len */
+            if (cid_PQC_MLDSA_44 == algo)
+            {
+                *pSigLen = 2420;
+            }
+            else if (cid_PQC_MLDSA_65 == algo)
+            {
+                *pSigLen = 3309;
+            }
+            else if (cid_PQC_MLDSA_87 == algo)
+            {
+                *pSigLen = 4627;
+            }
+            else
+            {
+                status = ERR_TAP_UNSUPPORTED;
+            }
+        }
+        else
+        {
+            /* pSigLen and pSecretKey will be validated by the this call */
+            status = CRYPTO_getDomainParam ((MocAsymKey) pCtx->pSecretKey, MOC_ASYM_KEY_PARAM_SIGNATURE_LEN, pSigLen);
+        }
     }
     else
     {
@@ -697,9 +728,22 @@ extern MSTATUS CRYPTO_INTERFACE_QS_SIG_sign(MOC_HASH(hwAccelDescr hwAccelCtx) QS
     /* Is this enabled */
     if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        status = CRYPTO_asymSignMessage((MocAsymKey) pCtx->pSecretKey, NULL, 0, 0, NULL, rngFun, pRngFunArg, pData, dataLen,
-                                        pSignature, sigBufferLen, pActualSigLen, NULL);
+        /* We must have a secret (private) key to sign with */
+        status = ERR_NULL_POINTER;
+        if ( NULL == pCtx->pSecretKey )
+            goto exit;
 
+        /* If this is a TAP key, handle it separately */
+        if (0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey)(pCtx->pSecretKey))->localType))
+        {
+            status = CRYPTO_INTERFACE_TAP_QS_sign ((MocAsymKey) pCtx->pSecretKey, TRUE, 0, pData, dataLen,
+                                                   pSignature, sigBufferLen, pActualSigLen);
+        }
+        else
+        {
+            status = CRYPTO_asymSignMessage((MocAsymKey) pCtx->pSecretKey, NULL, 0, 0, NULL, rngFun, pRngFunArg,
+                                            pData, dataLen, pSignature, sigBufferLen, pActualSigLen, NULL);
+        }
     }
     else
     {
@@ -729,10 +773,24 @@ extern MSTATUS CRYPTO_INTERFACE_QS_SIG_signDigest(MOC_HASH(hwAccelDescr hwAccelC
     /* Is this enabled */
     if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        /* For now we use the algorithmDetails argument to pass in the digestId. We may want to just pass in
-           the oid in pAlgId. This depends on how other impls such as OQS define their APIs */
-        status = CRYPTO_asymSignDigest((MocAsymKey) pCtx->pSecretKey, NULL, 0, (ubyte4) digestId, NULL, rngFun, pRngFunArg, pData, dataLen,
-                                        pSignature, sigBufferLen, pActualSigLen, NULL);
+        /* We must have a secret (private) key to sign with */
+        status = ERR_NULL_POINTER;
+        if ( NULL == pCtx->pSecretKey )
+            goto exit;
+
+        /* If this is a TAP key, handle it separately */
+        if (0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey)(pCtx->pSecretKey))->localType))
+        {
+            status = CRYPTO_INTERFACE_TAP_QS_sign ((MocAsymKey) pCtx->pSecretKey, FALSE, digestId, pData, dataLen,
+                                                   pSignature, sigBufferLen, pActualSigLen);
+        }
+        else
+        {
+            /* For now we use the algorithmDetails argument to pass in the digestId. We may want to just pass in
+                the oid in pAlgId. This depends on how other impls such as OQS define their APIs */
+            status = CRYPTO_asymSignDigest((MocAsymKey) pCtx->pSecretKey, NULL, 0, (ubyte4) digestId, NULL, rngFun, pRngFunArg,
+                                           pData, dataLen, pSignature, sigBufferLen, pActualSigLen, NULL);
+        }
     }
     else
     {
@@ -803,9 +861,23 @@ extern MSTATUS CRYPTO_INTERFACE_QS_SIG_verify(MOC_HASH(hwAccelDescr hwAccelCtx) 
     /* Is this enabled */
     if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        /* Once pre-hash mode is supported by OQS we may want to call CRYPTO_asymVerifyDigest in that case */
-        status = CRYPTO_asymVerifyMessage((MocAsymKey) pCtx->pPublicKey, NULL, 0, 0, NULL, NULL, NULL, pData, dataLen,
-                                          pSignature, signatureLen, pVerifyStatus, NULL);
+        /* We must have a public key to verify with */
+        status = ERR_NULL_POINTER;
+        if ( NULL == pCtx->pPublicKey )
+            goto exit;
+
+        /* If this is a TAP key, handle it separately */
+        if (0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey)(pCtx->pPublicKey))->localType))
+        {
+            status = CRYPTO_INTERFACE_TAP_QS_verify ((MocAsymKey) pCtx->pPublicKey, TRUE, 0, pData, dataLen,
+                                                     pSignature, signatureLen, pVerifyStatus);
+        }
+        else
+        {
+            /* Once pre-hash mode is supported by OQS we may want to call CRYPTO_asymVerifyDigest in that case */
+            status = CRYPTO_asymVerifyMessage((MocAsymKey) pCtx->pPublicKey, NULL, 0, 0, NULL, NULL, NULL,
+                                              pData, dataLen, pSignature, signatureLen, pVerifyStatus, NULL);
+        }
     }
     else
     {
@@ -835,10 +907,24 @@ extern MSTATUS CRYPTO_INTERFACE_QS_SIG_verifyDigest(MOC_HASH(hwAccelDescr hwAcce
     /* Is this enabled */
     if (CRYPTO_INTERFACE_ALGO_ENABLED == pCtx->enabled)
     {
-        /* For now we use the algorithmDetails argument to pass in the digestId. We may want to just pass in
-           the oid in pAlgId. This depends on how other impls such as OQS define their APIs */
-        status = CRYPTO_asymVerifyDigest((MocAsymKey) pCtx->pPublicKey, NULL, 0, (ubyte4) digestId, NULL, NULL, NULL, pData, dataLen,
-                                          pSignature, signatureLen, pVerifyStatus, NULL);
+        /* We must have a public key to verify with */
+        status = ERR_NULL_POINTER;
+        if ( NULL == pCtx->pPublicKey )
+            goto exit;
+
+        /* If this is a TAP key, handle it separately */
+        if (0 != (MOC_LOCAL_TYPE_TAP & ((MocAsymKey)(pCtx->pPublicKey))->localType))
+        {
+            status = CRYPTO_INTERFACE_TAP_QS_verify ((MocAsymKey) pCtx->pPublicKey, FALSE, digestId, pData, dataLen,
+                                                     pSignature, signatureLen, pVerifyStatus);
+        }
+        else
+        {
+            /* For now we use the algorithmDetails argument to pass in the digestId. We may want to just pass in
+            the oid in pAlgId. This depends on how other impls such as OQS define their APIs */
+            status = CRYPTO_asymVerifyDigest((MocAsymKey) pCtx->pPublicKey, NULL, 0, (ubyte4) digestId, NULL, NULL, NULL,
+                                            pData, dataLen, pSignature, signatureLen, pVerifyStatus, NULL);
+        }
     }
     else
     {

@@ -1305,14 +1305,14 @@ const tap_shadow_struct TAP_SHADOW_TAP_RSASignature = {
         },
 };
 
-const tap_shadow_struct TAP_SHADOW_TAP_MLDSASignature = {
+const tap_shadow_struct TAP_SHADOW_TAP_PQCSignature = {
         .handler = TAP_SERIALIZE_StructTypeHandler,
-        .structSize = sizeof(TAP_MLDSASignature),
+        .structSize = sizeof(TAP_PQCSignature),
         .numFields = 1,
         .unionSelectorOffset = 0,
         .unionSelectorSize = 0,
         .pFieldList = {
-                {TAP_OFFSETOF(TAP_MLDSASignature, signatureLen), &TAP_SHADOW_TAP_BufferPacked}
+                {TAP_OFFSETOF(TAP_PQCSignature, signatureLen), &TAP_SHADOW_TAP_BufferPacked}
         },
 };
 
@@ -1364,7 +1364,7 @@ const tap_shadow_struct TAP_SHADOW_TAP_Signature_Union = {
                 {TAP_KEY_ALGORITHM_DSA, &TAP_SHADOW_TAP_DSASignature},
                 {TAP_KEY_ALGORITHM_AES, &TAP_SHADOW_TAP_SymSignature},
                 {TAP_KEY_ALGORITHM_HMAC, &TAP_SHADOW_TAP_SymSignature},
-                {TAP_KEY_ALGORITHM_MLDSA, &TAP_SHADOW_TAP_MLDSASignature}
+                {TAP_KEY_ALGORITHM_MLDSA, &TAP_SHADOW_TAP_PQCSignature}
         },
 };
 
@@ -1427,6 +1427,15 @@ const tap_shadow_struct TAP_SHADOW_TAP_ECC_CURVE = {
         .pFieldList = {{0, &TAP_SHADOW_ubyte},},
 };
 
+const tap_shadow_struct TAP_SHADOW_TAP_QS_ALG = {
+        .handler = TAP_SERIALIZE_StructTypeHandler,
+        .structSize = sizeof(TAP_MLDSA_SIZE),//TODO
+        .numFields = 1,
+        .unionSelectorOffset = 0,
+        .unionSelectorSize = 0,
+        .pFieldList = {{0, &TAP_SHADOW_ubyte},},
+};
+
 const tap_shadow_struct TAP_SHADOW_TAP_RSAPublicKey = {
         .handler = TAP_SERIALIZE_StructTypeHandler,
         .structSize = sizeof(TAP_RSAPublicKey),
@@ -1441,16 +1450,16 @@ const tap_shadow_struct TAP_SHADOW_TAP_RSAPublicKey = {
         },
 };
 
-const tap_shadow_struct TAP_SHADOW_TAP_MLDSAPublicKey = {
+const tap_shadow_struct TAP_SHADOW_TAP_PQCPublicKey = {
         .handler = TAP_SERIALIZE_StructTypeHandler,
-        .structSize = sizeof(TAP_MLDSAPublicKey),
+        .structSize = sizeof(TAP_PQCPublicKey),
         .numFields = 3,
         .unionSelectorOffset = 0,
         .unionSelectorSize = 0,
         .pFieldList = {
-                {TAP_OFFSETOF(TAP_MLDSAPublicKey, publicKeyLen), &TAP_SHADOW_TAP_BufferPacked},
-                {TAP_OFFSETOF(TAP_MLDSAPublicKey, qsAlg), &TAP_SHADOW_TAP_BufferPacked},
-                {TAP_OFFSETOF(TAP_MLDSAPublicKey, sigScheme), &TAP_SHADOW_TAP_SIG_SCHEME},
+                {TAP_OFFSETOF(TAP_PQCPublicKey, publicKeyLen), &TAP_SHADOW_TAP_BufferPacked},
+                {TAP_OFFSETOF(TAP_PQCPublicKey, qsAlg), &TAP_SHADOW_TAP_QS_ALG},
+                {TAP_OFFSETOF(TAP_PQCPublicKey, sigScheme), &TAP_SHADOW_TAP_SIG_SCHEME},
         },
 };
 
@@ -1494,7 +1503,7 @@ const tap_shadow_struct TAP_SHADOW_TAP_PublicKey_Union = {
                 {TAP_KEY_ALGORITHM_RSA, &TAP_SHADOW_TAP_RSAPublicKey},
                 {TAP_KEY_ALGORITHM_ECC, &TAP_SHADOW_TAP_ECCPublicKey},
                 {TAP_KEY_ALGORITHM_DSA, &TAP_SHADOW_TAP_DSAPublicKey},
-                {TAP_KEY_ALGORITHM_MLDSA, &TAP_SHADOW_TAP_MLDSAPublicKey},
+                {TAP_KEY_ALGORITHM_MLDSA, &TAP_SHADOW_TAP_PQCPublicKey},
         },
 };
 

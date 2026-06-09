@@ -25,11 +25,261 @@
 #ifdef __ENABLE_DIGICERT_TAP__
 #include "../tap/tap.h"
 #include "../tap/tap_api.h"
-#include "../crypto/mocasymkeys/tap/ecctap.h"
+#include "../tap/tap_common.h"
 #include "../crypto/mocasymkeys/tap/rsatap.h"
 #include "../crypto_interface/cryptointerface.h"
 
+#ifdef __ENABLE_DIGICERT_ECC__
+#include "../crypto/mocasymkeys/tap/ecctap.h"
+#endif
+
+#ifdef __ENABLE_DIGICERT_PQC__
+#include "../crypto_interface/crypto_interface_qs.h"
+#include "../crypto/mocasymkeys/tap/qstap.h"
+#endif
+
 /*---------------------------------------------------------------------------*/
+
+MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_getKeyById(ubyte *pId, ubyte4 idLen, AsymmetricKey *pKey)
+{
+    MSTATUS status = ERR_NULL_POINTER, fstatus = OK;
+    TAP_Buffer keyId = {0};
+    ubyte4 idInt = 0;
+    TAP_Key *pTapKey = NULL;
+    TAP_ErrorContext errContext = {0};
+    TAP_ErrorContext *pErrContext = &errContext;
+    byteBoolean releaseContext = FALSE;
+    MocAsymmetricKey emptyKey = { 0 };
+    TAP_Context *pTapContext = NULL;
+    TAP_EntityCredentialList *pUsageCredentials = NULL;
+    TAP_CredentialList *pKeyCredentials = NULL;
+    TAP_KeyInfo keyInfo = {0};
+    MocAsymKey pMocAsymKey = NULL;
+    TAP_KEY_SIZE keySize = 0;
+    ubyte subType = 0;
+#ifndef __DISABLE_DIGICERT_RSA__
+    RSAKey *pRsaKey = NULL;
+#endif
+#ifdef __ENABLE_DIGICERT_ECC__
+    ECCKey *pEccKey = NULL;
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    QS_CTX *pQsCtx = NULL;
+#endif
+
+    if (NULL == pId || NULL == pKey)
+        goto exit;
+
+    /* Ids for at least NanoRoot must be 4 bytes */
+    status = ERR_INVALID_INPUT;
+    if (idLen != 4)
+        goto exit;
+
+    /* delete any previously existing key */
+    status = CRYPTO_uninitAsymmetricKey(pKey, 0);
+    if (OK != status)
+        goto exit;
+
+#ifdef __ENABLE_DIGICERT_TAP_EXTERN__
+    status = CRYPTO_INTERFACE_TAPExternInit();
+    if (OK != status)
+        goto exit;
+#endif
+
+    if (NULL != g_pFuncPtrGetTapContext)
+    {
+        status = g_pFuncPtrGetTapContext(
+            &pTapContext, &pUsageCredentials,
+            &pKeyCredentials, &emptyKey, tap_key_import, 1);
+        if (OK != status)
+            goto exit;
+
+        releaseContext = TRUE;
+    }
+    else
+    {
+        status = ERR_NOT_IMPLEMENTED;
+        goto exit;
+    }
+
+    keyId.pBuffer = pId;
+    keyId.bufferLen = idLen;
+    /* TODO should this be big endian? */
+    idInt = (((ubyte4) pId[3]) << 24) | (((ubyte4) pId[2]) << 16) | (((ubyte4) pId[1]) << 8) | ((ubyte4) pId[0]);
+
+    status = TAP_parse_algorithm_info(idInt, &keyInfo.keyAlgorithm, &keySize, &subType);
+    if (OK != status)
+        goto exit;
+
+    /* we need the to set the keyInfo too
+       NOTE: The hashes (sigScheme) are automatically set to what NanoRoot requires
+       Future project many be to pass the pKeyInfo into this method as its done in CRYPTO_INTERFACE_TAP_serializeKeyById.
+       (difficulty in that is that this is called by CRYPTO_deserializeAsymKey which does not know the keyInfo a priori)
+    */
+    switch (keyInfo.keyAlgorithm)
+    {
+#ifndef __DISABLE_DIGICERT_RSA__
+        case TAP_KEY_ALGORITHM_RSA:
+            keyInfo.algKeyInfo.rsaInfo.keySize = keySize;
+            if (TAP_KEY_SIZE_4096 == keySize || TAP_KEY_SIZE_8192 == keySize)
+                keyInfo.algKeyInfo.rsaInfo.sigScheme = TAP_SIG_SCHEME_PKCS1_5_SHA512;
+            else
+                keyInfo.algKeyInfo.rsaInfo.sigScheme = TAP_SIG_SCHEME_PKCS1_5_SHA256;
+
+            break;
+#endif
+#ifdef __ENABLE_DIGICERT_ECC__
+        case TAP_KEY_ALGORITHM_ECC:
+            keyInfo.algKeyInfo.eccInfo.curveId = subType;
+            if (TAP_ECC_CURVE_NIST_P521 == subType)
+                keyInfo.algKeyInfo.eccInfo.sigScheme = TAP_SIG_SCHEME_ECDSA_SHA512;
+            else
+                keyInfo.algKeyInfo.eccInfo.sigScheme = TAP_SIG_SCHEME_ECDSA_SHA256;
+
+            break;
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+        case TAP_KEY_ALGORITHM_MLDSA:
+             keyInfo.algKeyInfo.pqcInfo.qsAlg = subType;
+             break;
+#endif
+        default:
+            status = ERR_NOT_IMPLEMENTED;
+            goto exit;
+    }
+
+    status = TAP_importKeyFromID(pTapContext, pUsageCredentials, &keyInfo, &keyId, NULL, pKeyCredentials, &pTapKey, pErrContext);
+    if (OK != status)
+        goto exit;
+
+    status = DIGI_CALLOC((void **)&pMocAsymKey, sizeof(MocAsymmetricKey), 1);
+    if (OK != status)
+        goto exit;
+
+    switch (keyInfo.keyAlgorithm)
+    {
+        case TAP_KEY_ALGORITHM_RSA:
+
+#ifndef __DISABLE_DIGICERT_RSA__
+            status = RsaTapCreate(pMocAsymKey, NULL, MOC_ASYM_KEY_TYPE_PRIVATE);
+            if (OK != status)
+                goto exit;
+
+            status = RsaTapLoadKeyData(&pTapKey, NULL, 0, NULL, pMocAsymKey);
+            if (OK != status)
+                goto exit;
+
+            status = CRYPTO_INTERFACE_RSA_loadKey(&pRsaKey, &pMocAsymKey);
+            if (OK != status)
+                goto exit;
+
+            pKey->key.pRSA = pRsaKey; pRsaKey = NULL;
+            pKey->type = akt_tap_rsa;
+            break;
+#else
+            status = ERR_RSA_DISABLED;
+            goto exit;
+#endif
+
+        case TAP_KEY_ALGORITHM_ECC:
+
+#ifdef __ENABLE_DIGICERT_ECC__
+            status = EccTapCreate(pMocAsymKey, NULL, MOC_ASYM_KEY_TYPE_PRIVATE);
+            if (OK != status)
+                goto exit;
+
+            status = EccTapLoadKeyData(&pTapKey, NULL, 0, NULL, NULL, pMocAsymKey);
+            if (OK != status)
+                goto exit;
+
+            status = CRYPTO_INTERFACE_EC_loadKey(&pEccKey, &pMocAsymKey);
+            if (OK != status)
+                goto exit;
+
+            pKey->key.pECC = pEccKey; pEccKey = NULL;
+            pKey->type = akt_tap_ecc;
+            break;
+#else
+            status = ERR_UNSUPPORTED_OPERATION;
+            goto exit;
+#endif
+
+        case TAP_KEY_ALGORITHM_MLDSA:
+
+#ifdef __ENABLE_DIGICERT_PQC__
+            status = QsTapCreate(pMocAsymKey, NULL, MOC_ASYM_KEY_TYPE_PRIVATE);
+            if (OK != status)
+                goto exit;
+
+            status = QsTapLoadKeyData(&pTapKey, NULL, 0, NULL, NULL, pMocAsymKey);
+            if (OK != status)
+                goto exit;
+
+            status = CRYPTO_INTERFACE_QS_loadKey(&pQsCtx, &pMocAsymKey);
+            if (OK != status)
+                goto exit;
+
+            pKey->pQsCtx = pQsCtx; pQsCtx = NULL;
+            pKey->type = akt_tap_qs;
+            break;
+#else
+            status = ERR_UNSUPPORTED_OPERATION;
+            goto exit;
+#endif
+
+        default:
+            status = ERR_NOT_IMPLEMENTED;
+            goto exit;
+    }
+
+exit:
+
+    if (NULL != pTapKey)
+    {
+        fstatus = TAP_unloadKey(pTapKey, pErrContext);
+        if (OK == status)
+            status = fstatus;
+
+        fstatus = TAP_freeKey(&pTapKey);
+        if (OK == status)
+            status = fstatus;
+    }
+
+    if (NULL != pMocAsymKey)
+    {
+        (void) DIGI_FREE((void **)&pMocAsymKey);
+    }
+
+#ifndef __DISABLE_DIGICERT_RSA__
+    if (NULL != pRsaKey)
+    {
+        (void) CRYPTO_INTERFACE_RSA_freeKey((void **) &pRsaKey, NULL, akt_tap_rsa);
+    }
+#endif
+#ifdef __ENABLE_DIGICERT_ECC__
+    if (NULL != pEccKey)
+    {
+        (void) CRYPTO_INTERFACE_EC_deleteKey((void **) &pEccKey, akt_tap_ecc);
+    }
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    if (NULL != pQsCtx)
+    {
+        (void) CRYPTO_INTERFACE_QS_deleteCtx(&pQsCtx);
+    }
+#endif
+
+    if (TRUE == releaseContext && NULL != g_pFuncPtrGetTapContext)
+    {
+        fstatus = g_pFuncPtrGetTapContext(
+            &pTapContext, &pUsageCredentials, &pKeyCredentials,
+            &emptyKey, tap_key_import, 0);
+        if (OK == status)
+            status = fstatus;
+    }
+
+    return status;
+}
 
 MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_serializeKeyById(
     TAP_Context *pTapContext,
@@ -89,6 +339,7 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_serializeKeyById(
 
     switch (pKeyInfo->keyAlgorithm)
     {
+#ifndef __DISABLE_DIGICERT_RSA__
         case TAP_KEY_ALGORITHM_RSA:
 
             status = SerializeRsaTapKeyAlloc (pTapKey, (serializedKeyFormat) serialFormat, &pTemp, &tempLen); 
@@ -96,7 +347,8 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_serializeKeyById(
                 goto exit;
 
             break;
-
+#endif
+#ifdef __ENABLE_DIGICERT_ECC__
         case TAP_KEY_ALGORITHM_ECC:
 
             status = SerializeEccTapKeyAlloc (pTapKey, (serializedKeyFormat) serialFormat, &pTemp, &tempLen);
@@ -104,7 +356,15 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_serializeKeyById(
                 goto exit;
                 
             break;
-   
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+        case TAP_KEY_ALGORITHM_MLDSA:
+            status = SerializeQsTapKeyAlloc (pTapKey, (serializedKeyFormat) serialFormat, &pTemp, &tempLen);
+            if (OK != status)
+                goto exit;
+
+            break;
+#endif
         default:
             status = ERR_NOT_IMPLEMENTED;
             goto exit;
@@ -170,6 +430,10 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_loadWithCreds(
 #ifdef __ENABLE_DIGICERT_ECC__
     byteBoolean isEcc = FALSE;
     MEccTapKeyData *pEccInfo = NULL;
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    byteBoolean isPqc = FALSE;
+    MQsTapKeyData *pQsInfo = NULL;
 #endif
     MRsaTapKeyData *pRsaInfo = NULL;
 
@@ -259,6 +523,30 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_loadWithCreds(
         isEcc = TRUE;
     }
 #endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    else if (MOC_LOCAL_TYPE_QS_SIG == (MOC_LOCAL_TYPE_COM_MASK & pKey->localType)) /* Future, QS_KEM */
+    {
+        pQsInfo = (MQsTapKeyData *) (pKey->pKeyData);
+        if (NULL == pQsInfo)
+        {
+            status = ERR_NULL_POINTER;
+            goto exit;
+        }
+
+        pTapKey = (TAP_Key *) pQsInfo->pKey;
+        
+        if (pQsInfo->isKeyLoaded)
+        {
+            status = TAP_unloadKey(pTapKey, pErrContext);
+            if (OK != status)
+                goto exit;
+            
+            pQsInfo->isKeyLoaded = FALSE;
+        }
+
+        isPqc = TRUE;
+    }
+#endif
     else
     {
         status = ERR_BAD_KEY_TYPE;
@@ -301,8 +589,13 @@ MOC_EXTERN MSTATUS CRYPTO_INTERFACE_TAP_loadWithCreds(
     if (isEcc)
     {
         pEccInfo->isKeyLoaded = TRUE;
-    }
-    else
+    } else
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+    if (isPqc)
+    {
+        pQsInfo->isKeyLoaded = TRUE;
+    } else
 #endif
     {
         pRsaInfo->isKeyLoaded = TRUE;

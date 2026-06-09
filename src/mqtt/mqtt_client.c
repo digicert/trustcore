@@ -442,6 +442,12 @@ extern MSTATUS MQTT_negotiateConnection(
         }
     }
 
+    /* Initialize packet size limits before building CONNECT message.
+     * Use MQTT_MAX_PACKET_SIZE (total on-wire size) as the default.
+     * Outbound checks compute exact packet size for comparison. */
+    pCtx->maxPacketSize = MQTT_MAX_PACKET_SIZE;
+    pCtx->outboundMaxPacketSize = MQTT_MAX_PACKET_SIZE;
+
     status = MQTT_buildConnectMsg(pCtx, pOptions, &pMsg);
     if (OK != status)
         goto exit;
@@ -452,7 +458,6 @@ extern MSTATUS MQTT_negotiateConnection(
 
     pCtx->pollingInterval = pOptions->pollingInterval;
     pCtx->sessionExpiryInterval = pOptions->sessionExpiryIntervalSeconds;
-    pCtx->maxPacketSize = 0xFFFFFFFF;
 
     if (MQTT_V5 <= pCtx->version)
     {

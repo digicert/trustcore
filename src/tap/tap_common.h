@@ -63,25 +63,25 @@ extern "C" {
 #define NanoROOT_GET_SUBTYPE(value)            ((ubyte4)((value) & 0x00FFFFFF))
 
 /* --- Algorithm IDs --- */
-#define NanoROOT_ALGO_RSA      0x00000001
-#define NanoROOT_ALGO_MLDSA    0x00000002
-#define NanoROOT_ALGO_ECC      0x00000003
+#define NanoROOT_ALGO_RSA      TAP_KEY_ALGORITHM_RSA
+#define NanoROOT_ALGO_MLDSA    TAP_KEY_ALGORITHM_MLDSA
+#define NanoROOT_ALGO_ECC      TAP_KEY_ALGORITHM_ECC
 
 /* --- RSA Key Sizes --- */
-#define NanoROOT_RSA_2048      0x00000002
-#define NanoROOT_RSA_3072      0x00000003
-#define NanoROOT_RSA_4096      0x00000004
-#define NanoROOT_RSA_8192      0x00000005
+#define NanoROOT_RSA_2048      TAP_KEY_SIZE_2048
+#define NanoROOT_RSA_3072      TAP_KEY_SIZE_3072
+#define NanoROOT_RSA_4096      TAP_KEY_SIZE_4096
+#define NanoROOT_RSA_8192      TAP_KEY_SIZE_8192
 
 /* --- MLDSA Subtypes --- */
-#define NanoROOT_MLDSA_44      0x00000001
-#define NanoROOT_MLDSA_65      0x00000002
-#define NanoROOT_MLDSA_87      0x00000003
+#define NanoROOT_MLDSA_44      TAP_MLDSA_SIZE_44
+#define NanoROOT_MLDSA_65      TAP_MLDSA_SIZE_65
+#define NanoROOT_MLDSA_87      TAP_MLDSA_SIZE_87
 
 /* --- ECC Curves --- */
-#define NanoROOT_ECC_P256       0x00000001
-#define NanoROOT_ECC_P384       0x00000002
-#define NanoROOT_ECC_P521       0x00000003
+#define NanoROOT_ECC_P256       TAP_ECC_CURVE_NIST_P256
+#define NanoROOT_ECC_P384       TAP_ECC_CURVE_NIST_P384
+#define NanoROOT_ECC_P521       TAP_ECC_CURVE_NIST_P521
 
 #endif
 /***************************************************************
@@ -98,10 +98,8 @@ extern "C" {
    Function Definitions
 ****************************************************************/
 
-#ifdef __ENABLE_DIGICERT_SMP_NANOROOT__
-MSTATUS TAP_NanoROOT_parse_algorithm_info(ubyte4 value, TAP_KEY_ALGORITHM *keyAlgorithm,
-				TAP_KEY_SIZE *keySize, ubyte4 *subKeyType);
-#endif
+MOC_EXTERN MSTATUS TAP_parse_algorithm_info(ubyte4 value, TAP_KEY_ALGORITHM *pKeyAlgorithm,
+				            TAP_KEY_SIZE *pKeySize, ubyte *pSubKeyType);
 
 /**
  * @ingroup tap_functions
