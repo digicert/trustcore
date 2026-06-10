@@ -6,7 +6,7 @@ on:
   schedule:
     - cron: '30 10 * * 1'   # Monday 4:00 PM IST
     - cron: '30 10 * * 4'   # Thursday 4:00 PM IST
-
+    
 permissions:
   contents: read
   
@@ -73,6 +73,8 @@ jobs:
           repository: digicert/mocn-qa-m-products
           token: ${{ secrets.MY_SECRET_TOKEN }}
           path: mocn-qa-m-products
+          persist-credentials: false
+          fetch-depth: 1
           
       - name: Prepare thirdparty directory
         run: |
