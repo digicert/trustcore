@@ -145,9 +145,9 @@ jobs:
       - name: Build and install Apache HTTPD 2.4.63
         run: |
           cd thirdparty
-          wget https://archive.apache.org/dist/httpd/httpd-2.4.63.tar.gz --no-check-certificate
-          wget https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz --no-check-certificate
-          wget https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz --no-check-certificate
+          wget https://archive.apache.org/dist/httpd/httpd-2.4.63.tar.gz
+          wget https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz
+          wget https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz
       
           tar -zxvf httpd-2.4.63.tar.gz
       
