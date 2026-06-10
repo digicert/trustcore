@@ -6,9 +6,6 @@ on:
     - cron: '30 12 * * 1'   # Monday 6:00 PM IST
     - cron: '30 12 * * 4'   # Thursday 6:00 PM IST
     
-  push:
-    branches: [ "DTM-9954-add-github-action-for-openssl-connector-3-5-0-tls-crypto-and-3rd-party-tests" ]
-  
 permissions:
   contents: read
   
@@ -74,7 +71,6 @@ jobs:
         with:
           repository: digicert/mocn-qa-m-products
           token: ${{ secrets.MY_SECRET_TOKEN }}
-          ref: DTM-9954-add-github-action-for-openssl-connector-3-5-0-tls-crypto-and-3rd-party-tests
           path: mocn-qa-m-products
       
       - name: Prepare thirdparty directory
