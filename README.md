@@ -3,7 +3,7 @@
 **TrustCore SDK** is a cross-platform security toolkit built for developers. It is entirely written in C and includes a quantum-safe cryptographic (PQC) library, TLS 1.3 stack, and clients for MQTT, EST, SCEP, SSH, RADIUS, EAP and others. TrustCore SDK is compact, performant and modular, designed for secure connected devices.
 
 > [!NOTE]
-> Built for MIoT, Indutrial IoT, AI-enabled edge systems, and post-quantum-ready deployments. TrustCore SDK delivers production-proven security, cryptographic agility, and rapid integration across open-source hardware and modern IoT platforms.
+> Built for MIoT, Industrial IoT, AI-enabled edge systems, and post-quantum-ready deployments. TrustCore SDK delivers production-proven security, cryptographic agility, and rapid integration across open-source hardware and modern IoT platforms.
 
 ## TrustCore SDK Overview
 
