@@ -133,6 +133,13 @@ int startDnsLookup(char *pName, char *pIPStr)
     /* wait for signal that lookup is complete or timed out */
     k_sem_take(&(lookup_table[i].semaphore), K_MSEC(DNS_TIMEOUT));
     k_mutex_lock(&(lookup_table[i].lock), K_FOREVER);
+    ret = -1;
+    if (lookup_table[i].status == DNS_RESOLVED)
+    {
+        strncpy(pIPStr, lookup_table[i].ip, IP_MAX);
+        LOG_INF("%s IPv4 address: %s", pName, pIPStr);
+        ret = 0;
+    }
     else
     {
         LOG_ERR("DNS lookup for %s IPv4 address failed", pName);
