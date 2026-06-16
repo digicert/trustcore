@@ -11,6 +11,7 @@ ZIP_NAME = REPO_ROOT / "final_package.zip"
 FOLDERS_TO_COPY = [
     "bin",
     "bin_static",
+    "samples/zephyr_examples",
     "src/crypto",
     "src/crypto_interface",
     "src/platform",
@@ -28,7 +29,6 @@ FOLDERS_TO_COPY = [
     "src/http",
     "src/ldap",
     "src/ssh",
-    "src/examples/zephyr_examples",
     "src/trustedge",
     "scripts/ci/trustedge",
     "projects/trustedge",
@@ -47,10 +47,10 @@ FOLDERS_TO_COPY = [
 ]
 
 FILES_TO_COPY = [
-    "src/examples/external_rand_thread.c",
-    "src/examples/custom_entropy.c",
-    "src/examples/custom_entropy.h",
-    "src/examples/mqtt_client_example.c",
+    "samples/common/external_rand_thread.c",
+    "samples/common/custom_entropy.c",
+    "samples/common/custom_entropy.h",
+    "samples/mqtt_client/src/mqtt_client_example.c",
     "scripts/check_for_osi.sh",
     "docs/trustedge.1"
 ]

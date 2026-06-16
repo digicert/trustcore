@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) 2023 S&C Electric Company <www.sandc.com>
+ * Copyright (c) 2024 STMicroelectronics
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		zephyr,code-partition = &boot_partition;
+		zephyr,scratch-partition = &scratch_partition;
+	};
+
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs1: lfs1 {
+			compatible = "zephyr,fstab,littlefs";
+			read-size = <32>;
+			prog-size = <32>;
+			cache-size = <256>;
+			lookahead-size = <64>;
+			block-cycles = <512>;
+			partition = <&fs_partition>;
+			mount-point = "/lfs1";
+		};
+	};
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 DT_SIZE_K(128)>;
+		};
+
+		slot0_partition: partition@20000 {
+			label = "image-0";
+			reg = <0x00020000 DT_SIZE_K(896)>;
+		};
+
+		slot1_partition: partition@100000 {
+			label = "image-1";
+			reg = <0x00100000 DT_SIZE_K(896)>;
+		};
+
+		scratch_partition: partition@1E0000 {
+			label = "scratch";
+			reg = <0x001E0000 DT_SIZE_K(128)>;
+		};
+	};
+};
+
+&mt25ql512ab1 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		fs_partition: partition@0 {
+			label = "fs";
+			reg = <0x00000000 DT_SIZE_M(64)>;
+		};
+	};
+};

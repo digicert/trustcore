@@ -1,0 +1,53 @@
+/ {
+    fstab {
+        compatible = "zephyr,fstab";
+        lfs1: lfs1 {
+            compatible = "zephyr,fstab,littlefs";
+            read-size = <1024>;
+            prog-size = <1024>;
+            cache-size = <1024>;
+            lookahead-size = <512>;
+            block-cycles = <16>;
+            partition = <&storage_partition>;
+            mount-point = "/lfs1";
+        };
+    };
+};
+
+&wifi {
+    status = "okay";
+};
+
+&psram0 {
+    status = "okay";
+};
+
+&flash0 {
+    /delete-node/ partitions;
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        boot_partition: partition@10000 {
+            label = "mcuboot";
+            reg = <0x00010000 0x00010000>; /* 64KB */
+            read-only;
+        };
+
+        slot0_partition: partition@20000 {
+            label = "image-0";
+            reg = <0x00020000 0x00200000>; /* 2MB */
+        };
+
+        slot1_partition: partition@220000 {
+            label = "image-1";
+            reg = <0x00220000 0x00200000>; /* 2MB */
+        };
+
+        storage_partition: partition@440000 {
+            label = "storage";
+            reg = <0x00440000 0x003C0000>; /* 3.75MB */
+        };
+    };
+};
