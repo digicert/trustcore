@@ -1,0 +1,47 @@
+/*
+ * Copyright (c) 2023 S&C Electric Company <www.sandc.com>
+ * Copyright (c) 2024 STMicroelectronics
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+ 	chosen {
+		zephyr,code-partition = &slot0_partition;
+	};
+
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs1: lfs1 {
+			compatible = "zephyr,fstab,littlefs";
+			read-size = <32>;
+			prog-size = <32>;
+			cache-size = <256>;
+			lookahead-size = <64>;
+			block-cycles = <512>;
+			partition = <&fs_partition>;
+			mount-point = "/lfs1";
+		};
+	};
+};
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		slot0_partition: partition@0 {
+			label = "image-0";
+			reg = <0x00010000 DT_SIZE_K(2048)>;
+		};
+	};
+};
+
+&mt25ql512ab1 {
+	partitions {
+		fs_partition: partition@0 {
+			label = "fs";
+			reg = <0x0 DT_SIZE_M(64)>;
+		};
+	};
+};
