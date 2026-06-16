@@ -14,18 +14,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-
-      - name: Clone mocn-qa-m-products
-        env:
-          MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
-        run: |
-          git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
-  
       - name: Install Dependencies
         run: |
           sudo apt-get update 
           sudo apt-get install -y cmake python3-pip valgrind expect wget curl build-essential libssl-dev zlib1g-dev libncurses5-dev libreadline-dev libsqlite3-dev libgdbm-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libapr1-dev libaprutil1-dev libpcre3-dev
-          
           cmake --version
           pip3 install --upgrade pip
           pip3 install psutil
@@ -123,6 +115,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       
+      - name: Checkout mocn-qa-m-products
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          repository: digicert/mocn-qa-m-products
+          token: ${{ secrets.MY_SECRET_TOKEN }}
+          path: mocn-qa-m-products
+          persist-credentials: false
+          fetch-depth: 1
+      
       - name: Prepare thirdparty directory
         run: |
           mkdir -p thirdparty
@@ -143,9 +144,9 @@ jobs:
       - name: Build and install Apache HTTPD 2.4.57
         run: |
           cd thirdparty
-          wget https://archive.apache.org/dist/httpd/httpd-2.4.57.tar.gz --no-check-certificate
-          wget https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz --no-check-certificate
-          wget https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz --no-check-certificate
+          wget https://archive.apache.org/dist/httpd/httpd-2.4.57.tar.gz
+          wget https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz
+          wget https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz
       
           tar -zxvf httpd-2.4.57.tar.gz
       
@@ -166,16 +167,18 @@ jobs:
   
       - name: Copy SSL Test Files
         run: |
-          cp -r ~/mocn-qa-m-products/qa_utils/setup_qa_reports/jenkins_auto_integration/* .
-          cp -r ~/mocn-qa-m-products/openssl_shim_test/test_opensource/* .
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/qa_utils/setup_qa_reports/jenkins_auto_integration/* .
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/openssl_shim_test/test_opensource/* .
   
       - name: Run OpenSSL Connector 3rd Party Integration Test
+        env:
+          MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
         run: |
           PYTHONUNBUFFERED=1 python3 python_integration_test_3rd_party.py ossl_3_cap.json
   
       - name: Cleanup mocn-qa-m-products
         run: |
-          rm -rf ~/mocn-qa-m-products
+          rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
           
       - name: Get Slack User ID
         if: always()
