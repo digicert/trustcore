@@ -78,7 +78,92 @@ The installer stores configuration in:
 ```
 HKLM\SOFTWARE\DigiCert\TrustEdge
   DataDirectory: <path to data directory>
+  ServiceInstalled: 1 (if service is registered)
 ```
+
+## Windows Service
+
+The MSI installer automatically registers TrustEdge as a Windows service:
+
+| Property | Value |
+|----------|-------|
+| Service Name | DigiCertTrustEdge |
+| Display Name | DigiCert TrustEdge Agent |
+| Startup Type | Automatic |
+| Account | LocalSystem |
+| Arguments | --daemon |
+
+**Important**: The service is installed with **Automatic** startup type, matching Linux package behavior where the service is enabled during installation. It is configured to start automatically after system reboot, but it is not explicitly started by the MSI during installation. Users can start it immediately via:
+- Services (services.msc)
+- `sc start DigiCertTrustEdge`
+- `Start-Service DigiCertTrustEdge`
+
+## Upgrade Behavior
+
+The MSI installer handles upgrades gracefully:
+
+| Aspect | Behavior |
+|--------|----------|
+| EULA | Shown on upgrade (WiX limitation) |
+| trustedge.json | Preserved (user modifications retained via `NeverOverwrite`) |
+| Service | Stopped before upgrade, NOT auto-started (matches DEB) |
+| Keystore data | Preserved (WiX component rules) |
+| version.txt / eula.txt | Updated to new version |
+
+### Upgrade Flow
+
+1. Windows Installer detects existing installation via `UpgradeCode` GUID
+2. Service is stopped (`sc stop DigiCertTrustEdge`)
+3. Files are updated (trustedge.json preserved via `NeverOverwrite`)
+4. Service is re-registered but NOT started (user must start manually)
+5. EULA dialog shown (user must accept again)
+
+To start the service after upgrade:
+```cmd
+sc start DigiCertTrustEdge
+```
+
+### Silent Upgrade
+
+```cmd
+msiexec /i trustedge_X.Y.Z.x86_64.msi /quiet
+```
+
+## Uninstall Behavior
+
+The MSI supports two uninstall modes, matching Linux `apt` behavior:
+
+### Standard Uninstall (like `apt remove`)
+
+Keeps user configuration and data in `C:\ProgramData\DigiCert\TrustEdge\`:
+
+```cmd
+msiexec /x {ProductCode}
+```
+
+Or via Add/Remove Programs.
+
+**Preserved files:**
+- `trustedge.json` (configuration)
+- `keystore/` (certificates, keys)
+- `conf/` (additional config)
+- `service/` (request queues)
+- `cloudprovider/` (credentials)
+
+### Purge Uninstall (like `apt purge`)
+
+Removes ALL files including configuration and user data:
+
+```cmd
+msiexec /x {ProductCode} PURGE=1
+```
+
+Or silently:
+```cmd
+msiexec /x {ProductCode} /quiet PURGE=1
+```
+
+**Warning:** This permanently deletes all certificates, keys, and configuration.
 
 ## Building the MSI
 

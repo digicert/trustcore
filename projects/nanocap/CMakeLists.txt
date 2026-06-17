@@ -28,7 +28,7 @@ project(nanocap C)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-if(BUILD_FOR_OSI AND NOT WIN32)
+if(BUILD_FOR_OSI)
   set(LIB_DIR "${MSS_DIR}/lib")
 endif()
 
@@ -192,15 +192,20 @@ endif()
 if("SHARED" STREQUAL "${LIB_TYPE}")
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  if(BUILD_FOR_OSI AND NOT WIN32)
+  if(BUILD_FOR_OSI)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy
           $<TARGET_FILE:${PROJECT_NAME}>
           "${LIB_DIR}")
-    set(PLATFORM_LIB "${LIB_DIR}/libcommon.so")
-    set(PLATFORM_LIB "${LIB_DIR}/libasn1.so")
+    if(WIN32)
+      set(COMMON_LIB "${LIB_DIR}/common.lib")
+      set(ASN1_LIB "${LIB_DIR}/asn1.lib")
+    else()
+      set(COMMON_LIB "${LIB_DIR}/libcommon.so")
+      set(ASN1_LIB "${LIB_DIR}/libasn1.so")
+    endif()
   else()
     locate_lib(COMMON_LIB common)
     locate_lib(ASN1_LIB asn1)
@@ -250,7 +255,7 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
 else()
   add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
-  if(BUILD_FOR_OSI AND NOT WIN32)
+  if(BUILD_FOR_OSI)
       # Copy static library to lib directory
       add_custom_command(
         TARGET ${PROJECT_NAME}
@@ -258,7 +263,7 @@ else()
         COMMAND ${CMAKE_COMMAND} -E copy
             $<TARGET_FILE:${PROJECT_NAME}>
             "${LIB_DIR}"
-        COMMENT "Copied libnanocap.a to ${LIB_DIR}"
+        COMMENT "Copied static library to ${LIB_DIR}"
       )
   endif()
 endif()

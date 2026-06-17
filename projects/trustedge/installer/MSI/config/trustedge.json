@@ -1,7 +1,7 @@
 {
     "directory_paths": {
         "bin_dir": "C:\\Program Files\\DigiCert\\TrustEdge\\bin",
-        "lib_dir": "C:\\Program Files\\DigiCert\\TrustEdge\\lib",
+        "lib_dir": "C:\\Program Files\\DigiCert\\TrustEdge\\bin",
         "root_dir": "C:\\ProgramData\\DigiCert\\TrustEdge",
         "conf_dir": "C:\\ProgramData\\DigiCert\\TrustEdge\\conf",
         "keystore_dir": "C:\\ProgramData\\DigiCert\\TrustEdge\\keystore"
@@ -35,7 +35,7 @@
         "mode": "est"
     },
     "service": {
-        "mode": "agent,certificate"
+        "mode": "agent"
     },
     "api": {
         "mode": "https",

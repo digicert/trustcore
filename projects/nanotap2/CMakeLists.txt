@@ -70,7 +70,7 @@ endif()
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
-if(BUILD_FOR_OSI AND NOT WIN32)
+if(BUILD_FOR_OSI)
   set(LIB_DIR "${MSS_DIR}/lib")
   set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
@@ -284,7 +284,7 @@ if(CM_ENABLE_TAP_EXTERN_LIB)
 endif()
 ########################################################################
 
-if(BUILD_FOR_OSI AND NOT WIN32)
+if(BUILD_FOR_OSI)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD
