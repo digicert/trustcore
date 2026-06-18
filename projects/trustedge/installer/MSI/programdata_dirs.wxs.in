@@ -3,26 +3,34 @@
   WIX Fragment for TrustEdge ProgramData Directory Structure
   Creates: C:\ProgramData\DigiCert\TrustEdge\ with full directory structure
   
+  Uninstall behavior:
+  - Standard uninstall: Keeps user data (trustedge.json, keystore/, conf/) - like "apt remove"
+  - Purge uninstall: Removes everything - like "apt purge"
+    Usage: msiexec /x {ProductCode} PURGE=1
+  
   NOTE: This is a CMake template file. Use configure_file() to generate the actual WXS.
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   
   <Fragment>
+    <!-- PURGE property: set to 1 to remove all config/data on uninstall (like apt purge) -->
+    <Property Id="PURGE" Value="0" />
     <DirectoryRef Id="TARGETDIR">
       <Directory Id="CommonAppDataFolder">
         <Directory Id="DigiCertAppData" Name="DigiCert">
           <Directory Id="TrustEdgeData" Name="TrustEdge">
             
-            <!-- trustedge.json in root -->
-            <Component Id="TrustEdgeJsonFile" Guid="F8A9B0C1-D2E3-4567-FABB-890123456789">
+            <!-- trustedge.json in root - Permanent keeps file on uninstall/upgrade, NeverOverwrite preserves user edits -->
+            <Component Id="TrustEdgeJsonFile" Guid="F8A9B0C1-D2E3-4567-FABB-890123456789" NeverOverwrite="yes" Permanent="yes">
               <File Id="trustedge_json" Name="trustedge.json" 
                     Source="@CMAKE_CURRENT_SOURCE_DIR@/installer/MSI/config/trustedge.json"
                     KeyPath="yes" />
             </Component>
 
-            <!-- conf directory with files -->
+            <!-- conf directory with files - Permanent keeps on normal uninstall -->
             <Directory Id="DATA_CONF" Name="conf">
-              <Component Id="ConfDirComponent" Guid="C3D4E5F6-A7B8-9012-CDEF-345678901234">
+              <Component Id="ConfDirComponent" Guid="C3D4E5F6-A7B8-9012-CDEF-345678901234" Permanent="yes">
                 <CreateFolder />
               </Component>
               <Component Id="VersionTxtFile" Guid="A9B0C1D2-E3F4-5678-ABCD-901234567890">
@@ -37,86 +45,206 @@
               </Component>
             </Directory>
 
-            <!-- cloudprovider directory -->
+            <!-- cloudprovider directory - Permanent keeps on normal uninstall -->
             <Directory Id="DATA_CLOUDPROVIDER" Name="cloudprovider">
-              <Component Id="CloudProviderDirComponent" Guid="D4E5F6A7-B8C9-0123-DEFA-456789012345">
+              <Component Id="CloudProviderDirComponent" Guid="D4E5F6A7-B8C9-0123-DEFA-456789012345" Permanent="yes">
                 <CreateFolder />
               </Component>
             </Directory>
 
-            <!-- keystore directory structure -->
+            <!-- keystore directory structure - Permanent keeps on normal uninstall -->
             <Directory Id="DATA_KEYSTORE" Name="keystore">
-              <Component Id="KeystoreDirComponent" Guid="E5F6A7B8-C9D0-1234-EFAB-567890123456">
+              <Component Id="KeystoreDirComponent" Guid="E5F6A7B8-C9D0-1234-EFAB-567890123456" Permanent="yes">
                 <CreateFolder />
               </Component>
               <Directory Id="DATA_KEYSTORE_CA" Name="ca">
-                <Component Id="KeystoreCaComponent" Guid="F6A7B8C9-D0E1-2345-FABC-678901234567">
+                <Component Id="KeystoreCaComponent" Guid="F6A7B8C9-D0E1-2345-FABC-678901234567" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_KEYSTORE_CERTS" Name="certs">
-                <Component Id="KeystoreCertsComponent" Guid="A7B8C9D0-E1F2-3456-ABCD-789012345678">
+                <Component Id="KeystoreCertsComponent" Guid="A7B8C9D0-E1F2-3456-ABCD-789012345678" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_KEYSTORE_CONF" Name="conf">
-                <Component Id="KeystoreConfComponent" Guid="B8C9D0E1-F2A3-4567-BCDE-890123456789">
+                <Component Id="KeystoreConfComponent" Guid="B8C9D0E1-F2A3-4567-BCDE-890123456789" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_KEYSTORE_CRLS" Name="crls">
-                <Component Id="KeystoreCrlsComponent" Guid="C9D0E1F2-A3B4-5678-CDEF-901234567890">
+                <Component Id="KeystoreCrlsComponent" Guid="C9D0E1F2-A3B4-5678-CDEF-901234567890" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_KEYSTORE_KEYS" Name="keys">
-                <Component Id="KeystoreKeysComponent" Guid="D0E1F2A3-B4C5-6789-DEFA-012345678901">
+                <Component Id="KeystoreKeysComponent" Guid="D0E1F2A3-B4C5-6789-DEFA-012345678901" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_KEYSTORE_PSKS" Name="psks">
-                <Component Id="KeystorePsksComponent" Guid="E1F2A3B4-C5D6-7890-EFAB-123456789012">
+                <Component Id="KeystorePsksComponent" Guid="E1F2A3B4-C5D6-7890-EFAB-123456789012" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_KEYSTORE_REQ" Name="req">
-                <Component Id="KeystoreReqComponent" Guid="F2A3B4C5-D6E7-8901-FABC-234567890123">
+                <Component Id="KeystoreReqComponent" Guid="F2A3B4C5-D6E7-8901-FABC-234567890123" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
             </Directory>
 
-            <!-- service directory structure -->
+            <!-- service directory structure - Permanent keeps on normal uninstall -->
             <Directory Id="DATA_SERVICE" Name="service">
-              <Component Id="ServiceDirComponent" Guid="A3B4C5D6-E7F8-9012-ABCD-345678901234">
+              <Component Id="ServiceDirComponent" Guid="A3B4C5D6-E7F8-9012-ABCD-345678901234" Permanent="yes">
                 <CreateFolder />
               </Component>
               <Directory Id="DATA_SERVICE_REQUEST" Name="request">
-                <Component Id="ServiceRequestComponent" Guid="B4C5D6E7-F8A9-0123-BCDE-456789012345">
+                <Component Id="ServiceRequestComponent" Guid="B4C5D6E7-F8A9-0123-BCDE-456789012345" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_SERVICE_COMPLETED" Name="completed">
-                <Component Id="ServiceCompletedComponent" Guid="C5D6E7F8-A9B0-1234-CDEF-567890123456">
+                <Component Id="ServiceCompletedComponent" Guid="C5D6E7F8-A9B0-1234-CDEF-567890123456" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_SERVICE_FAILED" Name="failed">
-                <Component Id="ServiceFailedComponent" Guid="D6E7F8A9-B0C1-2345-DEFA-678901234567">
+                <Component Id="ServiceFailedComponent" Guid="D6E7F8A9-B0C1-2345-DEFA-678901234567" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
               <Directory Id="DATA_SERVICE_PROCESSING" Name="processing">
-                <Component Id="ServiceProcessingComponent" Guid="E7F8A9B0-C1D2-3456-EFAB-789012345678">
+                <Component Id="ServiceProcessingComponent" Guid="E7F8A9B0-C1D2-3456-EFAB-789012345678" Permanent="yes">
                   <CreateFolder />
                 </Component>
               </Directory>
+            </Directory>
+
+            <!-- tmp directory (workspace) - Not permanent, can be cleaned -->
+            <Directory Id="DATA_TMP" Name="tmp">
+              <Component Id="TmpDirComponent" Guid="F8A9B0C1-D2E3-4567-EFAB-890123456780">
+                <CreateFolder />
+              </Component>
             </Directory>
 
           </Directory>
         </Directory>
       </Directory>
     </DirectoryRef>
+  </Fragment>
+
+  <!--
+    TrustEdge Windows Service Registration
+    Registers trustedge.exe as a Windows service with Automatic startup type.
+    The service is enabled for automatic start on system boot, matching the
+    Linux package behavior.
+    
+    Uses CustomActions to call trustedge.exe with install/uninstall-service flags.
+    The native C implementation handles SCM registration cleanly.
+  -->
+  <Fragment>
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="TrustEdgeServiceComponent" Guid="E7F8A9B0-C1D2-4E3F-5A6B-7C8D9E0F1A2B">
+        <!-- Registry key to mark service as installed (used as KeyPath) -->
+        <RegistryValue
+          Root="HKLM"
+          Key="Software\DigiCert\TrustEdge"
+          Name="ServiceInstalled"
+          Type="integer"
+          Value="1"
+          KeyPath="yes"
+        />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Immediate actions to set up command lines for deferred actions -->
+    <CustomAction Id="SetInstallServiceCmd"
+                  Property="InstallTrustEdgeService"
+                  Value="&quot;[INSTALL_ROOT]bin\trustedge.exe&quot; --install-service" />
+    
+    <CustomAction Id="SetUninstallServiceCmd"
+                  Property="UninstallTrustEdgeService"
+                  Value="&quot;[INSTALL_ROOT]bin\trustedge.exe&quot; --uninstall-service" />
+    
+    <!-- Service stop command for upgrade scenarios (service is NOT auto-restarted to match DEB) -->
+    <CustomAction Id="SetStopServiceCmd"
+                  Property="StopTrustEdgeService"
+                  Value="&quot;[SystemFolder]sc.exe&quot; stop DigiCertTrustEdge" />
+    
+    <!-- Deferred actions that run with elevated privileges -->
+    <!-- Install: fail if service registration fails (matches DEB postinst behavior) -->
+    <CustomAction Id="InstallTrustEdgeService"
+                  BinaryKey="WixCA"
+                  DllEntry="WixQuietExec64"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="check" />
+    
+    <!-- Uninstall: succeed even if service removal fails (matches DEB prerm behavior) -->
+    <CustomAction Id="UninstallTrustEdgeService"
+                  BinaryKey="WixCA"
+                  DllEntry="WixQuietExec64"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+    
+    <!-- Stop service before upgrade (ignore errors - service may not be running) -->
+    <CustomAction Id="StopTrustEdgeService"
+                  BinaryKey="WixCA"
+                  DllEntry="WixQuietExec64"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+    
+    <!-- Purge action: removes all config/data when PURGE=1 (like apt purge) -->
+    <CustomAction Id="SetPurgeDataCmd"
+                  Property="PurgeTrustEdgeData"
+                  Value="&quot;[SystemFolder]cmd.exe&quot; /c rmdir /s /q &quot;[CommonAppDataFolder]DigiCert\TrustEdge&quot;" />
+    
+    <CustomAction Id="PurgeTrustEdgeData"
+                  BinaryKey="WixCA"
+                  DllEntry="WixQuietExec64"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+    
+    <InstallExecuteSequence>
+      <!-- Upgrade: stop service before files are replaced -->
+      <Custom Action="SetStopServiceCmd" Before="StopTrustEdgeService">
+        WIX_UPGRADE_DETECTED
+      </Custom>
+      <Custom Action="StopTrustEdgeService" Before="StopServices">
+        WIX_UPGRADE_DETECTED
+      </Custom>
+      
+      <!-- Install: register service using install-service flag -->
+      <Custom Action="SetInstallServiceCmd" Before="InstallTrustEdgeService">
+        (NOT REMOVE~="ALL")
+      </Custom>
+      <Custom Action="InstallTrustEdgeService" After="InstallFiles">
+        (NOT REMOVE~="ALL")
+      </Custom>
+      
+      <!-- Note: Service is NOT auto-started after upgrade (matches DEB behavior).
+           User must manually start via: sc start DigiCertTrustEdge -->
+      
+      <!-- Uninstall: remove service using uninstall-service flag -->
+      <Custom Action="SetUninstallServiceCmd" Before="UninstallTrustEdgeService">
+        (REMOVE~="ALL") AND (NOT UPGRADINGPRODUCTCODE)
+      </Custom>
+      <Custom Action="UninstallTrustEdgeService" Before="RemoveFiles">
+        (REMOVE~="ALL") AND (NOT UPGRADINGPRODUCTCODE)
+      </Custom>
+      
+      <!-- Purge: remove all config/data when PURGE=1 (like apt purge) -->
+      <Custom Action="SetPurgeDataCmd" Before="PurgeTrustEdgeData">
+        (REMOVE~="ALL") AND (NOT UPGRADINGPRODUCTCODE) AND (PURGE="1")
+      </Custom>
+      <Custom Action="PurgeTrustEdgeData" After="RemoveFiles">
+        (REMOVE~="ALL") AND (NOT UPGRADINGPRODUCTCODE) AND (PURGE="1")
+      </Custom>
+    </InstallExecuteSequence>
   </Fragment>
 
   <!-- Feature for ProgramData components -->
@@ -140,6 +268,9 @@
       <ComponentRef Id="ServiceCompletedComponent" />
       <ComponentRef Id="ServiceFailedComponent" />
       <ComponentRef Id="ServiceProcessingComponent" />
+      <ComponentRef Id="TmpDirComponent" />
+      <!-- Windows Service registration -->
+      <ComponentRef Id="TrustEdgeServiceComponent" />
     </Feature>
   </Fragment>
 </Wix>

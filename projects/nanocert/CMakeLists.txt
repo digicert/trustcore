@@ -77,7 +77,7 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-if(BUILD_FOR_OSI AND NOT WIN32)
+if(BUILD_FOR_OSI)
   set(LIB_DIR "${MSS_DIR}/lib")
 endif()
 
@@ -660,25 +660,40 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  if(BUILD_FOR_OSI AND NOT WIN32)
+  if(BUILD_FOR_OSI)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy
           $<TARGET_FILE:${PROJECT_NAME}>
           "${LIB_DIR}")
-    set(ASN1_LIB "${LIB_DIR}/libasn1.so")
-    set(COMMON_LIB "${LIB_DIR}/libcommon.so")
-    if(CM_ENABLE_EXPORT_ED)
-        set(CRYPTO_MW_LIB "${LIB_DIR}/libcryptomw.so")
+    if(WIN32)
+      set(ASN1_LIB "${LIB_DIR}/asn1.lib")
+      set(COMMON_LIB "${LIB_DIR}/common.lib")
+      if(CM_ENABLE_EXPORT_ED)
+          set(CRYPTO_MW_LIB "${LIB_DIR}/cryptomw.lib")
+      else()
+          set(NANOCRYPTO_LIB "${LIB_DIR}/nanocrypto.lib")
+      endif()
+      if(NOT CM_DISABLE_CI)
+        set(CRYPTOINTERFACE_LIB "${LIB_DIR}/cryptointerface.lib")
+        set(NANOCAP_LIB "${LIB_DIR}/nanocap.lib")
+      endif()
+      set(INITIALIZE_LIB "${LIB_DIR}/initialize.lib")
     else()
-        set(NANOCRYPTO_LIB "${LIB_DIR}/libnanocrypto.so")
+      set(ASN1_LIB "${LIB_DIR}/libasn1.so")
+      set(COMMON_LIB "${LIB_DIR}/libcommon.so")
+      if(CM_ENABLE_EXPORT_ED)
+          set(CRYPTO_MW_LIB "${LIB_DIR}/libcryptomw.so")
+      else()
+          set(NANOCRYPTO_LIB "${LIB_DIR}/libnanocrypto.so")
+      endif()
+      if(NOT CM_DISABLE_CI)
+        set(CRYPTOINTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
+        set(NANOCAP_LIB "${LIB_DIR}/libnanocap.so")
+      endif()
+      set(INITIALIZE_LIB "${LIB_DIR}/libinitialize.so")
     endif()
-    if(NOT CM_DISABLE_CI)
-      set(CRYPTOINTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
-      set(NANOCAP_LIB "${LIB_DIR}/libnanocap.so")
-    endif()
-    set(INITIALIZE_LIB "${LIB_DIR}/libinitialize.so")
   else()
     # Get the full path of our base libraries.
     # Note: If library is not found, variable will be empty.
@@ -760,7 +775,7 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 
 else()
     add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
-    if(BUILD_FOR_OSI AND NOT WIN32)
+    if(BUILD_FOR_OSI)
         # Copy static library to lib directory
         add_custom_command(
           TARGET ${PROJECT_NAME}
@@ -768,7 +783,7 @@ else()
           COMMAND ${CMAKE_COMMAND} -E copy
               $<TARGET_FILE:${PROJECT_NAME}>
               "${LIB_DIR}"
-          COMMENT "Copied libnanocert.a to ${LIB_DIR}"
+          COMMENT "Copied static library to ${LIB_DIR}"
         )
     endif()
     if(CM_ENABLE_COMPOUND_LIB)

@@ -38,7 +38,7 @@ include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
-if(BUILD_FOR_OSI AND NOT WIN32)
+if(BUILD_FOR_OSI)
   set(LIB_DIR "${MSS_DIR}/lib")
 endif()
 
@@ -211,7 +211,9 @@ foreach(file ${MSS_SOURCES})
 endforeach()
 
 if(WIN32)
-  if("STATIC" STREQUAL "${LIB_TYPE}")
+  if(BUILD_FOR_OSI)
+    set(MSS_BIN_DIR ${MSS_SRC_DIR}/../lib)
+  elseif("STATIC" STREQUAL "${LIB_TYPE}")
     set(MSS_BIN_DIR ${MSS_SRC_DIR}/../bin_win32_static)
   else()
     set(MSS_BIN_DIR ${MSS_SRC_DIR}/../bin_win32)
@@ -228,7 +230,7 @@ link_directories(${MSS_BIN_DIR})
 if("SHARED" STREQUAL "${LIB_TYPE}")
   add_library(${PROJECT_NAME} SHARED ${MSS_SOURCES})
 
-  if(BUILD_FOR_OSI AND NOT WIN32)
+  if(BUILD_FOR_OSI)
     add_custom_command(
       TARGET ${PROJECT_NAME}
       POST_BUILD
@@ -240,8 +242,12 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
     locate_lib(LIBMSS_LIB libmss)
     target_link_libraries(${PROJECT_NAME} ${LIBMSS_LIB})
   endif()
-  if(BUILD_FOR_OSI AND NOT WIN32)
-    set(COMMON_LIB "${LIB_DIR}/libcommon.so")
+  if(BUILD_FOR_OSI)
+    if(WIN32)
+      set(COMMON_LIB "${LIB_DIR}/common.lib")
+    else()
+      set(COMMON_LIB "${LIB_DIR}/libcommon.so")
+    endif()
   else()
     locate_lib(COMMON_LIB common)
   endif()
@@ -250,14 +256,14 @@ if("SHARED" STREQUAL "${LIB_TYPE}")
 else()
   add_library(${PROJECT_NAME} STATIC ${MSS_SOURCES})
   # Copy static library to lib directory
-  if(BUILD_FOR_OSI AND NOT WIN32)
+  if(BUILD_FOR_OSI)
       add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
             $<TARGET_FILE:${PROJECT_NAME}>
             "${LIB_DIR}"
-        COMMENT "Copied libasn1.a to ${LIB_DIR}"
+        COMMENT "Copied static library to ${LIB_DIR}"
       )
   endif()
 endif()

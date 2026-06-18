@@ -101,6 +101,7 @@ if "%~1"=="--test" echo Building with test validation enabled...& set BUILD_OPTI
 if "%~1"=="--streaming" echo Building with streaming support enabled...& set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_STREAMING=ON& goto next
 if "%~1"=="--unittest" echo Building with unittesting...& set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_BUILD_UNITTEST=ON& goto next
 if "%~1"=="--enable-coverage" echo Building with gcov code coverage support...& set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_COVERAGE=ON& goto next
+if "%~1"=="--build-for-osi" echo Enabling BUILD_FOR_OSI...& set BUILD_OPTIONS=%BUILD_OPTIONS% -DBUILD_FOR_OSI=ON& goto next
 if "%~1"=="nanomqtt" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_BUILD_NANOMQTT=ON& set PROJECT_NAME=nanomqtt& set ADD_ARGS=%ADD_ARGS% nanomqtt& goto next
 if "%~1"=="mqtt_client_sample" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_BUILD_MQTT_CLIENT_SAMPLE=ON& set PROJECT_NAME=mqtt_client_sample& set ADD_ARGS=%ADD_ARGS% mqtt_client_sample& goto next
 if "%~1"=="mqtt_client_test" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_BUILD_MQTT_CLIENT_TEST=ON& set PROJECT_NAME=mqtt_client_test& set ADD_ARGS=%ADD_ARGS% mqtt_client_test& goto next

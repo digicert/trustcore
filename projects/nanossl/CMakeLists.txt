@@ -155,7 +155,7 @@ endif()
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
-if(BUILD_FOR_OSI AND NOT WIN32)
+if(BUILD_FOR_OSI)
   set(LIB_DIR "${MSS_DIR}/lib")
   set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
@@ -422,7 +422,7 @@ endif()
 # - mss/bin for Unix
 # - mss/bin_win32 for Windows
 set(BIN_DIR "${MSS_BIN_DIR}")
-if(BUILD_FOR_OSI AND NOT WIN32)
+if(BUILD_FOR_OSI)
     macro(move_to_bin t_name)
     add_custom_command(
         TARGET ${t_name}
@@ -473,19 +473,34 @@ if(CM_BUILD_NANOSSL_LIB)
     buildflags(${TARGET_DIR} ${EXTRA_DEFINITIONS} MOCANA_FLAGS)
     message("MOCANA_FLAGS = ${MOCANA_FLAGS}")
 
-    if(BUILD_FOR_OSI AND NOT WIN32)
-        set(ASN1_LIB             "${LIB_DIR}/libasn1.so")
-        set(COMMON_LIB           "${LIB_DIR}/libcommon.so")
-        set(PLATFORM_LIB         "${LIB_DIR}/libplatform.so")
-        set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.so")
-        if(CM_ENABLE_EXPORT_ED)
-            set(CRYPTO_MW_LIB        "${LIB_DIR}/libcryptomw.so")
+    if(BUILD_FOR_OSI)
+        if(WIN32)
+            set(ASN1_LIB             "${LIB_DIR}/asn1.lib")
+            set(COMMON_LIB           "${LIB_DIR}/common.lib")
+            set(PLATFORM_LIB         "${LIB_DIR}/platform.lib")
+            set(INITIALIZE_LIB       "${LIB_DIR}/initialize.lib")
+            if(CM_ENABLE_EXPORT_ED)
+                set(CRYPTO_MW_LIB        "${LIB_DIR}/cryptomw.lib")
+            else()
+                set(NANOCRYPTO_LIB       "${LIB_DIR}/nanocrypto.lib")
+            endif()
+            set(NANOCAP_LIB          "${LIB_DIR}/nanocap.lib")
+            set(CRYPTOINTERFACE_LIB  "${LIB_DIR}/cryptointerface.lib")
+            set(NANOCERT_LIB         "${LIB_DIR}/nanocert.lib")
         else()
-            set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.so")
+            set(ASN1_LIB             "${LIB_DIR}/libasn1.so")
+            set(COMMON_LIB           "${LIB_DIR}/libcommon.so")
+            set(PLATFORM_LIB         "${LIB_DIR}/libplatform.so")
+            set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.so")
+            if(CM_ENABLE_EXPORT_ED)
+                set(CRYPTO_MW_LIB        "${LIB_DIR}/libcryptomw.so")
+            else()
+                set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.so")
+            endif()
+            set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.so")
+            set(CRYPTOINTERFACE_LIB  "${LIB_DIR}/libcryptointerface.so")
+            set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.so")
         endif()
-        set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.so")
-        set(CRYPTOINTERFACE_LIB  "${LIB_DIR}/libcryptointerface.so")
-        set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.so")
     endif()
 
     set(libraryLists ${INITIALIZE_LIB} ${NANOCRYPTO_LIB} ${CRYPTO_MW_LIB} ${NANOCERT_LIB}
@@ -512,14 +527,14 @@ if(CM_BUILD_NANOSSL_LIB)
     
     # Copy static library to lib directory if building static
     if("STATIC" STREQUAL "${LIB_TYPE}")
-        if(BUILD_FOR_OSI AND NOT WIN32)
+        if(BUILD_FOR_OSI)
             add_custom_command(
                 TARGET ${TARGET_NAME}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                     $<TARGET_FILE:${TARGET_NAME}>
                     "${LIB_DIR}"
-                COMMENT "Copied libnanossl.a to ${LIB_DIR}"
+                COMMENT "Copied static library to ${LIB_DIR}"
             )
         endif()
     endif()
