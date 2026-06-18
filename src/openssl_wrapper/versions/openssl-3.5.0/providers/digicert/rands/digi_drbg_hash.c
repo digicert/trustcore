@@ -3,14 +3,17 @@
  *
  * NIST DRBG HASH implementations for OSSL 3.0 provider
  *
- * Copyright 2026 DigiCert Project Authors. All Rights Reserved.
+ * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
- * DigiCert® TrustCore and TrustEdge are licensed under a dual-license model:
- * - **Open Source License**: GNU AGPL v3. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE
- * - **Commercial License**: Available under DigiCert’s Master Services Agreement. See: https://github.com/digicert/trustcore-test/blob/main/LICENSE_COMMERCIAL.txt
- *   or https://www.digicert.com/master-services-agreement/
+ * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
  *
- * For commercial licensing, contact DigiCert at sales@digicert.com.*
+ * 1. **Open Source License**: GNU Affero General Public License v3.0 (AGPL v3).
+ * See: https://github.com/digicert/trustcore/blob/main/LICENSE.md
+ * 2. **Commercial License**: Available under DigiCert's Master Services Agreement.
+ * See: https://www.digicert.com/master-services-agreement/
+ *
+ * *Use of TrustCore SDK or TrustEdge outside the scope of AGPL v3 requires a commercial license.*
+ * *Contact DigiCert at sales@digicert.com for more details.*
  *
  */
 /*
@@ -88,6 +91,7 @@ static int digiprov_drbg_hash_instantiate(PROV_DRBG *drbg, const unsigned char *
                                           const unsigned char *nonce, size_t nonce_len,
                                           const unsigned char *pstr, size_t pstr_len)
 {
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     MSTATUS status = OK;
     DP_DRBG_HASH *hash = (DP_DRBG_HASH *)drbg->data;
     NIST_HASH_DRBG_Ctx *pNewCtx = NULL;
@@ -108,7 +112,7 @@ static int digiprov_drbg_hash_instantiate(PROV_DRBG *drbg, const unsigned char *
         hash->pRandCtx = pNewCtx; pNewCtx = NULL;
         return 1;
     }
- 
+#endif
     return 0;
 }
 
@@ -129,6 +133,7 @@ static int digiprov_drbg_hash_reseed(PROV_DRBG *drbg,
                                      const unsigned char *ent, size_t ent_len,
                                      const unsigned char *adin, size_t adin_len)
 {
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     MSTATUS status = OK;
     DP_DRBG_HASH *hash = (DP_DRBG_HASH *)drbg->data;
 
@@ -141,6 +146,9 @@ static int digiprov_drbg_hash_reseed(PROV_DRBG *drbg,
         return 0;
 
     return 1;
+#else
+    return 0;
+#endif
 }
 
 static int digiprov_drbg_hash_reseed_wrapper(void *vdrbg, int prediction_resistance,
@@ -156,6 +164,7 @@ static int digiprov_drbg_hash_generate(PROV_DRBG *drbg,
                                        unsigned char *out, size_t outlen,
                                        const unsigned char *adin, size_t adin_len)
 {
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     MSTATUS status = OK;
     DP_DRBG_HASH *hash = (DP_DRBG_HASH *)drbg->data;
    
@@ -165,6 +174,9 @@ static int digiprov_drbg_hash_generate(PROV_DRBG *drbg,
         return 0;
     
     return 1;
+#else
+    return 0;
+#endif
 }
 
 static int digiprov_drbg_hash_generate_wrapper
@@ -178,6 +190,7 @@ static int digiprov_drbg_hash_generate_wrapper
 
 static int digiprov_drbg_hash_uninstantiate(PROV_DRBG *drbg)
 {
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     MSTATUS status = OK;
     DP_DRBG_HASH *hash = (DP_DRBG_HASH *)drbg->data;
 
@@ -192,6 +205,9 @@ static int digiprov_drbg_hash_uninstantiate(PROV_DRBG *drbg)
         return 0;
 
     return 1;
+#else
+    return 0;
+#endif
 }
 
 static int digiprov_drbg_hash_uninstantiate_wrapper(void *vdrbg)
@@ -207,6 +223,7 @@ static int digiprov_drbg_hash_verify_zeroization(void *vdrbg)
 
 static int digiprov_drbg_hash_new(PROV_DRBG *ctx)
 {
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     MSTATUS status = OK;
     DP_DRBG_HASH *hash = NULL;
 
@@ -227,6 +244,9 @@ static int digiprov_drbg_hash_new(PROV_DRBG *ctx)
     /* Maximum number of bits per request = 2^19  = 2^16 bytes */
     ctx->max_request = 1 << 16;
     return 1;
+#else
+    return 0;
+#endif
 }
 
 static void *digiprov_drbg_hash_new_wrapper(void *provctx, void *parent,
@@ -240,6 +260,7 @@ static void *digiprov_drbg_hash_new_wrapper(void *provctx, void *parent,
 static void digiprov_drbg_hash_free(void *vdrbg)
 {
     PROV_DRBG *drbg = (PROV_DRBG *)vdrbg;
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
     DP_DRBG_HASH *hash;
 
     if (NULL != drbg)
@@ -255,7 +276,7 @@ static void digiprov_drbg_hash_free(void *vdrbg)
             (void) DIGI_MEMSET_FREE((ubyte **) &hash, sizeof(*hash));
         }
     }
-
+#endif
     digiprov_rand_drbg_free(drbg);
 }
 

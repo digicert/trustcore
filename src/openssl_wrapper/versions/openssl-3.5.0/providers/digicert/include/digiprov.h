@@ -154,6 +154,9 @@ extern const OSSL_DISPATCH digiprov_ecdh_keyexch_functions[];
 extern const OSSL_DISPATCH digiprov_x25519_keyexch_functions[];
 extern const OSSL_DISPATCH digiprov_x448_keyexch_functions[];
 
+extern const OSSL_DISPATCH digiprov_aes_skeymgmt_functions[];
+extern const OSSL_DISPATCH digiprov_generic_skeymgmt_functions[];
+
 extern const OSSL_DISPATCH digiprov_pqc_kem_functions[];
 extern const OSSL_DISPATCH digiprov_pqc_mlx_kem_functions[];
 

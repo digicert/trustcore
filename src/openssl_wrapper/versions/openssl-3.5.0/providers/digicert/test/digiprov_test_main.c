@@ -43,6 +43,7 @@ int test_digest(OSSL_LIB_CTX *pLibCtx, ubyte hashType);
 int test_aes(OSSL_LIB_CTX *pLibCtx, char *pAlgoStr);
 int test_cipher(OSSL_LIB_CTX *pLibCtx, char *pAlgoStr);
 int test_cipher_aead(OSSL_LIB_CTX *pLibCtx, char *pAlgoStr);
+int test_cipher_skey(OSSL_LIB_CTX *pLibCtx, char *pAlgoStr);
 int test_rsa_sign(OSSL_LIB_CTX *pLibCtx, int bits, byteBoolean isPss);
 int test_rsa_sign_pem(OSSL_LIB_CTX *pLibCtx, char *pPemFile, byteBoolean isPss);
 int test_rsa_enc_dec_pem(OSSL_LIB_CTX *pLibCtx, char *pPemFile, char *pw);
@@ -325,6 +326,43 @@ test_start:
 
         ret += test_cipher_aead(pLibCtx, "ChaCha20-Poly1305");
 
+        /* skey tests */
+        ret += test_cipher_skey(pLibCtx, "AES-128-CBC");
+        ret += test_cipher_skey(pLibCtx, "AES-192-CBC");
+        ret += test_cipher_skey(pLibCtx, "AES-256-CBC");
+
+        ret += test_cipher_skey(pLibCtx, "AES-128-ECB");
+        ret += test_cipher_skey(pLibCtx, "AES-192-ECB");
+        ret += test_cipher_skey(pLibCtx, "AES-256-ECB");
+
+        ret += test_cipher_skey(pLibCtx, "AES-128-OFB");
+        ret += test_cipher_skey(pLibCtx, "AES-192-OFB");
+        ret += test_cipher_skey(pLibCtx, "AES-256-OFB");
+
+        ret += test_cipher_skey(pLibCtx, "AES-128-CFB");
+        ret += test_cipher_skey(pLibCtx, "AES-192-CFB");
+        ret += test_cipher_skey(pLibCtx, "AES-256-CFB");
+
+        ret += test_cipher_skey(pLibCtx, "AES-128-CTR");
+        ret += test_cipher_skey(pLibCtx, "AES-192-CTR");
+        ret += test_cipher_skey(pLibCtx, "AES-256-CTR");
+        ret += test_cipher_skey(pLibCtx, "AES-128-XTS");
+        ret += test_cipher_skey(pLibCtx, "AES-256-XTS");
+
+        ret += test_cipher_skey(pLibCtx, "DES-EDE3-ECB");
+        ret += test_cipher_skey(pLibCtx, "DES-EDE3-CBC");
+
+        ret += test_cipher_skey(pLibCtx, "DES-ECB");
+        ret += test_cipher_skey(pLibCtx, "DES-CBC");
+
+        /* ret += test_cipher(pLibCtx, "BF-ECB"); not supported */
+        ret += test_cipher_skey(pLibCtx, "BF-CBC");
+
+        ret += test_cipher_skey(pLibCtx, "RC4");
+        ret += test_cipher_skey(pLibCtx, "RC4-40");
+
+        /* rc5 and chacha not supported */
+
         if (tret == ret)
         {
             printf("cipher tests: PASS\n");
@@ -538,6 +576,7 @@ test_start:
         ret += test_rand(pLibCtx, "CTR-DRBG", "TDES-CTR");
 
         /* HASH-DRBG with MD4, and MD5 not supported as per RFC */
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA-1");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA-224");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA-256");
@@ -547,7 +586,7 @@ test_start:
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA3-256");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA3-384");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA3-512");
-
+#endif
         if (tret == ret)
         {
             printf("rand tests: PASS\n");
