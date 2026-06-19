@@ -28,6 +28,8 @@
 
 #include "openssl/evp.h"
 #include "openssl/provider.h"
+#include "openssl/core_names.h"
+#include "prov/names.h"
 
 #include <stdio.h>
 
@@ -542,6 +544,314 @@ exit:
     if (NULL != pCipher)
     {
         EVP_CIPHER_free(pCipher);
+    }
+
+    return ret;
+}
+
+/* structure to hold exported symmetric keys */
+typedef struct _keyBuf
+{
+    char key[64]; /* big enough for any key */
+    size_t keyLen;
+} KeyBuf;
+
+/* Callback for the export sym key to write to the above structure */
+static int export_callback(const OSSL_PARAM params[], void *arg) 
+{
+    KeyBuf *pKeyBuf = (KeyBuf *) arg;
+    const OSSL_PARAM *p = OSSL_PARAM_locate_const(params, OSSL_SKEY_PARAM_RAW_BYTES);
+    if (p != NULL && p->data_type == OSSL_PARAM_OCTET_STRING)
+    {
+        (void) DIGI_MEMCPY(pKeyBuf->key, p->data, p->data_size);
+        pKeyBuf->keyLen = p->data_size;
+    }
+    else
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+int test_cipher_skey(OSSL_LIB_CTX *pLibCtx, char *pAlgoStr)
+{
+    MSTATUS status = ERR_GENERAL;
+    int ret = 1;
+    EVP_SKEY *pKey = NULL;
+    EVP_SKEY *pKey2 = NULL;
+    unsigned char key[64] = {0}; /* big enough for all ciphers */ 
+    size_t keyLen = 16; /* default */
+    unsigned char iv[16] = {0};  /* big enough for all ciphers */
+    unsigned char *pIv = (unsigned char *) &iv;
+    size_t ivLen = 16; /* default */
+    KeyBuf keyBuf = {0};         /* for exported key test */
+    unsigned char plaintext[32] = {0};
+    unsigned char ciphertext[48] = {0};
+    unsigned char decryptedtext[48] = {0};
+    int decryptedtext_len = 0, ciphertext_len = 0, plaintext_len = 0;
+    int len = 0;
+    EVP_CIPHER_CTX *ctx = NULL;
+    EVP_CIPHER *pCipher = NULL;
+    sbyte4 cmp = 1;
+    size_t i = 0;
+    char *pGeneric = PROV_NAMES_GENERIC;
+    char *pAes = PROV_NAMES_AES;
+    char *pProvName = pAes;
+
+    if (0 == DIGI_STRCMP(pAlgoStr, "AES-128-ECB"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-192-ECB"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+        keyLen = 192/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-256-ECB"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+        keyLen = 256/8;  
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-192-CBC"))
+    {
+        keyLen = 192/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-256-CBC"))
+    {
+        keyLen = 256/8;  
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-192-OFB"))
+    {
+        keyLen = 192/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-256-OFB"))
+    {
+        keyLen = 256/8;  
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-192-CFB"))
+    {
+        keyLen = 192/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-256-CFB"))
+    {
+        keyLen = 256/8;  
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-192-CTR"))
+    {
+        keyLen = 192/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-256-CTR"))
+    {
+        keyLen = 256/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-128-XTS"))
+    {   /* XTS uses 2 keys, keyLen is double the AES key size */
+        keyLen = 256/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "AES-256-XTS"))
+    {
+        keyLen = 512/8;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "DES-EDE3-ECB"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+        keyLen = 192/8;
+        pProvName = pGeneric;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "DES-EDE3-CBC"))
+    {
+        keyLen = 192/8;
+        ivLen = 8;
+        pProvName = pGeneric;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "DES-ECB"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+        keyLen = 64/8;
+        pProvName = pGeneric;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "DES-CBC"))
+    {
+        keyLen = 64/8;
+        ivLen = 8;
+        pProvName = pGeneric;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "BF-ECB"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+        keyLen = 128/8;
+        pProvName = pGeneric;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "BF-CBC"))
+    {
+        keyLen = 128/8;
+        ivLen = 8;
+        pProvName = pGeneric;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "RC4"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+        keyLen = 128/8;
+        pProvName = pGeneric;
+    }
+    else if (0 == DIGI_STRCMP(pAlgoStr, "RC4-40"))
+    {
+        pIv = NULL;
+        ivLen = 0;
+        keyLen = 40/8;
+        pProvName = pGeneric;
+    }
+
+    for (i = 0; i < keyLen; i++)
+    {
+        key[i] = (ubyte)(i+2 & 0xff);
+    }
+
+    plaintext_len = 32;
+    for (i = 0; i < plaintext_len; i++)
+    {
+        plaintext[i] = i+10;
+    }
+
+    for (i = 0; i < ivLen; i++)
+    {
+        iv[i] = i+1;
+    }
+
+    /* Create a new sym key */
+    pKey = EVP_SKEY_import_raw_key(pLibCtx, pProvName, key, keyLen, NULL);
+    if (NULL == pKey)
+    {
+        printf("ERROR EVP_SKEY_import_raw_key\n");
+        goto exit;        
+    }
+
+    /* export it for later use on decryption */
+    if (1 != EVP_SKEY_export(pKey, OSSL_SKEYMGMT_SELECT_SECRET_KEY, export_callback, (void *) &keyBuf))
+    {
+        printf("ERROR EVP_SKEY_export\n");
+        goto exit;
+    }
+
+    /* Create and initialise the context */
+    if(!(ctx = EVP_CIPHER_CTX_new()))
+    {
+        printf("ERROR EVP_CIPHER_CTX_new\n");
+        goto exit;
+    }
+
+    pCipher = EVP_CIPHER_fetch(pLibCtx, pAlgoStr, NULL);
+#if defined(__ENABLE_DIGICERT_FIPS_MODULE__)
+    if ( (1 == EVP_default_properties_is_fips_enabled(NULL)) &&
+         ((0 == DIGI_STRCMP(pAlgoStr, "DES-ECB")) ||
+          (0 == DIGI_STRCMP(pAlgoStr, "DES-CBC"))) )
+    {
+        if (NULL != pCipher)
+        {
+            printf("ERROR EVP_CIPHER_fetch FIPS expected failure\n");
+        }
+        else
+        {
+            ret = 0;
+        }
+        goto exit;
+    }
+#endif
+    if (NULL == pCipher)
+    {
+        printf("ERROR EVP_CIPHER_fetch\n");
+        goto exit;
+    }
+
+    if (1 != EVP_CipherInit_SKEY(ctx, pCipher, pKey, pIv, ivLen, 1, NULL))
+    {
+        printf("ERROR EVP_CipherInit_SKEY\n");
+        goto exit;
+    }
+
+    if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
+    {
+        printf("ERROR EVP_EncryptUpdate\n");
+        goto exit;
+    }
+    ciphertext_len = len;
+
+    if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
+    {
+        printf("ERROR EVP_EncryptFinal_ex\n");
+        goto exit;
+    }
+    ciphertext_len += len;
+
+    /* Reset */
+    EVP_CIPHER_CTX_reset(ctx);
+
+    /* import the key for decryption to pKey2 */
+    pKey2 = EVP_SKEY_import_raw_key(pLibCtx, pProvName, keyBuf.key, keyBuf.keyLen, NULL);
+    if (NULL == pKey2)
+    {
+        printf("ERROR EVP_SKEY_import_raw_key\n");
+        goto exit;        
+    }
+
+    if (1 != EVP_CipherInit_SKEY(ctx, pCipher, pKey2, pIv, ivLen, 0, NULL))
+    {
+        printf("ERROR EVP_CipherInit_SKEY\n");
+        goto exit;
+    }
+
+    if(1 != EVP_DecryptUpdate(ctx, decryptedtext, &len, ciphertext, ciphertext_len))
+    {
+        printf("ERROR EVP_DecryptUpdate\n");
+        goto exit;
+    }
+    decryptedtext_len = len;
+
+    if(1 != EVP_DecryptFinal_ex(ctx, decryptedtext + len, &len))
+    {
+        printf("ERROR EVP_DecryptFinal_ex\n");
+        goto exit;
+    }
+    decryptedtext_len += len;
+
+    status = DIGI_MEMCMP(decryptedtext, plaintext, (ubyte4) plaintext_len, &cmp);
+    if (OK != status)
+        goto exit;
+
+    if (0 != cmp)
+    {
+        printf("ERROR decrypted text did not match original plaintext\n");
+    }
+    else
+    {
+        ret = 0;
+    }
+
+exit:
+
+    if (NULL != ctx)
+    {
+        EVP_CIPHER_CTX_free(ctx);
+    }
+    if (NULL != pCipher)
+    {
+        EVP_CIPHER_free(pCipher);
+    }
+    if (NULL != pKey)
+    {
+        EVP_SKEY_free(pKey);
+    }
+    if (NULL != pKey2)
+    {
+        EVP_SKEY_free(pKey2);
     }
 
     return ret;

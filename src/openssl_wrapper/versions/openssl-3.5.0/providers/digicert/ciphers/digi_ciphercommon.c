@@ -63,6 +63,8 @@
 #include "prov/providercommon.h"
 
 #include "digiprov.h"
+#include "internal/skey.h"
+#include "crypto/types.h"
 
 size_t digiprov_cipher_fillblock(unsigned char *buf, size_t *buflen, size_t blocksize,
                                  const unsigned char **in, size_t *inlen);
@@ -1212,4 +1214,26 @@ void *digiprov_cipher_generic_dupctx(void *vctx)
     }
  
     return (void *) pRet;
+}
+
+int digiprov_cipher_generic_skey_einit(void *vctx, void *skeydata,
+                                       const unsigned char *iv, size_t ivlen,
+                                       const OSSL_PARAM params[])
+{
+    PROV_SKEY *key = skeydata;
+
+    return cipher_generic_init_internal((DP_CIPHER_CTX *)vctx,
+                                        key->data, key->length,
+                                        iv, ivlen, params, 1);
+}
+
+int digiprov_cipher_generic_skey_dinit(void *vctx, void *skeydata,
+                                       const unsigned char *iv, size_t ivlen,
+                                       const OSSL_PARAM params[])
+{
+    PROV_SKEY *key = skeydata;
+
+    return cipher_generic_init_internal((DP_CIPHER_CTX *)vctx,
+                                        key->data, key->length,
+                                        iv, ivlen, params, 0);
 }

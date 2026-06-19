@@ -1,0 +1,8 @@
+# We make separate GOAL variables for each algorithm, to make it easy to
+# switch each to the Legacy provider when needed.
+
+$AES_GOAL=../../libdigiprov.a
+$GENERIC_GOAL=../../libdigiprov.a
+
+SOURCE[$AES_GOAL]=digi_aes_skmgmt.c
+SOURCE[$GENERIC_GOAL]=digi_generic.c

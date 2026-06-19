@@ -212,6 +212,12 @@ static const OSSL_ALGORITHM digiprov_keymgmt[] = {
     { NULL, NULL, NULL }
 };
 
+static const OSSL_ALGORITHM digiprov_skeymgmt[] = {
+    { PROV_NAMES_AES, prov_name_fips, digiprov_aes_skeymgmt_functions},
+    { PROV_NAMES_GENERIC, prov_name_fips, digiprov_generic_skeymgmt_functions},
+    { NULL, NULL, NULL }
+};
+
 static const OSSL_ALGORITHM digiprov_signature[] = {
     { PROV_NAMES_RSA, prov_name_fips, digiprov_rsa_sig_functions},
     { PROV_NAMES_ECDSA, prov_name_fips, digiprov_ecdsa_functions},
@@ -360,6 +366,8 @@ static const OSSL_ALGORITHM* digiprov_provider_query(void *provCtx, int opId, in
             return digiprov_rands;
         case OSSL_OP_KEYMGMT:
             return digiprov_keymgmt;
+        case OSSL_OP_SKEYMGMT:
+            return digiprov_skeymgmt;
         case OSSL_OP_DECODER:
             return digiprov_decoder;
         case OSSL_OP_KEYEXCH:

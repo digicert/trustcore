@@ -233,6 +233,8 @@ OSSL_FUNC_cipher_set_ctx_params_fn digiprov_cipher_var_keylen_set_ctx_params;
 OSSL_FUNC_cipher_settable_ctx_params_fn digiprov_cipher_var_keylen_settable_ctx_params;
 OSSL_FUNC_cipher_gettable_ctx_params_fn digiprov_cipher_aead_gettable_ctx_params;
 OSSL_FUNC_cipher_settable_ctx_params_fn digiprov_cipher_aead_settable_ctx_params;
+OSSL_FUNC_cipher_encrypt_skey_init_fn digiprov_cipher_generic_skey_einit;
+OSSL_FUNC_cipher_decrypt_skey_init_fn digiprov_cipher_generic_skey_dinit;
 
 int digiprov_cipher_generic_get_params(OSSL_PARAM params[], unsigned int md,
                                    uint64_t flags,
@@ -279,6 +281,8 @@ const OSSL_DISPATCH digiprov_##alg##kbits##lcmode##_functions[] = {            \
       (void (*)(void))digiprov_cipher_generic_gettable_ctx_params },               \
     { OSSL_FUNC_CIPHER_SETTABLE_CTX_PARAMS,                                    \
      (void (*)(void))digiprov_cipher_generic_settable_ctx_params },                \
+    { OSSL_FUNC_CIPHER_ENCRYPT_SKEY_INIT, (void (*)(void))digiprov_cipher_generic_skey_einit }, \
+    { OSSL_FUNC_CIPHER_DECRYPT_SKEY_INIT, (void (*)(void))digiprov_cipher_generic_skey_dinit }, \
     { 0, NULL }                                                                \
 };
 
@@ -306,6 +310,8 @@ const OSSL_DISPATCH digiprov_##alg##kbits##lcmode##_functions[] = {             
       (void (*)(void))digiprov_cipher_generic_gettable_ctx_params },               \
     { OSSL_FUNC_CIPHER_SETTABLE_CTX_PARAMS,                                    \
      (void (*)(void))digiprov_cipher_var_keylen_settable_ctx_params },             \
+    { OSSL_FUNC_CIPHER_ENCRYPT_SKEY_INIT, (void (*)(void))digiprov_cipher_generic_skey_einit }, \
+    { OSSL_FUNC_CIPHER_DECRYPT_SKEY_INIT, (void (*)(void))digiprov_cipher_generic_skey_dinit }, \
     { 0, NULL }                                                                \
 };
 

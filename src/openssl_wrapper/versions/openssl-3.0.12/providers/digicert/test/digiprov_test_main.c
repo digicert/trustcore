@@ -536,6 +536,7 @@ test_start:
         ret += test_rand(pLibCtx, "CTR-DRBG", "TDES-CTR");
 
         /* HASH-DRBG with MD4, and MD5 not supported as per RFC */
+#ifndef __ENABLE_DIGICERT_FIPS_MODULE__
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA-1");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA-224");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA-256");
@@ -545,7 +546,7 @@ test_start:
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA3-256");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA3-384");
         ret += test_rand(pLibCtx, "HASH-DRBG", "SHA3-512");
-
+#endif
         if (tret == ret)
         {
             printf("rand tests: PASS\n");

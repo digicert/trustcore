@@ -794,7 +794,7 @@ static const OSSL_PARAM *digi_mlx_kem_gen_settable_params(ossl_unused void *vgct
 {
     static OSSL_PARAM settable[] = 
     {
-        OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PROPERTIES, NULL, 0),
+        OSSL_PARAM_utf8_string(OSSL_PKEY_PARAM_PROPERTIES, NULL, 0),
         OSSL_PARAM_END
     };
 
