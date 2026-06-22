@@ -576,11 +576,12 @@ exit /b %ERRORLEVEL%
         call %CMAKE_BIN% --build . --config !BUILD_TYPE! 1>>!LOG_FILE! 2>>&1
 
         if !ERRORLEVEL! NEQ 0 (
+           set BUILD_ERR=!ERRORLEVEL!
            echo Build failed
-           echo Exited with error !ERRORLEVEL!
+           echo Exited with error !BUILD_ERR!
            echo Refer file "!LOG_FILE!" for details.
            call :printLogOnFailure "!LOG_FILE!"
-           exit /b !ERRORLEVEL!
+           exit /b !BUILD_ERR!
         )
 
         echo "nanocommon library built successfully at !BUILD_TYPE!\!libCommonFileName!"
@@ -588,10 +589,11 @@ exit /b %ERRORLEVEL%
         echo Executing - "%CMAKE_BIN% -G "NMake Makefiles" !BUILD_OPTIONS! CMakeLists.txt 1>>!LOG_FILE! 2>>&1 ...."
         %CMAKE_BIN% -G "NMake Makefiles"  !BUILD_OPTIONS!  CMakeLists.txt 1>>!LOG_FILE! 2>>&1
         if !ERRORLEVEL! NEQ 0 (
+           set BUILD_ERR=!ERRORLEVEL!
            echo Failure: CMake Failed to create Makefile
            echo Refer file "!LOG_FILE!" for details.
            call :printLogOnFailure "!LOG_FILE!"
-           exit /b !ERRORLEVEL!
+           exit /b !BUILD_ERR!
         )
         if not exist "Makefile" (
            echo Failure: CMake Failed to create Makefile
@@ -607,11 +609,12 @@ exit /b %ERRORLEVEL%
         %NMAKE_BIN% !BUILD_TARGET! 1>>!LOG_FILE! 2>>&1
 
         if !ERRORLEVEL! NEQ 0 (
+           set BUILD_ERR=!ERRORLEVEL!
            echo Failure: NMake Failed to build "%libCommonFileName%" from "Makefile"
-           echo Failure: NMAKE exited with error !ERRORLEVEL!
+           echo Failure: NMAKE exited with error !BUILD_ERR!
            echo Refer file "!LOG_FILE!" for details.
            call :printLogOnFailure "!LOG_FILE!"
-           exit /b !ERRORLEVEL!
+           exit /b !BUILD_ERR!
         )
 
         if NOT exist %libCommonFileName% (

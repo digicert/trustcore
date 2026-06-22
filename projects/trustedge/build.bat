@@ -582,52 +582,45 @@ exit /b %ERRORLEVEL%
     
     if not "!VERSION_STRING!"=="" set "CMAKE_CMD=!CMAKE_CMD! -DCM_VERSION_STRING=!VERSION_STRING!"
     
-    echo Executing - "!CMAKE_CMD! CMakeLists.txt ..\. 1>>!LOG_FILE! 2>>&1"
-    call !CMAKE_CMD! CMakeLists.txt ..\. 1>>!LOG_FILE! 2>>&1
+    echo Executing - "!CMAKE_CMD! .. 1>>!LOG_FILE! 2>>&1"
+    call !CMAKE_CMD! .. 1>>!LOG_FILE! 2>>&1
     
     if !ERRORLEVEL! NEQ 0 (
+       set BUILD_ERR=!ERRORLEVEL!
        echo CMake generation failed
        echo Refer file "!LOG_FILE!" for details.
        call :printLogOnFailure "!LOG_FILE!"
        popd
-       exit /b !ERRORLEVEL!
+       exit /b !BUILD_ERR!
     )
     
-    :: Find the solution file
-    set SLN_FILE=
-    for %%f in (*.sln) do set SLN_FILE=%%f
-    
-    if "!SLN_FILE!"=="" (
-       echo No solution file found
-       popd
-       exit /b 1
-    )
-    
-    echo Building solution: !SLN_FILE!
-    call msbuild !SLN_FILE! /property:Configuration=!BUILD_TYPE! /p:Platform=%VS_PLATFORM% 1>>!LOG_FILE! 2>>&1
+    echo Building trustedge...
+    call cmake --build . --config !BUILD_TYPE! 1>>!LOG_FILE! 2>>&1
     
     if !ERRORLEVEL! NEQ 0 (
+       set BUILD_ERR=!ERRORLEVEL!
        echo Build failed
-       echo Exited with error !ERRORLEVEL!
+       echo Exited with error !BUILD_ERR!
        echo Refer file "!LOG_FILE!" for details.
        call :printLogOnFailure "!LOG_FILE!"
        popd
-       exit /b !ERRORLEVEL!
+       exit /b !BUILD_ERR!
     )
     
     :: Build PACKAGE target if generator was specified (for creating TGZ/package)
     if not "!GENERATOR_BUILD!"=="" (
        echo Building package with generator: !GENERATOR_BUILD!
-       call msbuild PACKAGE.vcxproj /property:Configuration=!BUILD_TYPE! /p:Platform=%VS_PLATFORM% 1>>!LOG_FILE! 2>>&1
+       call cmake --build . --config !BUILD_TYPE! --target PACKAGE 1>>!LOG_FILE! 2>>&1
        
        if !ERRORLEVEL! NEQ 0 (
+          set BUILD_ERR=!ERRORLEVEL!
           echo Package build failed
-          echo Exited with error !ERRORLEVEL!
+          echo Exited with error !BUILD_ERR!
           echo Refer file "!LOG_FILE!" for details.
           call :printLogOnFailure "!LOG_FILE!"
           call :printWixLog
           popd
-          exit /b !ERRORLEVEL!
+          exit /b !BUILD_ERR!
        )
        echo Package created successfully
     )
