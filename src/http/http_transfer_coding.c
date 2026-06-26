@@ -80,6 +80,8 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+#define MAX_CHUNK_SIZE_HEX_DIGITS (16) /* max chunk-size hex digits accepted (incl. leading zeros); ubyte4 supports up to 8 significant hex digits */
+
 /* NOTE: chunk extension is ignored */
 static MSTATUS
 HTTP_TRANSFER_CODING_parseChunkHeader(httpContext *pHttpContext, ubyte *pData, ubyte4 dataLength, ubyte4* pChunkSize)
@@ -90,19 +92,46 @@ HTTP_TRANSFER_CODING_parseChunkHeader(httpContext *pHttpContext, ubyte *pData, u
     /* init chunkSize */
     (*pChunkSize) = 0;
 
-    chunkSizeStr = (ubyte*)MALLOC(20);
+    chunkSizeStr = (ubyte*)MALLOC(MAX_CHUNK_SIZE_HEX_DIGITS);
     if (!chunkSizeStr)
     {
         status = ERR_MEM_ALLOC_FAIL;
         goto exit;
     }
-    while (DIGI_ISXDIGIT(*(pData+len)) && len <dataLength )
+    /* Loop until we reach a non-hex digit, the end of the data, or the maximum chunk size */
+    while (len < dataLength && DIGI_ISXDIGIT(*(pData+len)) && len < MAX_CHUNK_SIZE_HEX_DIGITS)
     {
         *(chunkSizeStr+len) = *(pData+len);
         len++;
     }
+    /* If no hex digits were read, the chunk-size is malformed */
+    if (len == 0)
+    {
+        status = ERR_HTTP_MALFORMED_MESSAGE;
+        goto exit;
+    }
+
+    /* If we reached the maximum chunk size and the next character is still a
+     * hex digit, it's an error */
+    if (len == MAX_CHUNK_SIZE_HEX_DIGITS && len < dataLength && DIGI_ISXDIGIT(*(pData+len)))
+    {
+        status = ERR_HTTP_MALFORMED_MESSAGE;
+        goto exit;
+    }
     /* converting hex string to decimal number */
-    for (i = 0; i < len; i++)
+    i = 0;
+    /* Skip leading zeros */
+    while (i < len && *(chunkSizeStr+i) == '0')
+    {
+        i++;
+    }
+    /* Check if remaining length fits into ubyte4 */
+    if (len - i > 8)
+    {
+        status = ERR_HTTP_BUFFER_OVERFLOW;
+        goto exit;
+    }
+    for (; i < len; i++)
     {
         ubyte ch = *(chunkSizeStr+i);
         ubyte4 val = 0;
