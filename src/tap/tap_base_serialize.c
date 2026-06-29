@@ -1071,6 +1071,14 @@ MSTATUS TAP_SERIALIZE_ListPointerTypeHandler(
 
         pListShadowStruct = pNextShadowStruct->pFieldList[0].pField;
 
+        /* listLength comes in as a ubyte8 but should be small, make sure an attacker has not engineered
+           it to overwrite our allocated buffer, max allocation size from mstdlib.c is 0xffffff */
+        if (listLength > 0xffffffull || (listLength * (ubyte8) pListShadowStruct->structSize) > 0xffffffull)
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
+
         if (TAP_SD_IN == direction)
         {
             pUnserializedList = (void *)(*(void **)pNextUnserialized);
@@ -1081,13 +1089,13 @@ MSTATUS TAP_SERIALIZE_ListPointerTypeHandler(
             if (0 < listLength)
             {
                 if (OK != DIGI_MALLOC(&pUnserializedList,
-                                     listLength * pListShadowStruct->structSize))
+                                     (ubyte4) listLength * pListShadowStruct->structSize))
                     goto exit;
             }
             *((void **)pNextUnserialized)= pUnserializedList;
         }
 
-        for (listIndex = 0; listIndex < listLength; listIndex++)
+        for (listIndex = 0; listIndex < (ubyte4) listLength; listIndex++)
         {
             if (OK != (status = pListShadowStruct->handler(NULL, NULL,
                                                            pListShadowStruct, pUnserializedList, pListShadowStruct->structSize,
