@@ -23,6 +23,12 @@ Run the build script with the following options:
 ./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --package --cvc --proxy --pqc --pqc-composite --enable-pc
 ```
 
+To build TrustEdge with NanoROOT TAP module support, include the `--nanoroot` option:
+
+```bash
+./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --package --nanoroot
+```
+
 ### Build Output
 
 After a successful build:
@@ -109,7 +115,7 @@ trustedge agent --help
 
 2. Bootstrap the agent:
    ```bash
-   sudo trustedge agent --configure --trustedge-user trustedge --trustedge-group trustedge --bootstrap-zip ./<guid>.zip
+   trustedge agent --configure --bootstrap-zip ./<guid>.zip
    ```
 
 ### Run as Service
@@ -137,7 +143,7 @@ cat /etc/digicert/conf/failed_policy.json
 Run the agent in the foreground (logs to console):
 
 ```bash
-sudo trustedge agent
+trustedge agent
 ```
 
 The agent will poll Device Trust Manager, perform required actions, and disconnect.
@@ -147,7 +153,7 @@ The agent will poll Device Trust Manager, perform required actions, and disconne
 Reset the agent configuration:
 
 ```bash
-sudo trustedge agent --reset
+trustedge agent --reset
 ```
 
 ---
@@ -171,7 +177,7 @@ trustedge certificate --help
 Generate an RSA private key:
 
 ```bash
-sudo trustedge certificate --algorithm RSA --size 2048 --output-file RSA_2048.pem
+trustedge certificate --algorithm RSA --size 2048 --output-file RSA_2048.pem
 ```
 > **Note:**
 > You can use the `-k` or `--key-store-path` option to specify the path to the keystore used for both input and output files.
@@ -183,7 +189,7 @@ sudo trustedge certificate --algorithm RSA --size 2048 --output-file RSA_2048.pe
 1. Create a CSR configuration file (e.g., `sample_csr.cnf`):
 
 ```bash
-sudo tee /etc/digicert/keystore/conf/sample_csr.cnf > /dev/null <<EOF
+tee /etc/digicert/keystore/conf/sample_csr.cnf > /dev/null <<EOF
 ##Subject
 countryName=US
 commonName=iot-device101
@@ -202,13 +208,13 @@ EOF
 
 2. Generate CSR for RSA:
 ```bash
-sudo trustedge certificate --cert-sign-req --output-file CSR_RSA_2048.pem --signing-key RSA_2048.pem --csr-conf sample_csr.cnf --digest SHA256
+trustedge certificate --cert-sign-req --output-file CSR_RSA_2048.pem --signing-key RSA_2048.pem --csr-conf sample_csr.cnf --digest SHA256
 ```
 Find the output file in `/etc/digicert/keystore/req`.
 
 3. Verify the CSR:
 ```bash
-sudo trustedge certificate --print-cert /etc/digicert/keystore/req/CSR_RSA_2048.pem
+trustedge certificate --print-cert /etc/digicert/keystore/req/CSR_RSA_2048.pem
 ```
 
 ### Generate X.509 Certificate
@@ -216,7 +222,7 @@ sudo trustedge certificate --print-cert /etc/digicert/keystore/req/CSR_RSA_2048.
 Generate a self-signed certificate for RSA:
 
 ```bash
-sudo trustedge certificate --algorithm RSA --size 2048 --output-file RSA_CERT_2048.pem --csr-conf sample_csr.cnf --x509-cert RSA_CERT_2048.pem --days 365
+trustedge certificate --algorithm RSA --size 2048 --output-file RSA_CERT_2048.pem --csr-conf sample_csr.cnf --x509-cert RSA_CERT_2048.pem --days 365
 ```
 Find the output file in `/etc/digicert/keystore/certs`.
 
@@ -225,7 +231,7 @@ Find the output file in `/etc/digicert/keystore/certs`.
 Verify and print certificate details:
 
 ```bash
-sudo trustedge certificate --print-cert /etc/digicert/keystore/certs/RSA_CERT_2048.pem
+trustedge certificate --print-cert /etc/digicert/keystore/certs/RSA_CERT_2048.pem
 ```
 
 ### TrustEdge SCEP
@@ -247,6 +253,36 @@ View EST options:
 ```bash
 trustedge certificate est --help
 ```
+
+### Using NanoROOT as a TAP Module
+
+NanoROOT can be used as a TrustCore TAP provider for TrustEdge certificate operations. With this configuration, TrustEdge uses NanoROOT-backed key material through a NanoROOT key handle.
+
+Before running TrustEdge with NanoROOT, complete the NanoROOT setup, configuration, and environment preparation described in [NanoROOT TAP Example - Build and Run Instructions](../nanoroot/BUILD_RUN.md).
+
+#### Certificate Flow
+
+Build TrustEdge with NanoROOT support:
+
+```bash
+./scripts/ci/trustedge/ci_trustedge_build.sh --package --monolithic --nanoroot
+```
+
+When running a TrustEdge certificate EST enrollment flow with NanoROOT, append the TAP options to your `trustedge certificate est` command, for example:
+
+```bash
+trustedge certificate est <est_options> --tap --tap-provider nanoroot --tap-key-handle <nanoroot_key_handle>
+```
+
+For EST enrollment details, refer to the [TrustEdge EST enrollment tutorial](https://dev.digicert.com/trustedge/tutorials/est-enrollment.html).
+
+#### Agent Flow
+
+NanoROOT can also be used as the key source for TrustEdge Agent certificate operations through Device Trust Manager.
+
+In Device Trust Manager, create or update the certificate profile to use NanoROOT as the key source and provide the matching NanoROOT key handle. For Device Trust Manager details, refer to the [Device Trust Manager documentation](https://docs.digicert.com/en/device-trust-manager.html).
+
+After configuring the certificate profile, start TrustEdge as a service or run the agent interactively using the steps in [TrustEdge Agent](#trustedge-agent).
 
 ---
 

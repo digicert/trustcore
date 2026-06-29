@@ -48,6 +48,7 @@ SMP_ARG=
 SMP_PKCS11_ARG=" --pkcs11"
 SMP_TPM2_ARG=
 TAP_MODE=
+NANOROOT_TAP_BUILD_OPTIONS=
 TAP_COMMON_ARG=
 COMMON_ARG=
 CVC_ARG=
@@ -229,6 +230,7 @@ do
             SMP_TPM2_ARG=""
             SMP_ARG=" --nanoroot"
             SMP_PKCS11_ARG=""
+            NANOROOT_TAP_BUILD_OPTIONS=" --cmake-opt -DCM_ENABLE_TPM2=OFF"
             CRYPTO_BUILD_OPTIONS+=" --tap-hybrid-sign --nanoroot"
             CERT_ENROLL_BUILD_OPTIONS+=" --tap"
             OCSP_ARG=" --ocsp"
@@ -463,8 +465,8 @@ if [ ${NO_REBUILD} -eq 0 ]; then
 
     #TAP builds, leave pkcs11 in for now, support can be validated later
     if ! [ -z "${TAP_MODE}" ]; then
-        cd ${MSS_PROJECTS_DIR}/nanotap2_common && ./clean.sh && ./build.sh --libtype static $BUILD_OPTIONS --suiteb ${SMP_ARG} ${TAP_MODE} &&
-        cd ${MSS_PROJECTS_DIR}/nanotap2 && ./clean.sh && ./build.sh --libtype static $BUILD_OPTIONS ${SMP_ARG} ${TAP_MODE} nanotap2 &&
+        cd ${MSS_PROJECTS_DIR}/nanotap2_common && ./clean.sh && ./build.sh --libtype static $BUILD_OPTIONS --suiteb ${SMP_ARG} ${TAP_MODE} ${NANOROOT_TAP_BUILD_OPTIONS} &&
+        cd ${MSS_PROJECTS_DIR}/nanotap2 && ./clean.sh && ./build.sh --libtype static $BUILD_OPTIONS ${SMP_ARG} ${TAP_MODE} ${NANOROOT_TAP_BUILD_OPTIONS} nanotap2 &&
         cd ${MSS_PROJECTS_DIR}/nanotap2_configparser && ./clean.sh && ./build.sh --libtype static $BUILD_OPTIONS
 
         if [ "${TAP_MODE}" == " --tap-remote" ]; then
