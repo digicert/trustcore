@@ -1,0 +1,253 @@
+name: TrustEdge v2 Local Artifacts (Windows)
+permissions:
+  contents: read
+on:
+  push:
+    paths:
+      - scripts/ci/trustedge/**
+      - projects/trustedge/**
+      - src/common/**
+      - src/crypto/**
+      - src/mqtt/**
+      - src/ssl/**
+      - src/trustedge/**
+      - src/cert_enroll/**
+      - src/est2/**
+      - src/tap/**
+      - samples/mqtt_client/src/mqtt_client_example.c
+      - .github/workflows/trustedge_v2_localartifact_windows.yml
+  workflow_dispatch: {}
+
+env:
+  WIX_DOWNLOAD_URL: https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip
+  WIX_SHA256: 6AC824E1642D6F7277D0ED7EA09411A508F6116BA6FAE0AA5F2C7DAA2FF43D31  # pragma: allowlist secret
+
+jobs:
+  TrustEdge_v2_Windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Generate TrustEdge version number
+        id: trustedge-client-version
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3
+        with:
+          version_format: "${major}.${minor}.${patch}.${increment}"
+          tag_prefix: "trustedge_"
+          branch: main
+          search_commit_body: true
+
+      - name: Setup Visual Studio Build Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install WIX Toolset
+        shell: pwsh
+        run: |
+          Write-Host ">>> Installing WIX Toolset v3.14"
+          $wixPath = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          $zipFile = "wix314-binaries.zip"
+          
+          # Download WIX binaries
+          Invoke-WebRequest -Uri "${{ env.WIX_DOWNLOAD_URL }}" -OutFile $zipFile
+          
+          # Verify SHA256 checksum
+          $expectedHash = "${{ env.WIX_SHA256 }}"
+          $actualHash = (Get-FileHash $zipFile -Algorithm SHA256).Hash
+          if ($actualHash -ne $expectedHash) {
+            Write-Host "ERROR: SHA256 checksum mismatch!"
+            Write-Host "Expected: $expectedHash"
+            Write-Host "Actual:   $actualHash"
+            exit 1
+          }
+          Write-Host "SHA256 checksum verified: $actualHash"
+          
+          # Create WIX directory and extract
+          New-Item -ItemType Directory -Path $wixPath -Force | Out-Null
+          Expand-Archive -Path $zipFile -DestinationPath $wixPath -Force
+          
+          # Add WIX to PATH for subsequent steps
+          echo "$wixPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          
+          # Also set WIX environment variable (required by some tools)
+          echo "WIX=$wixPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
+          # Verify installation
+          Write-Host "WIX Toolset installed to: $wixPath"
+          Get-ChildItem $wixPath -Filter "*.exe" | Select-Object -First 5 | ForEach-Object { Write-Host $_.Name }
+
+      - name: Verify Build Tools
+        shell: pwsh
+        run: |
+          Write-Host ">>> Verifying build tools"
+          
+          # Check CMake
+          cmake --version
+          
+          # Check WIX
+          $wixCandle = Get-Command candle.exe -ErrorAction SilentlyContinue
+          $wixLight = Get-Command light.exe -ErrorAction SilentlyContinue
+          if (-not $wixCandle) {
+            throw "ERROR: WIX candle.exe not found in PATH. Ensure WiX Toolset is installed and added to PATH before packaging."
+          }
+          if (-not $wixLight) {
+            throw "ERROR: WIX light.exe not found in PATH. Ensure WiX Toolset is installed and added to PATH before packaging."
+          }
+          Write-Host "WIX candle.exe found at: $($wixCandle.Source)"
+          Write-Host "WIX light.exe found at: $($wixLight.Source)"
+          
+          # Check Visual Studio
+          cl 2>&1 | Select-Object -First 2
+
+      - name: Build TrustEdge v2 for Windows x64
+        shell: cmd
+        env:
+          VERBOSE_BUILD_LOG: 1
+        run: |
+          echo VSINSTALLDIR=%VSINSTALLDIR%
+          
+          REM Ensure WIX is in PATH (fallback in case GITHUB_PATH didn't work)
+          set "PATH=%PATH%;C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          
+          echo Verifying WIX candle.exe is accessible...
+          where candle.exe
+          if errorlevel 1 (
+            echo ERROR: WIX candle.exe not found in PATH
+            exit /b 1
+          )
+          
+          scripts\ci\trustedge\ci_trustedge_build.bat --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --x64
+          if errorlevel 1 exit /b 1
+
+      - name: Upload Build Logs on Failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: build-logs-windows
+          path: |
+            projects/trustedge/build_*.log
+            projects/trustedge/build/*.log
+            projects/trustedge/build/_CPack_Packages/**/wix.log
+          retention-days: 3
+
+      - name: Verify Build Artifacts
+        shell: pwsh
+        run: |
+          Write-Host ">>> Verifying build output for Windows x64"
+          $distPath = "dist"
+          
+          # Check for MSI
+          $msiFiles = Get-ChildItem -Path $distPath -Filter "trustedge*.msi" -ErrorAction SilentlyContinue
+          if ($null -eq $msiFiles -or $msiFiles.Count -eq 0) {
+            Write-Host "ERROR: No TrustEdge .msi file found"
+            exit 1
+          }
+          Write-Host "TrustEdge MSI package found: $($msiFiles.Name)"
+          
+          # Check for TGZ
+          $tgzFiles = Get-ChildItem -Path $distPath -Filter "trustedge*.tar.gz" -ErrorAction SilentlyContinue
+          if ($null -eq $tgzFiles -or $tgzFiles.Count -eq 0) {
+            Write-Host "ERROR: No TrustEdge .tar.gz file found"
+            exit 1
+          }
+          Write-Host "TrustEdge TGZ package found: $($tgzFiles.Name)"
+          
+          # List all artifacts
+          Write-Host ">>> All build artifacts:"
+          Get-ChildItem -Path $distPath | ForEach-Object { Write-Host "  - $($_.Name) ($([math]::Round($_.Length/1MB, 2)) MB)" }
+
+      - name: Resolve MSI path and prepare STM client certificate
+        id: prepare-stm-signing
+        shell: pwsh
+        env:
+          SM_CLIENT_CERT_FILE_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
+        run: |
+          $msiFiles = Get-ChildItem -Path dist -Filter "trustedge*.msi" -File -ErrorAction SilentlyContinue
+          if ($null -eq $msiFiles -or $msiFiles.Count -ne 1) {
+            Write-Host "ERROR: Expected exactly one TrustEdge MSI in dist/ but found $($msiFiles.Count)"
+            exit 1
+          }
+
+          $certPath = Join-Path $env:RUNNER_TEMP "stm-client-cert.p12"
+          [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:SM_CLIENT_CERT_FILE_B64))
+
+          "msi_path=$($msiFiles[0].FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+          Write-Host "Prepared MSI for signing: $($msiFiles[0].FullName)"
+
+      - name: Sign Windows MSI using Software Trust Manager
+        uses: digicert/code-signing-software-trust-action@9b30180369343eb1ce0dcbebb933cfa3e17b6cc8 # v1.0.0
+        with:
+          simple-signing-mode: true
+          input: ${{ steps.prepare-stm-signing.outputs.msi_path }}
+          keypair-alias: em_cert_team_kp
+        env:
+          SM_HOST: ${{ vars.SM_HOST }}
+          SM_API_KEY: ${{ secrets.SM_API_KEY }}
+          SM_CLIENT_CERT_FILE: ${{ steps.prepare-stm-signing.outputs.cert_path }}
+          SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
+
+      - name: Verify signed MSI with STM
+        shell: pwsh
+        env:
+          SM_HOST: ${{ vars.SM_HOST }}
+          SM_API_KEY: ${{ secrets.SM_API_KEY }}
+          SM_CLIENT_CERT_FILE: ${{ steps.prepare-stm-signing.outputs.cert_path }}
+          SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
+          SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}
+          MSI_PATH: ${{ steps.prepare-stm-signing.outputs.msi_path }}
+        run: |
+          $smctl = Get-Command smctl.exe -ErrorAction SilentlyContinue
+          if (-not $smctl) {
+            throw "ERROR: smctl.exe was not found on PATH after the DigiCert STM signing action ran."
+          }
+
+          Write-Host "Using smctl from: $($smctl.Source)"
+          & $smctl.Source sign verify --fingerprint $env:SM_CODE_SIGNING_CERT_SHA1_HASH --input $env:MSI_PATH
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Signed MSI verification failed"
+            exit $LASTEXITCODE
+          }
+
+      - name: Verify local Authenticode signature
+        shell: pwsh
+        run: |
+          $signature = Get-AuthenticodeSignature "${{ steps.prepare-stm-signing.outputs.msi_path }}"
+          if ($signature.Status -ne 'Valid') {
+            Write-Host "ERROR: Local Authenticode verification failed: $($signature.Status)"
+            exit 1
+          }
+
+      - name: Cleanup STM client certificate
+        if: always()
+        shell: pwsh
+        run: |
+          $certPath = "${{ steps.prepare-stm-signing.outputs.cert_path }}"
+          if ([string]::IsNullOrWhiteSpace($certPath) -or -not (Test-Path -LiteralPath $certPath)) {
+            Write-Host "No STM client certificate file found to clean up"
+            exit 0
+          }
+
+          Remove-Item -LiteralPath $certPath -Force -ErrorAction SilentlyContinue
+
+      - name: Push Artifact - Signed MSI Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-win64-msi-signed
+          path: ${{ steps.prepare-stm-signing.outputs.msi_path }}
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
+
+      - name: Push Artifact - TGZ Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-win64-tgz
+          path: dist/*.tar.gz
+          retention-days: 5

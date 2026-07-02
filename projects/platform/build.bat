@@ -335,6 +335,39 @@ goto:EOF
     )
 EXIT /B %RET_VAL%
 
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: printLogOnFailure() - call this to print log file contents when VERBOSE_BUILD_LOG is set
+:: Usage: call :printLogOnFailure "path\to\logfile.log"
+:: Note: Prints last 200 lines to avoid GitHub Actions truncation
+
+:printLogOnFailure
+if defined VERBOSE_BUILD_LOG (
+    if "%VERBOSE_BUILD_LOG%"=="1" (
+        echo.
+        echo ================================================================================
+        echo BUILD LOG - ERRORS AND WARNINGS SUMMARY
+        echo ================================================================================
+        if exist "%~1" (
+            findstr /i /c:"error" /c:"fatal" /c:"failed" "%~1" 2>nul
+        )
+        echo.
+        echo ================================================================================
+        echo BUILD LOG - LAST 200 LINES - %~1
+        echo ================================================================================
+        if exist "%~1" (
+            powershell -NoProfile -Command "Get-Content '%~1' -Tail 200"
+        ) else (
+            echo Log file not found: %~1
+        )
+        echo ================================================================================
+        echo END OF BUILD LOG
+        echo ================================================================================
+        echo.
+    )
+)
+goto:EOF
+
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: -- Function to print usage of this BAT script
 
@@ -480,10 +513,12 @@ exit /b %ERRORLEVEL%
         call %CMAKE_BIN% --build . --config !BUILD_TYPE! 1>>!LOG_FILE! 2>>&1
 
         if !ERRORLEVEL! NEQ 0 (
+           set BUILD_ERR=!ERRORLEVEL!
            echo Build failed
-           echo Exited with error !ERRORLEVEL!
+           echo Exited with error !BUILD_ERR!
            echo Refer file "!LOG_FILE!" for details.
-           exit /b !ERRORLEVEL!
+           call :printLogOnFailure "!LOG_FILE!"
+           exit /b !BUILD_ERR!
         )
         echo "nanoplatform library built successfully at !BUILD_TYPE!\!libPlatformFileName!"
     ) else (

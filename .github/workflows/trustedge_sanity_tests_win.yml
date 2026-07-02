@@ -1,0 +1,186 @@
+name: TrustEdge Sanity Tests (Windows)
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 5 * * *'
+    - cron: '0 16 * * *'
+  push:
+    paths:
+      - .github/workflows/trustedge_sanity_tests_win.yml
+
+permissions:
+  contents: read
+
+env:
+  NEXUS_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/trustedge/dev/win64/
+  WIX_DOWNLOAD_URL: https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip
+  WIX_SHA256: 6AC824E1642D6F7277D0ED7EA09411A508F6116BA6FAE0AA5F2C7DAA2FF43D31  # pragma: allowlist secret
+
+jobs:
+  Trustedge_Sanity_Test_Windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Generate TrustEdge version number
+        id: trustedge-client-version
+        uses: paulhatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3
+        with:
+          version_format: "${major}.${minor}.${patch}.${increment}"
+          tag_prefix: "trustedge_"
+          branch: main
+          search_commit_body: true
+
+      - name: Setup Visual Studio Build Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install WIX Toolset
+        run: |
+          Write-Host ">>> Installing WIX Toolset v3.14"
+          $wixPath = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          $zipFile = "wix314-binaries.zip"
+          
+          # Download WIX binaries
+          Invoke-WebRequest -Uri "${{ env.WIX_DOWNLOAD_URL }}" -OutFile $zipFile
+          
+          # Verify SHA256 checksum
+          $expectedHash = "${{ env.WIX_SHA256 }}"
+          $actualHash = (Get-FileHash $zipFile -Algorithm SHA256).Hash
+          if ($actualHash -ne $expectedHash) {
+            Write-Host "ERROR: SHA256 checksum mismatch!"
+            Write-Host "Expected: $expectedHash"
+            Write-Host "Actual:   $actualHash"
+            exit 1
+          }
+          Write-Host "SHA256 checksum verified: $actualHash"
+          
+          # Create WIX directory and extract
+          New-Item -ItemType Directory -Path $wixPath -Force | Out-Null
+          Expand-Archive -Path $zipFile -DestinationPath $wixPath -Force
+          
+          # Add WIX to PATH for subsequent steps
+          echo "$wixPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          
+          # Also set WIX environment variable (required by some tools)
+          echo "WIX=$wixPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
+          # Verify installation
+          Write-Host "WIX Toolset installed to: $wixPath"
+          Get-ChildItem $wixPath -Filter "*.exe" | Select-Object -First 5 | ForEach-Object { Write-Host $_.Name }
+
+      - name: Verify Build Tools
+        run: |
+          Write-Host ">>> Verifying build tools"
+          
+          # Check CMake
+          cmake --version
+          
+          # Check WIX
+          $wixCandle = Get-Command candle.exe -ErrorAction SilentlyContinue
+          $wixLight = Get-Command light.exe -ErrorAction SilentlyContinue
+          if (-not $wixCandle) {
+            throw "ERROR: WIX candle.exe not found in PATH. Ensure WiX Toolset is installed and added to PATH before packaging."
+          }
+          if (-not $wixLight) {
+            throw "ERROR: WIX light.exe not found in PATH. Ensure WiX Toolset is installed and added to PATH before packaging."
+          }
+          Write-Host "WIX candle.exe found at: $($wixCandle.Source)"
+          Write-Host "WIX light.exe found at: $($wixLight.Source)"
+          
+          # Check Visual Studio
+          cl 2>&1 | Select-Object -First 2
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Build TrustEdge for Windows
+        shell: cmd
+        env:
+          VERBOSE_BUILD_LOG: 1
+        run: |
+          echo VSINSTALLDIR=%VSINSTALLDIR%
+          
+          REM Ensure WIX is in PATH (fallback in case GITHUB_PATH didn't work)
+          set "PATH=%PATH%;C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          
+          echo Verifying WIX candle.exe is accessible...
+          where candle.exe
+          if errorlevel 1 (
+            echo ERROR: WIX candle.exe not found in PATH
+            exit /b 1
+          )
+          
+          scripts\ci\trustedge\ci_trustedge_build.bat --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --x64
+          if errorlevel 1 exit /b 1
+
+      - name: Upload Build Logs on Failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: build-logs-windows
+          path: |
+            projects/trustedge/build_*.log
+            projects/trustedge/build/*.log
+            projects/trustedge/build/_CPack_Packages/**/wix.log
+          retention-days: 3
+
+      - name: Verify Build Artifacts
+        run: |
+          Write-Host ">>> Verifying build output for Windows x64"
+          $distPath = "dist"
+          
+          # Check for MSI
+          $msiFiles = Get-ChildItem -Path $distPath -Filter "trustedge*.msi" -ErrorAction SilentlyContinue
+          if ($null -eq $msiFiles -or $msiFiles.Count -eq 0) {
+            Write-Host "[Test Failed] No TrustEdge .msi file found"
+            exit 1
+          }
+          Write-Host "[Test Passed] TrustEdge MSI package found: $($msiFiles.Name)"
+          
+          # Check for TGZ
+          $tgzFiles = Get-ChildItem -Path $distPath -Filter "trustedge*.tar.gz" -ErrorAction SilentlyContinue
+          if ($null -eq $tgzFiles -or $tgzFiles.Count -eq 0) {
+            Write-Host "[Test Failed] No TrustEdge .tar.gz file found"
+            exit 1
+          }
+          Write-Host "[Test Passed] TrustEdge TGZ package found: $($tgzFiles.Name)"
+
+      - name: Run TrustEdge Windows Sanity Tests
+        env:
+          DEMO_API_KEY: ${{ secrets.DEMO_API_KEY }}
+        run: |
+          python scripts/ci/trustedge/trustedge_sanity_test.py --package-dir dist --register-device --verbose
+
+      - name: Cleanup Test Environment
+        if: always()
+        run: |
+          Write-Host ">>> Cleaning up test environment"
+          
+          # Uninstall TrustEdge MSI if installed
+          $msiProduct = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*TrustEdge*" }
+          if ($msiProduct) {
+            Write-Host "Uninstalling TrustEdge..."
+            $msiProduct.Uninstall() | Out-Null
+          }
+          
+          # Remove TrustEdge config directory
+          if (Test-Path "$env:ProgramData\DigiCert\TrustEdge") {
+            Remove-Item -Path "$env:ProgramData\DigiCert\TrustEdge" -Recurse -Force -ErrorAction SilentlyContinue
+          }
+          
+          Write-Host "[Cleanup Completed]"
