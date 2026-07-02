@@ -99,7 +99,7 @@ jobs:
           cl 2>&1 | Select-Object -First 2
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.11'
 

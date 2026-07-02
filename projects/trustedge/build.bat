@@ -595,8 +595,7 @@ exit /b %ERRORLEVEL%
     )
     
     echo Building trustedge...
-    call cmake --build . --config !BUILD_TYPE! 1>>!LOG_FILE! 2>>&1
-    
+    call %CMAKE_BIN% --build . --config !BUILD_TYPE! 1>>!LOG_FILE! 2>>&1
     if !ERRORLEVEL! NEQ 0 (
        set BUILD_ERR=!ERRORLEVEL!
        echo Build failed
@@ -610,7 +609,7 @@ exit /b %ERRORLEVEL%
     :: Build PACKAGE target if generator was specified (for creating TGZ/package)
     if not "!GENERATOR_BUILD!"=="" (
        echo Building package with generator: !GENERATOR_BUILD!
-       call cmake --build . --config !BUILD_TYPE! --target PACKAGE 1>>!LOG_FILE! 2>>&1
+       call %CMAKE_BIN% --build . --config !BUILD_TYPE! --target PACKAGE 1>>!LOG_FILE! 2>>&1
        
        if !ERRORLEVEL! NEQ 0 (
           set BUILD_ERR=!ERRORLEVEL!
