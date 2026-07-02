@@ -162,7 +162,7 @@ lib\trustedge.exe --version
 To run the locally built `trustedge` executable from any Command Prompt session without installing the MSI, add the repository `lib` directory to the current session `PATH`:
 
 ```cmd
-set PATH=%PATH%;C:\path\to\trustcore-test\lib
+set PATH=%PATH%;C:\path\to\trustcore\lib
 ```
 
 If you installed a downloaded MSI, you do not need to add the repository `lib` directory to `PATH`; use the installed TrustEdge location instead.
