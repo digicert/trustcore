@@ -1,7 +1,7 @@
 /*
  * digi_cipher_rc4.c
  *
- * RC4 implementations for OSSL 3.5 provider ADAPTED FROM openssl code
+ * RC4 implementations for OSSL 3.5 provider ADAPTED FROM OpenSSL code
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

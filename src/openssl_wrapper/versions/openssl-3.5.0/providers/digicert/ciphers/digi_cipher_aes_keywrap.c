@@ -1,7 +1,7 @@
 /*
  * digi_cipher_aes_keywrap.c
  *
- * AES keywrap implementations for OSSL 3.5 provider ADAPTED FROM openssl code
+ * AES keywrap implementations for OSSL 3.5 provider ADAPTED FROM OpenSSL code
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

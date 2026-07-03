@@ -1,7 +1,7 @@
 /*
  * digi_blake2b_mac.c
  *
- * Blake2b implementations for OSSL 3.5 provider ADAPTED FROM openssl code
+ * Blake2b implementations for OSSL 3.5 provider ADAPTED FROM OpenSSL code
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

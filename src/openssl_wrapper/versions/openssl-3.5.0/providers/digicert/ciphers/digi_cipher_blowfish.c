@@ -1,7 +1,7 @@
 /*
  * digi_cipher_blowfish.c
  *
- * Blowfish implementations for OSSL 3.5 provider ADAPTED FROM openssl code
+ * Blowfish implementations for OSSL 3.5 provider ADAPTED FROM OpenSSL code
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

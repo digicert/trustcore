@@ -1,7 +1,7 @@
 /*
  * digi_cipher_aes_ccm.c
  *
- * AES-CCM implementations for OSSL 3.5 provider ADAPTED FROM openssl code
+ * AES-CCM implementations for OSSL 3.5 provider ADAPTED FROM OpenSSL code
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
