@@ -1,7 +1,7 @@
 /*
  * mocana_glue.h
  *
- * Defines structures used for providing algorithm implementation through Openssl's EVP.
+ * Defines structures used for providing algorithm implementation through OpenSSL's EVP.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
