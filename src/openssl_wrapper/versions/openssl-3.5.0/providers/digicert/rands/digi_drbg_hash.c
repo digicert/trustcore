@@ -1,7 +1,7 @@
 /*
  * digi_drbg_hash.c ADAPTED FROM OPENSSL CODE
  *
- * NIST DRBG HASH implementations for OSSL 3.0 provider
+ * NIST DRBG HASH implementations for OSSL 3.5 provider
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
