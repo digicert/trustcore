@@ -66,6 +66,11 @@
 #include "digiprov.h"
 #include "internal/deprecated.h"
 
+/* Constants specified in SP800-132 */
+#define KDF_PBKDF2_MIN_KEY_LEN_BITS  112
+#define KDF_PBKDF2_MIN_ITERATIONS 1000
+#define KDF_PBKDF2_MIN_SALT_LEN   (128 / 8)
+
 static int digiprov_pbkdf_set_ctx_params(void *vctx, const OSSL_PARAM params[]);
 
 typedef struct
@@ -78,6 +83,7 @@ typedef struct
     uint64_t iter;
     ubyte digest;
     ubyte isVersion2;
+    int lower_bound_checks;
 
 } DP_PBKDF;
 
@@ -106,6 +112,11 @@ static void *digiprov_pbkdf_new(void *provctx, ubyte isVersion2)
     ctx->isVersion2 = isVersion2;
     if (isVersion2)
     {
+#if defined(__ENABLE_DIGICERT_FIPS_MODULE__)
+        ctx->lower_bound_checks = 1;
+#else
+        ctx->lower_bound_checks = 0;
+#endif
         digiprov_pbkdf2_init(ctx);
     }
     return ctx;
@@ -229,8 +240,33 @@ static int digiprov_pbkdf_derive(void *vctx, unsigned char *key, size_t keylen, 
         return 0;
     }
   
-    if (ctx->isVersion2)
+    /* Digicert impl don't support a keylen value > 32 bits */
+    if (keylen > 0xffffffff)
     {
+        ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_KEY_LENGTH);
+        return 0;
+    }
+
+    if (ctx->isVersion2)
+    { 
+        if (ctx->lower_bound_checks)
+        {
+            if ((keylen * 8) < KDF_PBKDF2_MIN_KEY_LEN_BITS) 
+            {
+                ERR_raise(ERR_LIB_PROV, PROV_R_KEY_SIZE_TOO_SMALL);
+                return 0;
+            }
+            if (ctx->salt_len < KDF_PBKDF2_MIN_SALT_LEN) 
+            {
+                ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_SALT_LENGTH);
+                return 0;
+            }
+            if (ctx->iter < KDF_PBKDF2_MIN_ITERATIONS) 
+            {
+                ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_ITERATION_COUNT);
+                return 0;
+            }
+        }
         status = CRYPTO_INTERFACE_PKCS5_CreateKey_PBKDF2((const ubyte *) ctx->salt, (ubyte4) ctx->salt_len, (ubyte4) ctx->iter, ctx->digest, 
                                                          (const ubyte *) ctx->pass, (ubyte4) ctx->pass_len, (ubyte4) keylen, key);
     }
@@ -250,7 +286,7 @@ static int digiprov_pbkdf_set_ctx_params(void *vctx, const OSSL_PARAM params[])
     MSTATUS status = OK;
     const OSSL_PARAM *p;
     DP_PBKDF *ctx = vctx;
-    int pkcs5;
+    int pkcs5 = 0;
 
     if (NULL == params)
         return 1;
@@ -282,7 +318,8 @@ static int digiprov_pbkdf_set_ctx_params(void *vctx, const OSSL_PARAM params[])
         {
             if (!OSSL_PARAM_get_int(p, &pkcs5))
                 return 0;
-            /* Ok but not used */
+        
+            ctx->lower_bound_checks = (pkcs5 == 0);
         }
     }
 
@@ -294,14 +331,31 @@ static int digiprov_pbkdf_set_ctx_params(void *vctx, const OSSL_PARAM params[])
 
     if ((p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_SALT)) != NULL)
     {
+        if (ctx->lower_bound_checks != 0 && p->data != NULL && p->data_size < KDF_PBKDF2_MIN_SALT_LEN) 
+        {
+            ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_SALT_LENGTH);
+            return 0;
+        }
+
         if (!digiprov_pbkdf_set_membuf(&ctx->salt, &ctx->salt_len, p))
             return 0;
     }
 
     if ((p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_ITER)) != NULL)
     {
-        if (!OSSL_PARAM_get_uint64(p, &ctx->iter))
+        uint64_t min_iter, iter;
+
+        if (!OSSL_PARAM_get_uint64(p, &iter))
             return 0;
+
+        min_iter = ctx->lower_bound_checks != 0 ? KDF_PBKDF2_MIN_ITERATIONS : 1;
+        if (iter < min_iter) 
+        {
+            ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_ITERATION_COUNT);
+            return 0;
+        }
+
+        ctx->iter = iter;
     }
     return 1;
 }
