@@ -3781,7 +3781,7 @@ extern MSTATUS TRUSTEDGE_agentSendCertificateStatus(
         succeed,
         stage,
         policyErrorStatus,
-        pCtx->curPolicy.pPolicy->pServerErrorMsg,
+        (NULL != pCtx->curPolicy.pPolicy) ? pCtx->curPolicy.pPolicy->pServerErrorMsg : NULL,
         &pReq, &reqLen);
     if (OK != status)
         goto exit;
