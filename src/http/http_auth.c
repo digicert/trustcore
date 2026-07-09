@@ -57,6 +57,8 @@ typedef struct paramValue
     ubyte4 length;
 } paramValue;
 
+#define MAX_DIGEST_PARAM_VALUE_LEN 128
+
 typedef struct paramValue *paramValuePTR;
 static MSTATUS
 releaseParamValues(paramValuePTR *ppParamValues);
@@ -300,6 +302,18 @@ parseDigestParameters(ubyte* pChOrResp, ubyte4 chOrRespLength, paramValue **ppPa
             if ( '\"' == *(pChOrResp+start))
             {
                 quote = 2;
+                /* make sure there are more characters after the quote mark */
+                if (length < 3)
+                {
+                    /* no allocations so far, ok to return */
+                    return ERR_HTTP_MALFORMED_MESSAGE;
+                }
+            }
+
+            /* if the value is too large we truncate */
+            if (length - quote > MAX_DIGEST_PARAM_VALUE_LEN)
+            {
+                length = MAX_DIGEST_PARAM_VALUE_LEN + quote;
             }
             pValue = (ubyte*)MALLOC(length-quote);
             DIGI_MEMCPY(pValue, pChOrResp+start+ (quote? 1 : 0), length-quote);
@@ -529,6 +543,49 @@ exit:
 
 /*------------------------------------------------------------------*/
 
+/* does nothing if the buffer has enough room, if not it keeps doubling the length until enough, then reallocates */
+static MSTATUS checkBuffer(ubyte **ppBuffer, ubyte4 *pBufLen, ubyte4 lenUsed, ubyte4 lenNeeded)
+{
+    MSTATUS status = OK;
+    ubyte4 newLen = *pBufLen;
+
+    /* internal method, NULL checks not necc */
+    while (lenNeeded > newLen - lenUsed)
+    {
+        newLen *= 2;
+    }
+
+    if (newLen != *pBufLen)
+    {
+        ubyte *pNewBuffer = NULL;
+
+        status = DIGI_MALLOC((void **) &pNewBuffer, newLen);
+        if (OK != status)
+            return status;
+
+        status = DIGI_MEMCPY(pNewBuffer, *ppBuffer, lenUsed);
+        if (OK != status)
+        {
+            (void) DIGI_FREE((void **) &pNewBuffer);
+            return status;
+        }
+
+        status = DIGI_FREE((void **) ppBuffer);
+        if (OK != status)
+        {   
+            (void) DIGI_FREE((void **) &pNewBuffer);
+            return status;
+        }
+
+        *ppBuffer = pNewBuffer; pNewBuffer = NULL;
+        *pBufLen = newLen; 
+    }
+
+    return status;
+}
+
+/*------------------------------------------------------------------*/
+
 static MSTATUS
 generateDigestAuthorization(httpContext *pHttpContext, paramValue **ppParamValues,
                              ubyte *pUserName, ubyte4 userNameLength,
@@ -540,12 +597,12 @@ generateDigestAuthorization(httpContext *pHttpContext, paramValue **ppParamValue
     ubyte4 schemeStringLength = DIGI_STRLEN(DIGESTSTR);
     ubyte  digestBuffer[MD5_DIGESTSIZE*2];
     ubyte* pRetBuffer;
+    ubyte4 retBufLen = 512; /* start with 512, doubles each time more is needed */
     MSTATUS status = ERR_MEM_ALLOC_FAIL;
     ubyte4 runningLength = 0;
 
-    /* ywang: assuming 512 is enough. can we be more precise? */
     /* memory released by caller */
-    if (NULL == (pRetBuffer = MALLOC(512)))
+    if (NULL == (pRetBuffer = MALLOC(retBufLen)))
         goto exit;
 
     /* scheme */
@@ -553,21 +610,37 @@ generateDigestAuthorization(httpContext *pHttpContext, paramValue **ppParamValue
     runningLength = runningLength + schemeStringLength;
     appendSp(pRetBuffer, &runningLength);
 
-    /* username */
+    /* username, add 5 more bytes for equal sign, two quotes, and two via appendEnd */
+    status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[USERNAME]) + userNameLength + 5);
+    if (OK != status)
+        goto exit;
+
     appendParam(pRetBuffer, &runningLength, paramNameStrs[USERNAME], DIGI_STRLEN(paramNameStrs[USERNAME]), pUserName, userNameLength, TRUE);
     appendEnd(pRetBuffer, &runningLength);
 
-    /* realm */
+    /* realm, same plus 5 */
+    status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[REALM]) + ppParamValues[REALM]->length + 5);
+    if (OK != status)
+        goto exit;
+
     appendParam(pRetBuffer, &runningLength, paramNameStrs[REALM], DIGI_STRLEN(paramNameStrs[REALM]),
         ppParamValues[REALM]->value, ppParamValues[REALM]->length, TRUE);
     appendEnd(pRetBuffer, &runningLength);
 
-    /* nonce */
+    /* nonce, same plus 5 */
+    status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[NONCE]) + ppParamValues[NONCE]->length + 5);
+    if (OK != status)
+        goto exit;
+
     appendParam(pRetBuffer, &runningLength, paramNameStrs[NONCE], DIGI_STRLEN(paramNameStrs[NONCE]),
         ppParamValues[NONCE]->value, ppParamValues[NONCE]->length, TRUE);
     appendEnd(pRetBuffer, &runningLength);
 
-    /* digest-uri */
+    /* digest-uri, same plus 5 */
+    status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[URI]) + DIGI_STRLEN(pHttpContext->pURI) + 5);
+    if (OK != status)
+        goto exit;
+
     appendParam(pRetBuffer, &runningLength, paramNameStrs[URI], DIGI_STRLEN(paramNameStrs[URI]),
         (ubyte *)pHttpContext->pURI, DIGI_STRLEN(pHttpContext->pURI), TRUE);
     appendEnd(pRetBuffer, &runningLength);
@@ -575,31 +648,51 @@ generateDigestAuthorization(httpContext *pHttpContext, paramValue **ppParamValue
     if (OK > (status = calculateDigest(pHttpContext, ppParamValues, pUserName, userNameLength, pPassword, passwordLength, isHA1, digestBuffer)))
         goto exit;
 
-    /* response */
+    /* response, plus 3, no append end yet */
+    status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[RESPONSE]) + 2*MD5_DIGESTSIZE + 3);
+    if (OK != status)
+        goto exit;
+
     appendParam(pRetBuffer, &runningLength, paramNameStrs[RESPONSE], DIGI_STRLEN(paramNameStrs[RESPONSE]),
         digestBuffer, 2*MD5_DIGESTSIZE, TRUE);
 
     if (ppParamValues[QOP]->length > 0)
     {
-        appendEnd(pRetBuffer, &runningLength);
+        /* cnonce value, same plus 5 plus extra 2 for append end */
+        status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[CNONCE]) + ppParamValues[CNONCE]->length + 7);
+        if (OK != status)
+            goto exit;
 
-        /* cnonce value */
+        appendEnd(pRetBuffer, &runningLength);
         appendParam(pRetBuffer, &runningLength, paramNameStrs[CNONCE], DIGI_STRLEN(paramNameStrs[CNONCE]),
             ppParamValues[CNONCE]->value, ppParamValues[CNONCE]->length, TRUE);
         appendEnd(pRetBuffer, &runningLength);
 
-        /* nc value, no quote */
+        /* nc value, no quote, so plus 3 */
+        status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[NC]) + ppParamValues[NC]->length + 3);
+        if (OK != status)
+            goto exit;
+
         appendParam(pRetBuffer, &runningLength, paramNameStrs[NC], DIGI_STRLEN(paramNameStrs[NC]),
             ppParamValues[NC]->value, ppParamValues[NC]->length, FALSE);
         appendEnd(pRetBuffer, &runningLength);
 
-        /* qop value */
+        /* qop value, no quote, no appendEnd yet, so plus 1 */
+        status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[QOP]) + ppParamValues[QOP]->length + 1);
+        if (OK != status)
+            goto exit;
+
         appendParam(pRetBuffer, &runningLength, paramNameStrs[QOP], DIGI_STRLEN(paramNameStrs[QOP]),
             ppParamValues[QOP]->value, ppParamValues[QOP]->length, FALSE);
     }
 
     if (ppParamValues[OPAQUE]->length > 0)
     {
+        /* opaque, usual plus 5 */
+        status = checkBuffer(&pRetBuffer, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[OPAQUE]) + ppParamValues[OPAQUE]->length + 5);
+        if (OK != status)
+            goto exit;
+
         appendEnd(pRetBuffer, &runningLength);
         appendParam(pRetBuffer, &runningLength, paramNameStrs[OPAQUE], DIGI_STRLEN(paramNameStrs[OPAQUE]),
             ppParamValues[OPAQUE]->value, ppParamValues[OPAQUE]->length, TRUE);
@@ -773,13 +866,16 @@ generateDigestChallenge(httpContext *pHttpContext,
                              ubyte **ppRetChString, ubyte4 *pRetChStringLength)
 {
     MSTATUS status = OK;
-    ubyte* chString;
+    ubyte* chString = NULL;
     ubyte4 runningLength = 0;
     ubyte* nonce = NULL;
     ubyte4 nonceLen;
+    ubyte4 retBufLen = 512; /* start with 512, doubles each time more is needed */
 
-    /* ywang: hopefully 512 bytes is adequate */
-    if (NULL == (chString = *ppRetChString = MALLOC(512)))
+    *ppRetChString = NULL;
+    *pRetChStringLength = 0;
+    
+    if (NULL == (chString = MALLOC(retBufLen)))
     {
         status = ERR_MEM_ALLOC_FAIL;
         goto exit;
@@ -788,17 +884,35 @@ generateDigestChallenge(httpContext *pHttpContext,
     DIGI_MEMCPY(chString, DIGESTSTR, DIGI_STRLEN(DIGESTSTR));
     runningLength = DIGI_STRLEN(DIGESTSTR);
     appendSp(chString, &runningLength);
+
+    /* realm, add 5 more bytes for equal sign, two quotes, and two via appendEnd */
+    status = checkBuffer(&chString, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[REALM]) + realmLen + 5);
+    if (OK != status)
+        goto exit;
+
     appendParam(chString, &runningLength, paramNameStrs[REALM], DIGI_STRLEN(paramNameStrs[REALM]),
         realm, realmLen, TRUE);
     appendEnd(chString, &runningLength);
+
     if (domain && domainLen > 0)
     {
+        /* domain, same plus 5 */
+        status = checkBuffer(&chString, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[DOMAIN]) + domainLen + 5);
+        if (OK != status)
+            goto exit;
+
         appendParam(chString, &runningLength, paramNameStrs[DOMAIN], DIGI_STRLEN(paramNameStrs[DOMAIN]),
             domain, domainLen, TRUE);
         appendEnd(chString, &runningLength);
     }
+
     if (opaque && opaqueLen > 0)
     {
+        /* opaque, same plus 5 */
+        status = checkBuffer(&chString, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[OPAQUE]) + opaqueLen + 5);
+        if (OK != status)
+            goto exit;
+
         appendParam(chString, &runningLength, paramNameStrs[OPAQUE], DIGI_STRLEN(paramNameStrs[OPAQUE]),
             opaque, opaqueLen, TRUE);
         appendEnd(chString, &runningLength);
@@ -806,6 +920,11 @@ generateDigestChallenge(httpContext *pHttpContext,
 
     if (stale)
     {
+        /* stale, no quotes, so plus 3 */
+        status = checkBuffer(&chString, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[STALE]) + 4 + 3);
+        if (OK != status)
+            goto exit;
+
         appendParam(chString, &runningLength, paramNameStrs[STALE], DIGI_STRLEN(paramNameStrs[STALE]),
             (ubyte*)"true", 4, FALSE);
         appendEnd(chString, &runningLength);
@@ -816,20 +935,38 @@ generateDigestChallenge(httpContext *pHttpContext,
     if (OK > (status = generateNonce(&nonce, &nonceLen)))
         goto exit;
 
+    /* nonce, same plus 5 */
+    status = checkBuffer(&chString, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[NONCE]) + nonceLen + 5);
+    if (OK != status)
+        goto exit;
+
     appendParam(chString, &runningLength, paramNameStrs[NONCE], DIGI_STRLEN(paramNameStrs[NONCE]),
         nonce, nonceLen, TRUE);
     appendEnd(chString, &runningLength);
 
-    /* qop: auth-int not supported for now */
+    /* qop: auth-int not supported for now, no quotes and no appendEnd, so plus 1 */
+    status = checkBuffer(&chString, &retBufLen, runningLength, DIGI_STRLEN(paramNameStrs[QOP]) + 4 + 1);
+    if (OK != status)
+        goto exit;
+    
     appendParam(chString, &runningLength, paramNameStrs[QOP], DIGI_STRLEN(paramNameStrs[QOP]),
         (ubyte*)"auth", 4, FALSE);
+
+    *ppRetChString = chString; chString = NULL;
     *pRetChStringLength = runningLength;
+
 exit:
-    chString = NULL;
+
+    if (chString)
+    {
+        FREE(chString);
+    }
+
     if (nonce)
     {
         FREE(nonce);
     }
+
     return status;
 }
 
