@@ -195,7 +195,7 @@ static int digiprov_rsa_cipher_set_ctx_params(void *vprsactx, const OSSL_PARAM p
         if (pad_mode == RSA_PKCS1_PSS_PADDING)
             return 0;
         if (pad_mode == RSA_PKCS1_OAEP_PADDING && prsactx->oaep_md == NULL) {
-            prsactx->oaep_md = EVP_MD_fetch(prsactx->libctx, "SHA1", mdprops);
+            prsactx->oaep_md = EVP_MD_fetch(prsactx->libctx, "SHA256", mdprops);
             if (prsactx->oaep_md == NULL)
                 return 0;
         }
