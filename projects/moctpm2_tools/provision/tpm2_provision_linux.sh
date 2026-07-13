@@ -242,21 +242,26 @@ fi
 dbg_msg "Verifying that TPM2 device is available"
 [ -c "${DEVICE}" ] || quit "Device ${DEVICE} does not exist"
 
-dbg_msg "Setting '$TP_USER/$TP_GROUP' user/group device ownership for ${DEVICE}"
-cmd="chown $TP_USER:$TP_GROUP ${DEVICE}"
-execute_cmd "${cmd}"
-
-dbg_msg "Setting +rw group permissions for ${DEVICE}"
-cmd="chmod g+rw ${DEVICE}"
-execute_cmd "${cmd}"
-
-if [ -d /etc/udev/rules.d ]; then
-    dbg_msg "Updating /etc/udev/rules.d/71-tpm.rules"
-    echo "KERNEL==\"tpm0\", SUBSYSTEM==\"tpm\", MODE=\"0660\", OWNER=\"$TP_USER\", GROUP=\"$TP_GROUP\"" > /etc/udev/rules.d/71-tpm.rules
-
-    dbg_msg "Reloading udev rules to apply the permission changes to ${DEVICE}"
-    cmd='udevadm control --reload-rules && udevadm trigger'
+# Skip device ownership and udev rules in snap environment (snap's tpm plug handles access)
+if [[ -z "${SNAP}" ]]; then
+    dbg_msg "Setting '$TP_USER/$TP_GROUP' user/group device ownership for ${DEVICE}"
+    cmd="chown $TP_USER:$TP_GROUP ${DEVICE}"
     execute_cmd "${cmd}"
+
+    dbg_msg "Setting +rw group permissions for ${DEVICE}"
+    cmd="chmod g+rw ${DEVICE}"
+    execute_cmd "${cmd}"
+
+    if [ -d /etc/udev/rules.d ]; then
+        dbg_msg "Updating /etc/udev/rules.d/71-tpm.rules"
+        echo "KERNEL==\"tpm0\", SUBSYSTEM==\"tpm\", MODE=\"0660\", OWNER=\"$TP_USER\", GROUP=\"$TP_GROUP\"" > /etc/udev/rules.d/71-tpm.rules
+
+        dbg_msg "Reloading udev rules to apply the permission changes to ${DEVICE}"
+        cmd='udevadm control --reload-rules && udevadm trigger'
+        execute_cmd "${cmd}"
+    fi
+else
+    dbg_msg "Snap environment detected - skipping device ownership and udev rules (handled by tpm plug)"
 fi
 
 info_msg "Taking TPM2 ownership"

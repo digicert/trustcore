@@ -1,0 +1,101 @@
+# Publish TrustEdge Snap to Store
+#
+# This workflow publishes a previously built snap artifact to the Snap Store.
+#
+# Prerequisites:
+#   Add the SNAPCRAFT_STORE_CREDENTIALS secret to your repository:
+#   1. Install snapcraft: sudo snap install snapcraft --classic
+#   2. Login to your Ubuntu One account: snapcraft login
+#   3. Export credentials with restricted permissions:
+#      snapcraft export-login --snaps=trustedge --acls package_upload credentials.txt
+#   4. Copy contents of credentials.txt to GitHub secret SNAPCRAFT_STORE_CREDENTIALS
+#   5. Delete the local credentials.txt file
+#
+# Usage:
+#   1. Run the TrustEdge v2 Local Artifacts workflow to build the snap
+#   2. Copy the run ID from the workflow URL (e.g., github.com/.../actions/runs/<run_id>)
+#   3. Trigger this workflow manually with the run ID and desired channel
+
+name: Publish TrustEdge Snap to Store
+
+permissions:
+  contents: read
+  actions: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run ID of the build workflow to get snap artifact from (find in Actions URL)'
+        required: true
+        type: string
+      channel:
+        description: 'Snap Store channel to publish to'
+        required: true
+        default: 'edge'
+        type: choice
+        options:
+          - edge
+          - beta
+          - candidate
+          - stable
+
+jobs:
+  publish_snap:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download Snap Artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: trustedge-snap
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.run_id }}
+
+      - name: List downloaded files
+        run: |
+          echo "Downloaded snap files:"
+          ls -la *.snap
+
+      - name: Publish to Snap Store
+        uses: snapcore/action-publish@214b86e5ca036ead1668c79571f2af35adeb02a0  # v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        with:
+          snap: '*.snap'
+          release: ${{ inputs.channel }}
+
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification (Success)
+        if: success()
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          MESSAGE="TrustEdge Snap published to \`${{ inputs.channel }}\` channel by ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack notification (Failure)
+        if: failure() || cancelled()
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          MESSAGE="TrustEdge Snap publish to \`${{ inputs.channel }}\` failed\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

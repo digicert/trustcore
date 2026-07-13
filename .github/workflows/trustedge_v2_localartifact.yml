@@ -5,6 +5,17 @@ on:
   workflow_dispatch: {}
   push:
     paths:
+      - scripts/ci/trustedge/**
+      - projects/trustedge/**
+      - src/common/**
+      - src/crypto/**
+      - src/mqtt/**
+      - src/ssl/**
+      - src/trustedge/**
+      - src/cert_enroll/**
+      - src/tap/**
+      - samples/mqtt_client/src/mqtt_client_example.c
+      - snap/**
       - .github/workflows/trustedge_v2_localartifact.yml
 
 env:
@@ -160,7 +171,9 @@ jobs:
 
       - name: Setup Certificate
         run: |
-          echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > ${{ github.workspace }}/Certificate_pkcs12.p12
+          printf '%s' "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > "${{ github.workspace }}/Certificate_pkcs12.p12"
+          chmod 600 "${{ github.workspace }}/Certificate_pkcs12.p12"
+
       - name: Set Variables
         id: variables
         run: |
@@ -180,7 +193,8 @@ jobs:
           chmod -R 755 ${{ github.workspace }}/gnupg_log
           chmod 755 ${{ github.workspace }}/ssm-scd
           ls -la
-          touch ${{ github.workspace }}/gnupg_log/gpg_agent_log
+          touch "${{ github.workspace }}/gnupg_log/gpg_agent_log"
+          chmod 644 "${{ github.workspace }}/gnupg_log/gpg_agent_log"
           ls -l ${{ github.workspace }}/gnupg_log
 
       - name: Setup GPG Agent, Download GPG Key from Signing Manager and Install dpkg-sig
@@ -193,6 +207,7 @@ jobs:
           pinentry-program /usr/bin/pinentry
           EOF
           rm -rf ${{ github.workspace }}/.gnupg/pubring.kbx
+          chmod 600 /home/runner/.gnupg/gpg-agent.conf
           chmod -R 755 ${{ github.workspace }}/smtools-linux-x64
           ls -l ${{ github.workspace }}/smtools-linux-x64
           gpgconf --kill all
@@ -256,4 +271,23 @@ jobs:
             MESSAGE="TrustEdge v2 Local Artifact failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           fi  
           curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  Build_Snap:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: Build TrustEdge Snap
+        uses: snapcore/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79  # v1
+        id: snapcraft
+
+      - name: Push Artifact - Snap Package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trustedge-snap
+          path: ${{ steps.snapcraft.outputs.snap }}
+          retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
 
