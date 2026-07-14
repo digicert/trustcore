@@ -156,21 +156,21 @@ parts:
       mkdir -p ${DIGICERT_DIR}/service/request
       
       # Copy trustedge.json to root level
-      cp ${CRAFT_PART_SRC}/projects/trustedge/installer/DEB/config/trustedge.json ${DIGICERT_DIR}/ 2>/dev/null || true
+      cp ${CRAFT_PART_SRC}/projects/trustedge/installer/DEB/config/trustedge.json ${DIGICERT_DIR}/
       
       # Copy eula.txt to conf
-      cp ${CRAFT_PART_SRC}/projects/trustedge/eula.txt ${DIGICERT_DIR}/conf/ 2>/dev/null || true
+      cp ${CRAFT_PART_SRC}/projects/trustedge/eula.txt ${DIGICERT_DIR}/conf/
       
       # Create version.txt with snap version
       echo "${SNAP_VERSION}" > ${DIGICERT_DIR}/conf/version.txt
       
       # Copy scripts
       cp ${CRAFT_PART_SRC}/projects/trustedge/packaging/DEB/configure_trustedge.sh \
-         ${DIGICERT_DIR}/scripts/ 2>/dev/null || true
+         ${DIGICERT_DIR}/scripts/
       cp ${CRAFT_PART_SRC}/projects/trustedge/packaging/DEB/start_trustedge.sh \
-         ${DIGICERT_DIR}/scripts/ 2>/dev/null || true
+         ${DIGICERT_DIR}/scripts/
       cp ${CRAFT_PART_SRC}/projects/trustedge/packaging/DEB/trustedge.service \
-         ${DIGICERT_DIR}/scripts/ 2>/dev/null || true
+         ${DIGICERT_DIR}/scripts/
       
       # Set permissions to match DEB installation
       # Directories with group write (775)

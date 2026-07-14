@@ -11,7 +11,7 @@ mkdir -p "$SNAP_COMMON/digicert"
 
 # Copy default configuration from snap to writable location
 if [ -d "$SNAP/etc/digicert" ]; then
-    cp -r "$SNAP/etc/digicert/"* "$SNAP_COMMON/digicert/"
+    cp -a "$SNAP/etc/digicert/." "$SNAP_COMMON/digicert/"
     echo "Configuration initialized at $SNAP_COMMON/digicert"
 fi
 

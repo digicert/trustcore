@@ -1,6 +1,6 @@
 # TrustEdge Snap Package - Developer Guide
 
-This document covers debugging, developer workflows, and troubleshooting for the TrustEdge snap package. For basic build and installation instructions, see [samples/trustedge/BUILD_RUN.md](samples/trustedge/BUILD_RUN.md).
+This document covers debugging, developer workflows, and troubleshooting for the TrustEdge snap package. For basic build and installation instructions, see [samples/trustedge/BUILD_RUN.md](../samples/trustedge/BUILD_RUN.md).
 
 ## DEB to Snap Migration
 
