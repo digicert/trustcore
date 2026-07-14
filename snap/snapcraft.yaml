@@ -1,0 +1,263 @@
+name: trustedge
+adopt-info: trustedge
+summary: IoT device management and security command-line tool
+description: |
+  TrustEdge is built on DigiCert TrustCore SDK and provides device
+  management and security operations. It can also interact with a
+  device's secure hardware elements (TPM or TEE).
+
+  Commands:
+  - agent: Manages interaction with DigiCert Device Trust Manager
+    (bootstrap, configuration, device updates)
+  - certificate: Generates and manages keys, creates CSRs, and
+    supports x.509 certificate generation and renewal
+  - mqtt: Publishes and subscribes to MQTT topics using x.509
+    authentication
+
+  For complete documentation, visit:
+  https://dev.digicert.com/en/trustedge.html
+
+base: core24
+grade: devel
+confinement: strict
+
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+
+# Suppress lint warnings for statically linked binary
+lint:
+  ignore:
+    - library  # Monolithic build statically links libraries
+
+# Layout to match expected installation paths
+layout:
+  /etc/digicert:
+    bind: $SNAP_COMMON/digicert
+  /var/lib/trustedge:
+    bind: $SNAP_DATA/trustedge
+
+apps:
+  trustedge:
+    # CLI tool for manual user interaction
+    command: usr/bin/trustedge
+    plugs:
+      - network
+      - network-bind
+      - tpm
+      - hardware-observe
+      - system-observe
+      - log-observe
+      - shared-memory
+      - posix-mq
+  trustedged:
+    # Background service (daemon) - disabled by default; enable with `snap start --enable trustedge.trustedged`
+    command: usr/bin/trustedge --daemon
+    daemon: simple
+    install-mode: disable
+    restart-condition: always
+    restart-delay: 60s
+    stop-timeout: 60s
+    plugs:
+      - network
+      - network-bind
+      - tpm
+      - hardware-observe
+      - system-observe
+      - log-observe
+      - shared-memory
+      - posix-mq
+
+plugs:
+  # TPM2 access for secure key storage
+  tpm:
+    interface: tpm
+  # Shared memory for POSIX semaphores (/dev/shm)
+  shared-memory:
+    private: true
+
+parts:
+  trustedge:
+    plugin: nil
+    source: .
+    build-packages:
+      - build-essential
+      - cmake
+      - git
+    override-build: |
+      # Set up build environment
+      export CMAKE_DIR=/usr
+      export PATH=$CMAKE_DIR/bin:$PATH
+      
+      # Extract version from git tags (replicating paulhatch/semantic-version)
+      # Matches GitHub workflow: tag_prefix="trustedge_", version_format="${major}.${minor}.${patch}-${increment}"
+      cd ${CRAFT_PART_SRC}
+      
+      # Find the latest version tag (sorted by version number, not date)
+      LATEST_TAG=$(git tag -l "trustedge_*" | sort -t '_' -k2 -V | tail -n 1)
+      if [ -z "$LATEST_TAG" ]; then
+        LATEST_TAG="trustedge_0.0.0"
+      fi
+      
+      # Extract version base (e.g., "1.2.3" from "trustedge_1.2.3")
+      VERSION_BASE=$(echo "$LATEST_TAG" | sed 's/trustedge_//')
+      
+      # Count commits since the tag (this is the ${increment} in paulhatch/semantic-version)
+      TAG_COMMIT=$(git rev-list -n 1 "$LATEST_TAG" 2>/dev/null || echo "")
+      if [ -n "$TAG_COMMIT" ]; then
+        COMMITS_SINCE=$(git rev-list --count ${TAG_COMMIT}..HEAD 2>/dev/null || echo "0")
+      else
+        COMMITS_SINCE=$(git rev-list --count HEAD 2>/dev/null || echo "0")
+      fi
+      
+      # Format: major.minor.patch-increment (matches paulhatch version_format)
+      if [ "$COMMITS_SINCE" -gt 0 ]; then
+        SNAP_VERSION="${VERSION_BASE}-${COMMITS_SINCE}"
+      else
+        SNAP_VERSION="${VERSION_BASE}"
+      fi
+      
+      # Set the snap version dynamically
+      craftctl set version="${SNAP_VERSION}"
+      echo "Building TrustEdge version: ${SNAP_VERSION}"
+      
+      # Using the same build process as CI
+      ./scripts/ci/trustedge/ci_trustedge_build.sh \
+        --version-string ${SNAP_VERSION} \
+        --monolithic \
+        --tpm2 \
+        --cvc \
+        --proxy \
+        --pqc \
+        --pqc-composite \
+        --enable-pc
+
+      # Install the binary
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/bin
+      cp ${CRAFT_PART_SRC}/bin/trustedge ${CRAFT_PART_INSTALL}/usr/bin/
+      chmod 755 ${CRAFT_PART_INSTALL}/usr/bin/trustedge
+      
+      # Install configuration files - match DEB structure exactly
+      DIGICERT_DIR=${CRAFT_PART_INSTALL}/etc/digicert
+      mkdir -p ${DIGICERT_DIR}/cloudprovider
+      mkdir -p ${DIGICERT_DIR}/conf
+      mkdir -p ${DIGICERT_DIR}/keystore/ca
+      mkdir -p ${DIGICERT_DIR}/keystore/certs
+      mkdir -p ${DIGICERT_DIR}/keystore/conf
+      mkdir -p ${DIGICERT_DIR}/keystore/crls
+      mkdir -p ${DIGICERT_DIR}/keystore/keys
+      mkdir -p ${DIGICERT_DIR}/keystore/psks
+      mkdir -p ${DIGICERT_DIR}/keystore/req
+      mkdir -p ${DIGICERT_DIR}/scripts
+      mkdir -p ${DIGICERT_DIR}/service/completed
+      mkdir -p ${DIGICERT_DIR}/service/failed
+      mkdir -p ${DIGICERT_DIR}/service/processing
+      mkdir -p ${DIGICERT_DIR}/service/request
+      
+      # Copy trustedge.json to root level
+      cp ${CRAFT_PART_SRC}/projects/trustedge/installer/DEB/config/trustedge.json ${DIGICERT_DIR}/
+      
+      # Copy eula.txt to conf
+      cp ${CRAFT_PART_SRC}/projects/trustedge/eula.txt ${DIGICERT_DIR}/conf/
+      
+      # Create version.txt with snap version
+      echo "${SNAP_VERSION}" > ${DIGICERT_DIR}/conf/version.txt
+      
+      # Copy scripts
+      cp ${CRAFT_PART_SRC}/projects/trustedge/packaging/DEB/configure_trustedge.sh \
+         ${DIGICERT_DIR}/scripts/
+      cp ${CRAFT_PART_SRC}/projects/trustedge/packaging/DEB/start_trustedge.sh \
+         ${DIGICERT_DIR}/scripts/
+      cp ${CRAFT_PART_SRC}/projects/trustedge/packaging/DEB/trustedge.service \
+         ${DIGICERT_DIR}/scripts/
+      
+      # Set permissions to match DEB installation
+      # Directories with group write (775)
+      chmod 775 ${DIGICERT_DIR}
+      chmod 775 ${DIGICERT_DIR}/conf
+      chmod 775 ${DIGICERT_DIR}/keystore
+      chmod 775 ${DIGICERT_DIR}/keystore/ca
+      chmod 775 ${DIGICERT_DIR}/keystore/certs
+      chmod 775 ${DIGICERT_DIR}/keystore/conf
+      chmod 775 ${DIGICERT_DIR}/keystore/crls
+      chmod 775 ${DIGICERT_DIR}/keystore/keys
+      chmod 775 ${DIGICERT_DIR}/keystore/psks
+      chmod 775 ${DIGICERT_DIR}/keystore/req
+      
+      # Directories without group write (755)
+      chmod 755 ${DIGICERT_DIR}/cloudprovider
+      chmod 755 ${DIGICERT_DIR}/scripts
+      chmod 755 ${DIGICERT_DIR}/service
+      chmod 755 ${DIGICERT_DIR}/service/completed
+      chmod 755 ${DIGICERT_DIR}/service/failed
+      chmod 755 ${DIGICERT_DIR}/service/processing
+      chmod 755 ${DIGICERT_DIR}/service/request
+      
+      # Executable scripts (755)
+      chmod 755 ${DIGICERT_DIR}/scripts/configure_trustedge.sh
+      chmod 755 ${DIGICERT_DIR}/scripts/start_trustedge.sh
+      
+      # Non-executable files (644)
+      chmod 644 ${DIGICERT_DIR}/trustedge.json
+      chmod 644 ${DIGICERT_DIR}/scripts/trustedge.service
+      
+      # Config files with group write (664)
+      chmod 664 ${DIGICERT_DIR}/conf/eula.txt
+      chmod 664 ${DIGICERT_DIR}/conf/version.txt
+  tpm2-tools:
+    plugin: nil
+    source: .
+    build-packages:
+      - build-essential
+      - cmake
+      - zip
+      - unzip
+    override-build: |
+      # Set up build environment
+      export CMAKE_DIR=/usr
+      export PATH=$CMAKE_DIR/bin:$PATH
+      
+      # Build TPM2 tools (produces dist/tpm2_tools-*.zip)
+      cd ${CRAFT_PART_SRC}
+
+      echo "Building TPM2 tools for TrustEdge"
+      
+      # Using the same build process as CI
+      ./scripts/ci/trustedge/build_trustedge_tools.sh
+      
+      # Install configuration files - match DEB structure exactly
+      DIGICERT_DIR=${CRAFT_PART_INSTALL}/etc/digicert
+      TPM2_DIR=${DIGICERT_DIR}/tpm2
+      mkdir -p ${TPM2_DIR}
+
+      # Extract the built TPM2 tools zip file and place the contents in the snap
+      unzip -o ${CRAFT_PART_SRC}/dist/tpm2_tools-*.zip -d ${TPM2_DIR}
+
+      
+      # Set permissions for TPM2 tools directory and files
+      # Directories with group write (775)
+      chmod 775 ${TPM2_DIR}
+      chmod 775 ${TPM2_DIR}/bin
+      chmod 775 ${TPM2_DIR}/conf
+      chmod 775 ${TPM2_DIR}/conf/tap
+      chmod 775 ${TPM2_DIR}/conf/tap/tpm2
+
+      # Directories without group write (755)
+      chmod 755 ${TPM2_DIR}/scripts
+      chmod 755 ${TPM2_DIR}/scripts/tap
+      chmod 755 ${TPM2_DIR}/scripts/tap/tpm2
+
+      # Executable binaries (755)
+      chmod 755 ${TPM2_DIR}/bin/*
+      
+      # Executable scripts (755)
+      chmod 755 ${TPM2_DIR}/provision_tpm2.sh
+      chmod 755 ${TPM2_DIR}/reset_tpm2.sh
+      chmod 755 ${TPM2_DIR}/scripts/tap/tpm2/tpm2_provision_linux.sh
+      chmod 755 ${TPM2_DIR}/scripts/tap/tpm2/tpm2_reset_linux.sh
+      
+      # Non-executable files (644)
+      chmod 644 ${TPM2_DIR}/conf/tap/tpm2/tpm2_prov.conf
+      chmod 644 ${TPM2_DIR}/conf/tap/tpm2/tpm2_prov.conf.tmpl
+

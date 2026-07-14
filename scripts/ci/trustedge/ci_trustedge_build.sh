@@ -73,6 +73,7 @@ function show_usage
     echo "Options:"
     echo "  --help                 - Show help options"
     echo "  --gdb                  - Build with debug symbols"
+    echo "  --debug-all            - Build all projects with --debug flag"
     echo "  --aes-gcm-4k           - Build with AES-GCM 4k table (rather than 256b default)"
     echo "  --aes-gcm-64k          - Build with AES-GCM 64k table (rather than 256b default)"
     echo "  --pkcs11-dynamic       - Build with dynamic loading for multiple pkcs11 libraries"
@@ -145,6 +146,10 @@ do
             ;;
         --gdb)
             BUILD_OPTIONS+=" --gdb"
+            ;;
+        --debug-all)
+            echo "Building all projects with --debug flag";
+            BUILD_OPTIONS+=" --debug"
             ;;
         --no-lib-rebuild)
             echo "NOT building supporting libraries.";

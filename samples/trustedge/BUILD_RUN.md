@@ -99,6 +99,140 @@ After a successful Windows build:
 - The `trustedge.exe` executable will be located in `lib\`
 - The TrustEdge `.msi` installer will be located in `dist\`
 
+---
+
+## Snap Build
+
+TrustEdge can also be built and distributed as a snap package for easy installation across Linux distributions.
+
+> **Tip:** For detailed debugging, developer workflows, and troubleshooting confinement issues, see [snap/README.md](../../snap/README.md).
+
+### Prerequisites
+
+Install snapcraft:
+
+```bash
+sudo snap install snapcraft --classic
+```
+
+### Build the Snap
+
+Build the snap package from the repository root:
+
+```bash
+snapcraft
+```
+
+This will create a `trustedge_<version>_amd64.snap` file in the current directory.
+
+> **Note:** The build uses the same underlying build script (`ci_trustedge_build.sh`) with TPM2, CVC, proxy, and PQC support enabled.
+
+### Install from Snap Store
+
+Install TrustEdge from the Snap Store edge channel:
+
+```bash
+sudo snap install trustedge --edge
+```
+
+To update to the latest edge revision:
+
+```bash
+sudo snap refresh trustedge --edge
+```
+
+### Install a Locally Built Snap
+
+Install the locally built snap:
+
+```bash
+sudo snap install trustedge_*.snap --dangerous
+```
+
+> **Note:** The `--dangerous` flag is required for locally built snaps that are not signed by the Snap Store.
+
+### Connect Required Interfaces
+
+After installation, connect the necessary interfaces for full functionality:
+
+```bash
+sudo snap connect trustedge:tpm
+sudo snap connect trustedge:hardware-observe
+sudo snap connect trustedge:system-observe
+```
+
+### Verify Installation
+
+Check that TrustEdge snap is installed:
+
+```bash
+snap info trustedge
+trustedge --version
+```
+
+### Snap Service Management
+
+The snap includes a daemon service (`trustedged`) that is disabled by default:
+
+```bash
+# Enable and start the service
+sudo snap start --enable trustedge.trustedged
+
+# Check service status
+sudo snap services trustedge
+
+# Stop the service
+sudo snap stop trustedge.trustedged
+
+# Disable the service
+sudo snap stop --disable trustedge.trustedged
+```
+
+### Snap Directory Structure
+
+The snap organizes files across multiple directories:
+
+| Path | Contents |
+|------|----------|
+| `/snap/trustedge/current/usr/bin/trustedge` | Read-only binary |
+| `/var/snap/trustedge/common/digicert` | Writable configuration (persists across updates) |
+
+The layout maps `/etc/digicert` → `/var/snap/trustedge/common/digicert`, so the application sees standard paths.
+
+To view connected interfaces:
+
+```bash
+snap connections trustedge
+```
+
+### Provision TPM2 (Optional)
+
+If your device has a TPM2 and you want to use hardware-backed key storage, provision the TPM2 before bootstrapping:
+
+```bash
+# Connect the TPM interface
+sudo snap connect trustedge:tpm
+
+# Enter the snap shell and run the provisioning script
+sudo snap run --shell trustedge
+cd /etc/digicert/tpm2
+./provision_tpm2.sh --user root --group root
+```
+
+### Bootstrap with Snap
+
+Due to snap confinement, the bootstrap zip file must be placed in the snap's writable directory:
+
+```bash
+# Copy the bootstrap zip to the snap's writable directory
+sudo cp ./<guid>.zip /var/snap/trustedge/common/
+
+# Bootstrap the agent
+sudo trustedge agent --configure --bootstrap-zip /var/snap/trustedge/common/<guid>.zip
+```
+
+---
+
 ## Installation and Configuration
 
 ### Linux Package Installation
@@ -162,7 +296,7 @@ lib\trustedge.exe --version
 To run the locally built `trustedge` executable from any Command Prompt session without installing the MSI, add the repository `lib` directory to the current session `PATH`:
 
 ```cmd
-set PATH=%PATH%;C:\path\to\trustcore\lib
+set PATH=%PATH%;C:\path\to\trustcore-test\lib
 ```
 
 If you installed a downloaded MSI, you do not need to add the repository `lib` directory to `PATH`; use the installed TrustEdge location instead.

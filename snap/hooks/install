@@ -1,0 +1,24 @@
+#!/bin/bash
+# TrustEdge snap install hook
+# Runs once when snap is first installed
+
+set -e
+
+echo "Initializing TrustEdge configuration..."
+
+# Create writable config directory structure
+mkdir -p "$SNAP_COMMON/digicert"
+
+# Copy default configuration from snap to writable location
+if [ -d "$SNAP/etc/digicert" ]; then
+    cp -a "$SNAP/etc/digicert/." "$SNAP_COMMON/digicert/"
+    echo "Configuration initialized at $SNAP_COMMON/digicert"
+fi
+
+# Ensure proper permissions (matching DEB installation)
+chmod 775 "$SNAP_COMMON/digicert"
+chmod 775 "$SNAP_COMMON/digicert/conf" 2>/dev/null || true
+chmod 775 "$SNAP_COMMON/digicert/keystore" 2>/dev/null || true
+chmod -R 775 "$SNAP_COMMON/digicert/keystore/"* 2>/dev/null || true
+
+echo "TrustEdge installation complete"
