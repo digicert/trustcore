@@ -2803,12 +2803,31 @@ extern MSTATUS TRUSTEDGE_utilsExtractInlineZip(sbyte *pZ, ubyte4 offset, ubyte4 
         const char *p = fname;
         size_t fnameLen = (NULL != fname) ? strlen(fname) : 0;
         intBoolean badPath = FALSE;
+        intBoolean isNullName = (NULL == fname) ? TRUE : FALSE;
+        intBoolean isEmptyName = (0 == fnameLen) ? TRUE : FALSE;
+        intBoolean hasLeadingSeparator = FALSE;
+        intBoolean hasWindowsDrivePrefix = FALSE;
+        intBoolean isAbsoluteOrInvalid = FALSE;
 
-        if (NULL == fname || 0 == fnameLen ||
-            '/' == fname[0] || '\\' == fname[0] ||
-            (fnameLen >= 3 &&
-             (((fname[0] >= 'A' && fname[0] <= 'Z') || (fname[0] >= 'a' && fname[0] <= 'z')) &&
-              ':' == fname[1] && ('/' == fname[2] || '\\' == fname[2]))))
+        if (FALSE == isNullName)
+        {
+            hasLeadingSeparator = ('/' == fname[0] || '\\' == fname[0]) ? TRUE : FALSE;
+
+            if (fnameLen >= 3)
+            {
+                intBoolean isDriveLetter =
+                    ((fname[0] >= 'A' && fname[0] <= 'Z') || (fname[0] >= 'a' && fname[0] <= 'z')) ? TRUE : FALSE;
+                intBoolean hasDriveSeparator = (':' == fname[1]) ? TRUE : FALSE;
+                intBoolean hasRootSeparator = ('/' == fname[2] || '\\' == fname[2]) ? TRUE : FALSE;
+
+                hasWindowsDrivePrefix = (TRUE == isDriveLetter && TRUE == hasDriveSeparator && TRUE == hasRootSeparator) ? TRUE : FALSE;
+            }
+        }
+
+        isAbsoluteOrInvalid =
+            (TRUE == isNullName || TRUE == isEmptyName || TRUE == hasLeadingSeparator || TRUE == hasWindowsDrivePrefix) ? TRUE : FALSE;
+
+        if (TRUE == isAbsoluteOrInvalid)
         {
             badPath = TRUE;
         }
