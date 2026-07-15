@@ -2797,6 +2797,18 @@ extern MSTATUS TRUSTEDGE_utilsExtractInlineZip(sbyte *pZ, ubyte4 offset, ubyte4 
                 MERROR_lookUpErrorCode(status));
             goto exit;
         }
+        
+        /* Reject absolute paths and any '..' component in the ZIP entry name to avoid Zip-Slip attack */
+        if ((sbyte)'/' == file_stat.m_filename[0] ||
+            (sbyte)'\\' == file_stat.m_filename[0] ||
+            NULL != strstr((const char *)file_stat.m_filename, ".."))
+        {
+            status = ERR_TRUSTEDGE_ZIP_ERROR;
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d: ZIP entry rejected — path traversal in filename: %s\n",
+                __func__, __LINE__, (const char *)file_stat.m_filename);
+            goto exit;
+        }
 
         ret = snprintf(fullPath, MAX_PATH_LENGTH, "%s%s%s", pDst, pathSep, (sbyte *) file_stat.m_filename);
         if (0 > ret)
