@@ -2798,14 +2798,43 @@ extern MSTATUS TRUSTEDGE_utilsExtractInlineZip(sbyte *pZ, ubyte4 offset, ubyte4 
             goto exit;
         }
         
-        /* Reject absolute paths and any '..' component in the ZIP entry name to avoid Zip-Slip attack */
-        if ((sbyte)'/' == file_stat.m_filename[0] ||
-            (sbyte)'\\' == file_stat.m_filename[0] ||
-            NULL != strstr((const char *)file_stat.m_filename, ".."))
+        /* Reject absolute paths, Windows drive-letter paths, and any ".." path component to avoid Zip-Slip */
+        const char *fname = (const char *)file_stat.m_filename;
+        const char *p = fname;
+        size_t fnameLen = (NULL != fname) ? strlen(fname) : 0;
+        intBoolean badPath = FALSE;
+
+        if (NULL == fname || 0 == fnameLen ||
+            '/' == fname[0] || '\\' == fname[0] ||
+            (fnameLen >= 3 &&
+             (((fname[0] >= 'A' && fname[0] <= 'Z') || (fname[0] >= 'a' && fname[0] <= 'z')) &&
+              ':' == fname[1] && ('/' == fname[2] || '\\' == fname[2]))))
+        {
+            badPath = TRUE;
+        }
+        else
+        {
+            while ('\0' != *p)
+            {
+                while ('/' == *p || '\\' == *p)
+                    p++;
+
+                if ('.' == p[0] && '.' == p[1] && ('\0' == p[2] || '/' == p[2] || '\\' == p[2]))
+                {
+                    badPath = TRUE;
+                    break;
+                }
+
+                while ('\0' != *p && '/' != *p && '\\' != *p)
+                    p++;
+            }
+        }
+
+        if (TRUE == badPath)
         {
             status = ERR_TRUSTEDGE_ZIP_ERROR;
             MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d: ZIP entry rejected — path traversal in filename: %s\n",
+                "%s line %d: ZIP entry rejected - path traversal in filename: %s\n",
                 __func__, __LINE__, (const char *)file_stat.m_filename);
             goto exit;
         }
