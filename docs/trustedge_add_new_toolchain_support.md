@@ -65,9 +65,9 @@ The repository build-system configuration uses these mappings:
 
 | File | rpi64 configuration |
 | --- | --- |
-| [`projects/shared_cmake/get_toolchain.sh`](projects/shared_cmake/get_toolchain.sh) | Registers `rpi64` in `PLATFORMS` and maps it to `gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin` under `/opt/sysroots/master` |
-| [`projects/shared_cmake/MocPlatform.cmake`](projects/shared_cmake/MocPlatform.cmake) | Maps `CM_TARGET_PLATFORM=rpi64` to `aarch64-linux-gnu-toolchain.cmake`, `CMAKE_MOCANA_PLATFORM=linaro_2.23_aarch64_gnu`, `CMAKE_SYSROOT=/opt/sysroots/master/sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu`, and `CM_BUILD_X64 ON` |
-| [`projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake`](projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake) | Uses compiler prefix `aarch64-linux-gnu-` and discovers the compiler with `which aarch64-linux-gnu-gcc` |
+| [`projects/shared_cmake/get_toolchain.sh`](/projects/shared_cmake/get_toolchain.sh) | Registers `rpi64` in `PLATFORMS` and maps it to `gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin` under `/opt/sysroots/master` |
+| [`projects/shared_cmake/MocPlatform.cmake`](/projects/shared_cmake/MocPlatform.cmake) | Maps `CM_TARGET_PLATFORM=rpi64` to `aarch64-linux-gnu-toolchain.cmake`, `CMAKE_MOCANA_PLATFORM=linaro_2.23_aarch64_gnu`, `CMAKE_SYSROOT=/opt/sysroots/master/sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu`, and `CM_BUILD_X64 ON` |
+| [`projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake`](/projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake) | Uses compiler prefix `aarch64-linux-gnu-` and discovers the compiler with `which aarch64-linux-gnu-gcc` |
 
 For a new toolchain following the `rpi64` pattern, the archive extraction paths must line up with the `m_sysroots[...]` entry in `get_toolchain.sh` and the `CMAKE_SYSROOT` path in `MocPlatform.cmake`.
 
@@ -77,37 +77,35 @@ For a new toolchain following the `rpi64` pattern, the archive extraction paths 
 
 | File | Responsibility | Notes for new toolchains |
 | --- | --- | --- |
-| [`projects/shared_cmake/get_toolchain.sh`](projects/shared_cmake/get_toolchain.sh) | Defines supported platform IDs in `PLATFORMS`; maps each platform to a sysroot/bin path in `m_sysroots`; exposes `get_platform()` and `get_sysroot_bin()` | Add the new platform ID to `PLATFORMS` and add an `m_sysroots[...]` entry |
-| [`projects/shared_cmake/MocPlatform.cmake`](projects/shared_cmake/MocPlatform.cmake) | Maps `CM_TARGET_PLATFORM` to CMake cross-compile settings and `CMAKE_MOCANA_PLATFORM` | Add a branch for the new platform and set all architecture/sysroot/toolchain values required by that target |
-| [`projects/shared_cmake/toolchains/`](projects/shared_cmake/toolchains/) | Contains explicit CMake toolchain files for compiler discovery and cross-compilation | Add a new file only when the SDK environment does not fully configure the compiler |
-| [`projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake`](projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake) | Reference pattern for explicit compiler discovery | Useful template for compiler prefix validation and utility setup |
+| [`projects/shared_cmake/get_toolchain.sh`](/projects/shared_cmake/get_toolchain.sh) | Defines supported platform IDs in `PLATFORMS`; maps each platform to a sysroot/bin path in `m_sysroots`; exposes `get_platform()` and `get_sysroot_bin()` | Add the new platform ID to `PLATFORMS` and add an `m_sysroots[...]` entry |
+| [`projects/shared_cmake/MocPlatform.cmake`](/projects/shared_cmake/MocPlatform.cmake) | Maps `CM_TARGET_PLATFORM` to CMake cross-compile settings and `CMAKE_MOCANA_PLATFORM` | Add a branch for the new platform and set all architecture/sysroot/toolchain values required by that target |
+| [`projects/shared_cmake/toolchains/`](/projects/shared_cmake/toolchains/) | Contains explicit CMake toolchain files for compiler discovery and cross-compilation | Add a new file only when the SDK environment does not fully configure the compiler |
+| [`projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake`](/projects/shared_cmake/toolchains/aarch64-linux-gnu-toolchain.cmake) | Reference pattern for explicit compiler discovery | Useful template for compiler prefix validation and utility setup |
 
 ### TrustEdge Build Entry Points
 
 | File | Responsibility | Notes for new toolchains |
 | --- | --- | --- |
-| [`scripts/ci/trustedge/ci_trustedge_build.sh`](scripts/ci/trustedge/ci_trustedge_build.sh) | Main Linux TrustEdge build script; accepts feature flags, `--toolchain`, `--tee`, and `--tee-path` | Use this as the primary command entry point after installing or sourcing the toolchain. Existing `--toolchain` handling forwards arbitrary supported platform IDs; help text may need updates |
-| [`scripts/ci/trustedge/build_trustedge_tools.sh`](scripts/ci/trustedge/build_trustedge_tools.sh) | Builds TrustEdge tools with optional toolchain forwarding | Use this when the new platform also needs TrustEdge tools |
-| [`projects/common/build.sh`](projects/common/build.sh) | Representative project build wrapper that resolves `--toolchain` through shared helpers | Most project wrappers follow this pattern |
-| [`projects/*/build.sh`](projects) | Module-specific build wrappers for libraries and tools | Use these to confirm module-level support |
-| [`NanoTAP_scripts/*.sh`](NanoTAP_scripts) | NanoTAP build orchestration with `--toolchain` and optional TEE support | Update docs/help if the new toolchain is supported for TAP/TEE builds |
-| [`scripts/build_crypto_shared_libs.sh`](scripts/build_crypto_shared_libs.sh) | Shared crypto library build script with `--toolchain` support | Update supported-platform help text if shared libraries are expected for the new target |
+| [`scripts/ci/trustedge/ci_trustedge_build.sh`](/scripts/ci/trustedge/ci_trustedge_build.sh) | Main Linux TrustEdge build script; accepts feature flags, `--toolchain`, `--tee`, and `--tee-path` | Use this as the primary command entry point after installing or sourcing the toolchain. Existing `--toolchain` handling forwards arbitrary supported platform IDs; help text may need updates |
+| [`scripts/ci/trustedge/build_trustedge_tools.sh`](/scripts/ci/trustedge/build_trustedge_tools.sh) | Builds TrustEdge tools with optional toolchain forwarding | Use this when the new platform also needs TrustEdge tools |
+| [`projects/common/build.sh`](/projects/common/build.sh) | Representative project build wrapper that resolves `--toolchain` through shared helpers | Most project wrappers follow this pattern |
+| [`projects/*/build.sh`](/projects) | Module-specific build wrappers for libraries and tools | Use these to confirm module-level support |
+| [`scripts/build_crypto_shared_libs.sh`](/scripts/build_crypto_shared_libs.sh) | Shared crypto library build script with `--toolchain` support | Update supported-platform help text if shared libraries are expected for the new target |
 
 ### Documentation
 
 | File | Responsibility | Notes for new toolchains |
 | --- | --- | --- |
-| [`BUILD_RUN.md`](BUILD_RUN.md) | Primary root build and run guide | Add or link cross-compilation setup instructions |
-| [`GUIDE.md`](GUIDE.md) | Repository build-guide index | Link to this or another cross-compilation guide |
-| [`samples/trustedge/BUILD_RUN.md`](samples/trustedge/BUILD_RUN.md) | TrustEdge sample-level build/run guide | Link to root cross-compilation guidance if developers commonly start here |
+| [`GUIDE.md`](/GUIDE.md) | Repository build-guide index | Link to this or another cross-compilation guide |
+| [`samples/trustedge/BUILD_RUN.md`](/samples/trustedge/BUILD_RUN.md) | TrustEdge sample-level build/run guide | Link to root cross-compilation guidance if developers commonly start here |
 
 ### Legacy Makefiles and Other Configuration
 
 | File | Responsibility | Notes for new toolchains |
 | --- | --- | --- |
-| [`make/Makefile.linux`](make/Makefile.linux) | Legacy Linux make configuration | Usually no change for CMake-driven TrustEdge builds unless the target uses legacy make paths |
-| [`make/Makefile.linux.cross`](make/Makefile.linux.cross) | Legacy cross-compile settings | Review only if the new toolchain must support legacy make builds |
-| [`make/Makefile.ssl`](make/Makefile.ssl) | Legacy SSL/Crypto make logic with some toolchain-specific handling | Review if the new target needs special SSL/Crypto behavior outside CMake |
+| [`make/Makefile.linux`](/make/Makefile.linux) | Legacy Linux make configuration | Usually no change for CMake-driven TrustEdge builds unless the target uses legacy make paths |
+| [`make/Makefile.linux.cross`](/make/Makefile.linux.cross) | Legacy cross-compile settings | Review only if the new toolchain must support legacy make builds |
+| [`make/Makefile.ssl`](/make/Makefile.ssl) | Legacy SSL/Crypto make logic with some toolchain-specific handling | Review if the new target needs special SSL/Crypto behavior outside CMake |
 
 ## Step-by-Step Guide
 
@@ -147,7 +145,7 @@ Use an Arago-style environment-driven integration only if the SDK setup script f
 
 ### 3. Register the Platform in `get_toolchain.sh`
 
-Add the platform ID to `PLATFORMS` in [`projects/shared_cmake/get_toolchain.sh`](projects/shared_cmake/get_toolchain.sh).
+Add the platform ID to `PLATFORMS` in [`projects/shared_cmake/get_toolchain.sh`](/projects/shared_cmake/get_toolchain.sh).
 
 For an environment-driven SDK:
 
@@ -169,7 +167,7 @@ Rationale: project build wrappers call `get_platform()` and `get_sysroot_bin()` 
 
 ### 4. Add the CMake Platform Mapping
 
-Add a branch in [`projects/shared_cmake/MocPlatform.cmake`](projects/shared_cmake/MocPlatform.cmake).
+Add a branch in [`projects/shared_cmake/MocPlatform.cmake`](/projects/shared_cmake/MocPlatform.cmake).
 
 Environment-driven SDK example:
 
@@ -197,7 +195,7 @@ Rationale: `MocPlatform.cmake` is where a generic platform ID becomes the build 
 
 ### 5. Add a CMake Toolchain File When Needed
 
-If the new platform needs explicit compiler discovery, add a new file under [`projects/shared_cmake/toolchains/`](projects/shared_cmake/toolchains/).
+If the new platform needs explicit compiler discovery, add a new file under [`projects/shared_cmake/toolchains/`](/projects/shared_cmake/toolchains/).
 
 Minimal pattern:
 
@@ -241,10 +239,9 @@ The main build script already forwards arbitrary `--toolchain <value>` values, b
 
 Review and update:
 
-- [`scripts/ci/trustedge/ci_trustedge_build.sh`](scripts/ci/trustedge/ci_trustedge_build.sh)
-- [`scripts/build_crypto_shared_libs.sh`](scripts/build_crypto_shared_libs.sh)
-- Relevant [`projects/*/build.sh`](projects) wrappers
-- Relevant [`NanoTAP_scripts/*.sh`](NanoTAP_scripts) wrappers
+- [`scripts/ci/trustedge/ci_trustedge_build.sh`](/scripts/ci/trustedge/ci_trustedge_build.sh)
+- [`scripts/build_crypto_shared_libs.sh`](/scripts/build_crypto_shared_libs.sh)
+- Relevant [`projects/*/build.sh`](/projects) wrappers
 
 Use help text that points to the shared registry instead of duplicating long platform lists:
 
@@ -271,9 +268,8 @@ Rationale: repeatable setup commands prove that the documented steps work in a c
 
 Update or link from:
 
-- [`BUILD_RUN.md`](BUILD_RUN.md)
-- [`GUIDE.md`](GUIDE.md)
-- [`samples/trustedge/BUILD_RUN.md`](samples/trustedge/BUILD_RUN.md), if TrustEdge developers commonly start there
+- [`GUIDE.md`](/GUIDE.md)
+- [`samples/trustedge/BUILD_RUN.md`](/samples/trustedge/BUILD_RUN.md), if TrustEdge developers commonly start there
 
 Include:
 
