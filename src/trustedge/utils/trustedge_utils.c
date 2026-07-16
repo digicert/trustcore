@@ -2797,6 +2797,66 @@ extern MSTATUS TRUSTEDGE_utilsExtractInlineZip(sbyte *pZ, ubyte4 offset, ubyte4 
                 MERROR_lookUpErrorCode(status));
             goto exit;
         }
+        
+        /* Reject absolute paths, Windows drive-letter paths, and any ".." path component to avoid Zip-Slip */
+        const char *fname = (const char *)file_stat.m_filename;
+        const char *p = fname;
+        size_t fnameLen = (NULL != fname) ? strlen(fname) : 0;
+        intBoolean badPath = FALSE;
+        intBoolean isNullName = (NULL == fname) ? TRUE : FALSE;
+        intBoolean isEmptyName = (0 == fnameLen) ? TRUE : FALSE;
+        intBoolean hasLeadingSeparator = FALSE;
+        intBoolean hasWindowsDrivePrefix = FALSE;
+        intBoolean isAbsoluteOrInvalid = FALSE;
+
+        if (FALSE == isNullName)
+        {
+            hasLeadingSeparator = ('/' == fname[0] || '\\' == fname[0]) ? TRUE : FALSE;
+
+            if (fnameLen >= 3)
+            {
+                intBoolean isDriveLetter =
+                    ((fname[0] >= 'A' && fname[0] <= 'Z') || (fname[0] >= 'a' && fname[0] <= 'z')) ? TRUE : FALSE;
+                intBoolean hasDriveSeparator = (':' == fname[1]) ? TRUE : FALSE;
+                intBoolean hasRootSeparator = ('/' == fname[2] || '\\' == fname[2]) ? TRUE : FALSE;
+
+                hasWindowsDrivePrefix = (TRUE == isDriveLetter && TRUE == hasDriveSeparator && TRUE == hasRootSeparator) ? TRUE : FALSE;
+            }
+        }
+
+        isAbsoluteOrInvalid =
+            (TRUE == isNullName || TRUE == isEmptyName || TRUE == hasLeadingSeparator || TRUE == hasWindowsDrivePrefix) ? TRUE : FALSE;
+
+        if (TRUE == isAbsoluteOrInvalid)
+        {
+            badPath = TRUE;
+        }
+        else
+        {
+            while ('\0' != *p)
+            {
+                while ('/' == *p || '\\' == *p)
+                    p++;
+
+                if ('.' == p[0] && '.' == p[1] && ('\0' == p[2] || '/' == p[2] || '\\' == p[2]))
+                {
+                    badPath = TRUE;
+                    break;
+                }
+
+                while ('\0' != *p && '/' != *p && '\\' != *p)
+                    p++;
+            }
+        }
+
+        if (TRUE == badPath)
+        {
+            status = ERR_TRUSTEDGE_ZIP_ERROR;
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d: ZIP entry rejected - path traversal in filename: %s\n",
+                __func__, __LINE__, (const char *)file_stat.m_filename);
+            goto exit;
+        }
 
         ret = snprintf(fullPath, MAX_PATH_LENGTH, "%s%s%s", pDst, pathSep, (sbyte *) file_stat.m_filename);
         if (0 > ret)
