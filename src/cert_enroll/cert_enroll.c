@@ -64,6 +64,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define MAX_LINE_LENGTH (256)
 #define MAX_CSR_NAME_ATTRS (50)
@@ -3497,8 +3498,15 @@ static MSTATUS CERT_ENROLL_convertStringToByteArray(sbyte *pIn, sbyte4 inLen, ub
     MSTATUS status = OK;
     ubyte4 i = 0;
     ubyte4 numBytes = 0;
-    unsigned int temp = 0;
     sbyte hex[3] = {0};
+    char *endPtr = NULL;
+    ubyte4 val = 0;
+
+    if (0 > inLen)
+    {
+        status = ERR_INVALID_INPUT;
+        goto exit;
+    }
 
     numBytes = ((ubyte4)inLen + 2) / 3;
 
@@ -3509,18 +3517,20 @@ static MSTATUS CERT_ENROLL_convertStringToByteArray(sbyte *pIn, sbyte4 inLen, ub
     }
 
     /* internal method, null checks not necc */
-    while (inLen >=2)
+    while (inLen >= 2)
     {
         hex[0] = pIn[0];
         hex[1] = pIn[1];
         hex[2] = '\0';
 
-        if (1 != sscanf((char *) hex, "%02X", &temp))
+        val = (ubyte4) strtoul((char *)hex, &endPtr, 16);
+        if ((char *)hex == endPtr || '\0' != *endPtr || 0xFF < val)
         {
             status = ERR_INVALID_INPUT;
             goto exit;
         }
-        pResults[i] = (ubyte) temp;
+
+        pResults[i] = (ubyte) val;
         i++;
         inLen -= 3;
         pIn += 3;
@@ -3638,7 +3648,7 @@ static MSTATUS CERT_ENROLL_addExtAttr(extensions *pExtension, JSON_ContextType *
                 goto exit;
             }
 
-            status = CERT_ENROLL_convertStringToByteArray((sbyte *) token.pStart + 7, token.len - 7, &value[0], sizeof(value), &count);
+            status = CERT_ENROLL_convertStringToByteArray((sbyte *) token.pStart + 8, token.len - 8, &value[0], sizeof(value), &count);
             if (OK != status)
                 goto exit;
 
@@ -3734,7 +3744,7 @@ static MSTATUS CERT_ENROLL_addExtAttr(extensions *pExtension, JSON_ContextType *
             if (OK != status)
                 goto exit;
 
-            status = CERT_ENROLL_convertStringToByteArray((sbyte *) token.pStart + 9, token.len - 9, pValue[index], MAX_ASN1_BITSTRING, &count);
+            status = CERT_ENROLL_convertStringToByteArray((sbyte *) token.pStart + 10, token.len - 10, pValue[index], MAX_ASN1_BITSTRING, &count);
             if (OK != status)
             {
                 /* increase index so it's correct on error */
