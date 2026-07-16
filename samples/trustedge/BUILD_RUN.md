@@ -77,6 +77,10 @@ For additional build options, run:
 ./scripts/ci/trustedge/ci_trustedge_build.sh --help
 ```
 
+### Adding New Toolchain Support
+
+If you need to add or configure a new TrustEdge cross-compilation toolchain, use the detailed toolchain support guide instead of duplicating setup steps here. For guidance on registering a new platform ID, choosing the integration model, configuring CMake mappings, and documenting validation steps, see [How to Add New Toolchain Support to TrustEdge](../../docs/trustedge_add_new_toolchain_support.md).
+
 ### Windows
 
 From the Visual Studio developer environment, run the Windows build script:
