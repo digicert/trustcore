@@ -269,7 +269,7 @@ Rationale: repeatable setup commands prove that the documented steps work in a c
 Update or link from:
 
 - [`GUIDE.md`](/GUIDE.md)
-- [`samples/trustedge/BUILD_RUN.md`](/samples/trustedge/BUILD_RUN.md), if TrustEdge developers commonly start there
+- [`samples/trustedge/BUILD_RUN.md`](/samples/trustedge/BUILD_RUN.md)
 
 Include:
 
