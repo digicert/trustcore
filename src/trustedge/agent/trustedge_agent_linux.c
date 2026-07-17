@@ -618,7 +618,7 @@ extern sbyte** TRUSTEDGE_actionHandlerGenerateArgsLinux(TrustEdgeArtifactAction 
 {
     MSTATUS status;
     sbyte **pStr = NULL;
-    sbyte4 i = 0, size;
+    sbyte4 i = 0, baseLen, size;
     intBoolean foundWord = FALSE;
     sbyte4 argCount = 0;
     sbyte *token;
@@ -837,11 +837,21 @@ extern sbyte** TRUSTEDGE_actionHandlerGenerateArgsLinux(TrustEdgeArtifactAction 
             i--;
         }
 
-        status = DIGI_MEMCPY(pCmdPath, pAction->pActionPath+i, size - i);
+        if (0 > i)
+            i = 0;
+
+        baseLen = size - i;
+        if (0 == baseLen || baseLen >= MAX_PATH_LENGTH )
+        {
+            status = ERR_TRUSTEDGE_AGENT;
+            goto exit;
+        }
+
+        status = DIGI_MEMCPY(pCmdPath, pAction->pActionPath + i, baseLen);
         if (OK != status)
             goto exit;
 
-        pCmdPath[size - i] = '\0';
+        pCmdPath[baseLen] = '\0';
 
         arraySize = argCount + 3;
         status = DIGI_MALLOC((void **) &pStr, sizeof(*pStr)*(arraySize));
