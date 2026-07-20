@@ -23,9 +23,9 @@ env:
   NEXUS_LINARO_ARM_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
 jobs:
   Trustedge_Sanity_Test:
-    runs-on: ${{ github.repository == 'digicert/trustcore' && 'ubuntu-22.04' || 'digicert-large' }}
+    runs-on: ${{ github.repository == 'digicert/trustcore-test' && 'digicert-large' || 'ubuntu-22.04' }}
     env:
-      PLATFORMS: ${{ github.repository == 'digicert/trustcore-test' && 'x64 rpi64 rpi32' || 'x64' }}
+      PLATFORMS_TO_TEST: ${{ github.repository == 'digicert/trustcore-test' && 'x64 rpi64 rpi32' || 'x64' }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -58,10 +58,11 @@ jobs:
           sudo apt install -y rpm
 
       - name: Install dependencies from public repositories
-        if: github.repository == 'digicert/trustcore'
+        if: github.repository != 'digicert/trustcore-test'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build rpm
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install ruby-full cproto cmake ninja-build rpm
+          python3 -m pip install --upgrade jenkinsapi
           cmake --version
           ninja --version
 
@@ -76,7 +77,7 @@ jobs:
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
 
-          for platform in $PLATFORMS; do
+          for platform in $PLATFORMS_TO_TEST; do
             echo ">>> Building TrustEdge for $platform"
           
             if [ "$platform" == "x64" ]; then
@@ -129,7 +130,7 @@ jobs:
           sudo docker cp src/trustedge/sanity_test/register_device.py trustedge-sanity:/tmp
           sudo docker cp src/trustedge/sanity_test/disable_delete_device.py trustedge-sanity:/tmp
           sudo docker cp scripts/ci/trustedge/trustedge_sanity_test.sh trustedge-sanity:/tmp
-          sudo docker exec -e DEMO_API_KEY=${{ secrets.DEMO_API_KEY }} trustedge-sanity /tmp/trustedge_sanity_test.sh
+          sudo docker exec -e DEMO_API_KEY=${{ secrets.DEMO_API_KEY }} -e PLATFORMS_TO_TEST="$PLATFORMS_TO_TEST" trustedge-sanity /tmp/trustedge_sanity_test.sh
           
       - name: Get Slack User ID
         if: always()

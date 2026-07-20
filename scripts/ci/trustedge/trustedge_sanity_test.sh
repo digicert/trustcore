@@ -3,7 +3,8 @@
 set -e
 
 NULL_FILE="/dev/null"
-PLATFORMS=("x64" "rpi64" "rpi32")
+PLATFORMS_TO_TEST="${PLATFORMS_TO_TEST:-x64 rpi64 rpi32}"
+read -r -a PLATFORMS <<< "$PLATFORMS_TO_TEST"
 KEYSTORE_CA_DIR="/etc/digicert/keystore/ca"
 KEYSTORE_CERTS_DIR="/etc/digicert/keystore/certs"
 KEYSTORE_KEYS_DIR="/etc/digicert/keystore/keys"
