@@ -32,7 +32,7 @@ env:
 
 jobs:
   TrustEdge_v2:
-    runs-on: [digicert-large]
+    runs-on: ${{ github.repository == 'digicert/trustcore-test' && 'digicert-large' || 'ubuntu-22.04' }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -48,7 +48,8 @@ jobs:
           branch: main
           search_commit_body: true
 
-      - name: Install dependencies
+      - name: Install dependencies from Nexus
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O -v
           export CMAKE_DIR=/opt/cmake
@@ -60,15 +61,20 @@ jobs:
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_NINJA_REPO_URL }} -O -v
           sudo dpkg -i ninja-build_1.10.1-1_amd64.deb
           ninja --version
+
+      - name: Install dependencies from public repositories
+        if: github.repository != 'digicert/trustcore-test'
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install ruby-full cproto cmake ninja-build
+          python3 -m pip install --upgrade jenkinsapi
+          cmake --version
+          ninja --version
+
       - name: Install rpm utilities
         run: |
           sudo apt update
           sudo apt install -y rpm
-          # mkdir -p /tmp/rpm_4.18.2
-          # curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_RPM_REPO_URL }} -o /tmp/rpm_4.18.2/rpm_4.18.2.tar.xz -v
-          # tar -xvf /tmp/rpm_4.18.2/rpm_4.18.2.tar.xz -C /tmp/rpm_4.18.2
-          # sudo dpkg -i /tmp/rpm_4.18.2/rpm_4.18.2/*.deb || sudo apt-get install -f -y
-          # sudo dpkg -i /tmp/rpm_4.18.2/rpm_4.18.2/*.deb
 
       - name: Build TrustEdge v2
         run: |
@@ -94,6 +100,7 @@ jobs:
           path: dist/*.tar.gz
           retention-days: 5
       - name: Install toolchain for RPI64
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           sudo mkdir -p /opt/sysroots/master
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL }} -O -v
@@ -101,29 +108,34 @@ jobs:
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_GCC_REPO_URL }} -O -v
           sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
       - name: Build TrustEdge v2 for RPI64
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
           ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
       - name: Push Artifact for RPI64 - Unsigned Debian Package
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: trustedge-rpi64-unsigned
           path: dist/*.deb
           retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
       - name: Push Artifact for RPI64 - Unsigned RPM Package
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: trustedge-rpi64-rpm-unsigned
           path: dist/*.rpm
           retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
       - name: Push Artifact for RPI64 TGZ
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: trustedge-rpi64-tgz
           path: dist/*.tar.gz
           retention-days: 5
       - name: Install toolchain for RPI32
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           sudo mkdir -p /opt/sysroots/master
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_SYSROOT_REPO_URL }} -O -v
@@ -131,23 +143,27 @@ jobs:
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_GCC_REPO_URL }} -O -v
           sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
       - name: Build TrustEdge v2 for RPI32
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
           ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
       - name: Push Artifact for RPI32 - Unsigned Debian Package
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: trustedge-rpi32-unsigned
           path: dist/*.deb
           retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
       - name: Push Artifact for RPI32 - Unsigned RPM Package
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: trustedge-rpi32-rpm-unsigned
           path: dist/*.rpm
           retention-days: ${{ github.ref_name == 'main' && 1 || 5 }}
       - name: Push Artifact for RPI32 TGZ
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: trustedge-rpi32-tgz
@@ -157,7 +173,7 @@ jobs:
   Sign_Debian_Packages:
     runs-on: ubuntu-22.04 # This job needs systemd, so it runs on a Github-hosted runner.
     needs: TrustEdge_v2
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'main' && github.repository == 'digicert/trustcore-test'
     strategy:
       matrix:
         arch: [x64, rpi64, rpi32]
