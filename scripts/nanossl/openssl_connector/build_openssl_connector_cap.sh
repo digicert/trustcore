@@ -92,6 +92,8 @@ FIPS_OPTION=""
 FIPS_700_COMPAT_OPTION=""
 FIPS_MAKE_OPTION=""
 FIPS_MAKE30_OPTION=""
+FIPS_GCM_OPTION=""
+FIPS_GCM_DEFINE=""
 CUSTOM_ENTROPY_OPTION=""
 FORCE_ENTROPY_EXAMPLE_OPTION=""
 DTLS_OPTION=""
@@ -159,6 +161,11 @@ do
             FIPS_MAKE30_OPTION="enable-mocana-fips"
             DISABLE_PQC_OPT=" --disable-pqc"
             OSSL_PQC_OPTION=""
+            # Use the 4K AES-GCM variant: the FIPS binary (libmss.so)
+            FIPS_GCM_OPTION=" --aes-gcm-4k"
+            # Pass the matching define to OpenSSL Configure so the Mocana provider
+            # inside libcrypto.so also uses CRYPTO_INTERFACE_GCM_*_4k (not _256b).
+            FIPS_GCM_DEFINE="-D__ENABLE_DIGICERT_GCM_4K__"
             ;;
         --fips-700-compat)
             echo "Build with backward compatibility with FIPS REL_700_U1 binary."
@@ -572,13 +579,13 @@ do
     cd ${MSS_PROJECTS_DIR}/nanocap && ./build.sh $BUILD_OPTIONS $STATIC_OPTION $IPV6_OPTIONS
     cd ${MSS_PROJECTS_DIR}/crypto && ./build.sh $BUILD_OPTIONS $FIPS_OPTION $FIPS_700_COMPAT_OPTION $DISABLE_PQC_OPT --ssl --openssl${OSSL_VER} $RC5_DISABLE_CRYPTO_OPTION $STATIC_OPTION $RSA8K_OPTION $IPV6_OPTIONS
     cd ${MSS_PROJECTS_DIR}/nanocert && ./build.sh $BUILD_OPTIONS $FIPS_OPTION $DISABLE_PQC_OPT --openssl $DISABLE_STRICT_CA_CHECK_OPTION $DISABLE_CERT_EXT_CHECK_OPTION $OCSP_OPTION $OCSP_CERT_OPTION $STATIC_OPTION $RSA8K_OPTION $IPV6_OPTIONS
-    cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION $DISABLE_PQC_OPT --openssl_shim $DTLS_OPTION $DTLS_SRTP_OPTION $OPENSSL_OPTION $RSA1024_OPTION $SHA1_OPTION $TLS13_OPTION $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS $STRICT_DH_OPTION $RSA8K_OPTION $IPV6_OPTIONS nanossl
+    cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION $DISABLE_PQC_OPT --openssl_shim $DTLS_OPTION $DTLS_SRTP_OPTION $OPENSSL_OPTION $RSA1024_OPTION $SHA1_OPTION $TLS13_OPTION $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS $STRICT_DH_OPTION $RSA8K_OPTION $IPV6_OPTIONS $FIPS_GCM_OPTION nanossl
 
     if [ "$pass" == "second" ]; then
         cd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}
         if [[ "$OSSL_CONFIG_CMD" == "" ]]; then
             if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
-                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 $OSSL3_DISABLE_MD4_OPTION enable-mocana-cryptointerface ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test ${OSSL_EXTRA_OPTS} ${OSSL_PQC_OPTION} ${LEGACY_FIPS_DEFINE}
+                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 $OSSL3_DISABLE_MD4_OPTION enable-mocana-cryptointerface ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test ${OSSL_EXTRA_OPTS} ${OSSL_PQC_OPTION} ${LEGACY_FIPS_DEFINE} ${FIPS_GCM_DEFINE}
             else
                 ./config $OPENSSL_GDB_OPTIONS $OPENSSL_ENGINE_TYPE
                 makefile="${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/engines/mocana/Makefile"
@@ -610,7 +617,7 @@ do
             fi
         fi
 
-        cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION $REDEFINE_OPTION $DISABLE_PQC_OPT --openssl_shim $DTLS_OPTION $OPENSSL_OPTION $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS $IPV6_OPTIONS openssl_shim_lib
+        cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION $REDEFINE_OPTION $DISABLE_PQC_OPT --openssl_shim $DTLS_OPTION $OPENSSL_OPTION $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS $IPV6_OPTIONS $FIPS_GCM_OPTION openssl_shim_lib
     fi
 
     if test "$?" != "0"; then

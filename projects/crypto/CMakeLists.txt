@@ -190,7 +190,13 @@ endif()
 if(CM_ENABLE_AES_GCM_4K)
     list(REMOVE_ITEM OPTIONS_MOCANA_FLAGS "-D__ENABLE_DIGICERT_GCM_256B__")
     list(APPEND OPTIONS_MOCANA_FLAGS "-D__ENABLE_DIGICERT_GCM_4K__")
-    list(REMOVE_ITEM OPTIONS_MOCANA_FLAGS "-D__ENABLE_DIGICERT_GCM_64K__")
+    if(NOT CM_ENABLE_FIPS)
+        # In non-FIPS builds, remove 64K to enforce the single 4K selection.
+        # In FIPS builds, libmss.so provides both 4K and 64K; keep 64K so that
+        # callers referencing CRYPTO_INTERFACE_GCM_*_64k (e.g. the OpenSSL
+        # provider) do not produce undefined-reference errors at link time.
+        list(REMOVE_ITEM OPTIONS_MOCANA_FLAGS "-D__ENABLE_DIGICERT_GCM_64K__")
+    endif()
 elseif(CM_ENABLE_AES_GCM_256B)
     list(APPEND OPTIONS_MOCANA_FLAGS "-D__ENABLE_DIGICERT_GCM_256B__")
     list(REMOVE_ITEM OPTIONS_MOCANA_FLAGS "-D__ENABLE_DIGICERT_GCM_4K__")
@@ -263,6 +269,10 @@ endif()
 
 if(CM_ENABLE_FIPS)
     add_definitions("-D__ENABLE_DIGICERT_FIPS_MODULE__")
+    # The FIPS binary (libmss.so) does not include the 256B AES-GCM implementation
+    # (it was erroneously included in previous versions and has since been removed).
+    # Remove it here to prevent undefined references to GCM_*_256b symbols at link time.
+    list(REMOVE_ITEM OPTIONS_MOCANA_FLAGS "-D__ENABLE_DIGICERT_GCM_256B__")
 endif()
 
 if(CM_ENABLE_FIPS_700_U1_COMPAT)
