@@ -23,7 +23,9 @@ env:
   NEXUS_LINARO_ARM_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
 jobs:
   Trustedge_Sanity_Test:
-    runs-on: [digicert-large]
+    runs-on: ${{ github.repository == 'digicert/trustcore' && 'ubuntu-22.04' || 'digicert-large' }}
+    env:
+      PLATFORMS: ${{ github.repository == 'digicert/trustcore-test' && 'x64 rpi64 rpi32' || 'x64' }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -39,7 +41,8 @@ jobs:
           branch: main
           search_commit_body: true
 
-      - name: Install dependencies
+      - name: Install dependencies from Nexus
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O -v
           export CMAKE_DIR=/opt/cmake
@@ -54,6 +57,14 @@ jobs:
           sudo apt update
           sudo apt install -y rpm
 
+      - name: Install dependencies from public repositories
+        if: github.repository == 'digicert/trustcore'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build rpm
+          cmake --version
+          ninja --version
+
       - name: Docker Setup
         run: |
           sudo docker build -t trustedge-test -f src/trustedge/sanity_test/Dockerfile .
@@ -65,7 +76,7 @@ jobs:
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
 
-          for platform in x64 rpi64 rpi32; do 
+          for platform in $PLATFORMS; do
             echo ">>> Building TrustEdge for $platform"
           
             if [ "$platform" == "x64" ]; then
