@@ -51,14 +51,14 @@ jobs:
       - name: Install dependencies from Nexus
         if: github.repository == 'digicert/trustcore-test'
         run: |
-          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O -v
+          curl --fail --silent --show-error --location  -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O
           export CMAKE_DIR=/opt/cmake
           sudo mkdir $CMAKE_DIR
           sudo bash cmake-3.22.1-linux-x86_64.sh --skip-license --prefix=$CMAKE_DIR
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
           cmake --version
-          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_NINJA_REPO_URL }} -O -v
+          curl --fail --silent --show-error --location -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_NINJA_REPO_URL }} -O
           sudo dpkg -i ninja-build_1.10.1-1_amd64.deb
           ninja --version
 
@@ -103,9 +103,9 @@ jobs:
         if: github.repository == 'digicert/trustcore-test'
         run: |
           sudo mkdir -p /opt/sysroots/master
-          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL }} -O -v
+          curl --fail --silent --show-error --location -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL }} -O
           sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
-          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_GCC_REPO_URL }} -O -v
+          curl --fail --silent --show-error --location -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_GCC_REPO_URL }} -O
           sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
       - name: Build TrustEdge v2 for RPI64
         if: github.repository == 'digicert/trustcore-test'
@@ -138,9 +138,9 @@ jobs:
         if: github.repository == 'digicert/trustcore-test'
         run: |
           sudo mkdir -p /opt/sysroots/master
-          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_SYSROOT_REPO_URL }} -O -v
+          curl --fail --silent --show-error --location -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_SYSROOT_REPO_URL }} -O
           sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
-          curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_GCC_REPO_URL }} -O -v
+          curl --fail --silent --show-error --location -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_GCC_REPO_URL }} -O
           sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
       - name: Build TrustEdge v2 for RPI32
         if: github.repository == 'digicert/trustcore-test'
