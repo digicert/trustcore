@@ -19222,7 +19222,7 @@ exit:
 }
 #endif
 
-#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_TAP__) && (defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__))
 extern MSTATUS SSLSOCK_tapUnloadKey(AsymmetricKey *pAsymKey)
 {
     MSTATUS status;

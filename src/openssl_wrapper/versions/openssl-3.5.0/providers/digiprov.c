@@ -289,8 +289,15 @@ static const OSSL_ALGORITHM digiprov_asym_kem[] = {
 
 static const OSSL_ALGORITHM digiprov_decoder[] = 
 {
-#ifdef __ENABLE_DIGICERT_TAP__ 
-    { "DER", "provider=digi,input=der,structure=PrivateKeyInfo", digiprov_der_to_tap_decoder_functions },
+#ifdef __ENABLE_DIGICERT_TAP__
+    { "RSA:1.3.6.1.4.1.14421.19.1:1.3.6.1.4.1.14421.19.33",
+      "provider=digi,input=der,structure=PrivateKeyInfo",
+      digiprov_der_to_tap_decoder_functions },
+    { "EC:1.3.6.1.4.1.14421.19.2:1.3.6.1.4.1.14421.19.34",
+      "provider=digi,input=der,structure=PrivateKeyInfo",
+      digiprov_der_to_tap_decoder_functions },
+    { "DER", "provider=digi,input=der,structure=PrivateKeyInfo",
+      digiprov_der_to_tap_decoder_functions },
 #endif
     { NULL, NULL, NULL }
 };

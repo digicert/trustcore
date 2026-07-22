@@ -8898,7 +8898,7 @@ SSL_SerializeMocAsymKeyAlloc (
         mocanaBlobVersion2, ppSerializedKey, pSerializedKeyLen);
 }
 
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 extern MSTATUS
 SSL_DeserializeMocAsymKeyWithCreds(
     ubyte *pSerializedKey,
@@ -8917,7 +8917,7 @@ static MSTATUS SSL_tapUnloadKey(
 {
     return SSLSOCK_tapUnloadKey(pAsymKey);
 }
-#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ */
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
 extern MSTATUS
 SSL_DeserializeMocAsymKey(
@@ -10592,7 +10592,7 @@ SSL_bindShimMethods(nssl_methods_t *pMeth)
 #ifdef __ENABLE_DIGICERT_SERIALIZE__
 #if defined(__ENABLE_DIGICERT_TAP__)
      pMeth->serializeAsymKeyAlloc = SSL_SerializeMocAsymKeyAlloc;
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      pMeth->deserializeAsymKeyWithCreds = SSL_DeserializeMocAsymKeyWithCreds;
      pMeth->tapUnloadKey = SSL_tapUnloadKey;
 #endif

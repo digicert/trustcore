@@ -1309,7 +1309,7 @@ MOC_EXTERN MSTATUS SSLSOCK_clearTAPKeyAndToken();
 MOC_EXTERN MSTATUS SSLSOCK_setKeyAndTokenHandle(SSLSocket *pSSLSock, intBoolean isServer);
 #endif
 
-#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__)
+#if defined(__ENABLE_DIGICERT_TAP__) && (defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__))
 MOC_EXTERN MSTATUS SSLSOCK_tapUnloadKey(AsymmetricKey *pAsymKey);
 #endif /* __ENABLE_DIGICERT_TAP__ */
 
