@@ -1,11 +1,11 @@
 name: "OpenSSL Connector 3.5.0 FIPS Integration Tests"
 
+on:
   workflow_dispatch: {}
 
   schedule:
     - cron: '30 10 * * 1'   # Monday 4:00 PM IST
     - cron: '30 10 * * 4'   # Thursday 4:00 PM IST
-    
 permissions:
   contents: read
   
