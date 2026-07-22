@@ -913,6 +913,18 @@ static void SLHDSA_freeHashes(MOC_HASH(hwAccelDescr hwAccelCtx) SlhdsaHashCtx *p
 
         if (NULL != pHashCtx->pPkSeed)
         {
+#ifdef __ZEROIZE_TEST__
+            int counter;
+
+            FIPS_PRINT("\nSLHDSA - Before Zeroization\nPKSeed = ");
+            FIPS_PRINT("@%p: ", pHashCtx->pPkSeed);
+            for (counter = 0; counter < pHashCtx->n; counter++)
+            {
+                FIPS_PRINT("%02x",*((ubyte*)(pHashCtx->pPkSeed+counter)));
+            }
+            FIPS_PRINT("\n");
+            FIPS_PRINT("\nSLHDSA - After Zeroization (raw memory)\n");
+#endif
             (void) DIGI_MEMSET_FREE(&pHashCtx->pPkSeed, pHashCtx->n);
         }
     }
@@ -1898,6 +1910,9 @@ static void SLHDSA_getIndices(const SlhdsaCtx *pCtx, ubyte *pBuffer, ubyte8 *pTr
 static MSTATUS SLHDSA_keygen_internal(MOC_HASH(hwAccelDescr hwAccelCtx) const SlhdsaCtx *pCtx, ubyte *pBuf)
 {
     FIPS_LOG_DECL_SESSION;
+#ifdef __ZEROIZE_TEST__
+    int counter;
+#endif
     MSTATUS status = OK;
     ubyte pPkSeed[SLHDSA_MAX_HASH_BLOCK_SIZE] = {0}; /* 128 */
     ubyte pADRS[SLHDSA_ADRS_LEN] = {0};
@@ -1930,9 +1945,34 @@ static MSTATUS SLHDSA_keygen_internal(MOC_HASH(hwAccelDescr hwAccelCtx) const Sl
 
 exit:
 
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nSLHDSA_keygen_internal - Before Zeroization\npPkSeed = ");
+    for (counter = 0; counter < n; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pPkSeed+counter)));
+    }
+    FIPS_PRINT("\npADRS = ");
+    for (counter = 0; counter < SLHDSA_ADRS_LEN; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pADRS+counter)));
+    }
+#endif
     (void) DIGI_MEMSET(pPkSeed, 0x00, n);
     (void) DIGI_MEMSET(pADRS, 0x00, SLHDSA_ADRS_LEN);
 
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nSLHDSA_keygen_internal - After Zeroization\npPkSeed = ");
+    for (counter = 0; counter < n; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pPkSeed+counter)));
+    }
+    FIPS_PRINT("\npADRS = ");
+    for (counter = 0; counter < SLHDSA_ADRS_LEN; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pADRS+counter)));
+    }
+    FIPS_PRINT("\n");
+#endif
     SLHDSA_freeHashes(MOC_HASH(hwAccelCtx) &hashCtx, hashMode);
 
     FIPS_LOG_END_ALG(FIPS_ALGO_SLHDSA,pCtx->sigLen);
@@ -2431,7 +2471,9 @@ SLHDSA_generateKey_FIPS_consistency_test(SLHDSACtx* pCtx, RNGFun rng, void *rngA
     if (OK != status)
     {
         status = ERR_FIPS_SLHDSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_SLHDSA,status);
+#endif
         goto exit;
     }
 
@@ -2467,13 +2509,17 @@ exit:
                               seedLen, &cmpRes))
     {
         status = ERR_FIPS_SLHDSA_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_SLHDSA,status);
+#endif
         goto exit;
     }
     if (0 != cmpRes)
     {
         status = ERR_FIPS_SLHDSA_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_SLHDSA,status);
+#endif
         goto exit;
     }
 
@@ -2937,8 +2983,35 @@ exit:
 
 MOC_EXTERN MSTATUS SLHDSA_destroyCtx(SLHDSACtx *ctx)
 {
+#ifdef __ZEROIZE_TEST__
+    int counter;
+#endif
+
     (void) validateCtx(ctx);
 
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nSLHDSA_destroyCtx - Before Zeroization\nContext = ");
+    FIPS_PRINT("@%p: ", ctx->context);
+    for (counter = 0; counter < ctx->contextLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->context+counter)));
+    }
+    FIPS_PRINT("\nPublic Key = ");
+    FIPS_PRINT("@%p: ", ctx->pubKey);
+    for (counter = 0; counter < ctx->pubKeyLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->pubKey+counter)));
+    }
+    FIPS_PRINT("\nPrivate Key = ");
+    FIPS_PRINT("@%p: ", ctx->privKey);
+    for (counter = 0; counter < ctx->privKeyLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->privKey+counter)));
+    }
+    FIPS_PRINT("\n");
+
+    FIPS_PRINT("\nSLHDSA_destroyCtx - After Zeroization (raw memory)\n");
+#endif
     moc_memset_free(&ctx->context, ctx->contextLen);
     moc_memset_free(&ctx->pubKey, ctx->pubKeyLen);
     moc_memset_free(&ctx->privKey, ctx->privKeyLen);

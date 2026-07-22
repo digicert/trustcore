@@ -1138,6 +1138,15 @@ exit:
     return status;
 }
 
+#if (defined(__ZEROIZE_TEST__))
+#if (defined(__KERNEL__))
+#include <linux/kernel.h>       /* for printk */
+#define FIPS_PRINT              printk
+#else
+#include <stdio.h>              /* for printf */
+#define FIPS_PRINT              printf
+#endif
+#endif
 /**
  * @brief Function to zero out memory before freeing
  */
@@ -1154,6 +1163,15 @@ shredMemory(ubyte **ppMemToShred, ubyte4 memToShredLen, byteBoolean freeMemory)
             status = DIGI_MEMSET(*ppMemToShred, 0, memToShredLen);
             if (OK != status)
                 goto exit;
+#if (defined(__ZEROIZE_TEST__))
+            int counter = 0;
+            FIPS_PRINT("@%p: ", *ppMemToShred);
+            for (counter = 0; counter < memToShredLen; counter++)
+            {
+                FIPS_PRINT("%02x",*((ubyte*)(*ppMemToShred+counter)));
+            }
+            FIPS_PRINT("\n");
+#endif
         }
         if (TRUE == freeMemory)
         {

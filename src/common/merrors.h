@@ -153,6 +153,7 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_RTOS_LOCK_ACQUIRE,                             -5818)
     ERROR_DEF       (ERR_RTOS_LOCK_RELEASE,                             -5819)
     ERROR_DEF       (ERR_RTOS_THREAD_JOIN,                              -5820)
+    ERROR_DEF       (ERR_RTOS_THREAD_KILL,                              -5821)
     ERROR_DEF       (ERR_RTOS_PROCESS_CREATE,                           -5822)
     ERROR_DEF       (ERR_RTOS_PROCESS_WAIT,                             -5823)
     ERROR_DEF       (ERR_RTOS_PROCESS_FAILED,                           -5824)
@@ -2065,6 +2066,7 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_FIPS_SLHDSA_SIGN_VERIFY_FAIL,                 -16539)
     ERROR_DEF       (ERR_FIPS_SLHDSA_FAIL,                             -16540)
     ERROR_DEF       (ERR_FIPS_MLKEM_ENCAPS_DECAPS_FAIL,                -16541)
+    ERROR_DEF       (ERR_FIPS_ZEROIZED,                                -16542)
 
 
     ERROR_DEF       (ERR_LDAP_RES_CODE,                                -16600)

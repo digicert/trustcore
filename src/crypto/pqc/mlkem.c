@@ -1660,6 +1660,9 @@ exit:
 
 static MSTATUS generateKeyPair(RNGFun rng, void *rngArg, MLKEMCtx *ctx)
 {
+#ifdef __ZEROIZE_TEST__
+    int counter;
+#endif
     MSTATUS status = OK;
     const MlkemCtx *pCtx = MLKEM_getOldCtx(ctx->type);
     ubyte pD[MLKEM_SEED_LEN + 1]; /* extra byte for appending the dimension k */
@@ -1701,8 +1704,33 @@ exit:
         moc_memset_free(&ctx->encKey, pCtx->ekPkeLen);
     }
 
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nMLKEM generateKeyPair - Before Zeroization\npD = ");
+    for (counter = 0; counter < MLKEM_SEED_LEN+1; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pD+counter)));
+    }
+    FIPS_PRINT("\npZ = ");
+    for (counter = 0; counter < MLKEM_SEED_LEN; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pZ+counter)));
+    }
+#endif
     moc_memset(pD, 0x00, MLKEM_SEED_LEN + 1);
     moc_memset(pZ, 0x00, MLKEM_SEED_LEN);
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nMLKEM generateKeyPair - After Zeroization\npD = ");
+    for (counter = 0; counter < MLKEM_SEED_LEN+1; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pD+counter)));
+    }
+    FIPS_PRINT("\npZ = ");
+    for (counter = 0; counter < MLKEM_SEED_LEN; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(pZ+counter)));
+    }
+    FIPS_PRINT("\n");
+#endif
 
     return status;
 }
@@ -1797,7 +1825,9 @@ MLKEM_generateKey_FIPS_consistency_test(MLKEMCtx* pCtx, RNGFun rng, void *rngArg
     if (OK != status)
     {
         status = ERR_FIPS_MLKEM_ENCAPS_DECAPS_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_MLKEM,status);
+#endif
         goto exit;
     }
     /* Compare both 'versions' of shared data */
@@ -1805,13 +1835,17 @@ MLKEM_generateKey_FIPS_consistency_test(MLKEMCtx* pCtx, RNGFun rng, void *rngArg
     if (OK != status)
     {
         status = ERR_FIPS_MLKEM_ENCAPS_DECAPS_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_MLKEM,status);
+#endif
         goto exit;
     }
     if (0 != cmpRes)
     {
         status = ERR_FIPS_MLKEM_ENCAPS_DECAPS_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_MLKEM,status);
+#endif
         goto exit;
     }
 
@@ -2231,11 +2265,30 @@ exit:
 
 MOC_EXTERN MSTATUS MLKEM_destroyCtx(MLKEMCtx *ctx)
 {
+#ifdef __ZEROIZE_TEST__
+    int counter;
+#endif
     MSTATUS status = validateCtx(ctx);
     if (status != OK) {
         goto exit;
     }
 
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nMLKEM_destroyCtx - Before Zeroization\nEncaps Key = ");
+    FIPS_PRINT("@%p: ", ctx->encKey);
+    for (counter = 0; counter < ctx->encKeyLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->encKey+counter)));
+    }
+    FIPS_PRINT("\nDecaps Key = ");
+    FIPS_PRINT("@%p: ", ctx->decKey);
+    for (counter = 0; counter < ctx->decKeyLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->decKey+counter)));
+    }
+
+    FIPS_PRINT("\nMLKEM_destroyCtx - After Zeroization (raw memory)\n");
+#endif
     moc_memset_free(&ctx->encKey, ctx->encKeyLen);
     moc_memset_free(&ctx->decKey, ctx->decKeyLen);
 

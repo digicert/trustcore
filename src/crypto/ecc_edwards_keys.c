@@ -552,7 +552,9 @@ exit:
     if (0 != verifyStatus)
     {
         status = ERR_FIPS_EDDSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_EDDSA,status);
+#endif
     }
 
     pKey->isPrivate = TRUE;

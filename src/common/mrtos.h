@@ -254,6 +254,7 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_destroyThread          LINUX_destroyThread
 #define RTOS_exitThread             LINUX_exitThread
 #define RTOS_joinThread             LINUX_joinThread
+#define RTOS_killThread             LINUX_killThread
 #define RTOS_currentThreadId        LINUX_currentThreadId
 #define RTOS_sameThreadId           LINUX_sameThreadId
 #define RTOS_timeGMT                LINUX_timeGMT

@@ -4561,28 +4561,36 @@ RSA_generateKey_FIPS_consistancy_test(MOC_RSA(sbyte4 hwAccelCtx) RSAKey* p_rsaKe
     if (OK > (status = RSA_verifySignature(MOC_RSA(hwAccelCtx) p_rsaKey, pCipherText, pPlainText, (ubyte4*)&msgLenRet, NULL)))
     {
         status = ERR_FIPS_RSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_RSA,status);
+#endif
         goto exit;
     }
 
     if (msgLen != msgLenRet)
     {
         status = ERR_FIPS_RSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_RSA,status);
+#endif
         goto exit;
     }
 
     if (OK != DIGI_CTIME_MATCH(msg, pPlainText, msgLen, &cmpRes))
     {
         status = ERR_FIPS_RSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_RSA,status);
+#endif
         goto exit;
     }
 
     if (0 != cmpRes)
     {
         status = ERR_FIPS_RSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_RSA,status);
+#endif
         goto exit;
     }
 
@@ -4972,7 +4980,7 @@ exit:
 #ifdef __ENABLE_DIGICERT_FIPS_MODULE__
 #include "../crypto/rsa_priv.h"
 
-extern void RSA_triggerFail(void)
+static void RSA_triggerFail(void)
 {
     rsa_fail = 1;
 }

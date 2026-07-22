@@ -1,0 +1,14 @@
+## Default names
+if(NOT DEFINED MSS_FINAL_LIB_PATH)
+  set(MSS_FINAL_LIB_PATH /usr/local/lib/)
+endif()
+if(NOT DEFINED MSS_LIB_FILENAME)
+  set(MSS_LIB_FILENAME ${MSS_TGT_LIBNAME}.so)
+endif()
+if(NOT DEFINED MSS_SIG_FILENAME)
+  set(MSS_SIG_FILENAME ${MSS_LIB_FILENAME}.sig)
+endif()
+
+## Set full names for integrity test
+set(MSS_FINAL_LIB_NAME ${MSS_FINAL_LIB_PATH}${MSS_LIB_FILENAME})
+set(MSS_FINAL_SIG_NAME ${MSS_FINAL_LIB_PATH}${MSS_SIG_FILENAME})

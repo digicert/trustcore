@@ -1336,7 +1336,9 @@ DSA_generateKey_FIPS_consistancy_test(MOC_DSA(sbyte4 hwAccelCtx) randomContext* 
     if (!isGoodSignature)
     {
         status = ERR_FIPS_DSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_DSA,status);
+#endif
         goto exit;
     }
 

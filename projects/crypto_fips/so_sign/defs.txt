@@ -1,0 +1,100 @@
+########################################################################
+#
+# choosing 32 vs 64 bit
+#
+########################################################################
+
+if(NOT DEFINED CM_SELECT_64BIT)
+  if(NOT ${CMAKE_CROSSCOMPILING})
+    # Native host size
+    if(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+      set(CM_SELECT_64BIT ON)
+    elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+      set(CM_SELECT_64BIT OFF)
+    else()
+      message(FATAL_ERROR "unexpected void pointer size\n")
+    endif()
+  endif()
+endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES GNU)
+  if(NOT ${CMAKE_CROSSCOMPILING})
+    # X86?
+    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64)
+      if(NOT DEFINED MX3264_GCC_FLAG)
+        if (CM_SELECT_64BIT)
+          set(MX3264_GCC_FLAG "-m64")
+        else()
+          set(MX3264_GCC_FLAG "-m32")
+        endif()
+      endif()
+    endif()
+  else()
+    if (${CMAKE_C_COMPILER} MATCHES "aarch64-linux-gnu-gcc")
+      set(MX3264_GCC_FLAG "")
+      set(CM_SELECT_64BIT ON)
+    elseif ("${CMAKE_C_COMPILER}" MATCHES "arm-linux-gnueabihf-gcc")
+      set(MX3264_GCC_FLAG "")
+      set(CM_SELECT_64BIT OFF)
+    endif()
+  endif()
+
+  if(MX3264_GCC_FLAG)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MX3264_GCC_FLAG}")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${MX3264_GCC_FLAG}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${MX3264_GCC_FLAG}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MX3264_GCC_FLAG}")
+  endif()
+endif()
+
+#if(CMAKE_C_COMPILER_ID MATCHES MSVC)
+#endif()
+
+#if(CMAKE_C_COMPILER_ID MATCHES AppleClang)
+#endif()
+
+## Force the tools to use 32 bit types, only
+#if(CM_SELECT_64BIT)
+# set(EXTRA_DEFINITIONS "-D__ENABLE_DIGICERT_64_BIT__")
+#endif()
+
+########################################################################
+# Endianess
+########################################################################
+
+if(NOT ${CMAKE_CROSSCOMPILING})
+  include(TestBigEndian)
+  TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+endif()
+
+if(IS_BIG_ENDIAN)
+  set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -DMOC_BIG_ENDIAN")
+else()
+  set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} -DMOC_LITTLE_ENDIAN")
+endif()
+
+########################################################################
+#
+# RTOS selection
+#
+########################################################################
+
+## 'CMAKE_SYSTEM_NAME' is set by the cross compilation toolchain, as well.
+
+if(APPLE)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(RTOS_FLAG_MOCANA "-D__RTOS_OSX__")
+    else()
+        message(FATAL_ERROR "Apple OS is not Darwin\n")
+    endif()
+elseif(WIN32)
+    set(RTOS_FLAG_MOCANA "-D__RTOS_WIN32__ -D__ENABLE_DIGICERT_WIN_STUDIO_BUILD__")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(RTOS_FLAG_MOCANA "-D__RTOS_LINUX__")
+else()
+    # we assume generic Linux
+    set(RTOS_FLAG_MOCANA "-D__RTOS_LINUX__")
+endif()
+
+set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} ${RTOS_FLAG_MOCANA}")
+

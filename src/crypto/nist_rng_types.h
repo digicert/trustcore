@@ -83,6 +83,11 @@ enum {
     e_NIST_RNG_use_df = 0x01
 };
 
+#if defined(__FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__)
+/* Forward declaration */
+typedef struct FIPS_ENTROPY_st FIPS_ENTROPY_ctx;
+#endif
+
 typedef struct NIST_CTR_DRBG_Ctx
 {
     ubyte8 reseedCounter;
@@ -98,6 +103,9 @@ typedef struct NIST_CTR_DRBG_Ctx
     } ctx;
     ubyte flags;
     RTOS_MUTEX fipsMutex;
+#if defined(__FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__)
+    FIPS_ENTROPY_ctx* entropyCtx;
+#endif
     ubyte* history;
     ubyte byteBuff[1];  /* V & KEY are added to this field */
 } NIST_CTR_DRBG_Ctx;

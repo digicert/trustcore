@@ -1709,6 +1709,7 @@ RANDOM_acquireDRBGCTRContext(randomContext **ppRandomContext)
     AES256 384 bits
     */
     ubyte entropyBytes[MOC_DEFAULT_NUM_ENTROPY_BYTES];
+    char  useExternalEntropy = 0;
     hwAccelDescr hwAccelCtx = 0;
 
 #if( defined(__ENABLE_DIGICERT_FIPS_MODULE__) )
@@ -1722,7 +1723,13 @@ RANDOM_acquireDRBGCTRContext(randomContext **ppRandomContext)
     if (mEntropySource == ENTROPY_SRC_INTERNAL)
       status = RNG_SEED_extractDepotBits(entropyBytes, MOC_DEFAULT_NUM_ENTROPY_BYTES);
     else
+    {
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+      useExternalEntropy = 1;
+#else
       status = RNG_SEED_extractInitialDepotBits(entropyBytes, MOC_DEFAULT_NUM_ENTROPY_BYTES);
+#endif
+    }
 #else
     status = RNG_SEED_extractDepotBits(entropyBytes, MOC_DEFAULT_NUM_ENTROPY_BYTES);
 #endif
@@ -1740,17 +1747,41 @@ RANDOM_acquireDRBGCTRContext(randomContext **ppRandomContext)
     /* we always use the biggest entropy to provide for the maximum security
      * strength. Example: generating AES 256 keys */
 #ifndef __DISABLE_DIGICERT_AES_ECB__
-    status = NIST_CTRDRBG_newDFContext (
-        MOC_SYM(hwAccelCtx) &newCTRContext,
-      NIST_CTRDRBG_DEFAULT_KEY_LEN_BYTES,
-      NIST_CTRDRBG_DEFAULT_OUT_LEN_BYTES,
-        entropyBytes, MOC_DEFAULT_NUM_ENTROPY_BYTES,
-        NULL, 0, persoStr, persoStrLen);
+    if (useExternalEntropy)
+    {
+        /* 'NULL' as entropy lets NIST_RNG pull it from external entropy source */
+        status = NIST_CTRDRBG_newDFContext (
+                                MOC_SYM(hwAccelCtx) &newCTRContext,
+                                NIST_CTRDRBG_DEFAULT_KEY_LEN_BYTES,
+                                NIST_CTRDRBG_DEFAULT_OUT_LEN_BYTES,
+                                NULL, MOC_DEFAULT_NUM_ENTROPY_BYTES,
+                                NULL, 0, persoStr, persoStrLen);
+    }
+    else
+    {
+        status = NIST_CTRDRBG_newDFContext (
+                                MOC_SYM(hwAccelCtx) &newCTRContext,
+                                NIST_CTRDRBG_DEFAULT_KEY_LEN_BYTES,
+                                NIST_CTRDRBG_DEFAULT_OUT_LEN_BYTES,
+                                entropyBytes, MOC_DEFAULT_NUM_ENTROPY_BYTES,
+                                NULL, 0, persoStr, persoStrLen);
+    }
 #elif (!defined(__DISABLE_3DES_CIPHERS__))
-    status = NIST_CTRDRBG_newDFContext(
-        MOC_SYM(hwAccelCtx) &newCTRContext, 21, THREE_DES_BLOCK_SIZE,
-        entropyBytes, MOC_DEFAULT_NUM_ENTROPY_BYTES, NULL, 0,
-        persoStr, persoStrLen);
+    if (useExternalEntropy)
+    {
+        /* 'NULL' as entropy lets NIST_RNG pull it from external entropy source */
+        status = NIST_CTRDRBG_newDFContext(
+                                MOC_SYM(hwAccelCtx) &newCTRContext, 21, THREE_DES_BLOCK_SIZE,
+                                NULL, MOC_DEFAULT_NUM_ENTROPY_BYTES, NULL, 0,
+                                persoStr, persoStrLen);
+    }
+    else
+    {
+        status = NIST_CTRDRBG_newDFContext(
+                                MOC_SYM(hwAccelCtx) &newCTRContext, 21, THREE_DES_BLOCK_SIZE,
+                                entropyBytes, MOC_DEFAULT_NUM_ENTROPY_BYTES, NULL, 0,
+                                persoStr, persoStrLen);
+    }
 #else
     status = ERR_RAND;
 #endif
@@ -1764,8 +1795,11 @@ RANDOM_acquireDRBGCTRContext(randomContext **ppRandomContext)
     hwAccelCtx = 0;
 
 #if( defined(__ENABLE_DIGICERT_FIPS_MODULE__) )
+#ifndef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    /* Initial entropy data is not usable for FIPS. Force reseed, next */
     pCtx = GET_CTR_DRBG_CTX(pWrapper);
     U8INIT(pCtx->reseedCounter, 0x00010000, 0x00000000);
+#endif
 #endif /* ( defined(__ENABLE_DIGICERT_FIPS_MODULE__) ) */
 
     *ppRandomContext = newCTRContext;
