@@ -1,0 +1,11 @@
+MSS_SRC_DIR/common/int64.c
+MSS_SRC_DIR/common/int128.c
+MSS_SRC_DIR/common/debug_console.c
+MSS_SRC_DIR/common/mocctx.c
+MSS_SRC_DIR/common/mversion.c
+MSS_SRC_DIR/common/mstdlib.c
+MSS_SRC_DIR/common/oplistctx.c
+MSS_SRC_DIR/common/prime.c
+MSS_SRC_DIR/common/jacobi.c
+MSS_SRC_DIR/common/lucas.c
+MSS_SRC_DIR/common/random.c

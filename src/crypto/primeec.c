@@ -3198,8 +3198,10 @@ exit:
     if (ERR_FALSE == status)
     {
         status = ERR_FIPS_ECDSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_ECC,status);
         setFIPS_Status(FIPS_ALGO_ECDSA,status);
+#endif
     }
 
     PRIMEFIELD_deleteElement(pPF, &r);

@@ -95,16 +95,32 @@ DIGICERT_readVersion(sbyte4 type, ubyte* pRetBuffer, ubyte4 retBufLength)
 
 	if (total > 0)
 	{
+#ifdef __DIGICERT_DSF_NAME_STRING__
+		total += DIGI_STRLEN((sbyte*)__DIGICERT_DSF_NAME_STRING__) + 2;
+#endif
 		if (total >= retBufLength)
 		{
 			return ERR_BUFFER_OVERFLOW;
 		}
 
+#ifdef __DIGICERT_DSF_NAME_STRING__
+		DIGI_STRCBCPY((sbyte*)pRetBuffer, total,(sbyte*)__DIGICERT_DSF_NAME_STRING__);
+		DIGI_STRCAT((sbyte*)pRetBuffer, (sbyte*)":");
+		add = TRUE;
+#endif
 
 		if ((type & VT_MAIN) != 0)
 		{
-			DIGI_STRCBCPY((sbyte*)pRetBuffer, total,(sbyte*)__DIGICERT_DSF_VERSION_STR__);
-			add = TRUE;
+			if (add)
+			{
+				DIGI_STRCAT((sbyte*)pRetBuffer, (sbyte*)" ");
+				DIGI_STRCAT((sbyte*)pRetBuffer, (sbyte*)__DIGICERT_DSF_VERSION_STR__);
+			}
+			else
+			{
+				DIGI_STRCBCPY((sbyte*)pRetBuffer, total,(sbyte*)__DIGICERT_DSF_VERSION_STR__);
+				add = TRUE;
+			}
 		}
 
 		if ((type & VT_BUILD) != 0)

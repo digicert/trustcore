@@ -937,7 +937,7 @@ DH_computeKeyExchange(MOC_DH(hwAccelDescr hwAccelCtx) diffieHellmanContext *p_dh
     int sharedSecretGood = FALSE;
 
     if (NULL == p_dhContext)
-        goto exit;
+        return status;
 
     FIPS_GET_STATUS_RETURN_IF_BAD(FIPS_ALGO_DH); /* may return here */
     FIPS_LOG_START_ALG(FIPS_ALGO_DH,0);

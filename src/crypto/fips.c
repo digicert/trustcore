@@ -33,6 +33,7 @@
 #include "../common/vlong.h"
 #include "../common/random.h"
 #include "../common/rng_seed.h"
+#include "../crypto/fips_entropy.h"
 #include "../common/debug_console.h"
 #include "../common/memory_debug.h"
 #include "../crypto/crypto.h"
@@ -72,6 +73,7 @@
 #include "../crypto/crypto_init.h"
 #include "../crypto/nist_rng_types.h"
 #include "../crypto/nist_rng.h"
+#include "../crypto/nist_rng_priv.h"
 #include "../crypto/fips.h"
 #include "../crypto/fips_priv.h"
 #include "../harness/harness.h"
@@ -447,7 +449,20 @@ MOC_EXTERN MSTATUS FIPS_InitializeAfterIntegrityChk(void)
     sCurrRuntimeConfig.fipsMutexLock = NULL;
     status = RTOS_mutexCreate((RTOS_MUTEX*)&sCurrRuntimeConfig.fipsMutexLock,
                               FIPS_CONFIG_MUTEX, 0);
+    if (OK != status)
+    {
+       goto exit;
+    }
 
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    status = FIPS_ENTROPY_initExternalEntropyConstructor();
+    if (OK != status)
+    {
+       goto exit;
+    }
+#endif /* __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__ */
+
+exit:
     return status;
 }
 
@@ -631,11 +646,25 @@ MOC_EXTERN MSTATUS FIPS_Zeroize(void)
 
     FIPS_LOG_START_SVC(FIPS_ZEROIZE_SVC,0);
 
+    /* First check the global. If we've already zeroized things, don't try it again */
+    if (ERR_FIPS_ZEROIZED == (status = sCurrStatus.globalFIPS_powerupStatus))
+    {
+       goto exit;
+    }
+
     if (gpFIPSTestRandomContext != NULL)
     {
         RANDOM_releaseContext((randomContext**)&gpFIPSTestRandomContext);
         gpFIPSTestRandomContext = NULL;
     }
+
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    status = FIPS_ENTROPY_zeroizeExternalEntropy();
+    if (OK != status)
+    {
+       goto exit;
+    }
+#endif /* __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__ */
 
     status = RNG_SEED_zeroizeDepotBits();
     if (OK != status)
@@ -645,6 +674,7 @@ MOC_EXTERN MSTATUS FIPS_Zeroize(void)
 
 exit:
     FIPS_LOG_END_SVC(FIPS_ZEROIZE_SVC,0);
+    sCurrStatus.globalFIPS_powerupStatus = ERR_FIPS_ZEROIZED; /* Just set the Global status */
     return status;
 }
 
@@ -1593,7 +1623,8 @@ FIPS_knownAnswerTests(void)
 #ifdef __ENABLE_DIGICERT_FIPS_RSA__
     /* Note: this doesn't use the RSA_SIMPLE implemenation */
     if(ALGO_POWERUP_ALGOIDSHOULDRUN(FIPS_ALGO_RSA) ||
-       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_RSA_TESTNUM))
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_RSA_SIGVER_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_RSA_SIGGEN_TESTNUM))
     {
         if (OK > (status = FIPS_rsaKat(hwAccelCtx)))
             goto exit;
@@ -1827,7 +1858,9 @@ FIPS_knownAnswerTests(void)
 
 #if defined(__ENABLE_DIGICERT_GCM__)
     if(ALGO_POWERUP_ALGOIDSHOULDRUN(FIPS_ALGO_AES_GCM) ||
-       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_AES_GCM_TESTNUM))
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_AES_GCM_4K_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_AES_GCM_64K_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_AES_GCM_256B_TESTNUM))
     {
         if (OK > (status = FIPS_aesGcmKat(hwAccelCtx)))
             goto exit;
@@ -1912,7 +1945,8 @@ FIPS_knownAnswerTests(void)
 
 #if (defined(__ENABLE_DIGICERT_DSA__))
     if(ALGO_POWERUP_ALGOIDSHOULDRUN(FIPS_ALGO_DSA) ||
-        POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_DSA_TESTNUM))
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_DSA_SIGGEN_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_DSA_SIGVER_TESTNUM))
     {
         status = FIPS_dsaKat(hwAccelCtx);
         if(OK != status)
@@ -1924,7 +1958,8 @@ FIPS_knownAnswerTests(void)
 
 #if (defined(__ENABLE_DIGICERT_ECC__) && defined(__ENABLE_DIGICERT_FIPS_ECDSA__))
     if(ALGO_POWERUP_ALGOIDSHOULDRUN(FIPS_ALGO_ECDSA) ||
-        POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_ECDSA_TESTNUM))
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_ECDSA_SIGGEN_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_ECDSA_SIGVER_TESTNUM))
     {
         status = FIPS_ecdsaKat(hwAccelCtx);
         if(OK != status)
@@ -1937,7 +1972,10 @@ FIPS_knownAnswerTests(void)
 #ifdef __ENABLE_DIGICERT_FIPS_EDDSA__
 #if (defined(__ENABLE_DIGICERT_ECC_EDDSA__))
     if(ALGO_POWERUP_ALGOIDSHOULDRUN(FIPS_ALGO_EDDSA) ||
-        POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_EDDSA_TESTNUM))
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_EDDSA2_SIGGEN_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_EDDSA2_SIGVER_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_EDDSA4_SIGGEN_TESTNUM) ||
+       POWERUP_ALGOTESTNUMSHOULDRUN(FIPS_EDDSA4_SIGVER_TESTNUM))
     {
         status = FIPS_eddsaKat(hwAccelCtx);
         if (OK  != status)
@@ -2100,7 +2138,7 @@ static MSTATUS createFIPSTestRandomContext(void)
     }
 
     if (OK > (status =
-                NIST_CTRDRBG_newDFContext (
+                NIST_CTRDRBG_newDFContext_internal (
                        MOC_SYM(hwAccelCtx) &newCTRContext,
                        NIST_CTRDRBG_DEFAULT_KEY_LEN_BYTES,
                        NIST_CTRDRBG_DEFAULT_OUT_LEN_BYTES,
@@ -2187,7 +2225,9 @@ MOC_EXTERN MSTATUS FIPS_powerupSelfTestEx(
     FIPS_TESTLOG(116, "FIPS_powerupSelfTestEx: FIPS_IntegTest Done...");
 #endif /* __ENABLE_DIGICERT_FIPS_INTEG_TEST__ */
 
+    FIPS_TESTLOG(185, "FIPS_powerupSelfTestEx: RANDOM_setEntropySource Calling...");
     status = RANDOM_setEntropySource(ENTROPY_SRC_EXTERNAL);
+    FIPS_TESTLOG_FMT(186, "FIPS_powerupSelfTestEx: RANDOM_setEntropySource Done status = %d", status);
 
 #ifndef __ENABLE_DIGICERT_CRYPTO_KERNEL_MODULE_FIPS__
     /* Setup ECC & ED mutexes needed for persistent ECC COMB tables
@@ -2614,4 +2654,5 @@ MOC_EXTERN const FIPS_entry_fct* FIPS_getPrivileged()
 }
 
 #endif /* __ENABLE_DIGICERT_FIPS_MODULE__ */
+
 

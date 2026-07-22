@@ -1902,6 +1902,9 @@ static
 MSTATUS MLDSA_keyGen_internal(MLDSACtx *ctx, uint8_t *xi, uint8_t *sk, uint8_t *pk)
 {
     FIPS_LOG_DECL_SESSION;
+#ifdef __ZEROIZE_TEST__
+    int counter;
+#endif
     MSTATUS status = OK;
     SHA3_CTX *sha3Ctx = NULL;
 
@@ -1960,7 +1963,21 @@ exit:
     }
 
     freeKeyGenMemory(mldsaSk, aHat, t);
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nMLDSA_keyGen_internal	 - Before Zeroization\nseeds = ");
+    for (counter = 0; counter < sizeof(seeds); counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(seeds+counter)));
+    }
+#endif
     moc_memset(seeds, 0x00, sizeof(seeds));
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nMLDSA_keyGen_internal	 - After Zeroization\nseeds = ");
+    for (counter = 0; counter < sizeof(seeds); counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(seeds+counter)));
+    }
+#endif
 
     FIPS_LOG_END_ALG(FIPS_ALGO_MLDSA,ctx->type);
     return status;
@@ -2397,8 +2414,10 @@ MLDSA_generateKey_FIPS_consistency_test(MLDSACtx* pCtx, RNGFun rng, void *rngArg
     if (OK != status)
     {
         status = ERR_FIPS_MLDSA_SIGN_VERIFY_FAIL;
+#ifdef __FIPS_CONSISTENCY_TEST_SETS_ERRORSTATE__
         setFIPS_Status(FIPS_ALGO_MLDSA,status);
-	goto exit;
+#endif
+        goto exit;
     }
 
     FIPS_TESTLOG(1040, "MLDSA_generateKey_FIPS_consistency_test: GOOD Signature Verify!");
@@ -3427,11 +3446,37 @@ exit:
 
 MOC_EXTERN MSTATUS MLDSA_destroyCtx(MLDSACtx *ctx)
 {
+#ifdef __ZEROIZE_TEST__
+    int counter;
+#endif
     MSTATUS status = validateCtx(ctx);
     if (status != OK) {
         goto exit;
     }
 
+#ifdef __ZEROIZE_TEST__
+    FIPS_PRINT("\nMLDSA_destroyCtx - Before Zeroization\nContext = ");
+    FIPS_PRINT("@%p: ", ctx->context);
+    for (counter = 0; counter < ctx->contextLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->context+counter)));
+    }
+    FIPS_PRINT("\nPublic Key = ");
+    FIPS_PRINT("@%p: ", ctx->pubKey);
+    for (counter = 0; counter < ctx->pubKeyLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->pubKey+counter)));
+    }
+    FIPS_PRINT("\nPrivate Key = ");
+    FIPS_PRINT("@%p: ", ctx->privKey);
+    for (counter = 0; counter < ctx->privKeyLen; counter++)
+    {
+        FIPS_PRINT("%02x",*((ubyte*)(ctx->privKey+counter)));
+    }
+    FIPS_PRINT("\n");
+
+    FIPS_PRINT("\nMLDSA_destroyCtx - After Zeroization (raw memory)\n");
+#endif
     moc_memset_free(&ctx->context, ctx->contextLen);
     moc_memset_free(&ctx->pubKey, ctx->pubKeyLen);
     moc_memset_free(&ctx->privKey, ctx->privKeyLen);

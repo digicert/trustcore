@@ -33,9 +33,11 @@
 #include "../crypto/crypto.h"
 #include "../common/random.h"
 #include "../common/int64.h"
+
 #ifdef __ENABLE_DIGICERT_FIPS_MODULE__
 #include "../crypto/fips.h"
 #include "../crypto/fips_priv.h"
+#include "../crypto/fips_entropy.h"
 
 /* Check if compiling FIPS for Linux kernel module. */
 #ifdef __ENABLE_DIGICERT_CRYPTO_KERNEL_MODULE_FIPS__
@@ -68,11 +70,14 @@
 #include "../crypto/three_des.h"
 #endif
 #include "../crypto/nist_rng.h"
-
+#include "../crypto/nist_rng_priv.h"
 #include "../crypto/nist_rng_types.h"  /* This is to get the RandomContext data structures */
 
 #ifdef __ENABLE_DIGICERT_FIPS_MODULE__
 static int drbg_fail = 0;
+
+/* Map TDES/AES key size to security strength (in bytes) */
+#define NIST_SEC_STRENGTH(K) ((K==21)?14:K)
 #endif
 
 #ifndef __DISABLE_DIGICERT_NIST_CTR_DRBG__
@@ -87,9 +92,6 @@ static int drbg_fail = 0;
 #else
 #define MAX_EC_SEED_LEN    (256/8)
 #endif
-
-
-/*-------------------------------------------------------------------------*/
 
 #endif /* __ENABLE_DIGICERT_ECC__ */
 
@@ -108,6 +110,14 @@ static const ubyte mKey[MAX_CTR_KEY_LEN] =
     0x18, 0x19, 0x1a, 0x1b,
     0x1c, 0x1d, 0x1e, 0x1f
 };
+
+#ifndef FIPS_ALWAYS_ADD_ENTROPY_NIST_SIZE
+#define FIPS_ALWAYS_ADD_ENTROPY_NIST_SIZE (384/8)
+#endif
+
+#ifndef FIPS_ALWAYS_ADD_ENTROPY_RETRIES
+#define FIPS_ALWAYS_ADD_ENTROPY_RETRIES 3
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -633,11 +643,10 @@ exit:
     return status;
 }
 
-
 /*-----------------------------------------------------------------------*/
 
 MSTATUS
-NIST_CTRDRBG_newContext( MOC_SYM(hwAccelDescr hwAccelCtx)
+NIST_CTRDRBG_newContext_internal( MOC_SYM(hwAccelDescr hwAccelCtx)
                             randomContext **ppNewContext,
                             const ubyte* entropyInput,
                             ubyte4 keyLenBytes, ubyte4 outLenBytes,
@@ -650,9 +659,36 @@ NIST_CTRDRBG_newContext( MOC_SYM(hwAccelDescr hwAccelCtx)
     RandomCtxWrapper* pWrapper = NULL;
     NIST_CTR_DRBG_Ctx* pNewCtx = NULL;
     BlockEncryptFunc bef;
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    ubyte *forcedEntropy = NULL;
+    FIPS_ENTROPY_ctx* pEntropy = NULL;
+#endif
 
     FIPS_GET_STATUS_RETURN_IF_BAD(FIPS_ALGO_DRBG_CTR); /* may return here */
     FIPS_LOG_START_ALG(FIPS_ALGO_DRBG_CTR,0);
+
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    if (!entropyInput)
+    {
+        if (OK > (status = DIGI_MALLOC((void **)&forcedEntropy, keyLenBytes + outLenBytes)))
+        {
+           goto exit;
+        }
+        if (OK > (status = FIPS_ENTROPY_allocateExternalEntropy(&pEntropy)))
+        {
+           goto exit;
+        }
+        if (OK > (status = FIPS_ENTROPY_initExternalEntropy(pEntropy, FIPS_ALWAYS_ADD_ENTROPY_RETRIES)))
+        {
+           goto exit;
+        }
+        if (OK > (status = FIPS_ENTROPY_readExternalEntropy(pEntropy, forcedEntropy, keyLenBytes + outLenBytes)))
+        {
+           goto exit;
+        }
+        entropyInput = forcedEntropy;
+    }
+#endif
 
     if (!ppNewContext || !entropyInput)
     {
@@ -716,6 +752,10 @@ NIST_CTRDRBG_newContext( MOC_SYM(hwAccelDescr hwAccelCtx)
     pNewCtx->keyLenBytes = keyLenBytes;
     pNewCtx->outLenBytes = outLenBytes;
     pNewCtx->bef = bef;
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    pNewCtx->entropyCtx = pEntropy;
+    pEntropy = NULL;
+#endif
 
     pNewCtx->history = (ubyte*) MALLOC( pNewCtx->outLenBytes);
     if (!pNewCtx->history)
@@ -735,7 +775,7 @@ NIST_CTRDRBG_newContext( MOC_SYM(hwAccelDescr hwAccelCtx)
     if ( OK > ( status = RTOS_mutexCreate( &pNewCtx->fipsMutex, 0, 0 ) ) )
         goto exit;
 
-    if (OK > ( status = NIST_CTRDRBG_reseed(MOC_SYM(hwAccelCtx) pWrapper,
+    if (OK > ( status = NIST_CTRDRBG_reseed_internal(MOC_SYM(hwAccelCtx) pWrapper,
                                             entropyInput, keyLenBytes + outLenBytes,
                                             personalization,
                                             personalizationLen)))
@@ -749,7 +789,17 @@ NIST_CTRDRBG_newContext( MOC_SYM(hwAccelDescr hwAccelCtx)
     pWrapper = 0;
 
 exit:
-
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+   if (NULL != forcedEntropy)
+   {
+	   DIGI_MEMSET(forcedEntropy, 0, keyLenBytes + outLenBytes);
+	   DIGI_FREE((void**)&forcedEntropy);
+   }
+   if (NULL != pEntropy)
+   {
+       FIPS_ENTROPY_freeExternalEntropy(&pEntropy);
+   }
+#endif
     if (pWrapper != NULL)
     {
         NIST_CTRDRBG_deleteContext(MOC_SYM(hwAccelCtx) (randomContext **)&pWrapper);
@@ -759,11 +809,33 @@ exit:
     return status;
 }
 
+MSTATUS
+NIST_CTRDRBG_newContext( MOC_SYM(hwAccelDescr hwAccelCtx)
+                            randomContext **ppNewContext,
+                            const ubyte* entropyInput,
+                            ubyte4 keyLenBytes, ubyte4 outLenBytes,
+                            const ubyte* personalization,
+                            ubyte4 personalizationLen)
+{
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+	/* According to IG 9.3.A Resolution 4, the FIPS module cannot allow seeding with
+	 * data not acquired by the Entropy source inside the TOEPP, since it would unblock
+	 * the DRBG before sufficient entropy bits are collected.
+	 *
+	 * Just drop the data and let the implementation pull the entropy seed data.
+	 */
+	return NIST_CTRDRBG_newContext_internal(MOC_SYM(hwAccelCtx) ppNewContext,
+			NULL, keyLenBytes, outLenBytes, personalization, personalizationLen);
+#else
+	return NIST_CTRDRBG_newContext_internal(MOC_SYM(hwAccelCtx) ppNewContext,
+			entropyInput, keyLenBytes, outLenBytes, personalization, personalizationLen);
+#endif
+}
 
 /*-----------------------------------------------------------------------*/
 
 MSTATUS
-NIST_CTRDRBG_newDFContext( MOC_SYM(hwAccelDescr hwAccelCtx)
+NIST_CTRDRBG_newDFContext_internal( MOC_SYM(hwAccelDescr hwAccelCtx)
                             randomContext **ppNewContext,
                             ubyte4 keyLenBytes, ubyte4 outLenBytes,
                             const ubyte* entropyInput,
@@ -781,9 +853,40 @@ NIST_CTRDRBG_newDFContext( MOC_SYM(hwAccelDescr hwAccelCtx)
     BlockEncryptFunc bef;
     ubyte* inputs[3];
     ubyte4 inputLens[3];
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    ubyte *forcedEntropy = NULL;
+    FIPS_ENTROPY_ctx* pEntropy = NULL;
+#endif
 
     FIPS_GET_STATUS_RETURN_IF_BAD(FIPS_ALGO_DRBG_CTR); /* may return here */
     FIPS_LOG_START_ALG(FIPS_ALGO_DRBG_CTR,0);
+
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    if (!entropyInput)
+    {
+        if (!entropyInputLen)
+        {
+            entropyInputLen = FIPS_ALWAYS_ADD_ENTROPY_NIST_SIZE;
+        }
+        if (OK > (status = DIGI_MALLOC((void **)&forcedEntropy, entropyInputLen)))
+        {
+            goto exit;
+        }
+        if (OK > (status = FIPS_ENTROPY_allocateExternalEntropy(&pEntropy)))
+        {
+            goto exit;
+        }
+        if (OK > (status = FIPS_ENTROPY_initExternalEntropy(pEntropy, FIPS_ALWAYS_ADD_ENTROPY_RETRIES)))
+        {
+            goto exit;
+        }
+        if (OK > (status = FIPS_ENTROPY_readExternalEntropy(pEntropy, forcedEntropy, entropyInputLen)))
+        {
+            goto exit;
+        }
+        entropyInput = forcedEntropy;
+    }
+#endif
 
     if (!ppNewContext || !entropyInput)
     {
@@ -839,6 +942,10 @@ NIST_CTRDRBG_newDFContext( MOC_SYM(hwAccelDescr hwAccelCtx)
     pNewCtx->keyLenBytes = keyLenBytes;
     pNewCtx->outLenBytes = outLenBytes;
     pNewCtx->bef = bef;
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    pNewCtx->entropyCtx = pEntropy;
+    pEntropy = NULL;
+#endif
 
     pNewCtx->history = (ubyte*) MALLOC( pNewCtx->outLenBytes);
     if (!pNewCtx->history)
@@ -889,7 +996,17 @@ NIST_CTRDRBG_newDFContext( MOC_SYM(hwAccelDescr hwAccelCtx)
     pWrapper = 0;
 
 exit:
-
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+   if (NULL != forcedEntropy)
+   {
+       DIGI_MEMSET(forcedEntropy, 0, entropyInputLen);
+       DIGI_FREE((void**)&forcedEntropy);
+   }
+   if (NULL != pEntropy)
+   {
+       FIPS_ENTROPY_freeExternalEntropy(&pEntropy);
+   }
+#endif
     if (pWrapper != NULL)
     {
         NIST_CTRDRBG_deleteContext(MOC_SYM(hwAccelCtx) (randomContext**)&pWrapper);
@@ -899,6 +1016,33 @@ exit:
     return status;
 }
 
+MSTATUS
+NIST_CTRDRBG_newDFContext( MOC_SYM(hwAccelDescr hwAccelCtx)
+                            randomContext **ppNewContext,
+                            ubyte4 keyLenBytes, ubyte4 outLenBytes,
+                            const ubyte* entropyInput,
+                            ubyte4 entropyInputLen,
+                            const ubyte* nonce,
+                            ubyte4 nonceLen,
+                            const ubyte* personalization,
+                            ubyte4 personalizationLen)
+{
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+	/* According to IG 9.3.A Resolution 4, the FIPS module cannot allow seeding with
+	 * data not acquired by the Entropy source inside the TOEPP, since it would unblock
+	 * the DRBG before sufficient entropy bits are collected.
+	 *
+	 * Just drop the data and let the implementation pull the entropy seed data.
+	 */
+	return NIST_CTRDRBG_newDFContext_internal(MOC_SYM(hwAccelCtx) ppNewContext,
+			keyLenBytes, outLenBytes, NULL, entropyInputLen,
+			nonce, nonceLen, personalization, personalizationLen);
+#else
+	return NIST_CTRDRBG_newDFContext_internal(MOC_SYM(hwAccelCtx) ppNewContext,
+			keyLenBytes, outLenBytes, entropyInput, entropyInputLen,
+			nonce, nonceLen, personalization, personalizationLen);
+#endif
+}
 
 /*-----------------------------------------------------------------------*/
 
@@ -983,6 +1127,10 @@ MOC_EXTERN MSTATUS NIST_CTRDRBG_deleteContext( MOC_SYM(hwAccelDescr hwAccelCtx)
             break;
 #endif
     }
+
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    FIPS_ENTROPY_freeExternalEntropy(&(pCtx->entropyCtx));
+#endif
 
     DIGI_MEMSET( (ubyte*) pWrapper, 0,
                 sizeof( RandomCtxWrapper) + pCtx->outLenBytes + pCtx->keyLenBytes);
@@ -1078,6 +1226,13 @@ NIST_CTRDRBG_reseedDf(MOC_SYM(hwAccelDescr hwAccelCtx)
     ubyte4 inputLens[2];
     ubyte4 seedLen;
 
+#ifdef __ENABLE_DIGICERT_FIPS_MODULE__
+    if (entropyInputLen < NIST_SEC_STRENGTH(pCtx->keyLenBytes))
+    {
+        status = ERR_NIST_RNG_CTR_BAD_ENTROPY_INPUT_LEN;
+        goto exit;
+    }
+#endif
     seedLen = pCtx->keyLenBytes + pCtx->outLenBytes;
 
     /* generate the seed */
@@ -1114,7 +1269,7 @@ exit:
 /*-----------------------------------------------------------------------*/
 
 MSTATUS
-NIST_CTRDRBG_reseed(MOC_SYM(hwAccelDescr hwAccelCtx)
+NIST_CTRDRBG_reseed_internal(MOC_SYM(hwAccelDescr hwAccelCtx)
                             randomContext *pContext,
                             const ubyte* entropyInput,
                             ubyte4 entropyInputLen,
@@ -1125,10 +1280,42 @@ NIST_CTRDRBG_reseed(MOC_SYM(hwAccelDescr hwAccelCtx)
     RandomCtxWrapper* pWrapper = NULL;
     NIST_CTR_DRBG_Ctx* pCtx = NULL;
     MSTATUS status = OK;
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    ubyte *forcedEntropy = NULL;
+#endif
 
     FIPS_GET_STATUS_RETURN_IF_BAD(FIPS_ALGO_DRBG_CTR); /* may return here */
     FIPS_LOG_START_ALG(FIPS_ALGO_DRBG_CTR,0);
 
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+    if (pContext && !entropyInput)
+    {
+        pWrapper = (RandomCtxWrapper *)pContext;
+        pCtx = GET_CTR_DRBG_CTX(pWrapper);
+        if (pCtx == NULL)
+        {
+           status = ERR_NULL_POINTER;
+           goto exit;
+        }
+
+        if (pCtx->entropyCtx)
+        {
+           if (!entropyInputLen)
+           {
+               entropyInputLen = pCtx->keyLenBytes + pCtx->outLenBytes;
+           }
+           if (OK > (status = DIGI_MALLOC((void **)&forcedEntropy, entropyInputLen)))
+           {
+              goto exit;
+           }
+           if (OK > (status = FIPS_ENTROPY_readExternalEntropy(pCtx->entropyCtx, forcedEntropy, entropyInputLen)))
+           {
+	          goto exit;
+           }
+           entropyInput = forcedEntropy;
+        }
+    }
+#endif
     if (!pContext || !entropyInput)
     {
         status = ERR_NULL_POINTER;
@@ -1156,12 +1343,39 @@ NIST_CTRDRBG_reseed(MOC_SYM(hwAccelDescr hwAccelCtx)
                                     additionalInputLen);
 
 exit:
-
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+   if (NULL != forcedEntropy)
+   {
+	   DIGI_MEMSET(forcedEntropy, 0, entropyInputLen);
+	   DIGI_FREE((void**)&forcedEntropy);
+   }
+#endif
     FIPS_LOG_END_ALG(FIPS_ALGO_DRBG_CTR,0);
     return status;
 }
 
-
+MSTATUS
+NIST_CTRDRBG_reseed(MOC_SYM(hwAccelDescr hwAccelCtx)
+                            randomContext *pContext,
+                            const ubyte* entropyInput,
+                            ubyte4 entropyInputLen,
+                            const ubyte* additionalInput,
+                            ubyte4 additionalInputLen)
+{
+#ifdef __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__
+	/* According to IG 9.3.A Resolution 4, the FIPS module cannot allow seeding with
+	 * data not acquired by the Entropy source inside the TOEPP, since it may unblock
+	 * the DRBG before sufficient entropy bits are collected.
+	 *
+	 * Just drop the data and let the implementation pull the entropy seed data.
+	 */
+	return NIST_CTRDRBG_reseed_internal(MOC_SYM(hwAccelCtx) pContext,
+            NULL, entropyInputLen, additionalInput, additionalInputLen);
+#else
+	return NIST_CTRDRBG_reseed_internal(MOC_SYM(hwAccelCtx) pContext,
+            entropyInput, entropyInputLen, additionalInput, additionalInputLen);
+#endif
+}
 
 /*------------------------------------------------------------------*/
 
