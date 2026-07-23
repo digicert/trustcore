@@ -54,6 +54,7 @@ function show_usage
   echo "                        bbb       For BeagleBone Black"
   echo "                        android   For android"
   echo "   --cmake-opt         - Additional cmake options can be passed using this flag."
+  echo "   --azure-dps            - Build with Azure DPS support."
   echo ""
   exit 1
 }
@@ -342,6 +343,10 @@ do
             shift
             echo "Setting additional cmake option: $1"
             BUILD_OPTIONS+=" $1"
+            ;;
+        --azure-dps)
+            echo "Building with Azure DPS support enabled...";
+            BUILD_OPTIONS+=" -DCM_ENABLE_AZURE_DPS=ON"
             ;;
         --*)
             echo "Invalid option: $1";

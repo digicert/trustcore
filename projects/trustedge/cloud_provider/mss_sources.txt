@@ -1,0 +1,3 @@
+MSS_SRC_DIR/trustedge/cloud_provider/trustedge_cloud_service_azure.c
+MSS_SRC_DIR/trustedge/http/trustedge_https_util.c
+MSS_SRC_DIR/trustedge/http/trustedge_https_client.c

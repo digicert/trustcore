@@ -5480,3 +5480,103 @@ exit:
 
     return exitRequested;
 }
+
+extern MSTATUS TRUSTEDGE_utilsRetrieveCertificateCN(
+    ubyte *pCert, ubyte4 certLen, ubyte **ppCommonName, ubyte4 *pCommonNameLen)
+{
+    MSTATUS status;
+    CStream cs;
+    MemFile mf;
+    ASN1_ITEMPTR pRoot = NULL, pCN = NULL;
+    ubyte *pBuffer = NULL;
+    ubyte *pDecodedCert = NULL;
+    ubyte4 decodedCertLen = 0;
+
+    if ((NULL == pCert) || (NULL == ppCommonName) || (NULL == pCommonNameLen))
+    {
+        status = ERR_NULL_POINTER;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (0 == certLen)
+    {
+        status = ERR_BAD_LENGTH;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = CA_MGMT_decodeCertificate(
+        pCert, certLen, &pDecodedCert, &decodedCertLen);
+    if (OK == status)
+    {
+        pCert = pDecodedCert;
+        certLen = decodedCertLen;
+    }
+
+    MF_attach(&mf, certLen, pCert);
+    CS_AttachMemFile(&cs, &mf);
+
+    status = ASN1_Parse(cs, &pRoot);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Retrieve the certificate common name */
+    status = X509_getSubjectCommonName(ASN1_FIRST_CHILD(pRoot), cs, &pCN);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Get reference to common name buffer */
+    pBuffer = (ubyte *) CS_memaccess(cs, pCN->dataOffset, pCN->length);
+    if (NULL == pBuffer)
+    {
+        status = ERR_NULL_POINTER;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Copy common name */
+    status = DIGI_MALLOC_MEMCPY(
+        (void **) ppCommonName, pCN->length, pBuffer, pCN->length);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    *pCommonNameLen = pCN->length;
+
+exit:
+
+    if (NULL != pBuffer)
+    {
+        CS_stopaccess(cs, pBuffer);
+    }
+
+    if (NULL != pRoot)
+    {
+        TREE_DeleteTreeItem((TreeItem *) pRoot);
+    }
+
+    DIGI_FREE((void **) &pDecodedCert);
+
+    return status;
+}
