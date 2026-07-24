@@ -1,0 +1,28 @@
+#
+# Copyright 2001-2020 The OpenSSL Project Authors. All Rights Reserved.
+#
+# Licensed under the Apache License 2.0 (the "License").  You may not use
+# this file except in compliance with the License.  You can obtain a copy
+# in the file LICENSE in the source distribution or at
+# https://www.openssl.org/source/license.html
+
+# Tests start with one of these keywords
+#       Cipher Decrypt Derive Digest Encoding KDF MAC PBE
+#       PrivPubKeyPair Sign Verify VerifyRecover
+# and continue until a blank line. Lines starting with a pound sign are ignored.
+
+Title = scrypt tests (from draft-josefsson-scrypt-kdf-03 and others) Using PBE
+
+# NB: this test requires more than 1GB of memory to run so it will hit the
+# scrypt memory limit and return an error. To run this test without error
+# uncomment out the "maxmem" line and comment out the "Result"
+# line
+PBE = scrypt
+Password = "pleaseletmein"
+Salt = "SodiumChloride"
+N = 1048576
+r = 8
+p = 1
+Key = 2101cb9b6a511aaeaddbbe09cf70f881ec568d574a2ffd4dabe5ee9820adaa478e56fd8f4ba5d09ffa1c6d927c40f4c337304049e8a952fbcbf45c6fa77a41a4
+Result = SCRYPT_ERROR
+#maxmem = 10000000000

@@ -1,0 +1,35 @@
+#
+# Copyright 2001-2020 The OpenSSL Project Authors. All Rights Reserved.
+#
+# Licensed under the Apache License 2.0 (the "License").  You may not use
+# this file except in compliance with the License.  You can obtain a copy
+# in the file LICENSE in the source distribution or at
+# https://www.openssl.org/source/license.html
+
+# Tests start with one of these keywords
+#       Cipher Decrypt Derive Digest Encoding KDF MAC PBE
+#       PrivPubKeyPair Sign Verify VerifyRecover
+# and continue until a blank line. Lines starting with a pound sign are ignored.
+
+Title = PBKDF2 tests (using PBE)
+
+PBE = pbkdf2
+Password = "passwordPASSWORDpassword"
+Salt = "saltSALTsaltSALTsaltSALTsaltSALTsalt"
+iter = 4096
+MD = sha1
+Key = 3d2eec4fe41c849b80c8d83662c0e44a8b291a964cf2f07038
+
+PBE = pbkdf2
+Password = "passwordPASSWORDpassword"
+Salt = "saltSALTsaltSALTsaltSALTsaltSALTsalt"
+iter = 4096
+MD = sha256
+Key = 348c89dbcbd32b2f32d814b8116e84cf2b17347ebc1800181c4e2a1fb8dd53e1c635518c7dac47e9
+
+PBE = pbkdf2
+Password = "passwordPASSWORDpassword"
+Salt = "saltSALTsaltSALTsaltSALTsaltSALTsalt"
+iter = 4096
+MD = sha512
+Key = 8c0511f4c6e597c6ac6315d8f0362e225f3c501495ba23b868c005174dc4ee71115b59f9e60cd9532fa33e0f75aefe30225c583a186cd82bd4daea9724a3d3b8
