@@ -101,6 +101,10 @@ do
             echo "Building with FIPS enabled..."
             FIPS_OPTION=" $1"
             FIPS_MAKE_OPTION="enable-mocana-fips"
+            FIPS_GCM_OPTION=" --aes-gcm-4k"
+            # Pass the matching define to OpenSSL Configure so the Mocana provider
+            # inside libcrypto.so also uses CRYPTO_INTERFACE_GCM_*_4k (not _256b).
+            FIPS_GCM_DEFINE="-D__ENABLE_DIGICERT_GCM_4K__"
             ;;
         --force-entropy-example)
             echo "Build with force entropy example";
@@ -251,7 +255,7 @@ do
 
             # build libcrypto.so with DigiCert provider built in
             pushd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION} 
-            ./Configure enable-rc5 enable-mocana-cryptointerface enable-mocana-pqc ${FIPS_MAKE_OPTION} ${OSSL_TAP} ${OSSL_DEBUG} ${OSSL_EXTRA_OPTS}
+            ./Configure enable-rc5 enable-mocana-cryptointerface enable-mocana-pqc ${FIPS_MAKE_OPTION} ${OSSL_TAP} ${OSSL_DEBUG} ${OSSL_EXTRA_OPTS} ${FIPS_GCM_DEFINE}
             make -j8
 
             if [ ! -f ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/libcrypto.so.3 ]; then
@@ -267,8 +271,8 @@ do
             popd
 
         fi
-        cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION --openssl_shim $DTLS_OPTION $DTLS_SRTP_OPTION ${OPENSSL_OPTION} $RSA1024_OPTION $SHA1_OPTION $TLS13_OPTION $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS $STRICT_DH_OPTION $RSA8K_OPTION nanossl
-        cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION $REDEFINE_OPTION --openssl_shim $DTLS_OPTION ${OPENSSL_OPTION} $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS openssl_shim_lib
+        cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION --openssl_shim $DTLS_OPTION $DTLS_SRTP_OPTION ${OPENSSL_OPTION} $RSA1024_OPTION $SHA1_OPTION $TLS13_OPTION $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS $STRICT_DH_OPTION $RSA8K_OPTION $FIPS_GCM_OPTION nanossl
+        cd ${MSS_PROJECTS_DIR}/nanossl && ./build.sh --clean $BUILD_OPTIONS $FIPS_OPTION $REDEFINE_OPTION --openssl_shim $DTLS_OPTION ${OPENSSL_OPTION} $OCSP_OPTION $SESSION_TICKET_OPTION $STATIC_OPTION $NANOSSL_OSSL_OPTIONS $FIPS_GCM_OPTION openssl_shim_lib
 
         cd ${MSS_PROJECTS_DIR}/digiprov_test && ./clean.sh && ./build.sh $BUILD_OPTIONS ${FIPS_OPTION} ${TAP_ARG} ${PKCS11_ARG} ${OPENSSL_OPTION}
 
