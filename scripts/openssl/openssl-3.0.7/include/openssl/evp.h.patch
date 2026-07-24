@@ -1,0 +1,4 @@
+39c39
+< # define PKCS5_SALT_LEN                  8
+---
+> # define PKCS5_SALT_LEN                  16
