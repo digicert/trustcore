@@ -73,6 +73,7 @@
 
 #ifdef __RTOS_ZEPHYR__
 #include <zephyr/logging/log.h>
+#include <zephyr/drivers/hwinfo.h>
 LOG_MODULE_REGISTER(trustedge, LOG_LEVEL_DBG);
 #endif
 
@@ -3541,6 +3542,177 @@ exit:
 #define TRUSTEDGE_TCP_SERVER_PORT   8080
 #define BUFFER_SIZE                 1024
 
+/* Define this flag to locally generates bootstrap key and create a CSR which
+ * is sent to the provisioning server. The provisioning server returns the
+ * corresponding bootstrap */
+#define TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST
+
+#if defined(__RTOS_ZEPHYR__) && defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+
+#define CSR_PARAMS_TEMPLATE \
+    "# Subject\n" \
+    "countryName=US\n" \
+    "commonName=%s\n" \
+    "stateOrProvinceName=CA\n" \
+    "localityName=MV\n" \
+    "organizationName=DigiCert\n" \
+    "organizationalUnitName=Engineering\n" \
+    "# Requested Extensions\n" \
+    "isCA=false\n" \
+    "keyUsage=digitalSignature\n"
+
+#define DEVICE_ID_MAX_LEN 16
+#define DEVICE_NAME_MAX_LEN 64
+
+static sbyte g_deviceName[DEVICE_NAME_MAX_LEN] = {0};
+static sbyte g_deviceId[DEVICE_ID_MAX_LEN * 2 + 1] = {0};
+
+static void TRUSTEDGE_getDeviceIdentifiers(void)
+{
+    ubyte devId[DEVICE_ID_MAX_LEN] = {0};
+    ssize_t idLen = 0;
+    ubyte4 i = 0;
+
+    /* Get hardware device ID */
+    idLen = hwinfo_get_device_id(devId, sizeof(devId));
+    if (idLen <= 0)
+    {
+        /* Fallback to timestamp-based ID if hwinfo not available */
+        snprintf(g_deviceId, sizeof(g_deviceId), "%08x", (unsigned int)k_uptime_get_32());
+    }
+    else
+    {
+        /* Convert to hex string (use first 8 bytes max for readability) */
+        ubyte4 useLen = (idLen > 8) ? 8 : idLen;
+        for (i = 0; i < useLen; i++)
+        {
+            snprintf(&g_deviceId[i * 2], 3, "%02x", devId[i]);
+        }
+    }
+
+    /* Build device name: board-hwid (use CONFIG_BOARD to avoid slashes in CONFIG_BOARD_TARGET) */
+    snprintf(g_deviceName, sizeof(g_deviceName), "%s-%s", CONFIG_BOARD, g_deviceId);
+}
+
+static MSTATUS TRUSTEDGE_createBootstrapRequest(ubyte **ppCSR, ubyte4 *pCSRLen)
+{
+    MSTATUS status;
+    AsymmetricKey asymKey = { 0 };
+    CertCsrCtx *pCsrCtx = NULL;
+    CertKeyCtx keyCtx = { 0 };
+    ubyte *pKeyPem = NULL;
+    ubyte4 keyPemLen = 0;
+    sbyte pCSRParams[512] = {0};
+
+    if (NULL == ppCSR || NULL == pCSRLen)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    *ppCSR = NULL;
+    *pCSRLen = 0;
+
+    /* Get device identifiers (populates g_deviceId and g_deviceName) */
+    TRUSTEDGE_getDeviceIdentifiers();
+
+    /* Build CSR params with device ID as CN */
+    snprintf(pCSRParams, sizeof(pCSRParams), CSR_PARAMS_TEMPLATE, g_deviceId);
+
+    printk("CSR Common Name (CN): %s\n", g_deviceId);
+    printk("Device Name: %s\n", g_deviceName);
+
+    CRYPTO_initAsymmetricKey(&asymKey);
+
+    /* Generate EC P256 key */
+    status = CRYPTO_createECCKeyEx(&asymKey, cid_EC_P256);
+    if (OK != status)
+        goto exit;
+
+    status = CRYPTO_INTERFACE_EC_generateKeyPairAux(
+        asymKey.key.pECC, RANDOM_rngFun, g_pRandomContext);
+    if (OK != status)
+        goto exit;
+
+    /* Serialize the private key to PEM format */
+    status = CRYPTO_serializeAsymKey(
+        MOC_ASYM(hwAccelCtx)
+        &asymKey,
+        privateKeyPem,
+        &pKeyPem,
+        &keyPemLen
+    );
+    if (OK != status)
+        goto exit;
+
+    /* Write the private key to file */
+    status = DIGICERT_writeFile(
+        "etc/digicert/keystore/keys/bootstrap-key.pem",
+        pKeyPem,
+        keyPemLen
+    );
+    if (OK != status)
+        goto exit;
+
+    /* Allocate and initialize CSR context */
+    status = DIGI_CALLOC((void **)&pCsrCtx, 1, sizeof(CertCsrCtx));
+    if (OK != status)
+        goto exit;
+
+    /* Add CSR attributes from pCSRParams (TOML format) */
+    status = CERT_ENROLL_addCsrAttributes(
+        pCsrCtx,
+        TOML,                       /* format */
+        0,                          /* cmcType (unused for TOML) */
+        NULL,                       /* evalFunction */
+        NULL,                       /* pEvalFunctionArg */
+        &asymKey,                   /* pKey */
+        certEnrollAlgUndefined,     /* keyAlgorithm */
+        FALSE,                      /* processSigAlgs */
+        ht_sha256,                  /* hashId */
+        (ubyte *)pCSRParams,        /* pIn */
+        DIGI_STRLEN(pCSRParams),    /* inLen */
+        NULL,                       /* pExtCtx */
+        EXT_ENROLL_FLOW_NONE        /* extFlow */
+    );
+    if (OK != status)
+        goto exit;
+
+    /* Set the key context to use our generated key for signing */
+    keyCtx.pKey = &asymKey;
+
+    /* Generate the CSR (PEM format) */
+    status = CERT_ENROLL_generateCSRRequest(
+        &keyCtx,                    /* pKeyCtx */
+        NULL,                       /* pTapKeyCtx */
+        pCsrCtx,                    /* pCsrCtx */
+        0,                          /* cmcType */
+        ppCSR,                      /* ppCsr */
+        pCSRLen                     /* pCsrLen */
+    );
+    if (OK != status)
+        goto exit;
+
+    printk("CSR generated: %u bytes\n", *pCSRLen);
+    printk("CSR first 60 chars: %.60s\n", (char *)*ppCSR);
+
+exit:
+    if (NULL != pKeyPem)
+    {
+        DIGI_FREE((void **)&pKeyPem);
+    }
+
+    if (NULL != pCsrCtx)
+    {
+        CERT_ENROLL_cleanupCsrCtx(pCsrCtx);
+        DIGI_FREE((void **)&pCsrCtx);
+    }
+
+    CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
+    return status;
+}
+
+#endif
+
 static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *pFilename)
 {
 #if defined(__RTOS_ZEPHYR__)
@@ -3553,6 +3725,10 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     k_timeout_t timeout = K_MSEC(2000);
     FileDescriptor pCtx = NULL;
     int totalBytes = 0;
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+    ubyte *pCSR = NULL;
+    ubyte4 csrLen = 0;
+#endif
 
     status = TRUSTEDGE_utilsGetHostByName("provision.digicert.com", pIpAddr);
     if (OK != status)
@@ -3576,6 +3752,16 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     }
     else if (0 == DIGI_STRCMP(pFilename, "bootstrap"))
     {
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+        status = TRUSTEDGE_createBootstrapRequest(&pCSR, &csrLen);
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        pFilename = "bootstrapparams";
+#endif
+
         status = FMGMT_fopen("bootstrap.zip", "wb", &pCtx);
         if (OK != status)
             goto exit;
@@ -3587,6 +3773,29 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     {
         goto exit;
     }
+
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+    /* Send the device name followed by the CSR to the server */
+    if (NULL != pCSR && csrLen > 0)
+    {
+        /* Send device name with newline terminator */
+        sbyte deviceNameLine[DEVICE_NAME_MAX_LEN + 2] = {0};
+        snprintf(deviceNameLine, sizeof(deviceNameLine), "%s\n", g_deviceName);
+
+        status = TCP_WRITE(serverSocket, deviceNameLine, DIGI_STRLEN(deviceNameLine), &numBytesSent);
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        /* Send CSR */
+        status = TCP_WRITE(serverSocket, (sbyte *)pCSR, csrLen, &numBytesSent);
+        if (OK != status)
+        {
+            goto exit;
+        }
+    }
+#endif
 
     do {
 
@@ -3612,6 +3821,12 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     status = OK;
 
 exit:
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+    if (NULL != pCSR)
+    {
+        DIGI_FREE((void **)&pCSR);
+    }
+#endif
 
     return status;
 #else
