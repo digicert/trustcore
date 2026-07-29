@@ -5979,7 +5979,9 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
     MimePayload payloadData = { 0 };
     sbyte *pFileName = NULL;
     sbyte *pOutFile = NULL;
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
     byteBoolean isProvisionSelf = FALSE;
+#endif
     ubyte *pProviderCredJson = NULL;
     ubyte4 providerCredJsonLen = 0;
 
