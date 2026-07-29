@@ -81,7 +81,7 @@ jobs:
             echo ">>> Building TrustEdge for $platform"
           
             if [ "$platform" == "x64" ]; then
-              ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+              ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --azure-dps
               
             elif [ "$platform" == "rpi64" ]; then
               sudo mkdir -p /opt/sysroots/master
@@ -89,7 +89,7 @@ jobs:
               sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
               curl --fail --silent --show-error --location -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_GCC_REPO_URL }} -O
               sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
-              ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+              ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --azure-dps
             
             elif [ "$platform" == "rpi32" ]; then
               sudo mkdir -p /opt/sysroots/master
@@ -97,7 +97,7 @@ jobs:
               sudo tar -xf sysroot-glibc-linaro-2.23-2018.12-arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
               curl --fail --silent --show-error --location -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_GCC_REPO_URL }} -O
               sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
-              ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+              ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --azure-dps
             fi
 
             echo ">>> Verifying build output for $platform"
