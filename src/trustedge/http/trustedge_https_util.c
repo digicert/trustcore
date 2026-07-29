@@ -1585,7 +1585,9 @@ TRUSTEDGE_HTTPS_UTIL_runClient(HttpsClientCtx *pCtx)
     pCtx->connectionSSLInstance = -1;
 #if defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__)
 #if defined(__ENABLE_DIGICERT_TAP__)
+#if 0
     TRUSTEDGE_clientTapClearCredentialList();
+#endif
 #endif
 #endif
 #endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */

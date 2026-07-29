@@ -1679,7 +1679,7 @@ static void freeCertificateHandlerData (MimePartProcessArg **ppStruct)
 #define PKCS7_HEADER        "-----BEGIN PKCS7-----\n"
 #define PKCS7_FOOTER        "-----END PKCS7-----\n"
 
-static MSTATUS TRUSTEDGE_getKeyById(
+extern MSTATUS TRUSTEDGE_getKeyByPolicyId(
     TrustEdgeAgentCtx *pCtx,
     sbyte *pId,
     AsymmetricKey **ppKey)
@@ -1915,7 +1915,7 @@ static MSTATUS processCertificateRenewMimePart(
             goto exit;
         }
 
-        status = TRUSTEDGE_getKeyById(
+        status = TRUSTEDGE_getKeyByPolicyId(
             pState->pCtx, pId, &pState->pKey);
         if (OK != status)
         {
@@ -2055,7 +2055,7 @@ exit:
     return status;
 }
 
-MSTATUS TRUSTEDGE_getCertificateByPolicyId(
+extern MSTATUS TRUSTEDGE_getCertificateByPolicyId(
     TrustEdgeAgentCtx *pCtx,
     sbyte *pPolicyId,
     ubyte **ppCert,

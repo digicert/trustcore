@@ -5580,3 +5580,88 @@ exit:
 
     return status;
 }
+
+extern MSTATUS TRUSTEDGE_utilsLoadCertificateAndKey(
+    certStorePtr pCertStore,
+    char *certificateAlias,
+    ubyte *pCert,
+    ubyte4 certLen,
+    AsymmetricKey *pAsymKey)
+{
+    MSTATUS status = OK;
+    ubyte *pKeyBlob = NULL;
+    ubyte4 keyBlobLen = 0;
+    SizedBuffer certBuffer = { 0 };
+    ubyte4 certCount;
+    ubyte *pDecodedCert = NULL;
+    ubyte4 decodedCertLen = 0;
+
+    status = CRYPTO_serializeAsymKey(
+        pAsymKey, mocanaBlobVersion2, &pKeyBlob, &keyBlobLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = CA_MGMT_decodeCertificate(
+        pCert, certLen, &pDecodedCert, &decodedCertLen);
+    if (OK == status)
+    {
+        pCert = pDecodedCert;
+        certLen = decodedCertLen;
+    }
+
+    certBuffer.data = pCert;
+    certBuffer.length = certLen;
+    certCount = 1;
+
+    if (NULL == certificateAlias)
+    {
+
+        status = CERT_STORE_addIdentityWithCertificateChain (
+            pCertStore,
+            &certBuffer, certCount,
+            pKeyBlob,
+            keyBlobLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+    else
+    {
+        status = CERT_STORE_addIdentityWithCertificateChainEx (
+            pCertStore,
+            (ubyte *)certificateAlias,
+            DIGI_STRLEN( (sbyte *)certificateAlias),
+            &certBuffer,
+            certCount,
+            pKeyBlob,
+            keyBlobLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+
+exit:
+
+    if (NULL != pKeyBlob)
+        DIGI_FREE ((void**)&pKeyBlob);
+
+    DIGI_FREE((void **) &pDecodedCert);
+
+    return status;
+}

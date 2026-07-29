@@ -1,0 +1,28 @@
+{
+    "divisionId": "DIVISION-ID-TEST-0",
+    "accountId": "ACCOUNT-ID-TEST-0",
+    "deviceId": "DEVICE-ID-TEST-0",
+    "status": "OK",
+    "createdOn": "2012-04-23T18:25:43.000Z",
+    "updatedOn": "2012-04-23T18:25:43.000Z",
+    "pendingPolicies": [
+        {
+            "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+            "policyType": "CERTIFICATE",
+            "policyId": "294820113",
+            "priority": 0
+        },
+        {
+            "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+            "policyType": "CLOUDPLATFORM",
+            "policyId": "193850392",
+            "priority": 0,
+            "policyDependency": [
+                {
+                    "policyType": "CERTIFICATE",
+                    "policyId" : "294820113"
+                }
+            ]
+        }
+    ]
+}

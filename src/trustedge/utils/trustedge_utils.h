@@ -521,6 +521,13 @@ MOC_EXTERN MSTATUS TRUSTEDGE_utilsRetrieveCertificateCN(
     ubyte **ppCommonName,
     ubyte4 *pCommonNameLen);
 
+MOC_EXTERN MSTATUS TRUSTEDGE_utilsLoadCertificateAndKey(
+    certStorePtr pCertStore,
+    char *certificateAlias,
+    ubyte *pCert,
+    ubyte4 certLen,
+    AsymmetricKey *pAsymKey);
+
 #ifdef __cplusplus
 }
 #endif

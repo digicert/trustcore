@@ -1,0 +1,20 @@
+{
+    "configuration": {
+        "device_id": "DEVICE-ID-TEST-0",
+        "account_id": "ACCOUNT-ID-TEST-0",
+        "division_id": "DIVISION-ID-TEST-0",
+        "device_group_id": "DEVICE-GROUP-ID-TEST-0",
+        "rendezvous_configuration": {
+            "mqtt_endpoint": {
+                "primary": [ "mqtt://localhost:1883" ]
+            },
+            "persist_connection": false
+        },
+        "authentication" : [ {
+            "method" : "x509",
+            "key_source" : "SW",
+            "cert_alias" : "cert.pem",
+            "key_alias" : "key.pem"
+        } ]
+    }
+}

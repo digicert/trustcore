@@ -32,6 +32,7 @@ void displayHelp()
     printf("\n");
     printf("Options:\n");
     printf("    --msg-uuid <UUID>           - Optional, Protobuf UUID for CUSTOM messages\n");
+    printf("    --msg-uuid-file <file>      - Optional, Protobuf UUID for CUSTOM messages, read from file\n");
     printf("    --msg-metric <name> <value> - Optional, Protobuf metric for CUSTOM messages, can be specified multiple times\n");
     printf("    --msg-body-file <file>      - Optional, Protobuf body for CUSTOM messages, file contents are stored as body\n");
     printf("    --out-file <file>           - Required, Location on file system where encoded message is stored\n");
@@ -79,6 +80,16 @@ int main(int argc, char **ppArgv)
             }
             DIGI_MEMCPY(uuid, ppArgv[i], uuidLen);
             payload.pUuid = uuid;
+        }
+        else if (0 == DIGI_STRCMP(ppArgv[i], "--msg-uuid-file"))
+        {
+            i++;
+            status = DIGICERT_readFile(ppArgv[i], &pBody, &bodyLen);
+            if (OK != status)
+            {
+                goto exit;
+            }
+            payload.pUuid = (sbyte *)pBody;
         }
         else if (0 == DIGI_STRCMP(ppArgv[i], "--msg-metric"))
         {

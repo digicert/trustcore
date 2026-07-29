@@ -1,0 +1,22 @@
+{
+    "processingPolicies": [
+        {
+            "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+            "policyType": "CLOUDPLATFORM",
+            "policyId": "193850392",
+            "policyDependency": [
+                {
+                    "policyType": "CERTIFICATE",
+                    "policyId": "294820113"
+                }
+            ],
+            "policyRecvState": "PENDING",
+            "policyState": "CLOUDPLATFORM",
+            "policyErrorResponses": 0,
+            "policyHasFailed": false,
+            "priority": 0,
+            "creationTimestamp": "2026-07-29T20:16:20.954Z",
+            "processTimestamp": "2026-07-29T20:16:20.954Z"
+        }
+    ]
+}

@@ -56,6 +56,7 @@ typedef enum
 typedef struct
 {
     TrustEdgeAgentCtx *pAgentCtx;
+    certStorePtr pCertStore;
     HttpsClientCtx *pHttpCtx;
     sbyte *pSchemeAndHost;
     sbyte *pHost;
@@ -471,6 +472,478 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextDelete(
 
 /*---------------------------------------------------------------------------*/
 
+/* Parses the following JSON structure
+ *
+{
+  "operationId": "cloud platform policy id",
+  "brokerType": "AZURE_IOT_DPS"
+  "attributes": [
+  { "key": "service_endpoint",          "value": "global.azure-devices-provisioning.net" },
+  { "key": "service_endpoint_port",     "value": 443 },
+  { "key": "service_endpoint_ca_certs", "value": "-----BEGIN PKCS7-----\\n...\\n-----END PKCS7-----" },
+  { "key": "attestation_mode",          "value": "X509_CERTIFICATE | TPM" },
+  { "key": "id_scope",                  "value": "0ne00000000" },
+  { "key": "retry_count",               "value": 1..20 },
+  { "key": "retry_interval",            "value": 1..300 },
+  { "key": "signature_expiry_time",     "value": 3600 },
+  { "key": "registration_id",           "value": "<id>" }
+]
+}
+ *
+ * where "signature_expiry_time" and "registration_id" are optional
+ */
+MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
+    CloudServiceAzureCtx *pCtx,
+    ubyte *pJson,
+    ubyte4 jsonLen)
+{
+  MSTATUS status;
+  JSON_ContextType *pJsonCtx = NULL;
+  ubyte4 numTokens;
+  ubyte4 ndx;
+  ubyte4 i;
+  JSON_TokenType token = { 0 };
+  sbyte *pKey = NULL;
+  sbyte *pValue = NULL;
+  ubyte4 httpsPrefixLen;
+  certDescriptor *pCertDescArray = NULL;
+  ubyte4 certDescArrayLen = 0;
+  ubyte *pPkcs7Data = NULL;
+  ubyte4 pkcs7DataLen = 0;
+
+  #define PROVIDER_INFO_ATTRIBUTES       "attributes"
+  #define PROVIDER_INFO_KEY              "key"
+  #define PROVIDER_INFO_VALUE            "value"
+  #define PROVIDER_INFO_ID_SCOPE         "id_scope"
+  #define PROVIDER_INFO_SERVICE_ENDPOINT "service_endpoint"
+  #define PROVIDER_INFO_SERVICE_ENDPOINT_PORT "service_endpoint_port"
+  #define PROVIDER_INFO_ATTESTATION_MODE "attestation_mode"
+  #define PROVIDER_INFO_ATTESTATION_MODE_X509 "X509_CERTIFICATE"
+  #define PROVIDER_INFO_ATTESTATION_MODE_TPM  "TPM"
+  #define PROVIDER_INFO_RETRY_COUNT      "retry_count"
+  #define PROVIDER_INFO_RETRY_INTERVAL   "retry_interval"
+  #define PROVIDER_INFO_SERVICE_ENDPOINT_CA_CERTS "service_endpoint_ca_certs"
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_TPM2__) && defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE_TPM2__)
+  #define PROVIDER_INFO_REGISTRATION_ID  "registration_id"
+  #define PROVIDER_INFO_SIG_EXPIRY_TIME  "signature_expiry_time"
+#endif
+
+  if (NULL == pCtx || NULL == pJson)
+  {
+    status = ERR_NULL_POINTER;
+    MSG_LOG_print(MSG_LOG_ERROR,
+        "%s line %d status: %d = %s\n",
+        __func__, __LINE__, status,
+        MERROR_lookUpErrorCode(status));
+    goto exit;
+  }
+
+  /* Acquire JSON context and parse */
+  status = JSON_acquireContext(&pJsonCtx);
+  if (OK != status)
+  {
+    MSG_LOG_print(MSG_LOG_ERROR,
+        "%s line %d status: %d = %s\n",
+        __func__, __LINE__, status,
+        MERROR_lookUpErrorCode(status));
+    goto exit;
+  }
+
+  status = JSON_parse(pJsonCtx, pJson, jsonLen, &numTokens);
+  if (OK != status)
+  {
+    MSG_LOG_print(MSG_LOG_ERROR,
+        "%s line %d status: %d = %s\n",
+        __func__, __LINE__, status,
+        MERROR_lookUpErrorCode(status));
+    goto exit;
+  }
+
+  /* Parse the attributes array */
+  status = JSON_getJsonArrayValue(
+      pJsonCtx, 0, PROVIDER_INFO_ATTRIBUTES, &ndx, &token, TRUE);
+  if (OK != status)
+  {
+    MSG_LOG_print(MSG_LOG_ERROR,
+        "Failed to find '%s' array: %s line %d status: %d = %s\n",
+        PROVIDER_INFO_ATTRIBUTES, __func__, __LINE__, status,
+        MERROR_lookUpErrorCode(status));
+    goto exit;
+  }
+
+  ndx++;
+  for (i = 0; i < token.elemCnt; i++)
+  {
+    /* Get the key for this attribute */
+    DIGI_FREE((void **) &pKey);
+    status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_KEY, &pKey, TRUE);
+    if (OK != status)
+    {
+      goto next_attr;
+    }
+
+    /* Check if this is id_scope */
+    if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_ID_SCOPE))
+    {
+      DIGI_FREE((void **) &pValue);
+      status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_ID_SCOPE, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      status = DIGI_MALLOC_MEMCPY(
+          (void **) &pCtx->pIdScope, DIGI_STRLEN(pValue) + 1,
+          (void *) pValue, DIGI_STRLEN(pValue));
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+      pCtx->pIdScope[DIGI_STRLEN(pValue)] = '\0';
+      pCtx->idScopeLen = DIGI_STRLEN(pValue);
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed id_scope: %.*s\n", pCtx->idScopeLen, pCtx->pIdScope);
+    }
+    /* Check if this is service_endpoint */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_SERVICE_ENDPOINT))
+    {
+      DIGI_FREE((void **) &pValue);
+      status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_SERVICE_ENDPOINT, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      /* Store service endpoint as scheme+host */
+      httpsPrefixLen = DIGI_STRLEN(HTTPS_PREFIX);
+      status = DIGI_MALLOC((void **) &pCtx->pSchemeAndHost,
+          httpsPrefixLen + DIGI_STRLEN(pValue) + 1);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+      DIGI_MEMCPY(pCtx->pSchemeAndHost, HTTPS_PREFIX, httpsPrefixLen);
+      DIGI_STRCBCPY(pCtx->pSchemeAndHost + httpsPrefixLen,
+          DIGI_STRLEN(pValue) + 1, pValue);
+      pCtx->pHost = pCtx->pSchemeAndHost + httpsPrefixLen;
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed service_endpoint: %s\n", pCtx->pSchemeAndHost);
+    }
+    /* Check if this is service_endpoint_port */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_SERVICE_ENDPOINT_PORT))
+    {
+      sbyte4 portValue = 0;
+      status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &portValue, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_SERVICE_ENDPOINT_PORT, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      pCtx->port = (ubyte2) portValue;
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed service_endpoint_port: %d\n", pCtx->port);
+    }
+    /* Check if this is attestation_mode */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_ATTESTATION_MODE))
+    {
+      DIGI_FREE((void **) &pValue);
+      status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_ATTESTATION_MODE, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      if (0 == DIGI_STRCMP(pValue, PROVIDER_INFO_ATTESTATION_MODE_X509))
+      {
+        pCtx->mode = AZURE_X509_REG;
+      }
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_TPM2__) && defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE_TPM2__)
+      else if (0 == DIGI_STRCMP(pValue, PROVIDER_INFO_ATTESTATION_MODE_TPM))
+      {
+        pCtx->mode = AZURE_TPM_REG;
+      }
+#endif
+      else
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Unknown attestation_mode: %s\n", pValue);
+        status = ERR_INVALID_ARG;
+        goto exit;
+      }
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed attestation_mode: %s\n", pValue);
+    }
+    /* Check if this is retry_count */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_RETRY_COUNT))
+    {
+      sbyte4 retryCount = 0;
+      status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &retryCount, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_RETRY_COUNT, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      pCtx->retryMaxCount = (ubyte4) retryCount;
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed retry_count: %u\n", pCtx->retryMaxCount);
+    }
+    /* Check if this is retry_interval */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_RETRY_INTERVAL))
+    {
+      sbyte4 retryInterval = 0;
+      status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &retryInterval, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_RETRY_INTERVAL, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      pCtx->retryDelaySeconds = (ubyte4) retryInterval;
+      pCtx->retryDelaySecondsOrig = pCtx->retryDelaySeconds;
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed retry_interval: %u\n", pCtx->retryDelaySeconds);
+    }
+    /* Check if this is service_endpoint_ca_certs */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_SERVICE_ENDPOINT_CA_CERTS))
+    {
+      DIGI_FREE((void **) &pValue);
+      status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_SERVICE_ENDPOINT_CA_CERTS, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      /* Allocate buffer and copy the PKCS7 data for unescaping */
+      pkcs7DataLen = DIGI_STRLEN(pValue);
+      status = DIGI_MALLOC_MEMCPY((void **) &pPkcs7Data, pkcs7DataLen + 1,
+          (void *) pValue, pkcs7DataLen);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+      pPkcs7Data[pkcs7DataLen] = '\0';
+
+      /* Unescape JSON formatting */
+      status = COMMON_UTILS_unescapeNewLine(pPkcs7Data, &pkcs7DataLen);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to unescape PKCS7 data: %s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      /* Unescape newline formatting */
+      status = COMMON_UTILS_unescapeNewLine(pPkcs7Data, &pkcs7DataLen);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to unescape PKCS7 data: %s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      /* Parse the PKCS7 response */
+      status = CERT_ENROLL_parseResponse(pPkcs7Data, pkcs7DataLen, NULL, FALSE,
+          &pCertDescArray, &certDescArrayLen);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to parse CA certs PKCS7: %s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      /* Add certificates to cert store and write to filesystem */
+      for (i = 0; i < certDescArrayLen; i++)
+      {
+        status = CERT_STORE_addTrustPoint(
+            pCtx->pCertStore,
+            pCertDescArray[i].pCertificate, pCertDescArray[i].certLength);
+        if (OK != status)
+        {
+          MSG_LOG_print(MSG_LOG_ERROR,
+              "Failed to add CA cert to store: %s line %d status: %d = %s\n",
+              __func__, __LINE__, status,
+              MERROR_lookUpErrorCode(status));
+          goto exit;
+        }
+
+        status = TRUSTEDGE_utilsWriteTrustedCert(
+            pCtx->pAgentCtx->pConfig,
+            pCertDescArray[i].pCertificate, pCertDescArray[i].certLength);
+        if (OK != status)
+        {
+          MSG_LOG_print(MSG_LOG_ERROR,
+              "Failed to write CA cert to filesystem: %s line %d status: %d = %s\n",
+              __func__, __LINE__, status,
+              MERROR_lookUpErrorCode(status));
+          goto exit;
+        }
+      }
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed service_endpoint_ca_certs: %u certificates\n", certDescArrayLen);
+    }
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_TPM2__) && defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE_TPM2__)
+    /* Check if this is registration_id (TPM mode only) */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_REGISTRATION_ID))
+    {
+      DIGI_FREE((void **) &pValue);
+      status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_REGISTRATION_ID, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      status = DIGI_MALLOC_MEMCPY(
+          (void **) &pCtx->pRegId, DIGI_STRLEN(pValue) + 1,
+          (void *) pValue, DIGI_STRLEN(pValue));
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+      pCtx->pRegId[DIGI_STRLEN(pValue)] = '\0';
+      pCtx->regIdLen = DIGI_STRLEN(pValue);
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed registration_id: %.*s\n", pCtx->regIdLen, pCtx->pRegId);
+    }
+    /* Check if this is signature_expiry_time (TPM mode only) */
+    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_SIG_EXPIRY_TIME))
+    {
+      sbyte4 sigExpiry = 0;
+      status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &sigExpiry, TRUE);
+      if (OK != status)
+      {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Failed to get value for '%s': %s line %d status: %d = %s\n",
+            PROVIDER_INFO_SIG_EXPIRY_TIME, __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+      }
+
+      pCtx->sigExpireTime = sigExpiry;
+
+      MSG_LOG_print(MSG_LOG_DEBUG,
+          "Parsed signature_expiry_time: %d\n", pCtx->sigExpireTime);
+    }
+#endif
+
+next_attr:
+    status = JSON_getLastIndexInObject(pJsonCtx, ndx, &ndx);
+    if (OK != status)
+    {
+      MSG_LOG_print(MSG_LOG_ERROR,
+          "%s line %d status: %d = %s\n",
+          __func__, __LINE__, status,
+          MERROR_lookUpErrorCode(status));
+      goto exit;
+    }
+    ndx++;
+  }
+
+  /* Validate required fields */
+  if (NULL == pCtx->pIdScope)
+  {
+    status = ERR_UM_JSON_PARSE_FAILED;
+    MSG_LOG_print(MSG_LOG_ERROR,
+        "Missing required attribute '%s': %s line %d status: %d = %s\n",
+        PROVIDER_INFO_ID_SCOPE, __func__, __LINE__, status,
+        MERROR_lookUpErrorCode(status));
+    goto exit;
+  }
+
+  if (NULL == pCtx->pSchemeAndHost)
+  {
+    status = ERR_UM_JSON_PARSE_FAILED;
+    MSG_LOG_print(MSG_LOG_ERROR,
+        "Missing required attribute '%s': %s line %d status: %d = %s\n",
+        PROVIDER_INFO_SERVICE_ENDPOINT, __func__, __LINE__, status,
+        MERROR_lookUpErrorCode(status));
+    goto exit;
+  }
+
+  status = OK;
+
+exit:
+  DIGI_FREE((void **) &pKey);
+  DIGI_FREE((void **) &pValue);
+  DIGI_FREE((void **) &pPkcs7Data);
+
+  if (NULL != pCertDescArray)
+  {
+    for (i = 0; i < certDescArrayLen; i++)
+    {
+      DIGI_FREE((void **) &pCertDescArray[i].pCertificate);
+    }
+    DIGI_FREE((void **) &pCertDescArray);
+  }
+
+  if (NULL != pJsonCtx)
+  {
+    JSON_releaseContext(&pJsonCtx);
+  }
+
+  return status;
+}
+
 /* Method used to create the Azure context. Parses Azure specific arguments in
  * the provided JSON. The following Azure JSON attributes are expected
  *
@@ -499,17 +972,9 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 {
     MSTATUS status;
     CloudServiceAzureCtx *pCtx = NULL;
-    ubyte4 ndx;
-    JSON_ContextType *pJsonCtx = NULL;
-    JSON_TokenType token = { 0 };
     ubyte *pCert = NULL;
     ubyte4 certLen = 0;
-    ubyte4 httpsPrefixLen;
-    ubyte4 index;
-
-    /* TODO: Parse JSON */
-    MOC_UNUSED(pJson);
-    MOC_UNUSED(jsonLen);
+    AsymmetricKey *pAsymKey = NULL;
 
     if (NULL == pAgentCtx)
     {
@@ -533,7 +998,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 
     pCtx->pAgentCtx = pAgentCtx;
 
-    status = JSON_acquireContext(&pJsonCtx);
+    status = CERT_STORE_createStore(&pCtx->pCertStore);
     if (OK != status)
     {
         MSG_LOG_print(MSG_LOG_ERROR,
@@ -543,8 +1008,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
         goto exit;
     }
 
-    status = JSON_getObjectIndex(
-        pJsonCtx, SERVICE_ATTRS_JSTR, 0, &ndx, TRUE);
+    status = TRUSTEDGE_cloudServiceAzureParseProviderInfo(pCtx, pJson, jsonLen);
     if (OK != status)
     {
         MSG_LOG_print(MSG_LOG_ERROR,
@@ -553,329 +1017,27 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
                 MERROR_lookUpErrorCode(status));
         goto exit;
     }
-
-    index = ndx + 1;
-
-    /* Extract Azure ID scope. This specifies which Azure DPS instance to
-     * connect to. */
-    status = JSON_getObjectIndex(
-        pJsonCtx, AZURE_ID_SCOPE_JSTR, index, &ndx, TRUE);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = JSON_getToken(pJsonCtx, ndx + 1, &token);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    if (JSON_String != token.type)
-    {
-        status = ERR_UM_JSON_PARSE_FAILED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = DIGI_MALLOC_MEMCPY(
-        (void **) &pCtx->pIdScope, token.len,
-        (void *) token.pStart, token.len);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-    pCtx->idScopeLen = token.len;
-
-    /* Extract URI */
-    status = JSON_getObjectIndex(
-        pJsonCtx, SERVICE_ATTRS_URI_JSTR, index, &ndx, TRUE);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = JSON_getToken(pJsonCtx, ndx + 1, &token);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    if (JSON_String != token.type)
-    {
-        status = ERR_UM_JSON_PARSE_FAILED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    httpsPrefixLen = DIGI_STRLEN(HTTPS_PREFIX);
-    if ((httpsPrefixLen > token.len) ||
-        (0 != DIGI_STRNCMP(HTTPS_PREFIX, token.pStart, httpsPrefixLen)))
-    {
-        status = ERR_UM_JSON_PARSE_FAILED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "Provided URI does not start with %s:"
-                " %s line %d status: %d = %s\n",
-                HTTPS_PREFIX, __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = DIGI_MALLOC_MEMCPY(
-        (void **) &pCtx->pSchemeAndHost, token.len + 1,
-        (void *) token.pStart, token.len);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-    pCtx->pSchemeAndHost[token.len] = '\0';
-    pCtx->pHost = pCtx->pSchemeAndHost + httpsPrefixLen;
-
-    MSG_LOG_print(
-        MSG_LOG_DEBUG,
-        "Azure JSON Service Attribute '%s': %s\n",
-        SERVICE_ATTRS_URI_JSTR, pCtx->pSchemeAndHost);
-
-    /* Extract port */
-    status = JSON_getObjectIndex(
-        pJsonCtx, SERVICE_ATTRS_PORT_JSTR, index, &ndx, TRUE);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = JSON_getToken(pJsonCtx, ndx + 1, &token);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    if (JSON_Integer != token.type || 0 > token.num.intVal)
-    {
-        status = ERR_UM_JSON_PARSE_FAILED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    pCtx->port = token.num.intVal;
-    status = DIGI_UTOA(pCtx->port, pCtx->pPortStr, &pCtx->portStrLen);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    MSG_LOG_print(
-        MSG_LOG_DEBUG,
-        "Azure JSON Service Attribute '%s': %d\n",
-        SERVICE_ATTRS_PORT_JSTR, pCtx->port);
-
-    /* Extract Azure registration type */
-    status = JSON_getObjectIndex(
-        pJsonCtx, SERVICE_ATTRS_MODE, index, &ndx, TRUE);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = JSON_getToken(pJsonCtx, ndx + 1, &token);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    if (JSON_String != token.type)
-    {
-        status = ERR_UM_JSON_PARSE_FAILED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    MSG_LOG_print(
-        MSG_LOG_DEBUG,
-        "Azure JSON Service Attribute '%s': %.*s\n",
-        SERVICE_ATTRS_MODE, token.len, token.pStart);
-
-    if (DIGI_STRLEN(AZURE_REG_MODE_X509) == token.len &&
-        0 == DIGI_STRNCMP(AZURE_REG_MODE_X509, token.pStart, token.len))
-    {
-        /* Load in identity into certificate store */
-        status = ERR_NOT_IMPLEMENTED;
-        // status = TRUSTEDGE_utilLoadIdentity(pCtx->pCloudSvcCtx->daemonCtx);
-        if (OK != status)
-        {
-            MSG_LOG_print(MSG_LOG_ERROR, "%s line %d status: %d = %s\n",
-                        __func__, __LINE__, status,
-                        MERROR_lookUpErrorCode(status));
-            goto exit;
-        }
-
-        pCtx->mode = AZURE_X509_REG;
-    }
-    else if (DIGI_STRLEN(AZURE_REG_MODE_TPM) == token.len &&
-             0 == DIGI_STRNCMP(AZURE_REG_MODE_TPM, token.pStart, token.len))
-    {
-#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_TPM2__) && defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE_TPM2__)
-        pCtx->mode = AZURE_TPM_REG;
-#else
-        status = ERR_TAP_UNSUPPORTED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                    "Azure TPM registration not supported: %s line %d status: %d = %s\n",
-                    __func__, __LINE__, status,
-                    MERROR_lookUpErrorCode(status));
-        goto exit;
-#endif
-    }
-    else
-    {
-        status = ERR_INVALID_INPUT;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    /* Extract retry max count */
-    status = JSON_getObjectIndex(
-        pJsonCtx, SERVICE_ATTRS_RETRY_MAX_COUNT_JSTR, index, &ndx, TRUE);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = JSON_getToken(pJsonCtx, ndx + 1, &token);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    if (JSON_Integer != token.type || 0 > token.num.intVal)
-    {
-        status = ERR_UM_JSON_PARSE_FAILED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    pCtx->retryMaxCount = token.num.intVal;
-
-    MSG_LOG_print(
-        MSG_LOG_DEBUG,
-        "Azure JSON Service Attribute '%s': %d\n",
-        SERVICE_ATTRS_RETRY_MAX_COUNT_JSTR, pCtx->retryMaxCount);
-
-    /* Extract retry delay seconds */
-    status = JSON_getObjectIndex(
-        pJsonCtx, SERVICE_ATTRS_RETRY_DELAY_SECONDS_JSTR, index, &ndx, TRUE);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    status = JSON_getToken(pJsonCtx, ndx + 1, &token);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    if (JSON_Integer != token.type || 0 > token.num.intVal)
-    {
-        status = ERR_UM_JSON_PARSE_FAILED;
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
-    pCtx->retryDelaySeconds = token.num.intVal;
-    pCtx->retryDelaySecondsOrig = pCtx->retryDelaySeconds;
-
-    MSG_LOG_print(
-        MSG_LOG_DEBUG,
-        "Azure JSON Service Attribute '%s': %d\n",
-        SERVICE_ATTRS_RETRY_DELAY_SECONDS_JSTR, pCtx->retryDelaySeconds);
 
     if (pCtx->mode == AZURE_X509_REG)
     {
         /* Retrieve the identity certificate */
         status = TRUSTEDGE_getCertificateByPolicyId(
-            pAgentCtx, pAgentCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
+            pAgentCtx,
+            pAgentCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
             &pCert, &certLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        status = TRUSTEDGE_getKeyByPolicyId(
+            pAgentCtx,
+            pAgentCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
+            &pAsymKey);
         if (OK != status)
         {
             MSG_LOG_print(MSG_LOG_ERROR,
@@ -889,23 +1051,6 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
          * ID. */
         status = TRUSTEDGE_utilsRetrieveCertificateCN(
             pCert, certLen, &pCtx->pRegId, &pCtx->regIdLen);
-        DIGI_FREE((void **) &pCert);
-        if (OK != status)
-        {
-            MSG_LOG_print(MSG_LOG_ERROR,
-                    "%s line %d status: %d = %s\n",
-                    __func__, __LINE__, status,
-                    MERROR_lookUpErrorCode(status));
-            goto exit;
-        }
-    }
-    else
-    {
-        /* For TPM the additional field of registration ID and signature expiry time
-         * is expected to be provided from the Publisher */
-        status = JSON_utilReadJsonInt(
-            pJsonCtx, index - 1, NULL, SERVICE_ATTRS_SIG_EXPIRY_TIME,
-            &pCtx->sigExpireTime, TRUE);
         if (OK != status)
         {
             MSG_LOG_print(MSG_LOG_ERROR,
@@ -915,9 +1060,10 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
             goto exit;
         }
 
-        status = JSON_utilReadJsonString(
-            pJsonCtx, index - 1, NULL, SERVICE_ATTRS_REGISTRATION_ID,
-            (sbyte **) &pCtx->pRegId, TRUE);
+        status = TRUSTEDGE_utilsLoadCertificateAndKey(
+            pCtx->pCertStore,
+            TRUSTEDGE_AZURE_IDENTITY_NAME,
+            pCert, certLen, pAsymKey);
         if (OK != status)
         {
             MSG_LOG_print(MSG_LOG_ERROR,
@@ -926,8 +1072,6 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
                     MERROR_lookUpErrorCode(status));
             goto exit;
         }
-
-        pCtx->regIdLen = DIGI_STRLEN(pCtx->pRegId);
     }
 
     MSG_LOG_print(
@@ -937,7 +1081,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 
     /* Create local HTTPS context, used to connect to Azure. */
     status = TRUSTEDGE_clientHttpsLocalAcquireContext(
-        NULL /* TODO: Pass location to store response */, &pCtx->pHttpCtx);
+        pAgentCtx->pConfig->pProviderCredsDir, &pCtx->pHttpCtx);
     if (OK != status)
     {
         MSG_LOG_print(MSG_LOG_ERROR,
@@ -949,8 +1093,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 
     status = TRUSTEDGE_clientHttpsLocalApplyServerConfig(
         pCtx->pHttpCtx, pCtx->pHost, pCtx->port,
-        NULL /* TODO: Create local certstore */,
-        TRUSTEDGE_AZURE_IDENTITY_NAME);
+        pCtx->pCertStore, TRUSTEDGE_AZURE_IDENTITY_NAME);
     if (OK != status)
     {
         MSG_LOG_print(MSG_LOG_ERROR,
@@ -1500,6 +1643,7 @@ static MSTATUS TRUSTEDGE_actionSaveEventServerResponse(
     pCloudSvcCtx->serverRspLen = *pRspLen;
     *ppRsp = NULL;
     *pRspLen = 0;
+    status = OK;
 
 exit:
 

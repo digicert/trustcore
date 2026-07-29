@@ -29,6 +29,7 @@
 #include "../../common/mfmgmt.h"
 #include "../../common/debug_console.h"
 #include "../../common/msg_logger.h"
+#include "../../common/common_utils.h"
 
 // #include "um_msg_factory.h"
 #include "trustedge_https_client.h"
@@ -199,6 +200,62 @@ exit:
 
 /*---------------------------------------------------------------------------*/
 
+static MSTATUS TRUSTEDGE_clientGetResponseBodyTempFileName(
+    sbyte *pRspDir,
+    sbyte *pFileName,
+    sbyte **ppRspBodyFullPath)
+{
+    MSTATUS status = OK;
+    sbyte *pTempFileName = NULL;
+#if defined(__RTOS_LINUX__) || defined(__RTOS_WIN32__)
+    ubyte4 tempFileNameLen = 0;
+#endif
+
+    if ((NULL == pRspDir) || (NULL == pFileName) || (NULL == ppRspBodyFullPath))
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+#if defined(__RTOS_LINUX__)
+    tempFileNameLen = snprintf(NULL, 0, "%s.%d", pFileName, getpid());
+    status = DIGI_MALLOC((void **) &pTempFileName, tempFileNameLen + 1);
+    if (OK != status)
+    {
+        goto exit;
+    }
+
+    snprintf(pTempFileName, tempFileNameLen + 1, "%s.%d", pFileName, getpid());
+#elif defined(__RTOS_WIN32__)
+    tempFileNameLen = _snprintf(NULL, 0, "%s.%d", pFileName, _getpid());
+    status = DIGI_MALLOC((void **) &pTempFileName, tempFileNameLen + 1);
+    if (OK != status)
+    {
+        goto exit;
+    }
+
+    _snprintf(pTempFileName, tempFileNameLen + 1, "%s.%d", pFileName, _getpid());
+#else
+    pTempFileName = RECV_TEMP_FILE;
+#endif
+
+    /* Set the path to the HTTPS response file */
+    status = COMMON_UTILS_addPathComponent(
+        (sbyte *) pRspDir, pTempFileName, (sbyte **) ppRspBodyFullPath);
+    if (OK != status)
+        goto exit;
+exit:
+#ifdef __RTOS_LINUX__
+    if (NULL != pTempFileName)
+    {
+        DIGI_FREE((void **) &pTempFileName);
+    }
+#endif
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
 MOC_EXTERN MSTATUS TRUSTEDGE_clientHttpsLocalAcquireContext(
     sbyte *pRspDir,
     HttpsClientCtx **ppNewContext)
@@ -225,8 +282,7 @@ MOC_EXTERN MSTATUS TRUSTEDGE_clientHttpsLocalAcquireContext(
         goto exit;
 
     /* Set the path to the HTTPS response file */
-    status = ERR_NOT_IMPLEMENTED;  /* TODO: Implement this function */
-    // status = TRUSTEDGE_clientGetResponseBodyTempFileName(pRspDir, RECV_TEMP_FILE, &(pCtx->responseBodyTempFileName));
+    status = TRUSTEDGE_clientGetResponseBodyTempFileName(pRspDir, RECV_TEMP_FILE, &(pCtx->responseBodyTempFileName));
     if (OK != status)
         goto exit;
 
