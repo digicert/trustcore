@@ -72,7 +72,6 @@ include(MocPlatform)
 
 project (nanocert C)
 
-include(locate_lib)
 include(build_rc_file)
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
@@ -80,6 +79,8 @@ set(MSS_SRC_DIR "${MSS_DIR}/src")
 if(BUILD_FOR_OSI)
   set(LIB_DIR "${MSS_DIR}/lib")
 endif()
+
+include(locate_lib)
 
 # 'CACHE STRING' allows us to override this var's value through the bash script
 set(LIB_TYPE "SHARED" CACHE STRING "Which lib type to build: SHARED (default) or STATIC")

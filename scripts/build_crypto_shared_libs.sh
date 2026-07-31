@@ -64,6 +64,14 @@ export MSS_PROJECTS_DIR=${MSS_DIR}/projects
 export OUTPUT_DIR=${PROD_DIR}
 export LIBS_OUTPUT_DIR=${OUTPUT_DIR}/libs
 
+BIN_DIR="bin"
+
+# Check if building for OSI
+source ${MSS_DIR}/scripts/check_for_osi.sh
+if [ ${OSI_BUILD} -eq 1 ]; then
+    BIN_DIR="lib"
+fi
+
 [[ -z ${WORKSPACE} ]] && quit "Error: Build environment is not set-up"
 [[ -d "${OUTPUT_DIR}" ]] && rm -rf ${OUTPUT_DIR}/* || mkdir -p "${OUTPUT_DIR}"
 
@@ -84,12 +92,12 @@ function clean_built_libs {
   rm -rf ${LIBS_OUTPUT_DIR}
   mkdir -p ${LIBS_OUTPUT_DIR}
 
-  for libs in ${WORKSPACE}/bin/*.so; do
+  for libs in ${WORKSPACE}/${BIN_DIR}/*.so; do
     if [[ ! "$libs" == *libmss.so ]] || [[ -z $FIPS_ARG ]]; then
         rm -f $libs
     fi
   done
-  rm -f ${WORKSPACE}/bin/*.a
+  rm -f ${WORKSPACE}/${BIN_DIR}/*.a
 }
 
 function build_libs {

@@ -4025,30 +4025,42 @@ X509_verifyRSACertSignature( MOC_RSA(hwAccelDescr hwAccelCtx)
 /*---------------------------------------------------------------------------*/
 
 #if (defined(__ENABLE_DIGICERT_ECC__))
-/* removes or adds 0x00 padding to an integer to make it the proper outLen size */
+/* this validates asn1 integer format and (if necc) adds 0x00 padding to an integer to make it the proper outLen size */
 static MSTATUS X509_formatInteger(const ubyte *pIn, ubyte4 inLen, ubyte *pOut, ubyte4 outLen)
 {
-    ubyte4 len = inLen;
-
-    /* get the true len of the integer */
-    while (len > outLen)
+    /* validate the input is not a negative integer, ie first bit is not set */
+    if (0 == inLen || (0x80 & *pIn))
     {
-        if (0x00 != *(pIn + inLen - len))
+        return ERR_CERT_INVALID_SIGNATURE;
+    }
+
+    /* remove up to one byte of 0x00 padding */
+    if (0x00 == *pIn)
+    {
+        pIn++; /* ok to change passed by value vars */
+        inLen--;
+
+        /* and if so validate first bit of next byte is set, ie the padding was proper */
+        if (inLen > 0 && (0 == (0x80 & *pIn)))
         {
-            return ERR_CERT_INVALID_SIGNATURE; /* too big */
+            return ERR_CERT_INVALID_SIGNATURE;
         }
-
-        len--;
     }
 
-    if (len < outLen)
+    /* integer can't be too big */
+    if (inLen > outLen)
     {
-        (void) DIGI_MEMSET(pOut, 0x00, outLen - len);
-        (void) DIGI_MEMCPY(pOut + outLen - len, pIn + inLen - len, len);
+        return ERR_CERT_INVALID_SIGNATURE;
     }
-    else
+    else if (inLen < outLen)
     {
-        (void) DIGI_MEMCPY(pOut, pIn + inLen - len, len);
+         /* add 0x00 padding if necc to the output */
+        (void) DIGI_MEMSET(pOut, 0x00, outLen - inLen);
+    }
+
+    if (inLen)
+    {
+        (void) DIGI_MEMCPY(pOut + outLen - inLen, pIn, inLen);
     }
 
     return OK;
@@ -4102,6 +4114,15 @@ static MSTATUS X509_decodeRSfromItem(ASN1_ITEMPTR pSigItem, CStream cs, ubyte *p
     }
 
     status = X509_formatInteger(buffer, pItem->length, pS, elemLen);
+    if (OK != status)
+        goto exit;
+
+    /* There should be no more items in the sequence */
+    pItem = ASN1_NEXT_SIBLING(pItem);
+    if (NULL != pItem)
+    {
+        status = ERR_CERT_INVALID_STRUCT;
+    }
 
 exit:
     
@@ -4164,15 +4185,12 @@ X509_verifyECDSASignatureEx( MOC_ECC(hwAccelDescr hwAccelCtx) ASN1_ITEMPTR pSequ
     if ( !pSequence || !pECCKey || !computedHash)
         return ERR_NULL_POINTER;
 
-    /* whether ECDSA or EdDSA sigLen is twice elemLen, allocate buffer for the signature */
+    /* whether ECDSA or EdDSA sigLen is twice elemLen */
     status = CRYPTO_INTERFACE_EC_getElementByteStringLenAux(pECCKey, &elemLen);
     if (OK != status)
         goto exit;
 
     sigLen = 2 * elemLen;
-    status = DIGI_MALLOC((void **) &pSig, sigLen);
-    if (OK != status)
-        goto exit;
 
 #ifdef __ENABLE_DIGICERT_ECC_EDDSA__
     if (akt_ecc_ed == keyType)
@@ -4197,13 +4215,16 @@ X509_verifyECDSASignatureEx( MOC_ECC(hwAccelDescr hwAccelCtx) ASN1_ITEMPTR pSequ
             goto exit;
         }
 
-        status = X509_formatInteger(buffer, pItem->length, pSig, sigLen);
-        if (OK != status)
+        /* buffer already has the initial (padding count) byte removed */
+        if (pItem->length != sigLen)
+        {
+            status = ERR_CERT_INVALID_SIGNATURE;
             goto exit;
+        }
 
         /* the computedHash variable actually stores the original message */
         if (OK > (status = CRYPTO_INTERFACE_ECDSA_verifyMessageExt(MOC_ECC(hwAccelCtx) pECCKey, 0, (ubyte *) computedHash, computedHashLen,
-                                                                   pSig, sigLen, &verifyFailure, NULL)))
+                                                                   (ubyte *) buffer, sigLen, &verifyFailure, NULL)))
         {
             goto exit;
         }
@@ -4211,6 +4232,10 @@ X509_verifyECDSASignatureEx( MOC_ECC(hwAccelDescr hwAccelCtx) ASN1_ITEMPTR pSequ
     else
 #endif
     {
+        status = DIGI_MALLOC((void **) &pSig, sigLen);
+        if (OK != status)
+            goto exit;
+
         status = X509_decodeRSfromItem(pSequence, cs, pSig, pSig + elemLen, elemLen);
         if (OK != status)
             goto exit;

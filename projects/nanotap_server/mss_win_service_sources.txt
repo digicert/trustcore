@@ -1,0 +1,5 @@
+MSS_SRC_DIR/tap/win/eventlog_utils.c
+MSS_SRC_DIR/tap/win/svc_utils.c
+MSS_SRC_DIR/tap/win/taps_svc.c
+MSS_SRC_DIR/tap/win/win_svc_init.c
+MSS_SRC_DIR/tap/win/resources/tap_server_events.rc

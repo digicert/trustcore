@@ -1,0 +1,7 @@
+[Unit]
+Description=Mocana TPM 1.2 daemon
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/tcti_server
+ExecStop=/usr/bin/killall tcti_server

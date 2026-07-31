@@ -1,0 +1,15 @@
+[Unit]
+Description=Mocana TAP Server Service
+After=network.target
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+ExecStart=/bin/bash /opt/trustpoint/scripts/tap_server/start_tapserver.sh
+ExecStop=/bin/bash /opt/trustpoint/scripts/tap_server/stop_tapserver.sh
+Restart=on-failure
+RestartSec=1
+User=root
+
+[Install]
+WantedBy=default.target

@@ -223,6 +223,7 @@ typedef struct extKeyUsageInfo
 #error "SMP flag not specified. Cannot set TAP provider."
 #endif
 #endif /* KEYGEN_TAP_PROVIDER */
+#endif /* !__ENABLE_DIGICERT_TAP_REMOTE__ */
 
 #if defined(__ENABLE_DIGICERT_SMP_PKCS11__)
 #define KEYGEN_TAP_PROVIDER_NAME " PKCS11"
@@ -235,8 +236,6 @@ typedef struct extKeyUsageInfo
 #else
 #define KEYGEN_TAP_PROVIDER_NAME ""
 #endif /* __ENABLE_DIGICERT_SMP_PKCS11__ */
-
-#endif /* !__ENABLE_DIGICERT_TAP_REMOTE__ */
 
 static KeyGenTapArgs gTapArgs = {0};
 

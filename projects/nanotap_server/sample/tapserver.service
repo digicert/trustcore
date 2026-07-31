@@ -1,0 +1,107 @@
+#!/bin/sh
+#
+#   Startup/shutdown script for the NanoTAP Server Daemon
+#
+#   Linux chkconfig stuff:
+#
+#   chkconfig: 2345 25 06
+#   description: Startup/shutdown script the NanoTAP Server Daemon
+#
+#
+### BEGIN INIT INFO
+# Provides: tap_server
+# Required-Start: $local_fs $network
+# Required-Stop: $local_fs
+# Should-Start: $local_fs
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: NanoTAP Server Service
+# Description: NanoTAP Server Service
+### END INIT INFO
+
+TAP_SERVER_DIR=/home/admin/mocana/tap_server
+
+DAEMON=nanotap_server
+exec=${TAP_SERVER_DIR}/moctpm2_tools/bin/start-tap-server.sh
+prog=nanotap_server_bin
+lockfile=/var/lock/subsys/nanotap_server_bin
+DAEMON_COREFILE_LIMIT="unlimited"
+
+check() {
+	# Check that we're a privileged user
+	[ `id -u` = 0 ] || exit 4
+
+	# Check if tap_server_shell is executable
+	[ -x $exec ] || exit 5
+}
+
+start () {
+	check
+	[ -f $config ] || exit 6
+
+	echo -n $"Starting $prog: "
+
+	# start daemon
+        $exec
+        RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && touch $lockfile
+
+	return 0
+}
+
+stop () {
+	check
+
+	# stop daemon
+	echo -n $"Stopping $prog: "
+	pkill $DAEMON
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && rm -f $lockfile
+
+	return 0
+}
+
+restart() {
+	stop
+	start
+}
+
+case $1 in
+	start)
+		start
+	;;
+	stop)
+		stop
+	;;
+	restart)
+		restart
+	;;
+	condrestart|try-restart)
+		[ -f $lockfile ] && restart || :
+	;;
+	reload)
+		echo -n $"Reloading $prog: "
+		pkill $DAEMON -HUP
+		RETVAL=$?
+		echo
+	;;
+	force-reload)
+		echo -n $"Reloading $prog: "
+		if ! pkill $DAEMON -HUP; then
+			restart
+		fi
+		echo
+	;;
+	status)
+		status -l $(basename $lockfile) $DAEMON
+		RETVAL=$?
+	;;
+	*)
+
+	echo $"Usage: $prog {start|stop|restart|condrestart|try-restart|reload|force-reload|status}"
+	exit 2
+esac
+
+exit $RETVAL
