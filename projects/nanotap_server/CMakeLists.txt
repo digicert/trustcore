@@ -33,7 +33,7 @@ include(locate_lib)
 
 # MSS_BIN_DIR is only used for where the executables go, so keep it to bin
 if(BUILD_FOR_OSI)
-  set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
+  set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
 else()
   if(WIN32)
     set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32")
@@ -44,6 +44,9 @@ endif()
 
 set(MSS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
+if(BUILD_FOR_OSI)
+  set(LIB_DIR "${MSS_DIR}/lib")
+endif()
 set(CMAKE_INSTALL_RPATH "${MSS_BIN_DIR}")
 
 set(LIB_TYPE "SHARED" CACHE STRING "Which lib type to build: SHARED (default) or STATIC")

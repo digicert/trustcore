@@ -1,0 +1,1 @@
+MSS_SRC_DIR/../samples/tap_api_example/src/nanotap_api_example.c

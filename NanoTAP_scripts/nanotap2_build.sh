@@ -231,19 +231,20 @@ do
     cd ${MSS_PROJECTS_DIR}/common && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $COMMON_ARG $DATA_PROTECT
     cd ${MSS_PROJECTS_DIR}/asn1 && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM
     cd ${MSS_PROJECTS_DIR}/nanocap && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb
-    cd ${MSS_PROJECTS_DIR}/nanotap2_common && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $DATA_PROTECT $SMP_ARG $TEE_ARG --suiteb --tap-remote
-    cd ${MSS_PROJECTS_DIR}/nanotap2_configparser && ./clean.sh &&./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM
-    cd ${MSS_PROJECTS_DIR}/nanotap2 && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $SMP_ARG $TEE_ARG --tap-remote clientcomm
-    cd ${MSS_PROJECTS_DIR}/nanotap2 && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $DATA_PROTECT_FLAG $SMP_ARG $TEE_ARG --tap-remote nanotap2
     cd ${MSS_PROJECTS_DIR}/crypto && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tap --ssl $TPM2_ARG
-
-    if [ "$DATA_PROTECT" == " --data-protect" ]; then
-       cd ${MSS_PROJECTS_DIR}/data_protection && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM
-    fi
-
+    cd ${MSS_PROJECTS_DIR}/initialize && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $DATA_PROTECT $TAP_DATA_PROTECT
+    cd ${MSS_PROJECTS_DIR}/nanocert && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tap
     if [ "$SMP_ARG" == " --pkcs11" ] || [ "$TPM2_ARG" == " --tpm2" ]; then
        cd ${MSS_PROJECTS_DIR}/tpm2 && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb
        cd ${MSS_PROJECTS_DIR}/smp_tpm2 && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb
+    fi
+    cd ${MSS_PROJECTS_DIR}/nanotap2 && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $SMP_ARG $TEE_ARG --tap-remote clientcomm
+    cd ${MSS_PROJECTS_DIR}/nanotap2 && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $DATA_PROTECT_FLAG $SMP_ARG $TEE_ARG --tap-remote nanotap2
+    cd ${MSS_PROJECTS_DIR}/nanotap2_configparser && ./clean.sh &&./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM
+    cd ${MSS_PROJECTS_DIR}/nanotap2_common && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $DATA_PROTECT $SMP_ARG $TEE_ARG --suiteb --tap-remote
+
+    if [ "$DATA_PROTECT" == " --data-protect" ]; then
+       cd ${MSS_PROJECTS_DIR}/data_protection && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM
     fi
 
     if [ "$SMP_ARG" == " --pkcs11" ]; then
@@ -254,8 +255,6 @@ do
        cd ${MSS_PROJECTS_DIR}/smp_tee && ./clean.sh && ./build.sh --debug --gdb $BUILD_OPTIONS $TARGET_ARCH_PARAM --tee
     fi
     
-    cd ${MSS_PROJECTS_DIR}/initialize && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM $DATA_PROTECT $TAP_DATA_PROTECT
-    cd ${MSS_PROJECTS_DIR}/nanocert && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tap
     cd ${MSS_PROJECTS_DIR}/nanossl && ./clean.sh && ./build.sh --clean $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tap nanossl
 
     if test "$?" != "0"; then

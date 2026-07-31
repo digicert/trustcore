@@ -41,7 +41,7 @@ endif()
 
 # MSS_BIN_DIR is only used for where the executables go, so keep it to bin
 if(BUILD_FOR_OSI)
-  set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
+  set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
 else()
   if(WIN32)
     set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32")

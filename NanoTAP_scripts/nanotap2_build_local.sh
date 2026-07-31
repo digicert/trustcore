@@ -119,18 +119,19 @@ do
         rm bin/smp_tpm2_getidstr_bin
     fi
 
-    cd ${MSS_PROJECTS_DIR}/common && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
     cd ${MSS_PROJECTS_DIR}/platform && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
+    cd ${MSS_PROJECTS_DIR}/common && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
     cd ${MSS_PROJECTS_DIR}/asn1 && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
     cd ${MSS_PROJECTS_DIR}/nanocap && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb &&
-    cd ${MSS_PROJECTS_DIR}/nanotap2_common && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tpm2 --tap-local &&
-    cd ${MSS_PROJECTS_DIR}/nanotap2_configparser && ./clean.sh &&./build.sh &&
-    cd ${MSS_PROJECTS_DIR}/nanotap2 && ./clean.sh && ./build.sh --tap-local $BUILD_OPTIONS $TARGET_ARCH_PARAM --tpm2 nanotap2 &&
     cd ${MSS_PROJECTS_DIR}/crypto && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tap --tpm2 &&
+    cd ${MSS_PROJECTS_DIR}/initialize && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
+    cd ${MSS_PROJECTS_DIR}/nanocert && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tap &&
     cd ${MSS_PROJECTS_DIR}/tpm2 && ./clean.sh && ./build.sh --suiteb $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
     cd ${MSS_PROJECTS_DIR}/smp_tpm2 && ./clean.sh && ./build.sh --suiteb $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
-    cd ${MSS_PROJECTS_DIR}/initialize && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM &&
-    cd ${MSS_PROJECTS_DIR}/nanocert && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tap
+    cd ${MSS_PROJECTS_DIR}/nanotap2 && ./clean.sh && ./build.sh --tap-local $BUILD_OPTIONS $TARGET_ARCH_PARAM --tpm2 nanotap2 &&
+    cd ${MSS_PROJECTS_DIR}/nanotap2_configparser && ./clean.sh &&./build.sh &&
+    cd ${MSS_PROJECTS_DIR}/nanotap2_common && ./clean.sh && ./build.sh $BUILD_OPTIONS $TARGET_ARCH_PARAM --suiteb --tpm2 --tap-local &&
+    
     if test "$?" != "0"; then
         echo "*********************************************"
         echo "**** Library build failed on $pass pass  ****"
