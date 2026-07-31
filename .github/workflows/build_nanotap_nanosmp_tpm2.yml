@@ -12,7 +12,7 @@ on:
 
 jobs:
   nanotap-nanosmp-tpm2-build-test:
-    runs-on: [digicert-medium]
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Install Dependencies
