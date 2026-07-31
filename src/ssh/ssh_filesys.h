@@ -36,7 +36,7 @@ typedef struct
     sbyte4  isReadable;
     sbyte4  isWriteable;
 
-    sbyte4  fileSize;           /* directories can assign this zero */
+    ubyte4  fileSize;           /* directories can assign this zero */
 
     /* if your file system does not support time, set to a default (date/)time */
     sbyte4  fileAccessTime;     /* file last accessed time */

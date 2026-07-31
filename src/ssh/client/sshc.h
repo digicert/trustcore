@@ -228,15 +228,15 @@ typedef struct
     void*                   pHandleName;
     void*                   cookie;                 /* not used for directories */
 
-    sbyte4                  readLocation;           /* current position / total bytes read */
+    ubyte4                  readLocation;           /* current position / total bytes read */
     sbyte*                  pReadBuffer;
     sbyte4                  readBufferSize;
 
-    sbyte4                  writeLocation;          /* current position / total bytes written */
+    ubyte4                  writeLocation;          /* current position / total bytes written */
     sbyte*                  pWriteBuffer;
     sbyte4                  writeBufferSize;
 
-    sbyte4                  clientWrtLoc;           /* internal use */
+    ubyte4                  clientWrtLoc;           /* internal use */
     ubyte4                  requestID;              /* current pending request id */
     ubyte                   request;                /* not sure if needed */
     ubyte4                  requestStatusResponse;  /* the status response for the request */
@@ -2698,7 +2698,7 @@ To enable this function, the following flags must be defined in moptions.h:
 
 @funcdoc    sshc.h
 */
-MOC_EXTERN sbyte4 SSHC_sftpReadLocation(sftpcFileHandleDescr *p_sftpFileHandleDescr);
+MOC_EXTERN ubyte4 SSHC_sftpReadLocation(sftpcFileHandleDescr *p_sftpFileHandleDescr);
 
 /**
 @brief      Get a pointer to a file's read data buffer.
@@ -2820,7 +2820,7 @@ To enable this function, the following flags must be defined in moptions.h:
 
 @funcdoc    sshc.h
 */
-MOC_EXTERN sbyte4 SSHC_sftpWriteLocation(sftpcFileHandleDescr *p_sftpFileHandleDescr);
+MOC_EXTERN ubyte4 SSHC_sftpWriteLocation(sftpcFileHandleDescr *p_sftpFileHandleDescr);
 
 /**
 @brief      Get a pointer to a file's write data buffer.

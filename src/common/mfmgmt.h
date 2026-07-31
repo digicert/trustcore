@@ -56,7 +56,7 @@ enum fileDescriptorTypes {
  */
 typedef struct FileDescriptorInfo {
     enum fileDescriptorTypes type;
-    sbyte4 fileSize;    /* signed integer */
+    ubyte4 fileSize;    /* unsigned integer; supports file sizes up to 4GB-1 */
 
 #ifdef __ENABLE_DIGICERT_64_BIT__
     sbyte8 accessTime;  /* long */

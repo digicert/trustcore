@@ -332,12 +332,12 @@ typedef struct
     void*                   directoryReadCookie;        /* used for short-term directory state */
     sbyte4                  directoryReadState;         /* open, reading, closed */
 
-    sbyte4                  readLocation;
+    ubyte4                  readLocation;
     sbyte*                  pReadBuffer;
     sbyte4                  readBufferSize;
     sbyte4                  numBytesRead;
 
-    sbyte4                  writeLocation;
+    ubyte4                  writeLocation;
     sbyte*                  pWriteBuffer;
     sbyte4                  writeBufferSize;
 

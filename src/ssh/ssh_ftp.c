@@ -1215,7 +1215,7 @@ sendNameMessage(sshContext *pContextSSH, ubyte4 id, sshStringBuffer *pFilename, 
         if (FALSE == isReadDir)
             replyLength += 4 + pFilename->stringLen;
         else
-            replyLength += 4 + 55 + pFilename->stringLen;
+            replyLength += 4 + 67 + pFilename->stringLen;
     }
 
     /* length field plus payload */
@@ -1246,16 +1246,18 @@ sendNameMessage(sshContext *pContextSSH, ubyte4 id, sshStringBuffer *pFilename, 
     {
         ubyte4 numDigits;
         sbyte4 index;
-        ubyte  buf[11];
+        ubyte  buf[21];
+        ubyte8 fileSizeVal;
+        ubyte8 divisor;
 
         /* SFTP spec: However, clients SHOULD NOT attempt to parse the longname field for file attributes; they SHOULD use the attrs field instead. */
         /* All of this code to generate a longname for a junkie client that foolishly parses this string.  Ugh! */
 
         /* -rwxr-xr-x   1 mjos     staff      348911 Mar 25 14:29 t-filexfer */
-        /* 1234567890 123 12345678 12345678 12345678 123456789012 */
+        /* 1234567890 123 12345678 12345678 123456789012 */
 
         /* never use sprintf(), it's not safe */
-        if (OK > (status = setInteger(pReplyMessage, replyLength, &bufIndex, 55 + pFilename->stringLen)))
+        if (OK > (status = setInteger(pReplyMessage, replyLength, &bufIndex, 67 + pFilename->stringLen)))
             goto exit;
 
         if (OK > (status = setByte(pReplyMessage, replyLength, &bufIndex, (SSH_FILEXFER_TYPE_DIRECTORY == pAttr->type) ? 'd' : '-')))
@@ -1292,9 +1294,38 @@ sendNameMessage(sshContext *pContextSSH, ubyte4 id, sshStringBuffer *pFilename, 
             if (OK > (status = setByte(pReplyMessage, replyLength, &bufIndex, 'G')))
                 goto exit;
 
-        DIGI_UTOA((LOW_U8(pAttr->size) % 99999999), buf, &numDigits);
+        /* DIGI_UTOA() only accepts a ubyte4, which would truncate/wrap pAttr->size for files
+         * larger than 4GB-1; convert the full 64-bit size to decimal inline instead. */
+        fileSizeVal = pAttr->size;
+        divisor = 10000000000000000000ULL; /* ubyte8 max is 20 decimal digits */
+        numDigits = 0;
 
-        for (index = 0; index < (sbyte4)(1 + (8 - numDigits)); index++)
+        /* shrink divisor down to the place value of the most-significant digit
+         * (e.g. 1000000000 for a value of 3758808664) */
+        while ((divisor > fileSizeVal) && (0 != divisor))
+            divisor = divisor / 10;
+
+        /* since divisor already points at the most-significant digit, every digit
+         * extracted from here on (including zeros) is a real digit -- no leading-zero
+         * tracking needed */
+        while (0 < divisor)
+        {
+            ubyte4 digit = (ubyte4)(fileSizeVal / divisor);
+
+            buf[numDigits] = (ubyte)(digit + '0');
+            numDigits++;
+
+            fileSizeVal = fileSizeVal - ((ubyte8)digit * divisor);
+            divisor = divisor / 10;
+        }
+
+        if (0 == numDigits)
+        {
+            buf[0] = '0';
+            numDigits = 1;
+        }
+
+        for (index = 0; index < (sbyte4)(1 + (20 - numDigits)); index++)
             if (OK > (status = setByte(pReplyMessage, replyLength, &bufIndex, ' ')))
                 goto exit;
 
@@ -1522,6 +1553,8 @@ dupFromSftpDescr(sshContext *pContextSSH, sftpFileObjDescr *p_sftpFile, sbyte4 f
         pRetAttr->permissions |= _S_IWRITE;
     }
 
+    /* p_sftpFile->fileSize is now ubyte4 (unsigned), so U8INIT no longer sign-extends the low
+     * word for files up to 4GB-1 */
     U8INIT(pRetAttr->size, 0, p_sftpFile->fileSize);
 }
 
@@ -1745,7 +1778,7 @@ SSH_sftpGetCookie(void* sftpInternelDescr)
 
 /*------------------------------------------------------------------*/
 
-extern sbyte4
+extern ubyte4
 SSH_sftpReadLocation(void* sftpInternelDescr)
 {
     sftpFileHandleDescr *p_sftpFileHandleDescr = (sftpFileHandleDescr *)sftpInternelDescr;
@@ -1789,7 +1822,7 @@ SSH_sftpNumBytesRead(void* sftpInternelDescr, sbyte4 numBytesRead)
 
 /*------------------------------------------------------------------*/
 
-extern sbyte4
+extern ubyte4
 SSH_sftpWriteLocation(void* sftpInternelDescr)
 {
     sftpFileHandleDescr *p_sftpFileHandleDescr = (sftpFileHandleDescr *)sftpInternelDescr;
@@ -2258,6 +2291,13 @@ handleFileWrite(sshContext *pContextSSH, ubyte *pPayload, ubyte4 payloadLength)
     if (payloadLength != bufIndex)
     {
         result = SSH_FTP_BAD_MESSAGE;
+        goto send;
+    }
+
+    /* offsets beyond 4GB-1 (i.e. a non-zero high word) are not supported */
+    if (0 != HI_U8(offset))
+    {
+        result = SSH_FTP_FAILURE;
         goto send;
     }
 
