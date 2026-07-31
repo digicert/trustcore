@@ -63,6 +63,14 @@ export MSS_PROJECTS_DIR=${MSS_DIR}/projects
 export OUTPUT_DIR=${PROD_DIR}
 export LIBS_OUTPUT_DIR=${OUTPUT_DIR}/libs
 
+BIN_DIR="bin"
+
+# Check if building for OSI
+source ${MSS_DIR}/scripts/check_for_osi.sh
+if [ ${OSI_BUILD} -eq 1 ]; then
+    BIN_DIR="lib"
+fi
+
 [[ -z ${WORKSPACE} ]] && quit "Error: Build environment is not set-up"
 [[ -d "${OUTPUT_DIR}" ]] && rm -rf ${OUTPUT_DIR}/* || mkdir -p "${OUTPUT_DIR}"
 
@@ -90,17 +98,17 @@ function clean_built_libs {
   rm -rf ${LIBS_OUTPUT_DIR}
   mkdir -p ${LIBS_OUTPUT_DIR}
 
-  rm -f ${WORKSPACE}/bin/*.so
-  rm -f ${WORKSPACE}/bin/*.a
+  rm -f ${WORKSPACE}/${BIN_DIR}/*.so
+  rm -f ${WORKSPACE}/${BIN_DIR}/*.a
 }
 
 function package_libs {
   [[ -z $1 ]] && quit "Error: Missing library type for packaging" || LIBS_TYPE=$1
 
   if [ ${SKIP_ZIP} -eq 0 ]; then
-    cp ${WORKSPACE}/bin/*.so ${LIBS_OUTPUT_DIR}
+    cp ${WORKSPACE}/${BIN_DIR}/*.so ${LIBS_OUTPUT_DIR}
     if [[ ! -z "${MBED_ARG}" ]]; then
-      cp ${WORKSPACE}/bin/*.so.* ${LIBS_OUTPUT_DIR}
+      cp ${WORKSPACE}/${BIN_DIR}/*.so.* ${LIBS_OUTPUT_DIR}
     fi
 
     TAR_NAME=${PROJ_FNAME}_${LIBS_TYPE}_${PLATFORM}_${CPU_ARCH}
@@ -122,22 +130,22 @@ function package_libs {
 function get_pkcs11_lib {
     echo "Copying PKCS11 library(s) from ${PKCS11_PATH}"
     if [ "${PKCS11_ARG}" == "--pkcs11-tee" ]; then
-      cp "${PKCS11_PATH}/libckteec.so" ${WORKSPACE}/bin/
-      cp "${PKCS11_PATH}/libteec.so" ${WORKSPACE}/bin/
-      rm -f ${WORKSPACE}/bin/libckteec.so.0
-      ln -s ${WORKSPACE}/bin/libckteec.so ${WORKSPACE}/bin/libckteec.so.0
-      rm -f ${WORKSPACE}/bin/libteec.so.1
-      ln -s ${WORKSPACE}/bin/libteec.so ${WORKSPACE}/bin/libteec.so.1
+      cp "${PKCS11_PATH}/libckteec.so" ${WORKSPACE}/${BIN_DIR}/
+      cp "${PKCS11_PATH}/libteec.so" ${WORKSPACE}/${BIN_DIR}/
+      rm -f ${WORKSPACE}/${BIN_DIR}/libckteec.so.0
+      ln -s ${WORKSPACE}/${BIN_DIR}/libckteec.so ${WORKSPACE}/${BIN_DIR}/libckteec.so.0
+      rm -f ${WORKSPACE}/${BIN_DIR}/libteec.so.1
+      ln -s ${WORKSPACE}/${BIN_DIR}/libteec.so ${WORKSPACE}/${BIN_DIR}/libteec.so.1
     else
-      cp ${PKCS11_PATH} ${WORKSPACE}/bin/
+      cp ${PKCS11_PATH} ${WORKSPACE}/${BIN_DIR}/
     fi
 }
 
 function get_tee_lib {
     echo "Copying TEE library(s) from ${TEE_PATH}"
-      cp "${TEE_PATH}/libteec.so" ${WORKSPACE}/bin/
-      rm -f ${WORKSPACE}/bin/libteec.so.1
-      ln -s ${WORKSPACE}/bin/libteec.so ${WORKSPACE}/bin/libteec.so.1
+      cp "${TEE_PATH}/libteec.so" ${WORKSPACE}/${BIN_DIR}/
+      rm -f ${WORKSPACE}/${BIN_DIR}/libteec.so.1
+      ln -s ${WORKSPACE}/${BIN_DIR}/libteec.so ${WORKSPACE}/${BIN_DIR}/libteec.so.1
 }
 
 function build_tap_off {

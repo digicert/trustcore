@@ -1,0 +1,3 @@
+MSS_SRC_DIR/tap
+MSS_SRC_DIR/tap/tools
+MSS_SRC_DIR/common

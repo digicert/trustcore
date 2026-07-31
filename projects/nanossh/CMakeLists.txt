@@ -75,7 +75,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../shared_cmake)
 include(MocPlatform)
 include(build_executable)
 include(build_library)
-include(locate_lib)
 
 if(WIN32)
     set(MSS_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin_win32")
@@ -91,6 +90,8 @@ if(BUILD_FOR_OSI)
     set(LIB_DIR  "${MSS_DIR}/lib")
     set(MSS_BIN_DIR "${LIB_DIR}")
 endif()
+
+include(locate_lib)
 
 set(LIB_TYPE "SHARED" CACHE STRING "Which lib type to build: SHARED (default) or STATIC")
 message("LIB_TYPE           = ${LIB_TYPE}")

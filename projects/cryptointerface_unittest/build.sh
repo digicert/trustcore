@@ -85,6 +85,7 @@ TARGET_PLATFORM=
 XC_BIN_PATH=
 TOOLCHAIN=
 BUILD_FOR_OSI=0
+BIN_DIR="bin"
 
 source ../shared_cmake/get_toolchain.sh
 
@@ -254,6 +255,7 @@ done
 source $SCRIPT_DIR/../../scripts/check_for_osi.sh
 if [ ${OSI_BUILD} -eq 1 ]; then
     BUILD_OPTIONS+=" -DBUILD_FOR_OSI=ON"
+    BIN_DIR="lib"
 fi
 
 if [ ${INV_OPT} -eq 1 ]; then
@@ -314,11 +316,11 @@ if [ $REBUILD_LIBS -eq 1 ]; then
       ${DATA_PROTECT_ARG} ${TAP_DATA_PROTECT_ARG} ${FIPS_ARG} ${VLONG_ARG} ${FULL_EXPORT_ARG} ${TOOLCHAIN} ${AIDE_ARG}
   fi
   if [ $MBED_BUILD -eq 1 ]; then
-    rm -f ${MSS_DIR}/bin/libcryptomw.so
+    rm -f ${MSS_DIR}/${BIN_DIR}/libcryptomw.so
   else
-    rm -f ${MSS_DIR}/bin/libnanocrypto.so
+    rm -f ${MSS_DIR}/${BIN_DIR}/libnanocrypto.so
   fi
-  rm -f ${MSS_DIR}/bin/libcryptointerface.so
+  rm -f ${MSS_DIR}/${BIN_DIR}/libcryptointerface.so
   # Build crypto libs again, but with all algs specified
   cd ${MSS_DIR}/projects/crypto
   if [ $PKCS11_BUILD -eq 1 ] && [ "$TOOLCHAIN" == " --toolchain rpi32" ]; then

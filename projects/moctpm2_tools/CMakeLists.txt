@@ -102,10 +102,10 @@ if("STATIC" STREQUAL "${LIB_TYPE}")
   locate_lib(NANOCRYPTO_LIB nanocrypto)
   locate_lib(LIBNANOCAP_LIB nanocap)
   locate_lib(LIBASN1_LIB asn1)
-  locate_lib(TPM_LIB tpm2)
   locate_lib(CERTENROLL_LIB cert_enroll)
-  locate_lib(SMPTPM2_LIB smptpm2)
 endif()
+locate_lib(SMPTPM2_LIB smptpm2)
+locate_lib(TPM_LIB tpm2)
 
 set(libraryLists ${INITIALIZE_LIB} ${COMMON_LIB} ${PLATFORM_LIB} ${CRYPTOINTERFACE_LIB}
         ${NANOTAP2_LIB} ${NANOTAP2_COMMON_LIB} ${NANOCERT_LIB})
@@ -337,7 +337,7 @@ build_digicert_tpm2_tool(${LIB_TYPE} ${TARGET_NAME} ${TARGET_DIR} ${EXTRA_DEFINI
 # Provisioning tools use tpm2 library
 ########################################################################
 if(NOT "STATIC" STREQUAL "${LIB_TYPE}")
-  set (libraryLists ${libraryLists} tpm2)
+  set (libraryLists ${libraryLists} ${TPM_LIB})
 endif()
 
 ########################################################################
@@ -365,7 +365,7 @@ set(MOCANA_FLAGS "")
 build_digicert_tpm2_tool(${LIB_TYPE} ${TARGET_NAME} ${TARGET_DIR} ${EXTRA_DEFINITIONS} ${MSS_SRC_DIR} ${MOCTPM2_TOOLS_BUILD_DIR} ${MSS_BIN_DIR} ${libraryLists})
 
 if(NOT "STATIC" STREQUAL "${LIB_TYPE}")
-  set (libraryLists ${libraryLists} smptpm2 tpm2)
+  set (libraryLists ${libraryLists} ${SMPTPM2_LIB} ${TPM_LIB})
 endif()
 
 ########################################################################
