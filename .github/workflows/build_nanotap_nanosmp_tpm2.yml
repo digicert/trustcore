@@ -5,6 +5,8 @@ permissions:
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [ "DTM-7741-create-github-action-for-nanotap-and-nanosmp-with-tpm2-build-testing" ]
 
   schedule:
     - cron: '15 4 * * *'  # Every day at 9:45 AM IST (4:15 AM UTC)
