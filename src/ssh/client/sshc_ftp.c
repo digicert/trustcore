@@ -3366,7 +3366,7 @@ SSHC_sftpGetCookie(sftpcFileHandleDescr *p_sftpFileHandleDescr)
 
 /*------------------------------------------------------------------*/
 
-extern sbyte4
+extern ubyte4
 SSHC_sftpReadLocation(sftpcFileHandleDescr *p_sftpFileHandleDescr)
 {
     return p_sftpFileHandleDescr->readLocation;
@@ -3402,7 +3402,7 @@ SSHC_sftpNumBytesRead(sftpcFileHandleDescr *p_sftpFileHandleDescr)
 
 /*------------------------------------------------------------------*/
 
-extern sbyte4
+extern ubyte4
 SSHC_sftpWriteLocation(sftpcFileHandleDescr *p_sftpFileHandleDescr)
 {
     return p_sftpFileHandleDescr->writeLocation;

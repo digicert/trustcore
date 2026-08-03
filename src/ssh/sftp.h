@@ -782,7 +782,7 @@ exit:
 
 @funcdoc    ssh_ftp.c
 */
-MOC_EXTERN sbyte4   SSH_sftpReadLocation(void* sftpInternelDescr);
+MOC_EXTERN ubyte4   SSH_sftpReadLocation(void* sftpInternelDescr);
 
 /**
 @brief      Get a pointer to a buffer containing a file's read data.
@@ -1060,7 +1060,7 @@ exit:
 
 @funcdoc    ssh_ftp.c
 */
-MOC_EXTERN sbyte4   SSH_sftpWriteLocation(void* sftpInternelDescr);
+MOC_EXTERN ubyte4   SSH_sftpWriteLocation(void* sftpInternelDescr);
 
 /**
 @brief      Get a pointer to a buffer (received from an SFTP %client)

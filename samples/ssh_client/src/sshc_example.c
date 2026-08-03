@@ -1369,16 +1369,16 @@ SSHC_EXAMPLE_putFileBlockRead(int connectionInstance, sftpcFileHandleDescr *p_sf
     /* we're doing a PUT's read here */
     FileDescriptor fd = (FileDescriptor) SSHC_sftpGetCookie(p_sftpFileHandleDescr);
     sbyte*  pBuffer  = NULL;
-    sbyte4  fileSize = 0;
+    ubyte4  fileSize = 0;
     sbyte4  bytesRead = 0;
-    sbyte4  fileLoc  = SSHC_sftpWriteLocation(p_sftpFileHandleDescr);
+    ubyte4  fileLoc  = SSHC_sftpWriteLocation(p_sftpFileHandleDescr);
     sbyte4  bufferSize;
     sbyte4  status   = SSH_FTP_OK;
     MOC_UNUSED(connectionInstance);
 
     /* determine file size */
     FMGMT_fseek (fd, 0, MSEEK_END);
-    FMGMT_ftell (fd, (ubyte4 *) &fileSize);
+    FMGMT_ftell (fd, &fileSize);
 
     if (0 == fileLoc)
     {
@@ -1463,7 +1463,7 @@ SSHC_EXAMPLE_getFileBlockWrite(int connectionInstance, sftpcFileHandleDescr *p_s
     sbyte*  pBuffer;
     sbyte4  bufferSize;
     sbyte4  bytesWritten = 0;
-    sbyte4  offset;
+    ubyte4  offset;
     sbyte4  status = SSH_FTP_OK;
     MOC_UNUSED(connectionInstance);
 

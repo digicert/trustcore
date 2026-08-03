@@ -202,7 +202,7 @@ SFTP_EXAMPLE_readUpcall(sbyte4 connectionInstance, void* sftpInternelDescr)
     sbyte*  pBuffer;
     sbyte4  bufferSize;
     sbyte4  numBytesRead;
-    sbyte4  fileSize;
+    ubyte4  fileSize;
     sbyte4  status = SSH_FTP_OK;
     MOC_UNUSED(connectionInstance);
 
@@ -214,7 +214,7 @@ SFTP_EXAMPLE_readUpcall(sbyte4 connectionInstance, void* sftpInternelDescr)
         goto exit;
     }
 
-    status = FMGMT_ftell (fd, (ubyte4 *) &fileSize);
+    status = FMGMT_ftell (fd, &fileSize);
     if (OK != status)
     {
         status = SSH_FTP_FAILURE;
@@ -318,7 +318,7 @@ SFTP_EXAMPLE_getOpenFileStats(sbyte4 connectionInstance,
                               sftpFileObjDescr* p_sftpFileDescr)
 {
     sbyte4  result   = SSH_FTP_OK; /* SSH_FTP_OP_UNSUPPORTED; */
-    sbyte4  fileSize = 0;
+    ubyte4  fileSize = 0;
     sbyte4  accessTime;
     sbyte4  createTime;
     sbyte4  modifyTime;
@@ -376,7 +376,7 @@ SFTP_EXAMPLE_getFileStats(sbyte4 connectionInstance,
                           sftpFileObjDescr* p_sftpFileDescr)
 {
     sbyte4  result   = SSH_FTP_NO_SUCH_FILE;
-    sbyte4  fileSize = 0;
+    ubyte4  fileSize = 0;
     sbyte4  accessTime;
     sbyte4  createTime;
     sbyte4  modifyTime;

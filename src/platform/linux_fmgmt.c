@@ -1046,7 +1046,7 @@ extern MSTATUS LINUX_fseek (FileDescriptor pFileCtx, sbyte4 offset, ubyte4 m_whe
             goto exit;
     }
 
-    if (0 == fseek (pFile, offset, whence))
+    if (0 == fseek (pFile, (long) offset, whence))
     {
         return OK;
     }
@@ -1128,7 +1128,7 @@ exit:
 extern MSTATUS LINUX_ftell (FileDescriptor pFileCtx, ubyte4 *pOffset)
 {
     MSTATUS status = ERR_NULL_POINTER;
-    sbyte4 offset;
+    sbyte8 offset;
 
     if ((NULL == pFileCtx) || (NULL == pOffset))
         goto exit;

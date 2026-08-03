@@ -10,7 +10,14 @@ SCRIPT_DIR=$( cd $(dirname $0) ; pwd -P )
 # Set paths
 MSS_DIR=${SCRIPT_DIR}/../../..
 MSS_PROJECTS_DIR=${MSS_DIR}/projects
-BIN_DIR=${MSS_DIR}/bin
+
+# Check if building for OSI
+source ${MSS_DIR}/scripts/check_for_osi.sh
+if [ ${OSI_BUILD} -eq 1 ]; then
+    TOOLS_BIN_DIR=${MSS_DIR}/lib
+else
+    TOOLS_BIN_DIR=${MSS_DIR}/bin
+fi
 
 # Assume x86_64 by default
 TOOLS_ZIP_NAME=tpm2_tools-x86_64.zip
@@ -84,8 +91,22 @@ echo "cd ${MSS_PROJECTS_DIR}/moctpm2_tools && ./clean.sh && ./build.sh $BUILD_OP
 cd ${MSS_PROJECTS_DIR}/moctpm2_tools && ./clean.sh && ./build.sh $BUILD_OPTIONS $MOCTPM2_TOOLS_BUILD_OPTIONS
 
 mkdir -p ${DIST_DIR}/bin
-cp ${BIN_DIR}/digicert_tpm2_* ${DIST_DIR}/bin/
-cp ${BIN_DIR}/smp_tpm2_getidstr_bin ${DIST_DIR}/bin/
+if ! compgen -G "${TOOLS_BIN_DIR}/digicert_tpm2_*" > /dev/null; then
+    echo "Error: No digicert_tpm2_* binaries found in ${TOOLS_BIN_DIR}"
+    echo "Contents of ${TOOLS_BIN_DIR}:"
+    ls -la ${TOOLS_BIN_DIR} || true
+    exit 1
+fi
+
+if [ ! -f ${TOOLS_BIN_DIR}/smp_tpm2_getidstr_bin ]; then
+    echo "Error: smp_tpm2_getidstr_bin not found in ${TOOLS_BIN_DIR}"
+    echo "Contents of ${TOOLS_BIN_DIR}:"
+    ls -la ${TOOLS_BIN_DIR} || true
+    exit 1
+fi
+
+cp ${TOOLS_BIN_DIR}/digicert_tpm2_* ${DIST_DIR}/bin/
+cp ${TOOLS_BIN_DIR}/smp_tpm2_getidstr_bin ${DIST_DIR}/bin/
 
 mkdir -p ${DIST_DIR}/conf/tap/tpm2
 cp ${MSS_PROJECTS_DIR}/moctpm2_tools/provision/tpm2_prov.conf ${DIST_DIR}/conf/tap/tpm2/
