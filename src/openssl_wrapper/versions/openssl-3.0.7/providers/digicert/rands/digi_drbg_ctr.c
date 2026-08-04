@@ -36,6 +36,18 @@
 #include "../../../src/crypto/nist_rng.h"
 #include "../../../src/crypto_interface/crypto_interface_nist_ctr_drbg.h"
 
+#if defined(__DIGICERT_DRBG_CAVP_FORCE_ENTROPY__)
+/*
+ * CAVP/KAT builds only. The public NIST_CTRDRBG_* wrappers discard caller
+ * supplied entropy under __FIPS_ALWAYS_ADD_ENTROPY_NIST_RNG__ (FIPS IG 9.3.A
+ * Resolution 4) and self-source from the certified entropy source. That makes
+ * the deterministic CAVP/KAT vectors non-reproducible. To force the fixed test
+ * entropy we call the *_internal() variants directly. Never define this macro
+ * in a production/validated build.
+ */
+#include "../../../src/crypto/nist_rng_priv.h"
+#endif
+
 #include "mocana_glue.h"
 #include "digicert_common.h"
 #include "digiprov.h"
@@ -87,15 +99,29 @@ static int digiprov_drbg_ctr_instantiate(PROV_DRBG *drbg,
 
     if (ctr->use_df)
     {
+#if defined(__DIGICERT_DRBG_CAVP_FORCE_ENTROPY__)
+        /* Force the supplied KAT entropy (bypass the FIPS entropy drop). */
+        status = NIST_CTRDRBG_newDFContext_internal(MOC_SYM(hwAccelCtx)
+            &pNewRand, (ubyte4) ctr->keylen, (ubyte4) ctr->blocklen, (const ubyte *) entropy, (ubyte4) entropylen,
+            (const ubyte *) nonce, (ubyte4) noncelen, (const ubyte *) pers, (ubyte4) perslen);
+#else
         status = CRYPTO_INTERFACE_NIST_CTRDRBG_newDFContext(
             &pNewRand, (ubyte4) ctr->keylen, (ubyte4) ctr->blocklen, (ubyte *) entropy, (ubyte4) entropylen,
             (ubyte *) nonce, (ubyte4) noncelen, (ubyte *) pers, (ubyte4) perslen);
+#endif
     }
     else
     {
+#if defined(__DIGICERT_DRBG_CAVP_FORCE_ENTROPY__)
+        /* Force the supplied KAT entropy (bypass the FIPS entropy drop). */
+        status = NIST_CTRDRBG_newContext_internal(MOC_SYM(hwAccelCtx)
+            &pNewRand, (const ubyte *) entropy, (ubyte4) ctr->keylen, (ubyte4) ctr->blocklen,
+            (const ubyte *) pers, (ubyte4) perslen);
+#else
         status = CRYPTO_INTERFACE_NIST_CTRDRBG_newContext(
             &pNewRand, (ubyte *) entropy, (ubyte4) ctr->keylen, (ubyte4) ctr->blocklen, 
             (ubyte *) pers, (ubyte4) perslen);
+#endif
     }
     if (OK == status)
     {
@@ -139,8 +165,15 @@ static int digiprov_drbg_ctr_reseed(PROV_DRBG *drbg,
     if (entropy == NULL)
         return 0;
 
+#if defined(__DIGICERT_DRBG_CAVP_FORCE_ENTROPY__)
+    /* Force the supplied KAT entropy (bypass the FIPS entropy drop). */
+    status = NIST_CTRDRBG_reseed_internal(MOC_SYM(hwAccelCtx) ctr->pRandCtx,
+                                          (const ubyte *) entropy, (ubyte4) entropylen,
+                                          (const ubyte *) adin, (ubyte4) adinlen);
+#else
     status = CRYPTO_INTERFACE_NIST_CTRDRBG_reseed(ctr->pRandCtx, (const ubyte *) entropy, (ubyte4) entropylen,
                                                   (ubyte *) adin, (ubyte4) adinlen);
+#endif
     if (OK != status)
         return 0;
 

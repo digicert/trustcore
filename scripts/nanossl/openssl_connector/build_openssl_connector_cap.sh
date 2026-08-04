@@ -15,6 +15,9 @@ function show_usage
   echo "   --disable-pqc     - Build without PQC support."
   echo "   --custom-entropy  - Build with custom entropy."
   echo "   --force-entropy-example - Build with force entropy example."
+  echo "   --cavp-force-entropy - CAVP/KAT builds ONLY. Force the CTR-DRBG connector provider to feed"
+  echo "                          the test-supplied entropy into the module via NIST_CTRDRBG_*_internal()."
+  echo "                          Never use for production/validated builds."
   echo "   --dtls            - Build with DTLS support."
   echo "   --redefine        - Redefine the PEM_read_bio_PrivateKey function."
   echo "   --disable-tls13   - Disable with TLS 1.3."
@@ -96,6 +99,7 @@ FIPS_GCM_OPTION=""
 FIPS_GCM_DEFINE=""
 CUSTOM_ENTROPY_OPTION=""
 FORCE_ENTROPY_EXAMPLE_OPTION=""
+CAVP_ENTROPY_DEFINE=""
 DTLS_OPTION=""
 DTLS_SRTP_OPTION=""
 REDEFINE_OPTION=""
@@ -183,6 +187,10 @@ do
         --force-entropy-example)
             echo "Build with force entropy example";
             FORCE_ENTROPY_EXAMPLE_OPTION=" --force-entropy"
+            ;;
+        --cavp-force-entropy)
+            echo "Building CTR-DRBG connector provider with forced KAT entropy (CAVP/test ONLY)...";
+            CAVP_ENTROPY_DEFINE="-D__DIGICERT_DRBG_CAVP_FORCE_ENTROPY__"
             ;;
         --dtls)
             echo "Building with DTLS enabled..."
@@ -522,6 +530,17 @@ if [ ! -z "${FORCE_ENTROPY_EXAMPLE_OPTION}" ] && [ ! -z "${CUSTOM_ENTROPY_OPTION
     exit
 fi
 
+if [ ! -z "${CAVP_ENTROPY_DEFINE}" ]; then
+    echo ""
+    echo "###############################################################################"
+    echo "# WARNING: --cavp-force-entropy enabled"
+    echo "# CAVP/KAT builds ONLY. Force the CTR-DRBG connector provider to feed"
+    echo "# the test-supplied entropy into the module via NIST_CTRDRBG_*_internal()."
+    echo "# Never use for production/validated builds."
+    echo "###############################################################################"
+    echo ""
+fi
+
 if [ "$CM_ENV_ENABLE_LEGACY_FIPS" = "1" ]; then
     LEGACY_FIPS_DEFINE="-D__ENABLE_DIGICERT_FIPS_LEGACY_LIB__"
     echo "Building with legacy FIPS support enabled..."
@@ -585,7 +604,7 @@ do
         cd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}
         if [[ "$OSSL_CONFIG_CMD" == "" ]]; then
             if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
-                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 $OSSL3_DISABLE_MD4_OPTION enable-mocana-cryptointerface ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test ${OSSL_EXTRA_OPTS} ${OSSL_PQC_OPTION} ${LEGACY_FIPS_DEFINE} ${FIPS_GCM_DEFINE}
+                ./Configure $OSSL3_RC5_OPTION $STRICT_DH_OPTION_OSSL3 $OSSL3_DISABLE_MD4_OPTION enable-mocana-cryptointerface ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} -D__ENABLE_DIGICERT_OSSL_V3_TEST__ enable-moc-ossl-v3-test ${OSSL_EXTRA_OPTS} ${OSSL_PQC_OPTION} ${LEGACY_FIPS_DEFINE} ${FIPS_GCM_DEFINE} ${CAVP_ENTROPY_DEFINE}
             else
                 ./config $OPENSSL_GDB_OPTIONS $OPENSSL_ENGINE_TYPE
                 makefile="${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/engines/mocana/Makefile"
