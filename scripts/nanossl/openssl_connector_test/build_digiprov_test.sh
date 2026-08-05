@@ -35,6 +35,9 @@ function show_usage
   echo "                        rpi64     For Raspberry Pi 64-bit"
   echo "                        bbb       For BeagleBone Black"
   echo "                        android   For android"
+  echo "   --cavp-force-entropy - CAVP/KAT builds ONLY. Force the CTR-DRBG connector provider to feed"
+  echo "                          the test-supplied entropy into the module via NIST_CTRDRBG_*_internal()."
+  echo "                          Never use for production/validated builds."
   echo ""
   exit 1
 }
@@ -53,6 +56,7 @@ OSSL_VER=""
 FIPS_OPTION=""
 FIPS_MAKE_OPTION=""
 FORCE_ENTROPY_EXAMPLE_OPTION=""
+CAVP_ENTROPY_DEFINE=""
 TAP_ARG=
 TAP_LOCAL_ARG=
 TAP_EXTERN_ARG=
@@ -109,6 +113,10 @@ do
         --force-entropy-example)
             echo "Build with force entropy example";
             FORCE_ENTROPY_EXAMPLE_OPTION=" --force-entropy"
+            ;;
+        --cavp-force-entropy)
+            echo "Building CTR-DRBG connector provider with forced KAT entropy (CAVP/test ONLY)...";
+            CAVP_ENTROPY_DEFINE="-D__DIGICERT_DRBG_CAVP_FORCE_ENTROPY__"
             ;;
         --tap-local)
             echo "Build with TAP local"
@@ -207,6 +215,17 @@ fi
 
 cd $CURR_DIR
 
+if [ ! -z "${CAVP_ENTROPY_DEFINE}" ]; then
+    echo ""
+    echo "###############################################################################"
+    echo "# WARNING: --cavp-force-entropy enabled"
+    echo "# CAVP/KAT builds ONLY. Force the CTR-DRBG connector provider to feed"
+    echo "# the test-supplied entropy into the module via NIST_CTRDRBG_*_internal()."
+    echo "# Never use for production/validated builds."
+    echo "###############################################################################"
+    echo ""
+fi
+
 echo "***************************************************************"
 echo "*** Building Digiprov tests..."
 echo "***************************************************************"
@@ -255,7 +274,7 @@ do
 
             # build libcrypto.so with DigiCert provider built in
             pushd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION} 
-            ./Configure enable-rc5 enable-mocana-cryptointerface enable-mocana-pqc ${FIPS_MAKE_OPTION} ${OSSL_TAP} ${OSSL_DEBUG} ${OSSL_EXTRA_OPTS} ${FIPS_GCM_DEFINE}
+            ./Configure enable-rc5 enable-mocana-cryptointerface enable-mocana-pqc ${FIPS_MAKE_OPTION} ${OSSL_TAP} ${OSSL_DEBUG} ${OSSL_EXTRA_OPTS} ${FIPS_GCM_DEFINE} ${CAVP_ENTROPY_DEFINE}
             make -j8
 
             if [ ! -f ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/libcrypto.so.3 ]; then

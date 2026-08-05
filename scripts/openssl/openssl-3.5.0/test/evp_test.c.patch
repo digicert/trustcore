@@ -34,7 +34,7 @@
 >             return 0;
 >         }
 > #endif
-5255a5286,5296
+5255a5286,5310
 >     /* Check the algo being executed based on first key value and proceed */
 > #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
 >     if (!checkIfAlgoShortlisted(&digiTestFilter, pp->value)) {
@@ -46,7 +46,21 @@
 >     }
 > #endif
 > 
-5436a5478,5491
+> #if defined(__ENABLE_DIGICERT_FIPS_MODULE__)
+>     /*
+>      * HASH-DRBG is not an approved DRBG in the DigiCert FIPS module; its
+>      * provider entrypoints are disabled in FIPS builds. Skip the HASH-DRBG
+>      * test stanzas here to avoid a spurious "unknown RAND" failure.
+>      */
+>     if ((NULL != pp->value) && (0 == strcmp(pp->value, "HASH-DRBG"))) {
+>         TEST_info("Skipping HASH-DRBG in FIPS build: %s:%d",
+>                   t->s.test_file, t->s.start);
+>         t->skip = 1;
+>         return 0;
+>     }
+> #endif
+> 
+5436a5492,5505
 > #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
 >     char *digitestConfFile = getenv(ENV_PATH_DIGITEST_CNF);
 > 
@@ -61,7 +75,7 @@
 >     }
 > #endif
 > 
-5445a5501,5503
+5445a5515,5517
 > #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
 >     free_digiTestFilter(&digiTestFilter);
 > #endif

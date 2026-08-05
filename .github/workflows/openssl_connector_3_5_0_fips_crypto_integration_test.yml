@@ -11,6 +11,7 @@ on:
   schedule:
     - cron: '30 14 * * 1'   # Monday 8:00 PM IST
     - cron: '30 14 * * 4'   # Thursday 8:00 PM IST
+
 permissions:
   contents: read
 
@@ -104,7 +105,7 @@ jobs:
           cd scripts/openssl
           ./apply-patch.sh openssl-3.5.0
           cd ../../
-          ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_5_0 --ossl-digi-test --fips
+          ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_5_0 --ossl-digi-test --fips --cavp-force-entropy
 
       - name: Copy SSL Test Files
         run: |
