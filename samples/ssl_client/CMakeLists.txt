@@ -64,6 +64,9 @@ if("STATIC" STREQUAL "${LIB_TYPE}")
     set(NANOTAP2_COMMON_LIB "${LIB_DIR}/libnanotap2_common.a")
     set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.a")
     set(NANOTAP2_LIB "${LIB_DIR}/libnanotap2.a")
+    if(CM_ENABLE_TAP_REMOTE)
+      set(NANOTAP2_CLIENTCOMM_LIB "${LIB_DIR}/libnanotap2_clientcomm.a")
+    endif()
     if(ENABLE_PKCS11_SOFTHSM OR ENABLE_PKCS11_TEE)
       set(SMP_LIB "${LIB_DIR}/libsmppkcs11.a")
       set(TPM2_LIB "${LIB_DIR}/libtpm2.a")
@@ -91,6 +94,9 @@ else()
     set(NANOTAP2_COMMON_LIB "${LIB_DIR}/libnanotap2_common.so")
     set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.so")
     set(NANOTAP2_LIB "${LIB_DIR}/libnanotap2.so")
+    if(CM_ENABLE_TAP_REMOTE)
+      set(NANOTAP2_CLIENTCOMM_LIB "${LIB_DIR}/libnanotap2_clientcomm.so")
+    endif()
     if(ENABLE_PKCS11_SOFTHSM OR ENABLE_PKCS11_TEE)
       set(SMP_LIB "${LIB_DIR}/libsmppkcs11.so")
       set(TPM2_LIB "${LIB_DIR}/libtpm2.so")
@@ -110,6 +116,7 @@ if(CM_ENABLE_TAP)
         ${CERT_ENROLL_LIB}
         ${NANOCERT_LIB}
         ${NANOTAP2_LIB}
+        ${NANOTAP2_CLIENTCOMM_LIB}
         ${NANOTAP2_CONFIGPARSER_LIB}
         ${NANOTAP2_COMMON_LIB}
         ${SMP_LIB}
@@ -127,7 +134,6 @@ if(CM_ENABLE_TAP)
         dl
     )
   else()
-    # Shared libraries - existing order works fine
     target_link_libraries(ssl_client PRIVATE
         ${PLATFORM_LIB}
         ${ASN1_LIB}
@@ -137,9 +143,12 @@ if(CM_ENABLE_TAP)
         ${NANOCAP_LIB}
         ${CRYPTO_INTERFACE_LIB}
         ${NANOCERT_LIB}
+        -Wl,--no-as-needed
         ${NANOTAP2_COMMON_LIB}
         ${NANOTAP2_CONFIGPARSER_LIB}
         ${NANOTAP2_LIB}
+        ${NANOTAP2_CLIENTCOMM_LIB}
+        -Wl,--as-needed
         ${SMP_LIB}
         ${TPM2_LIB}
         ${NANOSSL_LIB}
