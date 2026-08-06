@@ -111,8 +111,7 @@
 #define REDIRECT                (302) /* Use the provided URI */
 #define LOCATION                (5) /* Response header location value */
 
-/* TODO: get corrct cert store*/
-#define TRUSTEDGE_HTTPS_UTIL_GET_STORE(_pCtx) NULL
+#define TRUSTEDGE_HTTPS_UTIL_GET_STORE(_pCtx) (_pCtx->pTrustStore)
 
 static sbyte4 TRUSTEDGE_HTTPS_UTIL_performHttpRequest(httpContext *pHttpContext);
 MSTATUS internalHttpsSaveRequestId(

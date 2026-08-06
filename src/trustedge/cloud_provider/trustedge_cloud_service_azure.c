@@ -56,7 +56,6 @@ typedef enum
 typedef struct
 {
     TrustEdgeAgentCtx *pAgentCtx;
-    certStorePtr pCertStore;
     HttpsClientCtx *pHttpCtx;
     sbyte *pSchemeAndHost;
     sbyte *pHost;
@@ -806,7 +805,7 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
       for (i = 0; i < certDescArrayLen; i++)
       {
         status = CERT_STORE_addTrustPoint(
-            pCtx->pCertStore,
+            pCtx->pAgentCtx->pTrustedStore,
             pCertDescArray[i].pCertificate, pCertDescArray[i].certLength);
         if (OK != status)
         {
@@ -998,16 +997,6 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 
     pCtx->pAgentCtx = pAgentCtx;
 
-    status = CERT_STORE_createStore(&pCtx->pCertStore);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
-        goto exit;
-    }
-
     status = TRUSTEDGE_cloudServiceAzureParseProviderInfo(pCtx, pJson, jsonLen);
     if (OK != status)
     {
@@ -1061,7 +1050,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
         }
 
         status = TRUSTEDGE_utilsLoadCertificateAndKey(
-            pCtx->pCertStore,
+            pCtx->pAgentCtx->pTrustedStore,
             TRUSTEDGE_AZURE_IDENTITY_NAME,
             pCert, certLen, pAsymKey);
         if (OK != status)
@@ -1093,7 +1082,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 
     status = TRUSTEDGE_clientHttpsLocalApplyServerConfig(
         pCtx->pHttpCtx, pCtx->pHost, pCtx->port,
-        pCtx->pCertStore, TRUSTEDGE_AZURE_IDENTITY_NAME);
+        pCtx->pAgentCtx->pTrustedStore, TRUSTEDGE_AZURE_IDENTITY_NAME);
     if (OK != status)
     {
         MSG_LOG_print(MSG_LOG_ERROR,
