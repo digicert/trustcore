@@ -11697,6 +11697,12 @@ SSL_CTX_clear(SSL_CTX *ctx)
         X509_STORE_free(ctx->verify_store);
         ctx->verify_store = NULL;
     }
+
+    if (NULL != ctx->orig_ssl_ctx.propq)
+    {
+        OPENSSL_free(ctx->orig_ssl_ctx.propq);
+        ctx->orig_ssl_ctx.propq = NULL;
+    }
 #endif
 
      memset((ubyte*)ctx, 0, sizeof(*ctx));
@@ -12921,10 +12927,16 @@ void ssl_ctx_system_config(SSL_CTX *ctx)
 /**
  * Creates a new SSL_CTX object as framework to establish TLS/SSL enabled connections.
  *
- * See man SSL_CTX_new for a complete list of possible SSL methods
+ * See man SSL_CTX_new_ex / SSL_CTX_new for a complete list of possible SSL methods.
+ * SSL_CTX_new_ex is defined for 3.0/3.5 builds; SSL_CTX_new is defined for all builds.
  */
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+extern SSL_CTX *
+SSL_CTX_new_ex(OSSL_LIB_CTX *libctx, const char *propq, const SSL_METHOD *meth)
+#else
 extern SSL_CTX *
 SSL_CTX_new(const SSL_METHOD *meth)
+#endif
 {
      sbyte4    status = OK;
      sbyte4    status1 = OK;
@@ -12958,7 +12970,24 @@ SSL_CTX_new(const SSL_METHOD *meth)
      }
 
       memset((ubyte*)ctx, 0, sizeof(*ctx));
+
+      ctx->orig_ssl_ctx.references = 1;
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+      ctx->orig_ssl_ctx.libctx = libctx;
+      if (NULL != propq)
+      {
+        if (NULL == (ctx->orig_ssl_ctx.propq = OPENSSL_strdup(propq)))
+        {
+            SSLerr(SSL_F_SSL_CTX_NEW, ERR_R_MALLOC_FAILURE);
+            OSSL_FREE(ctx);
+            return NULL;
+        }
+      }
+#endif
+
       ctx->ssl_method = meth;
+
 #if defined(__ENABLE_DIGICERT_SSL_FIPS__)
     /* Resync the FIPS mode value;
      * This is for applications who set FIPS mode after
@@ -12967,15 +12996,13 @@ SSL_CTX_new(const SSL_METHOD *meth)
     if (0 == g_FIPSInitialized)
     {
         g_FIPSInitialized = 1;
-
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
         /* returns 1 if the 'fips=yes' default property is set for the given
            libctx, otherwise it returns 0. */
-        isFIPSEnabled = EVP_default_properties_is_fips_enabled(NULL);
+        isFIPSEnabled = EVP_default_properties_is_fips_enabled(libctx);
 #else
         isFIPSEnabled = FIPS_mode();
 #endif
-
         /* Check the valid values */
         if ((1 == isFIPSEnabled) || (0 == isFIPSEnabled))
         {
@@ -13006,14 +13033,13 @@ SSL_CTX_new(const SSL_METHOD *meth)
        */
       ctx->orig_ssl_ctx.read_ahead = OSSL_DEFAULT_READ_AHEAD;
 
-     ctx->orig_ssl_ctx.references = 1;
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      ctx->orig_ssl_ctx.lock = CRYPTO_THREAD_lock_new();
      if (NULL == ctx->orig_ssl_ctx.lock)
      {
         SSLerr(SSL_F_SSL_CTX_NEW, ERR_R_MALLOC_FAILURE);
-        OSSL_FREE(ctx);
-        return NULL;
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
      }
 #endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 
@@ -13116,12 +13142,20 @@ exit:
      */
      if ((OK != status) && ctx)
      {
-        OSSL_FREE((void *)ctx);
+        SSL_CTX_free(ctx);
         ctx = NULL;
      }
 
      return ctx;
 }
+
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+extern SSL_CTX *
+SSL_CTX_new(const SSL_METHOD *meth)
+{
+    return SSL_CTX_new_ex(NULL, NULL, meth);
+}
+#endif
 
 /*-----------------------------------------------------------------*/
 
@@ -31703,13 +31737,6 @@ int SSL_CTX_load_verify_store(SSL_CTX *ctx, const char *CAstore)
 {
     /* @Note: unsupported */
     return 0;
-}
-
-SSL_CTX *SSL_CTX_new_ex(OSSL_LIB_CTX *libctx, const char *propq,
-                        const SSL_METHOD *meth)
-{
-    /* @Note: unsupported */
-    return NULL;
 }
 
 int (*SSL_CTX_sess_get_new_cb(SSL_CTX *ctx)) (SSL *ssl, SSL_SESSION *sess)
