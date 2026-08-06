@@ -1,6 +1,6 @@
 # IKEv2 PSK — 3DES-CBC + HMAC-SHA1, tunnel mode
 
-TC_NAME="IKEv2 PSK / 3DES-CBC + HMAC-SHA1 / tunnel"
+TC_NAME="Testcase 7 IKEv2 PSK / 3DES-CBC + HMAC-SHA1 / tunnel"
 TC_IKE_VERSION=2
 
 TC_RESP_IKE_FLAGS=(-p qatestingexample)

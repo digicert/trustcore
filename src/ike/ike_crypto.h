@@ -216,6 +216,8 @@ extern IKE_hashSuiteInfo    *IKE_sigHashSuite(struct ikePeerConfig*, ubyte2 ht);
 
 extern MSTATUS IKE_getSigAlgo(ubyte4 akt, /* akt_rsa or akt_ecc */
                               ubyte2 ht, /* hash algo value in RFC7427 7. */
+                              ubyte curveHint, /* disambiguates EdDSA curves that share (akt_ecc, HASH_IDENTITY)
+                                                  0 = no preference (RSA/ECDSA) */
                               ubyte *poSigAlgo, /* RSA only */
                               const ubyte **ppId, ubyte *pLen,
                               const struct BulkHashAlgo **ppBHAlgo);
