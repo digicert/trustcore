@@ -618,6 +618,10 @@ MOC_EXTERN X509_STORE *SSL_CTX_get_cert_store(const SSL_CTX *);
 MOC_EXTERN int SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile,
 					     const char *CApath);
 MOC_EXTERN SSL_CTX *SSL_CTX_new(const SSL_METHOD *meth);
+#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+MOC_EXTERN SSL_CTX *SSL_CTX_new_ex(OSSL_LIB_CTX *libctx, const char *propq,
+				   const SSL_METHOD *meth);
+#endif
 MOC_EXTERN int SSL_CTX_set_cipher_list(SSL_CTX *, const char *str);
 MOC_EXTERN void SSL_CTX_set_default_passwd_cb(SSL_CTX *ctx, pem_password_cb *cb);
 MOC_EXTERN void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *ctx, void *u);
