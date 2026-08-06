@@ -5,6 +5,8 @@ permissions:
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [ "ipsec_changes" ]
   schedule:
     - cron: '30 8 * * 3'  # Wednesday 2:00 PM IST
     - cron: '30 8 * * 5'  # Friday 2:00 PM IST
