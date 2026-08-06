@@ -12971,6 +12971,8 @@ SSL_CTX_new(const SSL_METHOD *meth)
 
       memset((ubyte*)ctx, 0, sizeof(*ctx));
 
+      ctx->orig_ssl_ctx.references = 1;
+
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
       ctx->orig_ssl_ctx.libctx = libctx;
       if (NULL != propq)
@@ -13031,7 +13033,6 @@ SSL_CTX_new(const SSL_METHOD *meth)
        */
       ctx->orig_ssl_ctx.read_ahead = OSSL_DEFAULT_READ_AHEAD;
 
-     ctx->orig_ssl_ctx.references = 1;
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
      ctx->orig_ssl_ctx.lock = CRYPTO_THREAD_lock_new();
      if (NULL == ctx->orig_ssl_ctx.lock)
@@ -13141,11 +13142,7 @@ exit:
      */
      if ((OK != status) && ctx)
      {
-#if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-        if (NULL != ctx->orig_ssl_ctx.propq)
-            OPENSSL_free(ctx->orig_ssl_ctx.propq);
-#endif
-        OSSL_FREE((void *)ctx);
+        SSL_CTX_free(ctx);
         ctx = NULL;
      }
 
