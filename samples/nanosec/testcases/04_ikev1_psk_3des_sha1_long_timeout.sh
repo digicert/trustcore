@@ -1,6 +1,6 @@
 # IKEv1 PSK — 3DES-CBC + HMAC-SHA1 (extended timeout)
 
-TC_NAME="IKEv1 PSK / 3DES-SHA1 (60s timeout)"
+TC_NAME="Testcase 4 IKEv1 PSK / 3DES-SHA1 (60s timeout)"
 TC_IKE_VERSION=1
 TC_NEG_TIMEOUT=60
 TC_SOCK_WAIT=90

@@ -98,7 +98,10 @@
 #   -k          Keep veth pair and modules after the suite finishes
 #   -V          Enable valgrind memory-leak checks on the ike binary
 #   -S          StrongSwan interop mode (uses testcases_strongswan/ directory)
-#   -I          Build and install strongswan 6.0.6 from source if not found
+#   -I          Build and install strongswan 6.0.6 from source; build tree kept
+#               at /var/lib/strongswan-build for use by -U
+#   -U          Uninstall strongswan installed by -I (runs make uninstall, then
+#               removes /var/lib/strongswan-build and known installed paths)
 #   -f <glob>   Run only test cases whose filename matches glob (repeatable)
 #   -l          List available test cases and exit
 #   -h          Show this help
@@ -151,6 +154,10 @@ LIST_ONLY=0
 VALGRIND_ENABLED=0
 STRONGSWAN_MODE=0
 INSTALL_STRONGSWAN=0
+UNINSTALL_STRONGSWAN=0
+
+# Fixed build tree location — kept after -I so that -U can run make uninstall.
+_SS_BUILD_ROOT="/var/lib/strongswan-build"
 
 # VICI (Versatile IKE Configuration Interface) is charon's socket-based
 # control API.  swanctl uses it to load configs, trigger SA initiation, and
@@ -282,7 +289,7 @@ _graceful_kill() {
 ###############################################################################
 declare -a FILTER_PATTERNS=()
 
-while getopts "t:w:kVSIf:lh" opt; do
+while getopts "t:w:kVSIUf:lh" opt; do
     case $opt in
         t) NEG_TIMEOUT="$OPTARG" ;;
         w) SOCK_WAIT="$OPTARG" ;;
@@ -290,6 +297,7 @@ while getopts "t:w:kVSIf:lh" opt; do
         V) VALGRIND_ENABLED=1 ;;
         S) STRONGSWAN_MODE=1 ;;
         I) INSTALL_STRONGSWAN=1 ;;
+        U) UNINSTALL_STRONGSWAN=1 ;;
         f) FILTER_PATTERNS+=("$OPTARG") ;;
         l) LIST_ONLY=1 ;;
         h) usage ;;
@@ -337,7 +345,7 @@ if [[ $VALGRIND_ENABLED -eq 1 && -z "$VALGRIND_BIN" ]]; then
 fi
 
 ###############################################################################
-# StrongSwan detection (and optional install)
+# StrongSwan detection, optional install (-I), and optional uninstall (-U)
 ###############################################################################
 if command -v swanctl &>/dev/null; then
     SWANCTL_BIN="$(command -v swanctl)"
@@ -347,8 +355,40 @@ for _p in /usr/libexec/ipsec/charon /usr/lib/ipsec/charon \
     [[ -x "$_p" ]] && { CHARON_BIN="$_p"; break; }
 done
 
+# _ss_uninstall: remove a StrongSwan installation previously done by -I.
+# Prefers "make uninstall" from the saved build tree; falls back to removing
+# the known installed paths directly.
+_ss_uninstall() {
+    local _src="${_SS_BUILD_ROOT}/strongswan-6.0.6"
+    if [[ -d "$_src" && -f "$_src/Makefile" ]]; then
+        step "Uninstalling StrongSwan via make uninstall"
+        make -C "$_src" uninstall 2>&1 | grep -v "^Nothing\|^make\[" || true
+        rm -rf "$_SS_BUILD_ROOT"
+    else
+        step "Uninstalling StrongSwan (manual — build tree not found at ${_SS_BUILD_ROOT})"
+        rm -rf /usr/libexec/ipsec
+        rm -rf /usr/lib/ipsec
+        rm -f  /usr/local/sbin/swanctl \
+               /usr/local/sbin/ipsec \
+               /usr/local/sbin/charon-systemd \
+               /usr/local/bin/pki
+        rm -rf /usr/local/share/strongswan
+        rm -rf /etc/strongswan.d
+        rm -f  /etc/strongswan.conf
+        rm -f  /usr/lib/systemd/system/strongswan.service \
+               /usr/lib/systemd/system/strongswan-starter.service
+    fi
+    log "  StrongSwan uninstalled."
+}
+
+if [[ $UNINSTALL_STRONGSWAN -eq 1 ]]; then
+    [[ "$EUID" -eq 0 ]] || fail "-U must be run as root (use sudo)."
+    _ss_uninstall
+    exit 0
+fi
+
 if [[ $INSTALL_STRONGSWAN -eq 1 && ( -z "$SWANCTL_BIN" || -z "$CHARON_BIN" ) ]]; then
-    step "Building strongswan 6.0.6 from source"
+    step "Building StrongSwan 6.0.6 from source  (build tree: ${_SS_BUILD_ROOT})"
     command -v apt-get &>/dev/null || fail "-I requires apt-get for build dependencies (Debian/Ubuntu only)."
     command -v wget    &>/dev/null || fail "-I requires wget — install it first."
 
@@ -358,18 +398,17 @@ if [[ $INSTALL_STRONGSWAN -eq 1 && ( -z "$SWANCTL_BIN" || -z "$CHARON_BIN" ) ]];
         libip4tc-dev libssl-dev 2>&1 \
         | grep -E "^(Get:|Setting up|Unpacking|already)" || true
 
-    _SS_BUILD_DIR="$(mktemp -d /tmp/strongswan_build.XXXXXX)"
-    trap 'rm -rf "$_SS_BUILD_DIR"' EXIT
+    mkdir -p "$_SS_BUILD_ROOT"
 
     step "  [2/4] Downloading strongswan-6.0.6.tar.gz"
     wget -q --show-progress \
         https://github.com/strongswan/strongswan/releases/download/6.0.6/strongswan-6.0.6.tar.gz \
-        -O "${_SS_BUILD_DIR}/strongswan-6.0.6.tar.gz"
-    tar xf "${_SS_BUILD_DIR}/strongswan-6.0.6.tar.gz" -C "$_SS_BUILD_DIR"
+        -O "${_SS_BUILD_ROOT}/strongswan-6.0.6.tar.gz"
+    tar xf "${_SS_BUILD_ROOT}/strongswan-6.0.6.tar.gz" -C "$_SS_BUILD_ROOT"
 
     step "  [3/4] Configuring and compiling"
     (
-        cd "${_SS_BUILD_DIR}/strongswan-6.0.6"
+        cd "${_SS_BUILD_ROOT}/strongswan-6.0.6"
         CFLAGS="-ggdb -O0 -DDEBUG" CXXFLAGS="-ggdb -O0 -DDEBUG" \
         ./configure \
             --enable-openssl --enable-ml --enable-gcrypt --enable-gmp \
@@ -377,36 +416,77 @@ if [[ $INSTALL_STRONGSWAN -eq 1 && ( -z "$SWANCTL_BIN" || -z "$CHARON_BIN" ) ]];
             --enable-vici --enable-swanctl --enable-charon --enable-updown \
             --enable-resolve --enable-eap-identity --enable-eap-md5 \
             --enable-eap-gtc --enable-eap-aka --enable-eap-aka-3gpp \
-            --enable-eap-aka-3gpp2 --enable-eap-sim --enable-eap-mschapv2 \
-            --enable-eap-radius --enable-eap-tls --enable-eap-ttls \
-            --enable-eap-peap --enable-xauth-generic --enable-xauth-eap \
-            --enable-xauth-pam --enable-xauth-noauth --enable-dhcp \
-            --enable-farp --enable-addrblock --enable-unity --enable-curl \
-            --enable-files --enable-soup --enable-ldap --enable-sqlite \
-            --enable-pkcs11 --enable-sha3 --enable-mgf1 --enable-chapoly \
-            --enable-ccm --enable-gcm --enable-ctr --enable-af-alg \
-            --enable-sha1 --enable-sha2 --enable-md4 --enable-md5 \
-            --enable-des --enable-aes --enable-rc2 --enable-blowfish \
-            --enable-hmac --enable-xcbc --enable-cmac --enable-fips-prf \
-            --enable-kdf --enable-pkcs1 --enable-pkcs7 --enable-pkcs8 \
-            --enable-pkcs12 --enable-pgp --enable-dnskey --enable-sshkey \
-            --enable-pem --enable-x509 --enable-revocation --enable-constraints \
-            --enable-acert --enable-pubkey --enable-random --enable-nonce \
-            --enable-curve25519 --enable-test-vectors --enable-systemd \
-            --enable-agent --enable-certexpire --enable-connmark \
-            --enable-eap-dynamic --enable-eap-tnc --enable-error-notify \
-            --enable-forecast --enable-ha --enable-led --enable-lookip \
-            --enable-tnc-tnccs \
+            --enable-eap-aka-3gpp2 --enable-eap-sim --enable-eap-sim-file \
+            --enable-eap-mschapv2 --enable-eap-radius --enable-eap-tls \
+            --enable-eap-ttls --enable-eap-peap --enable-xauth-generic \
+            --enable-xauth-eap --enable-xauth-pam --enable-xauth-noauth \
+            --enable-dhcp --enable-farp --enable-addrblock --enable-unity \
+            --enable-curl --enable-files --enable-soup --enable-ldap \
+            --enable-sqlite --enable-pkcs11 --enable-sha3 --enable-mgf1 \
+            --enable-chapoly --enable-ccm --enable-gcm --enable-ctr \
+            --enable-af-alg --enable-sha1 --enable-sha2 --enable-md4 \
+            --enable-md5 --enable-des --enable-aes --enable-rc2 \
+            --enable-blowfish --enable-hmac --enable-xcbc --enable-cmac \
+            --enable-fips-prf --enable-kdf --enable-pkcs1 --enable-pkcs7 \
+            --enable-pkcs8 --enable-pkcs12 --enable-pgp --enable-dnskey \
+            --enable-sshkey --enable-pem --enable-x509 --enable-revocation \
+            --enable-constraints --enable-acert --enable-pubkey \
+            --enable-random --enable-nonce --enable-curve25519 \
+            --enable-test-vectors --enable-systemd --enable-agent \
+            --enable-certexpire --enable-connmark --enable-eap-dynamic \
+            --enable-eap-tnc --enable-error-notify --enable-forecast \
+            --enable-ha --enable-led --enable-lookip --enable-tnc-tnccs \
             --sysconfdir=/etc --localstatedir=/var \
             --with-ipsecdir=/usr/libexec/ipsec \
             --with-ipseclibdir=/usr/lib/ipsec \
             --with-systemdsystemunitdir=/usr/lib/systemd/system \
             2>&1 | tail -5
-        make -j4
-    ) || fail "strongswan build failed — check output above."
+        make -j"$(nproc)"
+    ) || fail "StrongSwan build failed — check output above."
 
     step "  [4/4] Installing"
-    (cd "${_SS_BUILD_DIR}/strongswan-6.0.6" && make install)
+    make -C "${_SS_BUILD_ROOT}/strongswan-6.0.6" install
+
+    step "  [4.5/4] Building eap-aka-file plugin"
+    _aka_src="${SCRIPT_DIR}/strongswan_plugins/eap_aka_file"
+    _aka_so="/usr/lib/ipsec/plugins/libstrongswan-eap-aka-file.so"
+    _aka_la="/usr/lib/ipsec/plugins/libstrongswan-eap-aka-file.la"
+    _ss_src="${_SS_BUILD_ROOT}/strongswan-6.0.6"
+    gcc -ggdb -O0 -DDEBUG -fPIC \
+        -include "${_ss_src}/config.h" \
+        -I"${_ss_src}/src/libstrongswan" \
+        -I"${_ss_src}/src/libcharon" \
+        -I"${_ss_src}/src/libsimaka" \
+        -DIPSEC_CONFDIR=\"/etc\" \
+        -shared \
+        "${_aka_src}/eap_aka_file_plugin.c" \
+        "${_aka_src}/eap_aka_file_card.c" \
+        "${_aka_src}/eap_aka_file_provider.c" \
+        "${_aka_src}/eap_aka_file_quintuplets.c" \
+        -Wl,-rpath,/usr/lib/ipsec -L/usr/lib/ipsec -lsimaka \
+        -o "${_aka_so}" || fail "eap-aka-file plugin build failed"
+    cat > "${_aka_la}" <<'EOLA'
+dlname='libstrongswan-eap-aka-file.so'
+library_names='libstrongswan-eap-aka-file.so'
+old_library=''
+dependency_libs=' /usr/lib/ipsec/libsimaka.la /usr/lib/ipsec/libstrongswan.la'
+installed=yes
+shouldnotlink=yes
+dlopen=''
+dlpreopen=''
+libdir='/usr/lib/ipsec/plugins'
+EOLA
+    mkdir -p /etc/strongswan.d/charon
+    cat > /etc/strongswan.d/charon/eap-aka-file.conf <<'EOCONF'
+eap-aka-file {
+    load = yes
+}
+EOCONF
+    cat > /etc/strongswan.d/charon/eap-tls.conf <<'EOCONF'
+eap-tls {
+    load = yes
+}
+EOCONF
 
     # Re-detect after install
     if command -v swanctl &>/dev/null; then
@@ -417,8 +497,8 @@ if [[ $INSTALL_STRONGSWAN -eq 1 && ( -z "$SWANCTL_BIN" || -z "$CHARON_BIN" ) ]];
         [[ -x "$_p" ]] && { CHARON_BIN="$_p"; break; }
     done
     [[ -n "$SWANCTL_BIN" && -n "$CHARON_BIN" ]] || \
-        fail "strongswan built and installed but swanctl/charon still not found."
-    log "  strongswan ready: swanctl=$SWANCTL_BIN  charon=$CHARON_BIN"
+        fail "StrongSwan built and installed but swanctl/charon still not found."
+    log "  StrongSwan ready: swanctl=$SWANCTL_BIN  charon=$CHARON_BIN"
 fi
 
 if [[ $STRONGSWAN_MODE -eq 1 ]]; then
@@ -497,7 +577,7 @@ cleanup() {
 
     if [[ $KEEP -eq 0 ]]; then
         for _mod in moc_ipsec_mod moc_ipsec moc_memdrv moc_platform_mod; do
-            lsmod | grep -q "^${_mod} " && rmmod "$_mod" 2>/dev/null || true
+            rmmod "$_mod" 2>/dev/null || true
         done
         if [[ $VETH_CREATED -eq 1 ]]; then
             if [[ $STRONGSWAN_MODE -eq 1 ]]; then
@@ -584,21 +664,23 @@ setup_network() {
 load_modules() {
     step "Infrastructure: Loading kernel modules"
 
-    _load_mod() {
-        local _mod_file="$1" _mod_name
-        _mod_name="$(basename "${_mod_file%.ko}")"
-        if lsmod | grep -q "^${_mod_name} "; then
-            log "  $_mod_name already loaded"
-        else
-            log "  insmod $_mod_file"
-            insmod "$_mod_file"
-        fi
-    }
+    # Unload any stale modules first (reverse dependency order) so we always
+    # run the freshly-built .ko and avoid "File exists" if a prior run was
+    # interrupted before cleanup. Skip the lsmod check — the kernel-registered
+    # name can differ from the filename, causing grep to miss a loaded module.
+    # rmmod exits non-zero when the module isn't loaded; suppress that.
+    for _mod in moc_ipsec_mod moc_ipsec moc_memdrv moc_platform_mod; do
+        rmmod "$_mod" 2>/dev/null && log "  rmmod $_mod (stale)" || true
+    done
 
-    _load_mod "${BIN_DIR}/moc_platform_mod.ko"
-    _load_mod "${BIN_DIR}/moc_memdrv.ko"
-    _load_mod "${BIN_DIR}/moc_ipsec.ko"
-    _load_mod "${BIN_DIR}/moc_ipsec_mod.ko"
+    log "  insmod ${BIN_DIR}/moc_platform_mod.ko"
+    insmod "${BIN_DIR}/moc_platform_mod.ko"
+    log "  insmod ${BIN_DIR}/moc_memdrv.ko"
+    insmod "${BIN_DIR}/moc_memdrv.ko"
+    log "  insmod ${BIN_DIR}/moc_ipsec.ko"
+    insmod "${BIN_DIR}/moc_ipsec.ko"
+    log "  insmod ${BIN_DIR}/moc_ipsec_mod.ko"
+    insmod "${BIN_DIR}/moc_ipsec_mod.ko"
 }
 
 ###############################################################################
@@ -609,8 +691,16 @@ load_modules() {
 # installation (we manage the network topology ourselves) and raises IKE/net
 # log verbosity to level 2 so charon logs enough detail to diagnose failures.
 _setup_strongswan_conf() {
+    # Ensure the eap-tls plugin conf exists
+    if [[ ! -f /etc/strongswan.d/charon/eap-tls.conf ]]; then
+        mkdir -p /etc/strongswan.d/charon
+        printf 'eap-tls {\n    load = yes\n}\n' \
+            > /etc/strongswan.d/charon/eap-tls.conf
+    fi
+
     cat > "$SS_STRONGSWAN_CONF" <<EOF
 charon {
+    load_modular = yes
     install_routes = no
     install_virtual_ip = no
     filelog {
@@ -620,6 +710,9 @@ charon {
             net = 2
             cfg = 2
         }
+    }
+    plugins {
+        include /etc/strongswan.d/charon/*.conf
     }
 }
 EOF
@@ -697,11 +790,61 @@ _swanctl_child_up() {
 # Test case helpers — callable from testcases/*.sh
 ###############################################################################
 
-# tc_gen_certs [prefix]
+# _tc_gen_key <algo> <keyfile>
 #
-# Generates a fresh CA, responder cert/key, and initiator cert/key under the
-# repo's keystore/ directories.  All files are named <prefix>_*.  The default
-# prefix is "tc", giving tc_ca.pem, tc_resp.pem, tc_init.pem, etc.
+# Generates a private key of the given type. Supported: rsa, ecdsa, ed25519, ed448.
+_tc_gen_key() {
+    local algo="$1" keyfile="$2"
+
+    case "$algo" in
+        rsa)
+            if [ "$TC_PKCS8_KEY" == "pkcs8" ]; then
+                # PKCS#8 (unencrypted)
+                openssl genpkey -algorithm RSA \
+                    -pkeyopt rsa_keygen_bits:2048 \
+                    -out "$keyfile" 2>/dev/null || return 1
+            else
+                # legacy traditional RSA PEM
+                openssl genrsa -out "$keyfile" 2048 2>/dev/null || return 1
+            fi
+            ;;
+        ecdsa)
+            if [ "$TC_PKCS8_KEY" == "pkcs8" ]; then
+                # PKCS#8 (unencrypted)
+                openssl genpkey -algorithm EC \
+                    -pkeyopt ec_paramgen_curve:prime256v1 \
+                    -pkeyopt ec_param_enc:named_curve \
+                    -out "$keyfile" 2>/dev/null || return 1
+            else
+                # legacy EC key (uses X9.62 public key encoding internally)
+                openssl ecparam -name prime256v1 -genkey -noout -out "$keyfile" 2>/dev/null || return 1
+            fi
+            ;;
+        ed25519)
+            openssl genpkey -algorithm ed25519 -out "$keyfile" 2>/dev/null || return 1
+            ;;
+
+        ed448)
+            openssl genpkey -algorithm ed448 -out "$keyfile" 2>/dev/null || return 1
+            ;;
+
+        *)
+            return 1
+            ;;
+    esac
+}
+
+
+# tc_gen_certs [prefix] [resp_algo] [init_algo]
+#
+# Generates a fresh CA (always RSA) plus a responder cert/key and an
+# initiator cert/key under the repo's keystore/ directories, signed by that
+# CA.  All files are named <prefix>_*.  The default prefix is "tc", giving
+# tc_ca.pem, tc_resp.pem, tc_init.pem, etc.
+#
+# resp_algo / init_algo select the leaf key type independently — one of
+# rsa (default), ecdsa, ed25519, ed448 — so mixed-auth testcases (e.g. one
+# peer using RSA, the other Ed448) can be expressed with a single call.
 #
 # On success the following variables are set for the caller to use:
 #   TC_CA_CERT   TC_RESP_CERT   TC_INIT_CERT   TC_RESP_KEY   TC_INIT_KEY
@@ -709,6 +852,8 @@ _swanctl_child_up() {
 # Returns 1 if openssl is not installed or any generation step fails.
 tc_gen_certs() {
     local prefix="${1:-tc}"
+    local resp_algo="${2:-rsa}"
+    local init_algo="${3:-rsa}"
     local _cert_dir="${REPO_DIR}/keystore/certs"
     local _key_dir="${REPO_DIR}/keystore/keys"
     local _ca_key="${_key_dir}/${prefix}_ca.key"
@@ -723,12 +868,19 @@ tc_gen_certs() {
 
     local _csr
     # CA
-    openssl genrsa -out "$_ca_key" 2048 2>/dev/null                  || return 1
+    if [[ "${TC_ECDSA_CA:-}" == "1" ]]; then
+        openssl genpkey -algorithm EC \
+            -pkeyopt ec_paramgen_curve:prime256v1 \
+            -pkeyopt ec_param_enc:named_curve \
+            -out "$_ca_key" 2>/dev/null                               || return 1
+    else
+        openssl genrsa -out "$_ca_key" 2048 2>/dev/null               || return 1
+    fi
     openssl req -x509 -new -nodes -key "$_ca_key" -sha256 -days 1 \
         -subj "/CN=TestCA" -out "$TC_CA_CERT" 2>/dev/null             || return 1
 
     # Responder
-    openssl genrsa -out "$TC_RESP_KEY" 2048 2>/dev/null               || return 1
+    _tc_gen_key "$resp_algo" "$TC_RESP_KEY"                           || return 1
     _csr="$(mktemp /tmp/${prefix}_resp_XXXXXX.csr)"
     openssl req -new -key "$TC_RESP_KEY" \
         -subj "/CN=responder" -out "$_csr" 2>/dev/null
@@ -737,7 +889,7 @@ tc_gen_certs() {
     rm -f "$_csr"
 
     # Initiator
-    openssl genrsa -out "$TC_INIT_KEY" 2048 2>/dev/null               || return 1
+    _tc_gen_key "$init_algo" "$TC_INIT_KEY"                           || return 1
     _csr="$(mktemp /tmp/${prefix}_init_XXXXXX.csr)"
     openssl req -new -key "$TC_INIT_KEY" \
         -subj "/CN=initiator" -out "$_csr" 2>/dev/null
@@ -865,10 +1017,21 @@ verify_sa_proposal() {
     log "  Configured policy : encr_auth_algs=${exp_auth}  encr_algs=${exp_encr}  keylength=${exp_keylen}"
     log "  Negotiated SA     : auth=${sa_auth_name}(id=${sa_auth_num})  encr=${sa_encr_name}(id=${sa_encr_num})  keylen=${sa_keylen}"
 
-    local auth_ok=0 encr_ok=0 keylen_ok=0
-    [[ "$sa_auth_name" == "$exp_auth"   ]] && auth_ok=1
-    [[ "$sa_encr_name" == "$exp_encr"   ]] && encr_ok=1
-    [[ "$sa_keylen"    == "$exp_keylen" ]] && keylen_ok=1
+    local auth_ok=1
+    local encr_ok=1
+    local keylen_ok=1
+
+    if [[ -n "$exp_auth" ]]; then
+        [[ "$sa_auth_name" == "$exp_auth" ]] || auth_ok=0
+    fi
+
+    if [[ -n "$exp_encr" ]]; then
+        [[ "$sa_encr_name" == "$exp_encr" ]] || encr_ok=0
+    fi
+
+    if [[ -n "$exp_keylen" ]]; then
+        [[ "$sa_keylen" == "$exp_keylen" ]] || keylen_ok=0
+    fi
 
     if [[ $auth_ok -eq 1 && $encr_ok -eq 1 && $keylen_ok -eq 1 ]]; then
         log "  RESULT: Proposal VERIFIED — negotiated SA matches configured policy."
@@ -1096,6 +1259,7 @@ run_one_test() {
     TC_VERIFY_KEYLEN=""
     TC_SKIP_REASON=""
     TC_RUN_PACKET_TEST=1
+    TC_ECDSA_CA=""
     unset -f tc_setup_policies 2>/dev/null || true
     unset -f tc_teardown       2>/dev/null || true
 
@@ -1347,10 +1511,13 @@ run_one_test_strongswan() {
     TC_VERIFY_ENCR=""
     TC_VERIFY_KEYLEN=""
     TC_SKIP_REASON=""
+    TC_PKCS8_KEY=""
+    TC_PASSWORD=""
     TC_RUN_PACKET_TEST=1       # default on: send from SS namespace, capture on its veth
     TC_STRONGSWAN_ROLE="init"  # default: StrongSwan initiates
     TC_SS_CONN_NAME="nanosec-interop"
     TC_SS_CHILD_NAME="child1"
+    TC_ECDSA_CA=""
     unset -f tc_setup_policies  2>/dev/null || true
     unset -f tc_setup_swanctl   2>/dev/null || true
     unset -f tc_teardown        2>/dev/null || true
@@ -1547,8 +1714,8 @@ run_one_test_strongswan() {
         log "  StrongSwan CHILD_SA: YES"
 
         # ── SA proposal verification ──────────────────────────────────────
-        if [[ -n "${TC_VERIFY_AUTH:-}" && -n "${TC_VERIFY_ENCR:-}" \
-              && -n "${TC_VERIFY_KEYLEN:-}" ]]; then
+        if [[ -n "${TC_VERIFY_AUTH:-}" || -n "${TC_VERIFY_ENCR:-}" \
+              || -n "${TC_VERIFY_KEYLEN:-}" ]]; then
             step "  SA Proposal Verification"
             if ! verify_sa_proposal "$TC_VERIFY_AUTH" "$TC_VERIFY_ENCR" \
                     "$TC_VERIFY_KEYLEN"; then
@@ -1706,7 +1873,7 @@ print_summary() {
     if   [[ $FAIL_COUNT -eq 0 && $SKIP_COUNT -eq 0 ]]; then
         printf "${_GR}${_B}All ${PASS_COUNT} test(s) passed.${_R}"
     elif [[ $FAIL_COUNT -eq 0 ]]; then
-        printf "${_GR}${_B}${PASS_COUNT} passed${_R}  ${_YL}${SKIP_COUNT} skipped${_R}"
+        printf "${_GR}${_B}${PASS_COUNT} PASSED${_R}  ${_YL}${SKIP_COUNT} skipped${_R}"
     else
         printf "${_RD}${_B}${FAIL_COUNT} FAILED${_R}  ${_GR}${PASS_COUNT} passed${_R}"
         [[ $SKIP_COUNT -gt 0 ]] && printf "  ${_YL}${SKIP_COUNT} skipped${_R}"

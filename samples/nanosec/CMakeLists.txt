@@ -171,6 +171,38 @@ if(WITH_LOGGING)
   )
 endif()
 
+# Compile in EAP support
+function(_append_eap_flags_from_file flags_file)
+  file(STRINGS "${flags_file}" _flags)
+  foreach(_flag ${_flags})
+    string(STRIP "${_flag}" _flag)
+    string(REGEX REPLACE "^-D" "" _flag "${_flag}")
+    list(APPEND IKE_DEFINITIONS ${_flag})
+  endforeach()
+  set(IKE_DEFINITIONS ${IKE_DEFINITIONS} PARENT_SCOPE)
+endfunction()
+
+set(_EAP_FLAGS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../projects/nanosec")
+
+if(CM_ENABLE_EAPA)
+  _append_eap_flags_from_file("${_EAP_FLAGS_DIR}/mocana_eap_flags.txt")
+  _append_eap_flags_from_file("${_EAP_FLAGS_DIR}/mocana_eap_auth_flags.txt")
+endif()
+
+if(CM_ENABLE_EAPS)
+  _append_eap_flags_from_file("${_EAP_FLAGS_DIR}/mocana_eap_flags.txt")
+  _append_eap_flags_from_file("${_EAP_FLAGS_DIR}/mocana_eap_supplicant_flags.txt")
+endif()
+
+if(CM_ENABLE_TLSA)
+  _append_eap_flags_from_file("${_EAP_FLAGS_DIR}/mocana_tls_flags.txt")
+  _append_eap_flags_from_file("${_EAP_FLAGS_DIR}/mocana_tls_eap_auth_flags.txt")
+endif()
+
+if(CM_ENABLE_TLSS)
+  _append_eap_flags_from_file("${_EAP_FLAGS_DIR}/mocana_tls_flags.txt")
+endif()
+
 ########################################################################
 # Build nanosec example executable
 ########################################################################

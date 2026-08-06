@@ -7633,7 +7633,7 @@ next:
         {
             for (oSigAlgo=0, i = pxSa->u.v2.numSahAlgos - 1; 0 <= i; i--)
             {
-                if (OK > (status = IKE_getSigAlgo(akt_rsa, pxSa->u.v2.sahAlgos[i],
+                if (OK > (status = IKE_getSigAlgo(akt_rsa, pxSa->u.v2.sahAlgos[i], 0,
                                     &oSigAlgo, &sigAlgId, &sigAlgIdLen, NULL)))
                     DBG_EXIT
 
@@ -7721,6 +7721,7 @@ next:
 #endif
       {
         ubyte curveId = 0;
+        ubyte oExpectedCurveId = pAuthMtd->curveId;
         if (NULL == pxPrivKey) /* jic */
         {
             status = ERR_IKE_NO_CERT;
@@ -7741,12 +7742,29 @@ next:
 
             wBodyLen = (ubyte2)(sigLen * 2);
         }
+        else
+        {
+            /* AUTH_MTD_SIG is shared by Ed25519 and Ed448, so pAuthMtd
+             * always resolves to whichever entry comes first in
+             * mAuthMtds[] (Ed25519) regardless of the cert actually in
+             * use. Ask the private key which curve it really is. */
+            ubyte4 realCurveId = 0;
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
+            status = CRYPTO_INTERFACE_EC_getCurveIdFromKeyAux(pECCKey, &realCurveId);
+#else
+            status = EC_getCurveIdFromKey(pECCKey, &realCurveId);
+#endif
+            if (OK != status)
+                goto exit;
+            oExpectedCurveId = (ubyte)realCurveId;
+        }
 #ifdef __ENABLE_IKE_SIG_AUTH_RFC7427__
         if (pxSa->u.v2.numSahAlgos)
         {
             for (i = pxSa->u.v2.numSahAlgos - 1; 0 <= i; i--)
             {
                 if (OK > (status = IKE_getSigAlgo(akt_ecc, pxSa->u.v2.sahAlgos[i],
+                                        oExpectedCurveId,
                                         &curveId, &sigAlgId, &sigAlgIdLen, &pBHAlgo)))
                     DBG_EXIT
 
@@ -7755,7 +7773,7 @@ next:
                     sigAlgIdLen = 0; /* !!! */
                     break;
                 }
-                else if((curveId) && (curveId == pAuthMtd->curveId))
+                else if((curveId) && (curveId == oExpectedCurveId))
                 {
                     break;
                 }

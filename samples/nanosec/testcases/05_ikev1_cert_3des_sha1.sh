@@ -1,6 +1,6 @@
 # IKEv1 Certificate — 3DES-CBC + HMAC-SHA1
 
-TC_NAME="IKEv1 Certificate / 3DES-CBC + HMAC-SHA1"
+TC_NAME="Testcase 5 IKEv1 Certificate / 3DES-CBC + HMAC-SHA1"
 TC_IKE_VERSION=1
 
 if ! tc_gen_certs; then
