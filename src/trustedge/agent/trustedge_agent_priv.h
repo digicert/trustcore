@@ -314,6 +314,9 @@ typedef struct
 {
     ubyte **ppX5t256;
     ubyte4 count;
+    ubyte4 httpStatusCode;
+    ubyte *pServerRsp;
+    ubyte4 serverRspLen;
 } TrustEdgeAgentPolicyDataCPPS;
 
 typedef enum

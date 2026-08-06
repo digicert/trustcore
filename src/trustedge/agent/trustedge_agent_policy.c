@@ -531,6 +531,19 @@
     "    \"cloudPlatformPolicyId\":\"%s\"\n" \
     "}\n"
 
+#define MQTT_CLOUDPLATFORM_POLICY_COMPLETED_WITH_RESPONSE_MSG \
+    "{\n" \
+    "    \"policyService\":\"CloudPlatformPolicy\",\n" \
+    "    \"deviceId\":\"%s\",\n" \
+    "    \"accountId\":\"%s\",\n" \
+    "    \"timestamp\":\"%s\",\n" \
+    "    \"mode\":\"cloudplatform_policy_completed\",\n" \
+    "    \"deviceGroupId\":\"%s\",\n" \
+    "    \"cloudPlatformPolicyId\":\"%s\",\n" \
+    "    \"azureRegistrationState\":\n" \
+    "    %.*s\n" \
+    "}\n"
+
 #define MQTT_CLOUDPLATFORM_POLICY_FAILED_MSG \
     "{\n" \
     "    \"policyService\":\"CloudPlatformPolicy\",\n" \
@@ -1702,6 +1715,12 @@ static void TRUSTEDGE_agentPolicyFreeCloudPlatformCreds(
         DIGI_FREE((void **) &(pData->ppX5t256));
     }
 
+    if (NULL != pData->pServerRsp)
+    {
+        DIGI_FREE((void **) &(pData->pServerRsp));
+        pData->serverRspLen = 0;
+    }
+
 }
 
 extern MSTATUS TRUSTEDGE_agentPolicyClearCurrent(
@@ -2415,6 +2434,9 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
     intBoolean succeed,
     sbyte *pErrorCode,
     sbyte *pErrorDescr,
+    ubyte4 httpStatusCode,
+    ubyte *pServerRsp,
+    ubyte4 serverRspLen,
     ubyte **ppReq,
     ubyte4 *pReqLen
 )
@@ -2424,11 +2446,33 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
     sbyte *pMsg = NULL;
     sbyte *pTimeStamp = NULL;
 
+    MOC_UNUSED(httpStatusCode);
+
     status = TRUSTEDGE_utilsGetTime(&pTimeStamp, 0);
     if (OK != status)
         goto exit;
 
-    if (succeed)
+    if (succeed && NULL != pServerRsp)
+    {
+        ret = snprintf(NULL, 0, MQTT_CLOUDPLATFORM_POLICY_COMPLETED_WITH_RESPONSE_MSG,
+                        pDeviceId,
+                        pAccountId,
+                        pTimeStamp,
+                        pDeviceGroupId,
+                        pCloudPlatformPolicyId,
+                        serverRspLen, pServerRsp);
+        status = DIGI_MALLOC((void **) &pMsg, ret + 1);
+        if (OK != status)
+            goto exit;
+        ret = snprintf(pMsg, ret + 1, MQTT_CLOUDPLATFORM_POLICY_COMPLETED_WITH_RESPONSE_MSG,
+                        pDeviceId,
+                        pAccountId,
+                        pTimeStamp,
+                        pDeviceGroupId,
+                        pCloudPlatformPolicyId,
+                        serverRspLen, pServerRsp);
+    }
+    else if (succeed)
     {
         ret = snprintf(NULL, 0, MQTT_CLOUDPLATFORM_POLICY_COMPLETED_MSG,
                         pDeviceId,
@@ -4540,6 +4584,9 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                             FALSE,
                             "-1",
                             "failed to process cloud platform response",
+                            pCtx->curPolicy.data.cpps.httpStatusCode,
+                            pCtx->curPolicy.data.cpps.pServerRsp,
+                            pCtx->curPolicy.data.cpps.serverRspLen,
                             &pReq,
                             &reqLen);
                         if (OK != status)
@@ -4628,6 +4675,9 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                             FALSE,
                             "-1",
                             "failed to create cloud platform request",
+                            pCtx->curPolicy.data.cpps.httpStatusCode,
+                            pCtx->curPolicy.data.cpps.pServerRsp,
+                            pCtx->curPolicy.data.cpps.serverRspLen,
                             &pReq,
                             &reqLen);
                         if (OK != status)
@@ -5391,6 +5441,9 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                         FALSE,
                         "-1",
                         "failed to process cloud platform response",
+                        pCtx->curPolicy.data.cpps.httpStatusCode,
+                        pCtx->curPolicy.data.cpps.pServerRsp,
+                        pCtx->curPolicy.data.cpps.serverRspLen,
                         &pReq,
                         &reqLen);
                     if (OK != status)
@@ -5415,6 +5468,9 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                         TRUE,
                         NULL,
                         NULL,
+                        pCtx->curPolicy.data.cpps.httpStatusCode,
+                        pCtx->curPolicy.data.cpps.pServerRsp,
+                        pCtx->curPolicy.data.cpps.serverRspLen,
                         &pReq,
                         &reqLen);
                     if (OK != status)

@@ -1,0 +1,6 @@
+{
+    "iothub_url": "mock-iot-hub.azure-devices.net",
+    "device_id": "lcl-id-skg-sample-01-clientauth",
+    "device_cert": "./src/trustedge/test/cloud_platform_policy_azure_dps_workspace/keystore/certs/294820113.pem",
+    "device_key": "./src/trustedge/test/cloud_platform_policy_azure_dps_workspace/keystore/keys/294820113.pem"
+}

@@ -1,0 +1,12 @@
+{
+  "operationId": "mock-cloud-platform-policy",
+  "brokerType": "AZURE_IOT_DPS",
+  "attributes": [
+    { "key": "service_endpoint",          "value": "localhost" },
+    { "key": "service_endpoint_port",     "value": 8443 },
+    { "key": "attestation_mode",          "value": "X509_CERTIFICATE" },
+    { "key": "id_scope",                  "value": "0ne00000000" },
+    { "key": "retry_count",               "value": 5 },
+    { "key": "retry_interval",            "value": 2 }
+  ]
+}

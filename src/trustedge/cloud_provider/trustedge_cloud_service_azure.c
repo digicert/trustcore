@@ -1628,21 +1628,25 @@ exit:
 
 static MSTATUS TRUSTEDGE_actionSaveEventServerResponse(
     CloudServiceAzureCtx *pCloudSvcCtx,
-    ubyte **ppRsp,
-    ubyte4 *pRspLen)
+    ubyte *pRsp,
+    ubyte4 rspLen)
 {
     MSTATUS status;
 
-    if (NULL == pCloudSvcCtx || NULL == ppRsp || NULL == pRspLen)
+    if (NULL == pCloudSvcCtx || NULL == pRsp)
     {
         status = ERR_NULL_POINTER;
         goto exit;
     }
 
-    pCloudSvcCtx->pServerRsp = *ppRsp;
-    pCloudSvcCtx->serverRspLen = *pRspLen;
-    *ppRsp = NULL;
-    *pRspLen = 0;
+    if (NULL != pCloudSvcCtx->pServerRsp)
+    {
+        DIGI_FREE((void **) &(pCloudSvcCtx->pServerRsp));
+        pCloudSvcCtx->serverRspLen = 0;
+    }
+
+    pCloudSvcCtx->pServerRsp = pRsp;
+    pCloudSvcCtx->serverRspLen = rspLen;
     status = OK;
 
 exit:
@@ -1699,6 +1703,13 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureRegisterResponseParse(
 
     pAzureCtx->httpStatusCode = pCtx->responseStatus;
 
+    status = TRUSTEDGE_actionSaveEventServerResponse(
+        pAzureCtx, pRsp, rspLen);
+    if (OK != status)
+    {
+        goto exit;
+    }
+
     status = JSON_acquireContext(&pJCtx);
     if (OK != status)
     {
@@ -1729,8 +1740,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureRegisterResponseParse(
     {
         if (AZURE_TPM_REG != pAzureCtx->mode)
         {
-            status = TRUSTEDGE_actionSaveEventServerResponse(
-                pAzureCtx, &pRsp, &rspLen);
+            status = OK;
             pAzureCtx->error = TRUE;
             goto exit;
         }
@@ -1822,8 +1832,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureRegisterResponseParse(
         }
         if (0 != cmpRes)
         {
-            status = TRUSTEDGE_actionSaveEventServerResponse(
-                pAzureCtx, &pRsp, &rspLen);
+            status = OK;
             pAzureCtx->error = TRUE;
             goto exit;
         }
@@ -1876,8 +1885,6 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureRegisterResponseParse(
     }
     else
     {
-        status = TRUSTEDGE_actionSaveEventServerResponse(
-            pAzureCtx, &pRsp, &rspLen);
         pAzureCtx->error = TRUE;
         goto exit;
     }
@@ -1894,9 +1901,6 @@ exit:
 
     if (NULL != pJCtx)
         JSON_releaseContext(&pJCtx);
-
-    if (NULL != pRsp)
-        DIGI_FREE((void **) &pRsp);
 
     return status;
 }
@@ -1996,6 +2000,13 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureOpStatusResponseParse(
 
     pAzureCtx->httpStatusCode = pCtx->responseStatus;
 
+    status = TRUSTEDGE_actionSaveEventServerResponse(
+        pAzureCtx, pRsp, rspLen);
+    if (OK != status)
+    {
+        goto exit;
+    }
+
     status = JSON_acquireContext(&pJCtx);
     if (OK != status)
     {
@@ -2075,8 +2086,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureOpStatusResponseParse(
             }
             else
             {
-                status = TRUSTEDGE_actionSaveEventServerResponse(
-                    pAzureCtx, &pRsp, &rspLen);
+                status = OK;
                 pAzureCtx->error = TRUE;
                 goto exit;
             }
@@ -2086,8 +2096,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureOpStatusResponseParse(
             if ((token.len != DIGI_STRLEN(AZURE_STATUS_ASSIGNED)) ||
                 (0 != DIGI_STRNCMP(AZURE_STATUS_ASSIGNED, token.pStart, token.len)))
             {
-                status = TRUSTEDGE_actionSaveEventServerResponse(
-                    pAzureCtx, &pRsp, &rspLen);
+                status = OK;
                 pAzureCtx->error = TRUE;
                 goto exit;
             }
@@ -2249,8 +2258,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureOpStatusResponseParse(
     }
     else
     {
-        status = TRUSTEDGE_actionSaveEventServerResponse(
-            pAzureCtx, &pRsp, &rspLen);
+        status = OK;
         pAzureCtx->error = TRUE;
         goto exit;
     }
@@ -2267,9 +2275,6 @@ exit:
 
     if (NULL != pJCtx)
         JSON_releaseContext(&pJCtx);
-
-    if (NULL != pRsp)
-        DIGI_FREE((void **) &pRsp);
 
     return status;
 }
@@ -2823,6 +2828,7 @@ extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     TrustEdgeAgentCtx *pCtx,
     ubyte *pJson,
     ubyte4 jsonLen,
+    ubyte4 *pHttpStatusCode,
     ubyte **ppServerRsp,
     ubyte4 *pServerRspLen,
     ubyte **ppProviderCredJson,
@@ -2949,6 +2955,7 @@ exit:
 
     if (NULL != pAzureCtx)
     {
+        *pHttpStatusCode = pAzureCtx->httpStatusCode;
         *ppServerRsp = pAzureCtx->pServerRsp;
         *pServerRspLen = pAzureCtx->serverRspLen;
         pAzureCtx->pServerRsp = NULL;

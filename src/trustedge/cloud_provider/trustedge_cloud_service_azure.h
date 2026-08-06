@@ -43,11 +43,17 @@ extern "C" {
  *     TrustEdgeAgentCtx *pCtx :: Cloud service context
  *     ubyte *pJson :: JSON with Azure parameters
  *     ubyte4 jsonLen :: Length of JSON
+ *     ubyte4 *pHttpStatusCode :: HTTP status code from Azure cloud service
+ *     ubyte **ppServerRsp :: Server response from Azure cloud service
+ *     ubyte4 *pServerRspLen :: Length of server response
+ *     ubyte **ppProviderCredJson :: Provider credential JSON from Azure cloud service
+ *     ubyte4 *pProviderCredJsonLen :: Length of provider credential JSON
  */
 MOC_EXTERN MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     TrustEdgeAgentCtx *pCtx,
     ubyte *pJson,
     ubyte4 jsonLen,
+    ubyte4 *pHttpStatusCode,
     ubyte **ppServerRsp,
     ubyte4 *pServerRspLen,
     ubyte **ppProviderCredJson,

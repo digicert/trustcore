@@ -5981,6 +5981,9 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
     sbyte *pOutFile = NULL;
 #if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
     byteBoolean isProvisionSelf = FALSE;
+    ubyte4 httpStatusCode = 0;
+    ubyte *pServerRsp = NULL;
+    ubyte4 serverRspLen = 0;
 #endif
     ubyte *pProviderCredJson = NULL;
     ubyte4 providerCredJsonLen = 0;
@@ -6017,6 +6020,10 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
         goto exit;
     }
 
+    pCtx->curPolicy.data.cpps.httpStatusCode = 0;
+    pCtx->curPolicy.data.cpps.pServerRsp = NULL;
+    pCtx->curPolicy.data.cpps.serverRspLen = 0;
+
 #if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
     status = TRUSTEDGE_agentParseCloudResponse(
         pCloudPlatformData->pProviderCredJson,
@@ -6037,8 +6044,9 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
             pCtx,
             pCloudPlatformData->pProviderCredJson,
             pCloudPlatformData->providerCredJsonLen,
-            NULL,
-            NULL,
+            &httpStatusCode,
+            &pServerRsp,
+            &serverRspLen,
             &pProviderCredJson,
             &providerCredJsonLen);
         if (OK != status)
@@ -6049,6 +6057,10 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
                 MERROR_lookUpErrorCode(status));
             goto exit;
         }
+
+        pCtx->curPolicy.data.cpps.httpStatusCode = httpStatusCode;
+        pCtx->curPolicy.data.cpps.pServerRsp = pServerRsp;
+        pCtx->curPolicy.data.cpps.serverRspLen = serverRspLen;
     }
     else
 #endif
@@ -7183,22 +7195,6 @@ static MSTATUS TRUSTEDGE_agentProcessCommand(
     byteBoolean finished)
 {
     MSTATUS status;
-
-    /* Debug: Input validation */
-    MSG_LOG_print(MSG_LOG_DEBUG,
-        "%s: ENTER - pCtx=%p, pPayload=%p, payloadLen=%u, finished=%d\n",
-        __func__, (void*)pCtx, (void*)pPayload, payloadLen, finished);
-
-    MSG_LOG_print(MSG_LOG_DEBUG,
-        "%s: pCtx->pPBCtx=%p, pCtx->curTopic=%u\n",
-        __func__, (void*)pCtx->pPBCtx, pCtx->curTopic);
-
-    if (pCtx->curTopic < TE_TOPIC_LAST)
-    {
-        MSG_LOG_print(MSG_LOG_DEBUG,
-            "%s: pAllTopics[curTopic].pTopic=%p\n",
-            __func__, (void*)pCtx->pAllTopics[pCtx->curTopic].pTopic);
-    }
 
     status = TRUSTEDGE_agentProtobufProcess(
         pCtx, pPayload, payloadLen, finished);

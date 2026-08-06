@@ -1,0 +1,6 @@
+{
+  "errorCode": 401001,
+  "trackingId": "mock-tracking-401-12345678-1234-1234-1234-123456789abc",
+  "message": "Unauthorized: Certificate validation failed",
+  "timestampUtc": "2026-08-04T12:00:00.0000000Z"
+}
