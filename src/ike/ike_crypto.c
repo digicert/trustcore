@@ -2018,7 +2018,7 @@ exit:
 /*------------------------------------------------------------------*/
 
 extern MSTATUS
-IKE_getSigAlgo(ubyte4 akt, ubyte2 ht,
+IKE_getSigAlgo(ubyte4 akt, ubyte2 ht, ubyte curveHint,
                ubyte *poSigAlgo, /* RSA only */
                const ubyte **ppId, ubyte *pLen,
                const struct BulkHashAlgo **ppBHAlgo)
@@ -2037,6 +2037,13 @@ IKE_getSigAlgo(ubyte4 akt, ubyte2 ht,
         struct PKIX_sigId *pSigId = &mSigId[i];
         if ((akt == pSigId->akt) && (ht == pSigId->ht))
         {
+            /* Ed25519 and Ed448 both key on (akt_ecc, HASH_IDENTITY) and are
+             * otherwise indistinguishable here. pSigId->sig carries their
+             * curveId in that case so use curveHint to pick the right one.
+             * ECDSA entries leave sig==0 and are unaffected. */
+            if (curveHint && pSigId->sig && (curveHint != pSigId->sig))
+                continue;
+
             if (ppBHAlgo) *ppBHAlgo = pSigId->pBHAlgo;
             if (poSigAlgo) *poSigAlgo = pSigId->sig;
             if (pLen) *pLen = pSigId->len;

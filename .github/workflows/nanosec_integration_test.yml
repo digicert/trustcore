@@ -1,0 +1,193 @@
+name: "NanoSEC Integration Tests"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 8 * * 3'  # Wednesday 2:00 PM IST
+    - cron: '30 8 * * 5'  # Friday 2:00 PM IST
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake jq valgrind
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        
+      - name: Checkout mocn-qa-m-products
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          repository: digicert/mocn-qa-m-products
+          token: ${{ secrets.MY_SECRET_TOKEN }}
+          path: mocn-qa-m-products
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Build NanoSec with kernel modules
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_NANOSEC=ON \
+                -DBUILD_KERNELMOD=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ike
+          
+      - name: Copy keystore
+        run: |
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/ipsec_test/ipsec_keystore/ .
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/ssl_test/keystore/ .
+
+      - name: Run NanoSec tests
+        run: |
+          sudo samples/nanosec/run_testsuite.sh -V > nanosec-tests.txt 2>&1 || true
+
+      - name: Run StrongSwan interop tests
+        run: |
+          sudo samples/nanosec/run_testsuite.sh -SIV > strongswan-interop.txt 2>&1 || true
+          
+      - name: Build NanoSec with kernel modules and unsecure build option
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_NANOSEC=ON \
+                -DBUILD_KERNELMOD=ON -DCM_ENABLE_UNSECURE=ON -B build -S .
+          cmake --build build
+          test -f samples/bin/ike
+          
+      - name: Copy testcases to run with unsecure build option
+        run: |
+          cp -r samples/nanosec/testcases_strongswan_unsecure_build_flag/* samples/nanosec/testcases_strongswan
+        
+      - name: Run StrongSwan interop tests with unsecure build option
+        run: |
+          sudo samples/nanosec/run_testsuite.sh -SV "016_*" "020_*" "024_*" "025_*" "083_*" "088_*" "095_*" "155_*" > strongswan-interop-unsecure.txt 2>&1 || true
+      
+      - name: Setup root user 
+        run: |
+          USERNAME="root"
+          PASSWORD="mocana"
+          echo "$USERNAME:$PASSWORD" | sudo chpasswd
+      
+      - name: Build NanoSec as EAP Supplicant
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_NANOSEC=ON -DBUILD_KERNELMOD=ON -DCM_ENABLE_EAPS=ON -DCM_ENABLE_EAP=ON -DCM_ENABLE_IKE=ON -DCM_ENABLE_TLSS=ON -DCM_ENABLE_SSL=ON -DDISABLE_SSL_CLIENT=OFF -DDISABLE_SSL_SERVER=OFF -B build -S .
+          cmake --build build
+          test -f samples/bin/ike
+            
+      - name: Copy testcases to run with NanoSec as EAP Supplicant
+        run: |
+          cp -r samples/nanosec/testcases_strongswan_supplicant_authenticator/* samples/nanosec/testcases_strongswan
+        
+      - name: Run StrongSwan interop tests with NanoSec as EAP Supplicant
+        run: |
+          sudo samples/nanosec/run_testsuite.sh -SV "156_*" "158_*" "159_*" "160_*" "161_*" "162_*" "163_*" "164_*" "165_*" "166_*" "167_*" "168_*" "169_*" > strongswan-eap-authenticator.txt 2>&1 || true
+      
+      - name: Build NanoSec as EAP Authenticator
+        run: |
+          rm -rf build lib/* samples/bin/*
+          cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_NANOSEC=ON -DBUILD_KERNELMOD=ON -DCM_ENABLE_EAPA=ON -DCM_ENABLE_EAP=ON -DCM_ENABLE_IKE=ON -DCM_ENABLE_TLSA=ON -DCM_ENABLE_SSL=ON -DDISABLE_SSL_CLIENT=OFF -DDISABLE_SSL_SERVER=OFF -B build -S .
+          cmake --build build
+          test -f samples/bin/ike
+        
+      - name: Run StrongSwan interop tests with NanoSec as EAP Authenticator
+        run: |
+          sudo samples/nanosec/run_testsuite.sh -SV "170_*" "171_*" "172_*" "173_*" "174_*" "175_*" "176_*" "177_*" "178_*" "179_*" "180_*" "181_*" "182_*" > strongswan-eap-supplicant.txt 2>&1 || true
+          
+      - name: Show test summary and fail on test failures
+        if: always()
+        run: |
+          echo "=== NanoSec Test Summary ==="
+          sed -n '/Test Suite Summary/,$p' nanosec-tests.txt || true
+
+          echo
+          echo "=== StrongSwan Interop Test Summary ==="
+          sed -n '/Test Suite Summary/,$p' strongswan-interop.txt || true
+      
+          echo
+          echo "=== StrongSwan Interop (Unsecure Build) Test Summary ==="
+          sed -n '/Test Suite Summary/,$p' strongswan-interop-unsecure.txt || true
+          
+          echo
+          echo "=== StrongSwan EAP Authenticator (NanoSec as EAP Supplicant) Test Summary ==="
+          sed -n '/Test Suite Summary/,$p' strongswan-eap-authenticator.txt || true
+          
+          echo
+          echo "=== StrongSwan EAP Supplicant (NanoSec as EAP Authenticator) Test Summary ==="
+          sed -n '/Test Suite Summary/,$p' strongswan-eap-supplicant.txt || true
+      
+          summary1=$(tail -n 5 nanosec-tests.txt | grep 'FAILED' || true)
+          failed1=$(echo "$summary1" | awk '{print $1}')
+
+          summary2=$(tail -n 5 strongswan-interop.txt | grep 'FAILED' || true)
+          failed2=$(echo "$summary2" | awk '{print $1}')
+      
+          summary3=$(tail -n 5 strongswan-interop-unsecure.txt | grep 'FAILED' || true)
+          failed3=$(echo "$summary3" | awk '{print $1}')
+          
+          summary4=$(tail -n 5 strongswan-eap-authenticator.txt | grep 'FAILED' || true)
+          failed4=$(echo "$summary4" | awk '{print $1}')
+          
+          summary5=$(tail -n 5 strongswan-eap-supplicant.txt | grep 'FAILED' || true)
+          failed5=$(echo "$summary5" | awk '{print $1}')
+      
+          failed1=${failed1:-0}
+          failed2=${failed2:-0}
+          failed3=${failed3:-0}
+          failed4=${failed4:-0}
+          failed5=${failed5:-0}
+      
+          total_failed=$((failed1 + failed2 + failed3 + failed4 + failed5))
+      
+          if [ "$total_failed" -gt 0 ]; then
+            echo "::error::${failed1} test(s) failed in nanosec-tests.txt, ${failed2} test(s) failed in strongswan-interop.txt, ${failed3} test(s) failed in strongswan-interop-unsecure.txt, ${failed4} test(s) failed in strongswan-eap-authenticator.txt, ${failed5} test(s) failed in strongswan-eap-supplicant.txt"
+            echo "::error::Total failed tests: ${total_failed}"
+            exit 1
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: test-logs
+          path: |
+            nanosec-tests.txt
+            strongswan-interop.txt
+            strongswan-interop-unsecure.txt
+            strongswan-eap-authenticator.txt
+            strongswan-eap-supplicant.txt
+            
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+        
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="NanoSec Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="NanoSec Integration failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi  
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
