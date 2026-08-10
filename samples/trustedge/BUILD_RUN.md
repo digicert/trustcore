@@ -81,6 +81,10 @@ For additional build options, run:
 
 If you need to add or configure a new TrustEdge cross-compilation toolchain, use the detailed toolchain support guide instead of duplicating setup steps here. For guidance on registering a new platform ID, choosing the integration model, configuring CMake mappings, and documenting validation steps, see [How to Add New Toolchain Support to TrustEdge](../../docs/trustedge_add_new_toolchain_support.md).
 
+### Building with Yocto
+
+If you need to integrate TrustEdge into a Yocto/Poky-based embedded Linux image, use the detailed Yocto guide instead of duplicating setup steps here. For guidance on creating a custom TrustEdge layer, adding the TrustEdge recipe, building the image, and running TrustEdge in QEMU, see [TrustEdge Yocto Build Guide](../../docs/trustedge_yocto_build_guide.md).
+
 ### Windows
 
 From the Visual Studio developer environment, run the Windows build script:
