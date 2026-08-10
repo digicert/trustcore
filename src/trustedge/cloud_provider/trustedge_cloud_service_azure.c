@@ -515,6 +515,7 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
   #define PROVIDER_INFO_VALUE            "value"
   #define PROVIDER_INFO_ID_SCOPE         "id_scope"
   #define PROVIDER_INFO_SERVICE_ENDPOINT "service_endpoint"
+  #define PROVIDER_INFO_ENDPOINT         "endpoint"
   #define PROVIDER_INFO_SERVICE_ENDPOINT_PORT "service_endpoint_port"
   #define PROVIDER_INFO_ATTESTATION_MODE "attestation_mode"
   #define PROVIDER_INFO_ATTESTATION_MODE_X509 "X509_CERTIFICATE"
@@ -536,6 +537,9 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
         MERROR_lookUpErrorCode(status));
     goto exit;
   }
+
+  /* Default values */
+  pCtx->port = 443;
 
   /* Acquire JSON context and parse */
   status = JSON_acquireContext(&pJsonCtx);
@@ -612,8 +616,9 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
       MSG_LOG_print(MSG_LOG_DEBUG,
           "Parsed id_scope: %.*s\n", pCtx->idScopeLen, pCtx->pIdScope);
     }
-    /* Check if this is service_endpoint */
-    else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_SERVICE_ENDPOINT))
+    /* Check if this is service_endpoint or endpoint */
+    else if ((0 == DIGI_STRCMP(pKey, PROVIDER_INFO_SERVICE_ENDPOINT)) ||
+             (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_ENDPOINT)))
     {
       DIGI_FREE((void **) &pValue);
       status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
@@ -621,7 +626,7 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
       {
         MSG_LOG_print(MSG_LOG_ERROR,
             "Failed to get value for '%s': %s line %d status: %d = %s\n",
-            PROVIDER_INFO_SERVICE_ENDPOINT, __func__, __LINE__, status,
+            pKey, __func__, __LINE__, status,
             MERROR_lookUpErrorCode(status));
         goto exit;
       }
@@ -644,7 +649,7 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
       pCtx->pHost = pCtx->pSchemeAndHost + httpsPrefixLen;
 
       MSG_LOG_print(MSG_LOG_DEBUG,
-          "Parsed service_endpoint: %s\n", pCtx->pSchemeAndHost);
+          "Parsed endpoint: %s\n", pCtx->pSchemeAndHost);
     }
     /* Check if this is service_endpoint_port */
     else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_SERVICE_ENDPOINT_PORT))
@@ -704,14 +709,26 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
     else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_RETRY_COUNT))
     {
       sbyte4 retryCount = 0;
-      status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &retryCount, TRUE);
-      if (OK != status)
+
+      /* Try parsing as string first (backend may send "5" instead of 5) */
+      DIGI_FREE((void **) &pValue);
+      status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
+      if (OK == status)
       {
-        MSG_LOG_print(MSG_LOG_ERROR,
-            "Failed to get value for '%s': %s line %d status: %d = %s\n",
-            PROVIDER_INFO_RETRY_COUNT, __func__, __LINE__, status,
-            MERROR_lookUpErrorCode(status));
-        goto exit;
+        retryCount = (sbyte4) DIGI_ATOL(pValue, NULL);
+      }
+      else
+      {
+        /* Fall back to integer parsing */
+        status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &retryCount, TRUE);
+        if (OK != status)
+        {
+          MSG_LOG_print(MSG_LOG_ERROR,
+              "Failed to get value for '%s': %s line %d status: %d = %s\n",
+              PROVIDER_INFO_RETRY_COUNT, __func__, __LINE__, status,
+              MERROR_lookUpErrorCode(status));
+          goto exit;
+        }
       }
 
       pCtx->retryMaxCount = (ubyte4) retryCount;
@@ -723,14 +740,26 @@ MSTATUS TRUSTEDGE_cloudServiceAzureParseProviderInfo(
     else if (0 == DIGI_STRCMP(pKey, PROVIDER_INFO_RETRY_INTERVAL))
     {
       sbyte4 retryInterval = 0;
-      status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &retryInterval, TRUE);
-      if (OK != status)
+
+      /* Try parsing as string first (backend may send "30" instead of 30) */
+      DIGI_FREE((void **) &pValue);
+      status = JSON_getJsonStringValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &pValue, TRUE);
+      if (OK == status)
       {
-        MSG_LOG_print(MSG_LOG_ERROR,
-            "Failed to get value for '%s': %s line %d status: %d = %s\n",
-            PROVIDER_INFO_RETRY_INTERVAL, __func__, __LINE__, status,
-            MERROR_lookUpErrorCode(status));
-        goto exit;
+        retryInterval = (sbyte4) DIGI_ATOL(pValue, NULL);
+      }
+      else
+      {
+        /* Fall back to integer parsing */
+        status = JSON_getJsonIntegerValue(pJsonCtx, ndx, PROVIDER_INFO_VALUE, &retryInterval, TRUE);
+        if (OK != status)
+        {
+          MSG_LOG_print(MSG_LOG_ERROR,
+              "Failed to get value for '%s': %s line %d status: %d = %s\n",
+              PROVIDER_INFO_RETRY_INTERVAL, __func__, __LINE__, status,
+              MERROR_lookUpErrorCode(status));
+          goto exit;
+        }
       }
 
       pCtx->retryDelaySeconds = (ubyte4) retryInterval;
@@ -913,8 +942,9 @@ next_attr:
   {
     status = ERR_UM_JSON_PARSE_FAILED;
     MSG_LOG_print(MSG_LOG_ERROR,
-        "Missing required attribute '%s': %s line %d status: %d = %s\n",
-        PROVIDER_INFO_SERVICE_ENDPOINT, __func__, __LINE__, status,
+        "Missing required attribute '%s' or '%s': %s line %d status: %d = %s\n",
+        PROVIDER_INFO_SERVICE_ENDPOINT, PROVIDER_INFO_ENDPOINT,
+        __func__, __LINE__, status,
         MERROR_lookUpErrorCode(status));
     goto exit;
   }

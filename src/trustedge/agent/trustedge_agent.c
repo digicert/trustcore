@@ -5952,6 +5952,7 @@ static MSTATUS TRUSTEDGE_agentParseCloudResponse(
     }
 
     /* Device has been provisioned by the server */
+    status = OK;
     *pProvisionSelf = FALSE;
 
 exit:
