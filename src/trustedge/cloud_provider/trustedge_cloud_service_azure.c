@@ -1647,6 +1647,7 @@ exit:
 
 static MSTATUS TRUSTEDGE_actionSaveEventServerResponse(
     CloudServiceAzureCtx *pCloudSvcCtx,
+    ubyte4 httpStatusCode,
     ubyte *pRsp,
     ubyte4 rspLen)
 {
@@ -1664,6 +1665,7 @@ static MSTATUS TRUSTEDGE_actionSaveEventServerResponse(
         pCloudSvcCtx->serverRspLen = 0;
     }
 
+    pCloudSvcCtx->httpStatusCode = httpStatusCode;
     pCloudSvcCtx->pServerRsp = pRsp;
     pCloudSvcCtx->serverRspLen = rspLen;
     status = OK;
@@ -1719,11 +1721,8 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureRegisterResponseParse(
     MSG_LOG_print(
         MSG_LOG_INFO, "Response - %.*s\n", rspLen, pRsp);
 
-
-    pAzureCtx->httpStatusCode = pCtx->responseStatus;
-
     status = TRUSTEDGE_actionSaveEventServerResponse(
-        pAzureCtx, pRsp, rspLen);
+        pAzureCtx, pCtx->responseStatus, pRsp, rspLen);
     if (OK != status)
     {
         goto exit;
@@ -1974,6 +1973,135 @@ exit:
 
 /*---------------------------------------------------------------------------*/
 
+/**
+ * @brief Extract the "registrationState" object from the server response.
+ * @details If the HTTP status code is 200, this function parses the server
+ *          response JSON and replaces pServerRsp with just the
+ *          "registrationState" object content.
+ *
+ * @param pAzureCtx Pointer to the Azure context containing the server response.
+ *
+ * @return OK on success, or an error code on failure.
+ */
+static MSTATUS TRUSTEDGE_cloudServiceAzureExtractRegistrationState(
+    CloudServiceAzureCtx *pAzureCtx)
+{
+    MSTATUS status = OK;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 index = 0;
+    ubyte4 tokensFound = 0;
+    JSON_TokenType token = {0};
+    ubyte *pNewRsp = NULL;
+
+    if (NULL == pAzureCtx)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    /* Only process if status code is 200 */
+    if (200 != pAzureCtx->httpStatusCode)
+    {
+        goto exit;
+    }
+
+    if (NULL == pAzureCtx->pServerRsp || 0 == pAzureCtx->serverRspLen)
+    {
+        goto exit;
+    }
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pAzureCtx->pServerRsp, pAzureCtx->serverRspLen,
+                        &tokensFound);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Find the "registrationState" object */
+    status = JSON_getObjectIndex(
+        pJCtx, (sbyte *) AZURE_REGISTRATION_STATE, 0, &index, TRUE);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Get the token for the registrationState object value */
+    status = JSON_getToken(pJCtx, index + 1, &token);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Verify it's an object */
+    if (JSON_Object != token.type)
+    {
+        status = ERR_UM_JSON_PARSE_FAILED;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Allocate new buffer and copy the registrationState object */
+    status = DIGI_MALLOC((void **) &pNewRsp, token.len + 1);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    DIGI_MEMCPY(pNewRsp, token.pStart, token.len);
+    pNewRsp[token.len] = '\0';
+
+    /* Replace the server response with just the registrationState object */
+    DIGI_FREE((void **) &(pAzureCtx->pServerRsp));
+    pAzureCtx->pServerRsp = pNewRsp;
+    pAzureCtx->serverRspLen = token.len;
+    pNewRsp = NULL;  /* Prevent cleanup from freeing it */
+
+    MSG_LOG_print(MSG_LOG_INFO,
+            "Extracted registrationState: %.*s\n",
+            pAzureCtx->serverRspLen, pAzureCtx->pServerRsp);
+
+exit:
+
+    if (NULL != pNewRsp)
+        DIGI_FREE((void **) &pNewRsp);
+
+    if (NULL != pJCtx)
+        JSON_releaseContext(&pJCtx);
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
 /* HTTP callback used to parse a operation status lookup response. Refer to
  * https://docs.microsoft.com/en-us/rest/api/iot-dps/device/runtime-registration/operation-status-lookup
  * for acceptable HTTP status codes and return values.
@@ -2017,10 +2145,8 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureOpStatusResponseParse(
     MSG_LOG_print(
         MSG_LOG_INFO, "Response - %.*s\n", rspLen, pRsp);
 
-    pAzureCtx->httpStatusCode = pCtx->responseStatus;
-
     status = TRUSTEDGE_actionSaveEventServerResponse(
-        pAzureCtx, pRsp, rspLen);
+        pAzureCtx, pCtx->responseStatus, pRsp, rspLen);
     if (OK != status)
     {
         goto exit;
@@ -2279,6 +2405,17 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureOpStatusResponseParse(
     {
         status = OK;
         pAzureCtx->error = TRUE;
+        goto exit;
+    }
+
+    /* Extract only the registrationState object from the response */
+    status = TRUSTEDGE_cloudServiceAzureExtractRegistrationState(pAzureCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
         goto exit;
     }
 
