@@ -6021,6 +6021,7 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
         goto exit;
     }
 
+    pCtx->curPolicy.data.cpps.status = OK;
     pCtx->curPolicy.data.cpps.httpStatusCode = 0;
     pCtx->curPolicy.data.cpps.pServerRsp = NULL;
     pCtx->curPolicy.data.cpps.serverRspLen = 0;
@@ -6050,6 +6051,10 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
             &serverRspLen,
             &pProviderCredJson,
             &providerCredJsonLen);
+        pCtx->curPolicy.data.cpps.status = status;
+        pCtx->curPolicy.data.cpps.httpStatusCode = httpStatusCode;
+        pCtx->curPolicy.data.cpps.pServerRsp = pServerRsp;
+        pCtx->curPolicy.data.cpps.serverRspLen = serverRspLen;
         if (OK != status)
         {
             MSG_LOG_print(MSG_LOG_ERROR,
@@ -6058,10 +6063,6 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
                 MERROR_lookUpErrorCode(status));
             goto exit;
         }
-
-        pCtx->curPolicy.data.cpps.httpStatusCode = httpStatusCode;
-        pCtx->curPolicy.data.cpps.pServerRsp = pServerRsp;
-        pCtx->curPolicy.data.cpps.serverRspLen = serverRspLen;
     }
     else
 #endif

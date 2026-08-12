@@ -85,6 +85,12 @@ check_for_processes() {
 setup_test_environment() {
     echo "Setting up test environment..."
 
+    # Ensure TEST_DIR exists
+    if [ ! -d "$TEST_DIR" ]; then
+        echo "Error: Test directory does not exist: $TEST_DIR"
+        exit 1
+    fi
+
     # Append _workspace to TEST_DIR and copy it
     WORKSPACE_DIR="${TEST_DIR}_workspace"
     if [ -d "$WORKSPACE_DIR" ]; then
@@ -93,6 +99,8 @@ setup_test_environment() {
     fi
     echo "Copying test directory to workspace: $WORKSPACE_DIR"
     cp -r "$TEST_DIR" "$WORKSPACE_DIR"
+    # Store full path in WORKSPACE_ABSOLUTE_DIR
+    WORKSPACE_ABSOLUTE_DIR=$(realpath "$WORKSPACE_DIR")
     # Replace <path> in trustedge.json with WORKSPACE_DIR
     sed -i "s|<path>|$WORKSPACE_DIR|g" "$WORKSPACE_DIR/trustedge.json"
 }
@@ -102,7 +110,7 @@ start_test_processes() {
 
     # Start mosquitto broker in the background
     echo "Starting Mosquitto broker..."
-    nohup ./src/trustedge/test/broker/mosquitto > mosquitto.log 2>&1 &
+    nohup ./src/trustedge/test/broker/mosquitto > "$WORKSPACE_ABSOLUTE_DIR/mosquitto.log" 2>&1 &
     MOSQUITTO_BROKER_PID=$!
     sleep 1  # Wait for broker to start
     # Ensure process is running
@@ -114,25 +122,33 @@ start_test_processes() {
     # Create messages directory for captured responses
     mkdir -p "${WORKSPACE_DIR}/messages"
 
-    # Start Azure DPS mock server in the background
-    echo "Starting Azure DPS mock server..."
-    cd ./projects/trustedge/sample/mock_azure_dps
-    nohup python3 ./mock_azure_dps_server.py > mock_azure_dps_server.log 2>&1 &
-    AZURE_DPS_PID=$!
-    sleep 1  # Wait for mock server to start
-    # Ensure process is running
-    if ! ps -p $AZURE_DPS_PID > /dev/null; then
-        echo "Error: Failed to start Azure DPS mock server."
-        exit 1
+    # Start Azure DPS mock server if command file exists
+    local azure_dps_cmd="$WORKSPACE_DIR/mock_azure_dps.cmd"
+    # Get full path to the command file
+    azure_dps_cmd=$(realpath "$azure_dps_cmd")
+    if [ -f "$azure_dps_cmd" ]; then
+        echo "Starting Azure DPS mock server..."
+        cd ./projects/trustedge/sample/mock_azure_dps
+        # Run the command file with WORKSPACE_DIR exported
+        nohup bash -c "export WORKSPACE_DIR='$WORKSPACE_DIR'; $(cat "$azure_dps_cmd")" > "$WORKSPACE_ABSOLUTE_DIR/mock_azure_dps_server.log" 2>&1 &
+        AZURE_DPS_PID=$!
+        sleep 1  # Wait for mock server to start
+        # Ensure process is running
+        if ! ps -p $AZURE_DPS_PID > /dev/null; then
+            echo "Error: Failed to start Azure DPS mock server."
+            exit 1
+        fi
+        cd - > /dev/null  # Return to the previous directory
+    else
+        echo "Skipping Azure DPS mock server (no $azure_dps_cmd file)"
     fi
-    cd - > /dev/null  # Return to the previous directory
 
     # Start TrustEdge in the background
     echo "Starting TrustEdge..."
     if [ "$VALGRIND" = true ]; then
-        TRUSTEDGE_CONFIG=$WORKSPACE_DIR/trustedge.json nohup valgrind --leak-check=full --show-leak-kinds=all --num-callers=20 --log-file=trustedge.valgrind ./bin/trustedge agent > trustedge.log 2>&1 &
+        TRUSTEDGE_CONFIG=$WORKSPACE_DIR/trustedge.json nohup valgrind --leak-check=full --show-leak-kinds=all --num-callers=20 --log-file="$WORKSPACE_ABSOLUTE_DIR/trustedge.valgrind" ./bin/trustedge agent > "$WORKSPACE_ABSOLUTE_DIR/trustedge.log" 2>&1 &
     else
-        TRUSTEDGE_CONFIG=$WORKSPACE_DIR/trustedge.json nohup ./bin/trustedge agent > trustedge.log 2>&1 &
+        TRUSTEDGE_CONFIG=$WORKSPACE_DIR/trustedge.json nohup ./bin/trustedge agent > "$WORKSPACE_ABSOLUTE_DIR/trustedge.log" 2>&1 &
     fi
     TRUSTEDGE_PID=$!
     sleep 1  # Wait for TrustEdge to start

@@ -153,6 +153,7 @@ tap_shadow_struct TAP_SHADOW_AZURE_DPS_TPM_AUTH_KEY = {
 #define AZURE_STATUS                "status"
 #define AZURE_STATUS_ASSIGNED       "assigned"
 #define AZURE_STATUS_ASSIGNING      "assigning"
+#define AZURE_STATUS_UNASSIGNED     "unassigned"
 #define AZURE_REGISTRATION_STATE    "registrationState"
 #define AZURE_ASSIGNED_HUB          "assignedHub"
 #define AZURE_DEVICE_ID             "deviceId"
@@ -1974,16 +1975,115 @@ exit:
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Extract the "registrationState" object from the server response.
- * @details If the HTTP status code is 200, this function parses the server
- *          response JSON and replaces pServerRsp with just the
- *          "registrationState" object content.
+ * @brief Construct response JSON for 202 status.
+ * @details Parses the server response to extract the "status" field and
+ *          constructs a simplified JSON response with retry attempt information.
+ *
+ * @param pAzureCtx       Pointer to the Azure context containing the server response.
+ * @param retryAttempts   Retry attempt count.
+ * @param pLastAttemptTime Last attempt time string.
+ *
+ * @return OK on success, or an error code on failure.
+ */
+static MSTATUS TRUSTEDGE_cloudServiceAzureConstruct202Response(
+    CloudServiceAzureCtx *pAzureCtx,
+    ubyte4 retryAttempts,
+    sbyte *pLastAttemptTime)
+{
+    MSTATUS status = OK;
+    sbyte *pStatusValue = NULL;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 tokensFound = 0;
+    ubyte4 jsonLen = 0;
+    ubyte *pJsonRsp = NULL;
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pAzureCtx->pServerRsp, pAzureCtx->serverRspLen,
+                        &tokensFound);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Get the "status" field value */
+    status = JSON_utilReadJsonString(pJCtx, 0, NULL,
+                                     (sbyte *) AZURE_STATUS, &pStatusValue, FALSE);
+    if (OK != status || NULL == pStatusValue)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d: Failed to get status field\n",
+                __func__, __LINE__);
+        goto exit;
+    }
+
+    /* Calculate JSON length:
+     * {"status":"...","attemptDateTimeUtc":"...","retryAttempt":...}
+     * Base template is about 60 chars + status + time + number */
+    jsonLen = 64 + DIGI_STRLEN(pStatusValue) + DIGI_STRLEN(pLastAttemptTime) + 10;
+
+    status = DIGI_MALLOC((void **) &pJsonRsp, jsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Construct the JSON response */
+    jsonLen = sprintf((sbyte *) pJsonRsp,
+        "{\"status\":\"%s\",\"attemptDateTimeUtc\":\"%s\",\"retryAttempt\":%u}",
+        pStatusValue, pLastAttemptTime, retryAttempts);
+
+    /* Replace the server response with our constructed JSON */
+    DIGI_FREE((void **) &(pAzureCtx->pServerRsp));
+    pAzureCtx->pServerRsp = pJsonRsp;
+    pAzureCtx->serverRspLen = jsonLen;
+    pJsonRsp = NULL;  /* Prevent cleanup from freeing it */
+
+    MSG_LOG_print(MSG_LOG_INFO,
+            "Constructed 202 response: %.*s\n",
+            pAzureCtx->serverRspLen, pAzureCtx->pServerRsp);
+
+exit:
+    if (NULL != pStatusValue)
+        DIGI_FREE((void **) &pStatusValue);
+
+    if (NULL != pJsonRsp)
+        DIGI_FREE((void **) &pJsonRsp);
+
+    if (NULL != pJCtx)
+        JSON_releaseContext(&pJCtx);
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+/**
+ * @brief Extract the "registrationState" object from a 200 response.
+ * @details Parses the server response JSON and replaces pServerRsp with just
+ *          the "registrationState" object content.
  *
  * @param pAzureCtx Pointer to the Azure context containing the server response.
  *
  * @return OK on success, or an error code on failure.
  */
-static MSTATUS TRUSTEDGE_cloudServiceAzureExtractRegistrationState(
+static MSTATUS TRUSTEDGE_cloudServiceAzureConstruct200Response(
     CloudServiceAzureCtx *pAzureCtx)
 {
     MSTATUS status = OK;
@@ -1992,23 +2092,6 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureExtractRegistrationState(
     ubyte4 tokensFound = 0;
     JSON_TokenType token = {0};
     ubyte *pNewRsp = NULL;
-
-    if (NULL == pAzureCtx)
-    {
-        status = ERR_NULL_POINTER;
-        goto exit;
-    }
-
-    /* Only process if status code is 200 */
-    if (200 != pAzureCtx->httpStatusCode)
-    {
-        goto exit;
-    }
-
-    if (NULL == pAzureCtx->pServerRsp || 0 == pAzureCtx->serverRspLen)
-    {
-        goto exit;
-    }
 
     status = JSON_acquireContext(&pJCtx);
     if (OK != status)
@@ -2090,7 +2173,6 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureExtractRegistrationState(
             pAzureCtx->serverRspLen, pAzureCtx->pServerRsp);
 
 exit:
-
     if (NULL != pNewRsp)
         DIGI_FREE((void **) &pNewRsp);
 
@@ -2098,6 +2180,111 @@ exit:
         JSON_releaseContext(&pJCtx);
 
     return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+/**
+ * @brief Construct response JSON for error HTTP status codes.
+ * @details Wraps the original Azure response in a JSON object with status,
+ *          lastAttemptDateTime, and retryAttempt fields.
+ *
+ * @param pAzureCtx       Pointer to the Azure context containing the server response.
+ * @param retryAttempts   Retry attempt count.
+ * @param pLastAttemptTime Last attempt time string.
+ *
+ * @return OK on success, or an error code on failure.
+ */
+static MSTATUS TRUSTEDGE_cloudServiceAzureConstructErrorResponse(
+    CloudServiceAzureCtx *pAzureCtx,
+    ubyte4 retryAttempts,
+    sbyte *pLastAttemptTime)
+{
+    MSTATUS status = OK;
+    ubyte4 jsonLen = 0;
+    ubyte *pJsonRsp = NULL;
+
+    /* Calculate JSON length:
+     * {"response":...,"status":"failed","lastAttemptDateTime":"...","retryAttempt":...}
+     * Base template is about 70 chars + original response + time + number */
+    jsonLen = 80 + pAzureCtx->serverRspLen + DIGI_STRLEN(pLastAttemptTime) + 10;
+
+    status = DIGI_MALLOC((void **) &pJsonRsp, jsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Construct the JSON response */
+    jsonLen = sprintf((sbyte *) pJsonRsp,
+        "{\"response\":%.*s,\"status\":\"failed\",\"lastAttemptDateTime\":\"%s\",\"retryAttempt\":%u}",
+        pAzureCtx->serverRspLen, pAzureCtx->pServerRsp,
+        pLastAttemptTime, retryAttempts);
+
+    /* Replace the server response with our constructed JSON */
+    DIGI_FREE((void **) &(pAzureCtx->pServerRsp));
+    pAzureCtx->pServerRsp = pJsonRsp;
+    pAzureCtx->serverRspLen = jsonLen;
+    pJsonRsp = NULL;  /* Prevent cleanup from freeing it */
+
+    MSG_LOG_print(MSG_LOG_INFO,
+            "Constructed error response: %.*s\n",
+            pAzureCtx->serverRspLen, pAzureCtx->pServerRsp);
+
+exit:
+    if (NULL != pJsonRsp)
+        DIGI_FREE((void **) &pJsonRsp);
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+/**
+ * @brief Construct the appropriate response based on result of Azure DPS
+ *        registration.
+ * @details Constructs a JSON response based on TrustEdge error, Azure DPS HTTP
+ *          status code, and/or server response.
+ *
+ * @param pAzureCtx       Pointer to the Azure context containing the server response.
+ * @param retryAttempts   Retry attempt count.
+ * @param pLastAttemptTime Last attempt time string.
+ *
+ * @return OK on success, or an error code on failure.
+ */
+static MSTATUS TRUSTEDGE_cloudServiceAzureConstructResponse(
+    CloudServiceAzureCtx *pAzureCtx,
+    ubyte4 retryAttempts,
+    sbyte *pLastAttemptTime)
+{
+    if (NULL == pAzureCtx)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    if (NULL == pAzureCtx->pServerRsp || 0 == pAzureCtx->serverRspLen)
+    {
+        return OK;
+    }
+
+    if (200 == pAzureCtx->httpStatusCode)
+    {
+        return TRUSTEDGE_cloudServiceAzureConstruct200Response(pAzureCtx);
+    }
+
+    if (202 == pAzureCtx->httpStatusCode)
+    {
+        return TRUSTEDGE_cloudServiceAzureConstruct202Response(
+            pAzureCtx, retryAttempts, pLastAttemptTime);
+    }
+
+    /* All other HTTP status codes are treated as errors */
+    return TRUSTEDGE_cloudServiceAzureConstructErrorResponse(
+        pAzureCtx, retryAttempts, pLastAttemptTime);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2405,17 +2592,6 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureOpStatusResponseParse(
     {
         status = OK;
         pAzureCtx->error = TRUE;
-        goto exit;
-    }
-
-    /* Extract only the registrationState object from the response */
-    status = TRUSTEDGE_cloudServiceAzureExtractRegistrationState(pAzureCtx);
-    if (OK != status)
-    {
-        MSG_LOG_print(MSG_LOG_ERROR,
-                "%s line %d status: %d = %s\n",
-                __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status));
         goto exit;
     }
 
@@ -2990,10 +3166,11 @@ extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     ubyte **ppProviderCredJson,
     ubyte4 *pProviderCredJsonLen)
 {
-    MSTATUS status;
+    MSTATUS status, tmpStatus;
     CloudServiceAzureCtx *pAzureCtx = NULL;
     byteBoolean retry;
-    ubyte4 attempts;
+    ubyte4 attempts = 0;
+    sbyte *pLastAttemptTimestamp = NULL;
 
     /* Parse the JSON Azure attributes and create an Azure context. */
     status = TRUSTEDGE_cloudServiceAzureContextCreate(
@@ -3018,6 +3195,17 @@ extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
         goto exit;
     }
 
+    DIGI_FREE((void **) &pLastAttemptTimestamp);
+    status = TRUSTEDGE_utilsGetTime(&pLastAttemptTimestamp, 0);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
     status = TRUSTEDGE_cloudServiceAzurePerformRequest(pAzureCtx);
     if (OK != status)
     {
@@ -3028,8 +3216,15 @@ extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
                 MERROR_lookUpErrorCode(status));
         goto exit;
     }
+
     if (TRUE == pAzureCtx->error)
     {
+        status = ERR_TRUSTEDGE_AZURE_REGISTRATION_FAILED;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "Azure registration failed:"
+                " %s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
         goto exit;
     }
 
@@ -3048,6 +3243,17 @@ extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     attempts = 0;
     do
     {
+        DIGI_FREE((void **) &pLastAttemptTimestamp);
+        status = TRUSTEDGE_utilsGetTime(&pLastAttemptTimestamp, 0);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
         status = TRUSTEDGE_cloudServiceAzurePerformRequest(pAzureCtx);
         if ((OK == status) || (++attempts > pAzureCtx->retryMaxCount))
         {
@@ -3088,6 +3294,12 @@ extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
 
     if (TRUE == pAzureCtx->error)
     {
+        status = ERR_TRUSTEDGE_AZURE_REGISTRATION_FAILED;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "Azure registration failed:"
+                " %s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
         goto exit;
     }
 
@@ -3111,6 +3323,12 @@ exit:
 
     if (NULL != pAzureCtx)
     {
+        /* Construct response sent to DTM based on Azure response */
+        tmpStatus = TRUSTEDGE_cloudServiceAzureConstructResponse(
+            pAzureCtx, attempts, pLastAttemptTimestamp);
+        if (OK == status)
+            status = tmpStatus;
+
         *pHttpStatusCode = pAzureCtx->httpStatusCode;
         *ppServerRsp = pAzureCtx->pServerRsp;
         *pServerRspLen = pAzureCtx->serverRspLen;
@@ -3118,6 +3336,8 @@ exit:
         pAzureCtx->serverRspLen = 0;
         TRUSTEDGE_cloudServiceAzureContextDelete(&pAzureCtx);
     }
+
+    DIGI_FREE((void **) &pLastAttemptTimestamp);
 
     return status;
 }

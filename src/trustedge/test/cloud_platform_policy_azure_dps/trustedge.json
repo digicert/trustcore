@@ -12,7 +12,8 @@
     "agent": {
         "bootstrap": "<path>/bootstrap_config.json",
         "workspace_dir": "/tmp",
-        "enforce_token": false
+        "enforce_token": false,
+        "log_payload": true
     },
     "cloud_provider":{
         "provider_creds_dir":"<path>/cloudprovider"

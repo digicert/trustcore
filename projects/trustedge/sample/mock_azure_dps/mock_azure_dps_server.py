@@ -16,6 +16,20 @@ Options:
   --scenario SCENARIO   Default test scenario (default: success_pending)
   --responses-dir DIR   Directory containing response JSON files
 
+Scenarios:
+  success_immediate     Return 200 "assigned" immediately
+  success_pending       Return 202 "assigning", then 200 "assigned" after polling
+  always_pending        Return 202 "assigning" forever (never completes)
+  assignment_failed     Return 202 "assigning", then fail on poll
+  unauthorized          Return 401 unauthorized
+  tpm_challenge         Return 401 with TPM challenge
+  quota_exceeded        Return 429 throttled
+  server_error          Return 500 server error
+  device_disabled       Return 403 forbidden
+  not_found             Return 404 not found
+  bad_request           Return 400 bad request
+  service_unavailable   Return 503 unavailable
+
 Environment Variables:
   AZURE_DPS_SCENARIO    Override default scenario
   AZURE_DPS_POLL_COUNT  Number of "assigning" responses before "assigned" (default: 2)
@@ -202,6 +216,16 @@ class AzureDPSHandler(BaseHTTPRequestHandler):
       }
       self.send_json_response(202, response, {'Retry-After': '2'})
 
+    elif scenario == 'always_pending':
+      response = load_response('register_202_assigning.json', replacements)
+      op_id = response['operationId']
+      operation_states[op_id] = {
+        'poll_count': 0,
+        'registration_id': path_info['registration_id'],
+        'always_pending': True
+      }
+      self.send_json_response(202, response, {'Retry-After': '2'})
+
     else:
       # Default to success_pending
       response = load_response('register_202_assigning.json', replacements)
@@ -247,10 +271,11 @@ class AzureDPSHandler(BaseHTTPRequestHandler):
     state = operation_states[op_id]
     poll_count = state.get('poll_count', 0)
     should_fail = state.get('fail', False)
+    always_pending = state.get('always_pending', False)
     poll_count_threshold = int(os.environ.get('AZURE_DPS_POLL_COUNT', poll_count_default))
 
-    if poll_count < poll_count_threshold:
-      # Still assigning
+    if always_pending or poll_count < poll_count_threshold:
+      # Still assigning (always_pending never completes)
       state['poll_count'] = poll_count + 1
       response = load_response('opstatus_202_assigning.json', replacements)
       self.send_json_response(202, response, {'Retry-After': '2'})
@@ -307,8 +332,8 @@ def main():
   parser.add_argument('--ca', default=None,
             help='CA certificate for client auth (optional)')
   parser.add_argument('--scenario', default='success_pending',
-            choices=['success_immediate', 'success_pending', 'unauthorized',
-                 'tpm_challenge', 'quota_exceeded', 'server_error',
+            choices=['success_immediate', 'success_pending', 'always_pending',
+                 'unauthorized', 'tpm_challenge', 'quota_exceeded', 'server_error',
                  'device_disabled', 'not_found', 'bad_request',
                  'service_unavailable', 'assignment_failed'],
             help='Default test scenario (default: success_pending)')
