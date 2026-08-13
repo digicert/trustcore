@@ -2223,12 +2223,35 @@ exit:
     return status;
 }
 
+/**
+ * Resolve certificate and private-key file paths for a certificate policy.
+ *
+ * This function locates persisted certificate metadata for the supplied policy ID,
+ * parses the stored JSON payload, and extracts path values for both certificate and
+ * key material. On success, output pointers are populated with allocated strings.
+ *
+ * Inputs:
+ * - pCtx: initialized agent context used for persistence and policy access.
+ * - pPolicyId: null-terminated certificate policy identifier.
+ *
+ * Outputs:
+ * - ppCertPath: receives allocated certificate path string on success.
+ * - ppKeyPath: receives allocated private-key path string on success.
+ *
+ * Ownership:
+ * - Caller owns returned output buffers and must free them when no longer needed.
+ *
+ * Error handling:
+ * - Uses a single exit path for centralized cleanup of transient allocations and
+ *   JSON context resources.
+ */
 MSTATUS TRUSTEDGE_getCertificateAndKeyPathByPolicyId(
     TrustEdgeAgentCtx *pCtx,
     sbyte *pPolicyId,
     sbyte **ppCertPath,
     sbyte **ppKeyPath)
 {
+    /* Working state for persisted data lookup and JSON parsing. */
     MSTATUS status;
     sbyte *pFilePath = NULL;
     sbyte *pJson = NULL;
@@ -2352,6 +2375,7 @@ MSTATUS TRUSTEDGE_getCertificateAndKeyPathByPolicyId(
 
 exit:
 
+    /* Centralized cleanup for all error/success paths. */
     DIGI_FREE((void **) &pJson);
     DIGI_FREE((void **) &pFilePath);
     JSON_releaseContext(&pJCtx);
