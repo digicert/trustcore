@@ -99,6 +99,8 @@
 
 #define RECV_TEMP_FILE          "receive_body.data"
 
+#define AUTH_TYPE_BASIC         "basicAuth"
+
 #define REDIRECT                (302) /* Use the provided URI */
 #define LOCATION                (5) /* Response header location value */
 
@@ -597,6 +599,8 @@ TRUSTEDGE_HTTPS_UTIL_prepareHeaderRequest(
     HttpsClientCtx *pCtx, httpContext *pHttpContext)
 {
     MSTATUS status = OK;
+    ubyte4 index;
+    sbyte *address = NULL;
 
     if ((NULL == pCtx) || (NULL == pHttpContext))
     {
@@ -637,6 +641,178 @@ TRUSTEDGE_HTTPS_UTIL_prepareHeaderRequest(
                     pCtx->requestMsgLen, pCtx->requestMsg);
         }
         goto exit;
+    }
+
+    status = HTTP_REQUEST_setRequestMethodIfNotSet(
+            pHttpContext, &mHttpMethods[POST]);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    index = UserAgent;
+    if (OK > (status = HTTP_COMMON_setHeaderIfNotSet(pHttpContext, index,
+            (ubyte*)USER_AGENT, DIGI_STRLEN((sbyte *)USER_AGENT))))
+    {
+        goto exit;
+    }
+
+    index = Accept; /* Accept JSON and/or octets */
+    if (TRUE == pCtx->acceptOctetStream)
+    {
+        status = HTTP_COMMON_setHeaderIfNotSet(pHttpContext, index,
+                (ubyte *)CONTENT_TYPE_OCTETS,
+                DIGI_STRLEN((sbyte *)CONTENT_TYPE_OCTETS));
+    }
+    else
+    {
+        status = HTTP_COMMON_setHeaderIfNotSet(pHttpContext, index,
+                (ubyte *)CONTENT_TYPE_JSON,
+                DIGI_STRLEN((sbyte *)CONTENT_TYPE_JSON));
+    }
+    if (OK > status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Set content type to json */
+    index = NUM_HTTP_REQUESTS + NUM_HTTP_GENERALHEADERS + ContentType;
+    if (OK > (status = HTTP_COMMON_setHeaderIfNotSet(pHttpContext,
+            index, (ubyte *)CONTENT_TYPE_JSON,
+            DIGI_STRLEN((sbyte *)CONTENT_TYPE_JSON))))
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    index = Host;
+
+    /* First see if we have a download URI to use */
+    if (NULL != pCtx->serverDownloadAddress)
+    {
+        address = pCtx->serverDownloadAddress;
+    }
+    else if (NULL != pCtx->serverAddress)
+    {
+        address = pCtx->serverAddress;
+    }
+    else
+    {
+        /* Error */
+        status = ERR_URI_INVALID_FORMAT;
+        goto exit;
+    }
+
+    if (OK > (status = HTTP_COMMON_setHeaderIfNotSet(pHttpContext, index,
+            (ubyte *) address,
+            DIGI_STRLEN(address))))
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (NULL == pCtx->authType)
+    {
+        status = ERR_NULL_POINTER;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (0 == DIGI_STRNICMP((sbyte *)AUTH_TYPE_BASIC, pCtx->authType, 5))
+    {
+        index = Authorization;
+    }
+    else
+    {
+        index = ApiKey;
+    }
+
+    status = HTTP_COMMON_setHeaderIfNotSet(pHttpContext, index,
+            (ubyte *) pCtx->authValue,
+            DIGI_STRLEN(pCtx->authValue));
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (0 >= pCtx->requestMsgLen)
+    {
+        status = ERR_TRUSTEDGE_HTTP_INVALID_REQUEST_MSG;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (NULL != pCtx->requestMsg)
+    {
+        MSG_LOG_print(MSG_LOG_INFO,
+                "requestMsgLen len = %d, msg = %s\n",
+                pCtx->requestMsgLen, pCtx->requestMsg);
+    }
+
+    if (OK > (status = HTTP_REQUEST_setContentLengthIfNotSet(pHttpContext,
+            pCtx->requestMsgLen)))
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* set request URI */
+    if (pCtx->serverDownloadURI)
+    {
+        MSG_LOG_print(MSG_LOG_INFO,
+                "Server URI = %s\n",
+                pCtx->serverDownloadURI);
+        if (OK > (status = HTTP_REQUEST_setRequestUriIfNotSet(pHttpContext,
+                pCtx->serverDownloadURI)))
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+    else
+    {
+        MSG_LOG_print(MSG_LOG_INFO,
+                "Server URI = %s\n",
+                pCtx->serverURI);
+        if (OK > (status = HTTP_REQUEST_setRequestUriIfNotSet(pHttpContext,
+                pCtx->serverURI)))
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
     }
 
 exit:

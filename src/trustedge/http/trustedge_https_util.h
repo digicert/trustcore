@@ -31,6 +31,7 @@ extern "C" {
 #define USER_AGENT                  "Digicert TrustEdge Client Daemon"
 
 #define CONTENT_TYPE_JSON           "application/json"
+#define CONTENT_TYPE_OCTETS         "application/json;application/octet-stream"
 #define CONNECTION_KEEP_ALIVE       "keep-alive"
 
 /* TRUSTEDGE_HTTPS_UTIL_start : Initialize http and ssl
