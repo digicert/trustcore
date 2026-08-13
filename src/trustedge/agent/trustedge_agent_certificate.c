@@ -2371,11 +2371,11 @@ MSTATUS TRUSTEDGE_getCertificateAndKeyPathByPolicyId(
             goto exit;
         }
     }
-    DIGI_FREE((void **) &pAlias);
 
 exit:
 
     /* Centralized cleanup for all error/success paths. */
+    DIGI_FREE((void **) &pAlias);
     DIGI_FREE((void **) &pJson);
     DIGI_FREE((void **) &pFilePath);
     JSON_releaseContext(&pJCtx);
