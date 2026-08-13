@@ -1128,6 +1128,12 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 
 exit:
 
+    if (NULL != pAsymKey)
+    {
+        CRYPTO_uninitAsymmetricKey(pAsymKey, NULL);
+        DIGI_FREE((void **) &pAsymKey);
+    }
+
     if (NULL != pCert)
         DIGI_FREE((void **) &pCert);
 

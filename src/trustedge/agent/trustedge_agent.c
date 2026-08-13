@@ -5956,6 +5956,7 @@ static MSTATUS TRUSTEDGE_agentParseCloudResponse(
     *pProvisionSelf = FALSE;
 
 exit:
+    DIGI_FREE((void **) &pBrokerType);
     if (NULL != pJCtx)
     {
         JSON_releaseContext(&pJCtx);
@@ -6112,6 +6113,12 @@ exit:
     DIGI_FREE((void ** ) &pId);
     DIGI_FREE((void **) &pFileName);
     DIGI_FREE((void **) &pOutFile);
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+    if (TRUE == isProvisionSelf && NULL != pProviderCredJson)
+    {
+        DIGI_FREE((void **) &pProviderCredJson);
+    }
+#endif
     JSON_releaseContext(&pJCtx);
     freeCloudPlatformHandlerData (&pHandlerData);
 
