@@ -31,7 +31,6 @@
 #include "../../common/msg_logger.h"
 #include "../../common/common_utils.h"
 
-// #include "um_msg_factory.h"
 #include "trustedge_https_client.h"
 #include "trustedge_https_util.h"
 
