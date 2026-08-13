@@ -3338,7 +3338,7 @@ exit:
     {
         /* Construct response sent to DTM based on Azure response */
         tmpStatus = TRUSTEDGE_cloudServiceAzureConstructResponse(
-            pAzureCtx, attempts, pLastAttemptTimestamp);
+            pAzureCtx, (attempts == 0) ? 0 : (attempts - 1), pLastAttemptTimestamp);
         if (OK == status)
             status = tmpStatus;
 
