@@ -41,7 +41,6 @@ import os
 import re
 import ssl
 import sys
-import threading
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
