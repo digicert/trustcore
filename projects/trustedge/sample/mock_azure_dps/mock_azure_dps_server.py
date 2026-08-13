@@ -298,6 +298,7 @@ def run_server(port, certfile, keyfile, cafile=None):
   # Configure TLS
   context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
   context.load_cert_chain(certfile, keyfile)
+  context.minimum_version = ssl.TLSVersion.TLSv1_2
 
   if cafile:
     context.load_verify_locations(cafile)
