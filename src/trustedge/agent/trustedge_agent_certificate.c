@@ -1679,6 +1679,25 @@ static void freeCertificateHandlerData (MimePartProcessArg **ppStruct)
 #define PKCS7_HEADER        "-----BEGIN PKCS7-----\n"
 #define PKCS7_FOOTER        "-----END PKCS7-----\n"
 
+/*
+ * Lookup and load an asymmetric key associated with a certificate policy ID.
+ *
+ * This routine reads persisted certificate-policy/key metadata for the current
+ * agent context, parses the JSON payload, resolves the entry matching `pId`,
+ * and returns the loaded key via `ppKey`.
+ *
+ * Parameters:
+ *   pCtx   - TrustEdge agent context (required).
+ *   pId    - Certificate policy identifier to resolve (required).
+ *   ppKey  - Output key pointer. On success, receives a newly initialized key
+ *            owned by the caller; on failure, remains NULL/unmodified by caller
+ *            expectations in this module.
+ *
+ * Return:
+ *   MSTATUS indicating success/failure of persistence read, JSON parsing,
+ *   policy lookup, and key load steps. All transient allocations are released
+ *   on exit through the common cleanup path.
+ */
 extern MSTATUS TRUSTEDGE_getKeyByPolicyId(
     TrustEdgeAgentCtx *pCtx,
     sbyte *pId,
