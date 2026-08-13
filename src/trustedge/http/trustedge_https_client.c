@@ -34,11 +34,6 @@
 #include "trustedge_https_client.h"
 #include "trustedge_https_util.h"
 
-// #include "um_client_daemon_priv.h"
-// #include "um_property_common.h"
-// #include "um_utils.h"
-// #include "um_logger.h"
-
 #ifdef __ENABLE_DIGICERT_UM_SSM__
 #include "../../common/base64.h"
 #include "um_msg_parser.h"
