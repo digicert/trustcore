@@ -123,7 +123,7 @@ start_test_processes() {
     mkdir -p "${WORKSPACE_DIR}/messages"
 
     # Start Azure DPS mock server if command file exists
-    local azure_dps_cmd="$WORKSPACE_DIR/mock_azure_dps.cmd"
+    local azure_dps_cmd="$WORKSPACE_DIR/mock_azure_dps.start"
     # Get full path to the command file
     azure_dps_cmd=$(realpath "$azure_dps_cmd")
     if [ -f "$azure_dps_cmd" ]; then
@@ -330,39 +330,26 @@ cleanup() {
 }
 
 # This function recursively iterates through $WORKSPACE_DIR looking for files that end in
-# .validate and ensures they match the corresponding file without the .validate
-# extension. If any of the files do not match, it prints an error message and
-# exits with a non-zero status.
-#
-# The files are diffed using the cmp command, which compares the files byte by
-# byte.
+# .validate.sh and executes them. Each validation script is responsible for testing
+# its corresponding file however it wants. On success, the script should exit with 0,
+# otherwise it should exit with a non-zero status.
 validate_results() {
     echo "Validating test results..."
 
     local validation_failed="false"
 
-    # Find all .validate files in the workspace directory
-    while read -r validate_file; do
-        # Determine the corresponding file without the .validate extension
-        local original_file="${validate_file%.validate}"
+    # Find all .validate.sh files in the workspace directory
+    while read -r validate_script; do
+        echo "Running validation script: $validate_script"
 
-        # Check if the original file exists
-        if [ ! -f "$original_file" ]; then
-            echo "Error: Original file not found for validation: $original_file"
-            validation_failed="true"
-            continue
-        fi
-
-        # Compare the contents of the two files
-        if ! cmp -s "$original_file" "$validate_file"; then
-            echo "Validation failed for: $original_file"
-            echo "    Original file: $original_file"
-            echo "    Validate file: $validate_file"
-            validation_failed="true"
+        # Execute the validation script
+        if bash "$validate_script"; then
+            echo "Validation passed for: $validate_script"
         else
-            echo "Validation passed for: $original_file"
+            echo "Validation failed for: $validate_script"
+            validation_failed="true"
         fi
-    done < <(find "$WORKSPACE_DIR" -type f -name "*.validate")
+    done < <(find "$WORKSPACE_DIR" -type f -name "*.validate.sh")
 
     if [ "$validation_failed" = "true" ]; then
         echo "ERROR: Test validation failed."
