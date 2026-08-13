@@ -2074,6 +2074,36 @@ exit:
     return status;
 }
 
+/**
+ * Retrieve a stored certificate for the specified certificate policy ID.
+ *
+ * This function loads persisted certificate metadata/state associated with the
+ * active TrustEdge agent context, searches for an entry that matches
+ * `pPolicyId`, and returns the corresponding certificate buffer and length.
+ *
+ * Parameters:
+ * - pCtx: Initialized TrustEdge agent context used to resolve persistence data.
+ * - pPolicyId: NUL-terminated certificate policy identifier to match.
+ * - ppCert: Output pointer that receives an allocated certificate buffer on
+ *   success. Caller is responsible for freeing returned memory using the
+ *   project allocator conventions.
+ * - pCertLen: Output length (bytes) of `*ppCert` on success.
+ *
+ * Behavior:
+ * - Validates required inputs.
+ * - Reads and parses persisted certificate JSON content.
+ * - Locates certificate data by policy ID.
+ * - Populates output parameters only when a matching certificate is found.
+ *
+ * Return:
+ * - `MSTATUS_OK` on success.
+ * - A non-zero status code on validation, persistence, parse, lookup, or
+ *   allocation failure.
+ *
+ * Notes:
+ * - The function follows the common `goto exit` cleanup pattern to guarantee
+ *   consistent resource release for all error paths.
+ */
 extern MSTATUS TRUSTEDGE_getCertificateByPolicyId(
     TrustEdgeAgentCtx *pCtx,
     sbyte *pPolicyId,
