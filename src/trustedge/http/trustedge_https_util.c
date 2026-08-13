@@ -74,11 +74,6 @@
 
 #include "trustedge_https_client.h"
 #include "trustedge_https_util.h"
-// #include "um_msg_factory.h"
-// #include "um_msg_parser.h"
-// #include "um_utils.h"
-// #include "um_logger.h"
-// #include "um_tap.h"
 
 #ifdef __ENABLE_DIGICERT_DATA_PROTECTION__
 #include "../../data_protection/file_protect.h"
@@ -87,12 +82,6 @@
 #if defined(__ENABLE_DIGICERT_SSL_PROXY_CONNECT__) && !defined(__ENABLE_DIGICERT_HTTP_PROXY__)
 #error Must define __ENABLE_DIGICERT_HTTP_PROXY__ if __ENABLE_DIGICERT_SSL_PROXY_CONNECT__ is defined
 #endif
-
-/* #define DBG_DUMP_JSON_RESPONSE_MSG */
-/* #define DBG_DUMP_JSON_AUTH */
-
-/* Work around for a very specific server breakage. Should be Temporary. */
-#define FIX_BROKEN_URI
 
 #define MAX_NTRUSTEDGE_SSL_SERVER_SESSION                      (2)
 #define MAX_NTRUSTEDGE_HTTP_CLIENT_SESSIONS                    (4)
@@ -110,24 +99,12 @@
 
 #define RECV_TEMP_FILE          "receive_body.data"
 
-#define EXTENDED_CREDS_JSTR     "extended_creds"
-#define AUTH_TYPE_JSTR          "auth_type"
-#define AUTH_VALUE_JSTR         "auth_value"
-#define AUTH_TYPE_BASIC         "basicAuth"
-
 #define REDIRECT                (302) /* Use the provided URI */
 #define LOCATION                (5) /* Response header location value */
 
 #define TRUSTEDGE_HTTPS_UTIL_GET_STORE(_pCtx) (_pCtx->pTrustStore)
 
 static sbyte4 TRUSTEDGE_HTTPS_UTIL_performHttpRequest(httpContext *pHttpContext);
-MSTATUS internalHttpsSaveRequestId(
-        HttpsClientCtx *pHttpsClientCtx,
-        MSTATUS *umStatus);
-
-/*----------------------------------------------------------------------------*/
-#define COUNTER_LEN (16)
-#define TIME_PREFIX_LEN (12)
 
 /*----------------------------------------------------------------------------*/
 

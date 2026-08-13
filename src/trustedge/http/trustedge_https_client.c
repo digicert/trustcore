@@ -100,11 +100,6 @@ static MSTATUS unInitCtx(HttpsClientCtx *pCtx)
 
     if (NULL != pCtx)
     {
-        // MOC_FREE((void **)&pCtx->deviceID);
-        // MOC_FREE((void **)&pCtx->deviceCreds);
-
-        // pCtx->registrationComplete = FALSE;
-
         DIGI_FREE((void **)&pCtx);
         pCtx = NULL;
     }
@@ -113,15 +108,10 @@ static MSTATUS unInitCtx(HttpsClientCtx *pCtx)
 
 static MSTATUS initConfig(HttpsClientCtx *pCtx)
 {
-    // pCtx->registrationComplete = FALSE;
-    // pCtx->singleUpdateMode = FALSE;
-    // pCtx->deviceID = NULL;
-    // pCtx->deviceCreds = NULL;
     pCtx->serverAddress = NULL;
     pCtx->serverRestPrefix = NULL;
     pCtx->signatureCertFileName = NULL;
     pCtx->signatureKeyFileName = NULL;
-    // pCtx->waiterCtx = NULL;
     pCtx->httpsTransactionTimeout = DEFAULT_TRANSACTION_TIMEOUT;
     pCtx->httpsDownloadTimeout = DEFAULT_DOWNLOAD_TIMEOUT;
     pCtx->serverRetryMaxCount = DEFAULT_SERVER_RETRY_MAX_CNT;
@@ -316,8 +306,6 @@ MOC_EXTERN MSTATUS TRUSTEDGE_clientHttpsReleaseContext(
 
     HttpsClientCtx *pCtx = *ppContext;
 
-    // DIGI_FREE((void **)&pCtx->deviceID);
-    // DIGI_FREE((void **)&pCtx->deviceCreds);
     DIGI_FREE((void **)&pCtx->serverAddress);
     DIGI_FREE((void **)&pCtx->serverIPAddress);
     DIGI_FREE((void **)&pCtx->serverRestPrefix);
@@ -333,7 +321,6 @@ MOC_EXTERN MSTATUS TRUSTEDGE_clientHttpsReleaseContext(
     DIGI_FREE((void **)&pCtx->authValue);
     DIGI_FREE((void **)&pCtx->nonce);
     DIGI_FREE((void **)&pCtx->signatureAlgoId);
-    // UM_utilDestroyWaiter(&pCtx->waiterCtx);
     DIGI_FREE((void **)&pCtx->responseMsgFileName);
     DIGI_FREE((void **)&pCtx->responseBodyTempFileName);
     DIGI_FREE((void **)&pCtx->redirectURI);
