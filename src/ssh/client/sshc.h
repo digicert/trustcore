@@ -122,6 +122,14 @@ extern "C" {
     #define MAX_SESSION_WINDOW_SIZE             (1024*2)
   #endif
 
+    #ifndef SSH_SESSION_WINDOW_SIZE
+        #define SSH_SESSION_WINDOW_SIZE             (1024*64)
+    #endif
+
+    #ifndef SSH_SESSION_MAX_PACKET_SIZE
+        #define SSH_SESSION_MAX_PACKET_SIZE         MAX_SESSION_WINDOW_SIZE
+    #endif
+
   #define SSHC_SYNC_BUFFER_SIZE                 (1000)
   #define SSHC_SFTP_GetMaxBytesToRead()         (SSHC_SYNC_BUFFER_SIZE)
 #else
@@ -131,8 +139,23 @@ extern "C" {
   #endif
 
   #define MAX_SESSION_WINDOW_SIZE               (15000)
+    #ifndef SSH_SESSION_WINDOW_SIZE
+        #define SSH_SESSION_WINDOW_SIZE             (1024*64)
+    #endif
+
+    #ifndef SSH_SESSION_MAX_PACKET_SIZE
+        #define SSH_SESSION_MAX_PACKET_SIZE         MAX_SESSION_WINDOW_SIZE
+    #endif
   #define SSHC_SYNC_BUFFER_SIZE                 (8192)
   #define SSHC_SFTP_GetMaxBytesToRead()           (SSHC_SYNC_BUFFER_SIZE)
+#endif
+
+#if (SSH_SESSION_MAX_PACKET_SIZE >= SSH_SESSION_WINDOW_SIZE)
+    #error sshc.h: SSH_SESSION_WINDOW_SIZE must be greater than SSH_SESSION_MAX_PACKET_SIZE
+#endif
+
+#if (SSH_SESSION_MAX_PACKET_SIZE >= SSHC_MAX_BUFFER_SIZE)
+    #error sshc.h: SSHC_MAX_BUFFER_SIZE must be greater than SSH_SESSION_MAX_PACKET_SIZE
 #endif
 
 /* SSH Key Blob Types */

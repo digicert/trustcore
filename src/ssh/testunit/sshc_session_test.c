@@ -70,8 +70,8 @@ static sshClientContext* createTestContext(void)
     pContext->sessionState.channelState = SESSION_CLOSED;
     pContext->sessionState.clientChannel = 1;
     pContext->sessionState.recipientChannel = 2;
-    pContext->sessionState.windowSize = MAX_SESSION_WINDOW_SIZE;
-    pContext->sessionState.maxPacketSize = MAX_SESSION_WINDOW_SIZE;
+    pContext->sessionState.windowSize = SSH_SESSION_WINDOW_SIZE;
+    pContext->sessionState.maxPacketSize = SSH_SESSION_MAX_PACKET_SIZE;
     pContext->sessionState.isEof = FALSE;
     pContext->sessionState.rxdClosed = FALSE;
     pContext->sessionState.unAckRecvdData = 0;
@@ -277,6 +277,8 @@ static void test_SSHC_SESSION_receiveMessage_channel_open_confirmation(void **pp
     assert_true(pContext->sessionState.isChannelActive);
     assert_int_equal(SESSION_OPEN, pContext->sessionState.channelState);
     assert_int_equal(2, pContext->sessionState.recipientChannel);
+    assert_int_equal(0x1000, pContext->sessionState.maxWindowSize);
+    assert_int_equal(0x0800, pContext->sessionState.maxPacketSize);
     assert_int_equal(0x1000, pContext->sessionState.windowSize);
 
     /* Cleanup */

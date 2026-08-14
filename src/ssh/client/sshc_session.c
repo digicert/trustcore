@@ -268,6 +268,7 @@ sendOpenSessionChannel(sshClientContext *pContextSSH)
     ubyte4 myChannel = ++m_channel;
     ubyte4 bufIndex = 0;
     ubyte4 windowSize;
+    ubyte4 maxPacketSize;
     ubyte4 written;
 
     buflen = 1 +
@@ -294,17 +295,18 @@ sendOpenSessionChannel(sshClientContext *pContextSSH)
     *(pBuffer + bufIndex + 3)  = (ubyte)(myChannel);
 
     /* initial window size */
-    windowSize = MAX_SESSION_WINDOW_SIZE;
-    *(pBuffer + bufIndex + 4) = 0;
-    *(pBuffer + bufIndex + 5) = 0;
+    windowSize = SSH_SESSION_WINDOW_SIZE;
+    *(pBuffer + bufIndex + 4) = (ubyte)(windowSize >> 24);
+    *(pBuffer + bufIndex + 5) = (ubyte)(windowSize >> 16);
     *(pBuffer + bufIndex + 6) = (ubyte)(windowSize >>  8);
     *(pBuffer + bufIndex + 7) = (ubyte)(windowSize);
 
-    /* max packet size -- uses window size */
-    *(pBuffer + bufIndex + 8)  = 0;
-    *(pBuffer + bufIndex + 9)  = 0;
-    *(pBuffer + bufIndex + 10) = (ubyte)(windowSize >>  8);
-    *(pBuffer + bufIndex + 11) = (ubyte)(windowSize);
+    /* max packet size */
+    maxPacketSize = SSH_SESSION_MAX_PACKET_SIZE;
+    *(pBuffer + bufIndex + 8)  = (ubyte)(maxPacketSize >> 24);
+    *(pBuffer + bufIndex + 9)  = (ubyte)(maxPacketSize >> 16);
+    *(pBuffer + bufIndex + 10) = (ubyte)(maxPacketSize >>  8);
+    *(pBuffer + bufIndex + 11) = (ubyte)(maxPacketSize);
 
     pContextSSH->sessionState.clientChannel    = myChannel;
 
@@ -1205,7 +1207,7 @@ MSTATUS SSHC_SESSION_createRemotePortFwdSession(sshClientContext *pSshContext, s
     pRpfSession->lpfSessionData.maxWindowSize       = initWindowSize;
     pRpfSession->lpfSessionData.maxPacketSize       = maxPacketSize;
     pRpfSession->lpfSessionData.windowSize          = initWindowSize;
-    pRpfSession->lpfSessionData.serverWindowSize    = MAX_SESSION_WINDOW_SIZE;
+    pRpfSession->lpfSessionData.serverWindowSize    = SSH_SESSION_WINDOW_SIZE;
 
     /* Return the channel number only if everything is Okay */
     (*pChannel) = pRpfSession->lpfSessionData.clientChannel;
@@ -1360,15 +1362,15 @@ SSHC_SESSION_handleChannelOpen(sshClientContext *pContextSSH, ubyte *pMesg, ubyt
     pPayload[7]  = (ubyte)(sshChannel >>  8);
     pPayload[8]  = (ubyte)(sshChannel);
 
-    sshWindowSize = MAX_SESSION_WINDOW_SIZE;
-    pPayload[9]  = 0;
-    pPayload[10] = 0;
+    sshWindowSize = SSH_SESSION_WINDOW_SIZE;
+    pPayload[9]  = (ubyte)(sshWindowSize >> 24);
+    pPayload[10] = (ubyte)(sshWindowSize >> 16);
     pPayload[11] = (ubyte)(sshWindowSize >>  8);
     pPayload[12] = (ubyte)(sshWindowSize);
 
-    sshWindowSize = MAX_SESSION_WINDOW_SIZE;
-    pPayload[13] = 0;
-    pPayload[14] = 0;
+    sshWindowSize = SSH_SESSION_MAX_PACKET_SIZE;
+    pPayload[13] = (ubyte)(sshWindowSize >> 24);
+    pPayload[14] = (ubyte)(sshWindowSize >> 16);
     pPayload[15] = (ubyte)(sshWindowSize >>  8);
     pPayload[16] = (ubyte)(sshWindowSize);
 
@@ -1512,7 +1514,7 @@ SSHC_SESSION_handleIncomingMessage(sshClientContext *pContextSSH, ubyte *pMesg, 
         status = ERR_SESSION_BAD_PAYLOAD;
 
 #ifdef __ENABLE_DIGICERT_SSH_MAX_PACKET_SIZE_ERROR__
-        if(dataLen > MAX_SESSION_WINDOW_SIZE)
+    if(dataLen > SSH_SESSION_MAX_PACKET_SIZE)
         {
 	
             DEBUG_PRINTNL(DEBUG_SSH_MESSAGES, (sbyte *) "dataLen exceeds maxPacketSize");
@@ -1527,8 +1529,8 @@ SSHC_SESSION_handleIncomingMessage(sshClientContext *pContextSSH, ubyte *pMesg, 
             status = OK;
 
             /* client governor, ignore data beyond our window */
-            if ((MAX_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData) < dataLen)
-                dataLen = (MAX_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData);
+            if ((SSH_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData) < dataLen)
+                dataLen = (SSH_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData);
 
             /* increment un-ack counter */
             pContextSSH->sessionState.unAckRecvdData += dataLen;
@@ -1540,7 +1542,7 @@ SSHC_SESSION_handleIncomingMessage(sshClientContext *pContextSSH, ubyte *pMesg, 
             {
                 if (OK > (status = SSHC_FTP_doProtocol(pContextSSH, pData, dataLen)))
                     goto exit;
-                if ((MAX_SESSION_WINDOW_SIZE/2) < pContextSSH->sessionState.unAckRecvdData)
+                if ((SSH_SESSION_WINDOW_SIZE/2) < pContextSSH->sessionState.unAckRecvdData)
                     ackIt = TRUE;
             }
             else
@@ -1593,7 +1595,7 @@ SSHC_SESSION_handleIncomingMessage(sshClientContext *pContextSSH, ubyte *pMesg, 
         status = ERR_SESSION_BAD_PAYLOAD;
 
 #ifdef __ENABLE_DIGICERT_SSH_MAX_PACKET_SIZE_ERROR__
-        if(dataLen > MAX_SESSION_WINDOW_SIZE)
+    if(dataLen > SSH_SESSION_MAX_PACKET_SIZE)
         {
 	
             goto exit ;
@@ -1603,8 +1605,8 @@ SSHC_SESSION_handleIncomingMessage(sshClientContext *pContextSSH, ubyte *pMesg, 
         if (mesgLen == (dataLen + 9))
         {
             /* client governor, ignore data beyond our window */
-            if ((MAX_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData) < dataLen)
-                dataLen = (MAX_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData);
+            if ((SSH_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData) < dataLen)
+                dataLen = (SSH_SESSION_WINDOW_SIZE - pContextSSH->sessionState.unAckRecvdData);
 
             /* increment un-ack counter */
             pContextSSH->sessionState.unAckRecvdData += dataLen;
@@ -2159,6 +2161,7 @@ static MSTATUS sendOpenLpfSessionChannel(sshClientContext *pContextSSH, sshcPfSe
     ubyte4 myChannel = pSession->lpfSessionData.clientChannel;
     ubyte4 bufIndex = 0;
     ubyte4 windowSize;
+    ubyte4 maxPacketSize;
     ubyte4 written;
     ubyte4 hostLen = DIGI_STRLEN((sbyte *)pConnectHost);
     ubyte4 srcLen  = DIGI_STRLEN((sbyte *)pSrc);
@@ -2192,17 +2195,18 @@ static MSTATUS sendOpenLpfSessionChannel(sshClientContext *pContextSSH, sshcPfSe
     *(pBuffer + bufIndex + 3)  = (ubyte)(myChannel);
 
     /* initial window size */
-    windowSize = MAX_SESSION_WINDOW_SIZE;
-    *(pBuffer + bufIndex + 4) = 0;
-    *(pBuffer + bufIndex + 5) = 0;
+    windowSize = SSH_SESSION_WINDOW_SIZE;
+    *(pBuffer + bufIndex + 4) = (ubyte)(windowSize >> 24);
+    *(pBuffer + bufIndex + 5) = (ubyte)(windowSize >> 16);
     *(pBuffer + bufIndex + 6) = (ubyte)(windowSize >>  8);
     *(pBuffer + bufIndex + 7) = (ubyte)(windowSize);
 
-    /* max packet size -- uses window size */
-    *(pBuffer + bufIndex + 8)  = 0;
-    *(pBuffer + bufIndex + 9)  = 0;
-    *(pBuffer + bufIndex + 10) = (ubyte)(windowSize >>  8);
-    *(pBuffer + bufIndex + 11) = (ubyte)(windowSize);
+    /* max packet size */
+    maxPacketSize = SSH_SESSION_MAX_PACKET_SIZE;
+    *(pBuffer + bufIndex + 8)  = (ubyte)(maxPacketSize >> 24);
+    *(pBuffer + bufIndex + 9)  = (ubyte)(maxPacketSize >> 16);
+    *(pBuffer + bufIndex + 10) = (ubyte)(maxPacketSize >>  8);
+    *(pBuffer + bufIndex + 11) = (ubyte)(maxPacketSize);
 
     bufIndex += 12;
 
