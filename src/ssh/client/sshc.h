@@ -151,7 +151,7 @@ extern "C" {
 #endif
 
 #if (SSH_SESSION_MAX_PACKET_SIZE >= SSH_SESSION_WINDOW_SIZE)
-    #error ssh.h: SSH_SESSION_WINDOW_SIZE must be greater than SSH_SESSION_MAX_PACKET_SIZE
+    #error sshc.h: SSH_SESSION_WINDOW_SIZE must be greater than SSH_SESSION_MAX_PACKET_SIZE
 #endif
 
 #if (SSH_SESSION_MAX_PACKET_SIZE >= SSHC_MAX_BUFFER_SIZE)
