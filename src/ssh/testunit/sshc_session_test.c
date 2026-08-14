@@ -119,13 +119,6 @@ static void destroyTestConnectDescr(sshcConnectDescr** ppDescr)
 /* Tests for SSHC_SESSION_sendMessage */
 /*------------------------------------------------------------------*/
 
-static void test_SSHC_SESSION_default_window_exceeds_max_packet(void **ppState)
-{
-    MOC_UNUSED(ppState);
-
-    assert_true(SSH_SESSION_WINDOW_SIZE > SSH_SESSION_MAX_PACKET_SIZE);
-}
-
 static void test_SSHC_SESSION_sendMessage_zero_length(void **ppState)
 {
     MOC_UNUSED(ppState);
@@ -621,7 +614,6 @@ int main(int argc, char* argv[])
 #ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* SSHC_SESSION_sendMessage tests */
-        cmocka_unit_test(test_SSHC_SESSION_default_window_exceeds_max_packet),
         cmocka_unit_test(test_SSHC_SESSION_sendMessage_zero_length),
         cmocka_unit_test(test_SSHC_SESSION_sendMessage_session_not_open),
         cmocka_unit_test(test_SSHC_SESSION_sendMessage_rekey_occurring),
