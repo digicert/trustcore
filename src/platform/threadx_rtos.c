@@ -2,7 +2,6 @@
  * THREADX_rtos.c
  *
  * THREADX RTOS Abstraction Layer
- *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
  * DigiCert® TrustCore SDK and TrustEdge are licensed under a dual-license model:
@@ -18,6 +17,19 @@
  */
 
 #include "../common/moptions.h"
+#include <stdint.h>
+
+#ifndef BSP_PLACE_IN_SECTION
+#define BSP_PLACE_IN_SECTION(x)
+#endif
+
+#ifndef BSP_ALIGN_VARIABLE
+#define BSP_ALIGN_VARIABLE(x)
+#endif
+
+#ifndef BSP_STACK_ALIGNMENT
+#define BSP_STACK_ALIGNMENT 8
+#endif
 
 #ifdef __RTOS_THREADX__
 #include "tx_api.h"
@@ -66,7 +78,9 @@ typedef struct _MTHREAD_CONTEXT
 } MTHREAD_CONTEXT, *PMTHREAD_CONTEXT;
 
 TX_THREAD moc_thread;
-static uint8_t moc_thread_stack[MOCANA_THREAD_STACK_SIZE] BSP_PLACE_IN_SECTION(".stack.moc_thread") BSP_ALIGN_VARIABLE(BSP_STACK_ALIGNMENT);
+static ubyte moc_thread_stack[MOCANA_THREAD_STACK_SIZE]
+    BSP_PLACE_IN_SECTION(".stack.moc_thread")
+    BSP_ALIGN_VARIABLE(BSP_STACK_ALIGNMENT);
 
 
 /*------------------------------------------------------------------*/
@@ -74,8 +88,9 @@ static uint8_t moc_thread_stack[MOCANA_THREAD_STACK_SIZE] BSP_PLACE_IN_SECTION("
 /**
  * The ThreadX OS itself has no date/time API
  */
-int THREADX_timeGMT(TimeDate*t){
-    DIGI_MEMSET(t,0,sizeof(TimeDate));
+int THREADX_timeGMT(TimeDate *t)
+{
+    DIGI_MEMSET((ubyte *)t, 0, sizeof(TimeDate));
     t->m_year = 49;
     return ERR_RTOS_GMT_TIME_NOT_AVAILABLE;
 }
@@ -761,7 +776,7 @@ THREADX_createThread(void(*threadEntry)(void*), void* context, ubyte4 threadType
         goto exit;
     }
     pThreadContext->ThreadControl = moc_thread;
-    pThreadContext->ThreadStack = &moc_thread_stack;
+    pThreadContext->ThreadStack = moc_thread_stack;
 
     /**
      * tx_thread_create

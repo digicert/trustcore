@@ -86,6 +86,10 @@
 #define TRUSTEDGE_BOOTSTRAP_TMP_DIR     "/tmp/trustedge_bootstrap"
 #elif defined(__RTOS_WIN32__)
 #define TRUSTEDGE_BOOTSTRAP_TMP_DIR     "C:\\ProgramData\\DigiCert\\trustedge_bootstrap"
+#elif defined(__RTOS_THREADX__) || defined(__RTOS_AZURE__)
+/* ThreadX/AzureRTOS: RAM VFS path — mkdir is a no-op stub in syscalls.c;
+ * extracted files are stored as flat path-string keys in the VFS pool.   */
+#define TRUSTEDGE_BOOTSTRAP_TMP_DIR     "/tmp/trustedge_bootstrap"
 #else
 #error "No bootstrap tmp dir specified for this platform"
 #endif
