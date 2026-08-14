@@ -186,8 +186,8 @@ sshProtocolUpcall(sbyte4 connectionInstance, enum sshSessionTypes sessionEvent,
                     break;
                 }
 
-                if (MAX_SESSION_WINDOW_SIZE < mesgLen)
-                    mesgLen = MAX_SESSION_WINDOW_SIZE;  /*!-!-! should never happen */
+                if (SSH_SESSION_MAX_PACKET_SIZE < mesgLen)
+                    mesgLen = SSH_SESSION_MAX_PACKET_SIZE;  /*!-!-! should never happen */
 
                 /* store the length of the data */
                 if (1 == mesgLen)
@@ -636,7 +636,7 @@ SSH_negotiateConnection(sbyte4 connectionInstance)
         if ((connectionInstance == g_connectTable[index].instance) &&
             (CONNECT_NEGOTIATE  == g_connectTable[index].connectionState))
         {
-            if (OK > (status = CIRC_BUF_create(&g_connectTable[index].pCircBufDescr, 2 * MAX_SESSION_WINDOW_SIZE)))
+            if (OK > (status = CIRC_BUF_create(&g_connectTable[index].pCircBufDescr, 2 * SSH_SESSION_WINDOW_SIZE)))
                 goto exit;
 
             if (OK > (status = SSH_TRANS_versionExchange(g_connectTable[index].pContextSSH)))
@@ -692,7 +692,7 @@ SSH_sendMessage(sbyte4 connectionInstance, sbyte *pBuffer, sbyte4 bufferSize, sb
             (CONNECT_OPEN       == g_connectTable[index].connectionState))
         {
 #ifdef __ENABLE_DIGICERT_SSH_SENDER_RECV__
-            if (((MAX_SESSION_WINDOW_SIZE / 8) >= g_connectTable[index].pContextSSH->sessionState.windowSize) ||
+            if (((SSH_SESSION_WINDOW_SIZE / 8) >= g_connectTable[index].pContextSSH->sessionState.windowSize) ||
                 (bufferSize >= g_connectTable[index].pContextSSH->sessionState.windowSize))
             {
                 /* read data to prevent blocking on SSH transport window changes */
@@ -738,7 +738,7 @@ SSH_sendPing(sbyte4 connectionInstance)
             (CONNECT_OPEN       == g_connectTable[index].connectionState))
         {
 #ifdef __ENABLE_DIGICERT_SSH_SENDER_RECV__
-            if ((MAX_SESSION_WINDOW_SIZE / 8) >= g_connectTable[index].pContextSSH->sessionState.windowSize) {
+            if ((SSH_SESSION_WINDOW_SIZE / 8) >= g_connectTable[index].pContextSSH->sessionState.windowSize) {
                 /* read data to prevent blocking on SSH transport window changes */
                 if (OK > (status = doProtocol(g_connectTable[index].pContextSSH, index, TRUE, 100)))
                 {

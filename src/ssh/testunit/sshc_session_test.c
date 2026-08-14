@@ -70,8 +70,8 @@ static sshClientContext* createTestContext(void)
     pContext->sessionState.channelState = SESSION_CLOSED;
     pContext->sessionState.clientChannel = 1;
     pContext->sessionState.recipientChannel = 2;
-    pContext->sessionState.windowSize = MAX_SESSION_WINDOW_SIZE;
-    pContext->sessionState.maxPacketSize = MAX_SESSION_WINDOW_SIZE;
+    pContext->sessionState.windowSize = SSH_SESSION_WINDOW_SIZE;
+    pContext->sessionState.maxPacketSize = SSH_SESSION_MAX_PACKET_SIZE;
     pContext->sessionState.isEof = FALSE;
     pContext->sessionState.rxdClosed = FALSE;
     pContext->sessionState.unAckRecvdData = 0;
@@ -118,6 +118,13 @@ static void destroyTestConnectDescr(sshcConnectDescr** ppDescr)
 /*------------------------------------------------------------------*/
 /* Tests for SSHC_SESSION_sendMessage */
 /*------------------------------------------------------------------*/
+
+static void test_SSHC_SESSION_default_window_exceeds_max_packet(void **ppState)
+{
+    MOC_UNUSED(ppState);
+
+    assert_true(SSH_SESSION_WINDOW_SIZE > SSH_SESSION_MAX_PACKET_SIZE);
+}
 
 static void test_SSHC_SESSION_sendMessage_zero_length(void **ppState)
 {
@@ -277,6 +284,8 @@ static void test_SSHC_SESSION_receiveMessage_channel_open_confirmation(void **pp
     assert_true(pContext->sessionState.isChannelActive);
     assert_int_equal(SESSION_OPEN, pContext->sessionState.channelState);
     assert_int_equal(2, pContext->sessionState.recipientChannel);
+    assert_int_equal(0x1000, pContext->sessionState.maxWindowSize);
+    assert_int_equal(0x0800, pContext->sessionState.maxPacketSize);
     assert_int_equal(0x1000, pContext->sessionState.windowSize);
 
     /* Cleanup */
@@ -612,6 +621,7 @@ int main(int argc, char* argv[])
 #ifdef __ENABLE_DIGICERT_SSH_CLIENT__
     const struct CMUnitTest tests[] = {
         /* SSHC_SESSION_sendMessage tests */
+        cmocka_unit_test(test_SSHC_SESSION_default_window_exceeds_max_packet),
         cmocka_unit_test(test_SSHC_SESSION_sendMessage_zero_length),
         cmocka_unit_test(test_SSHC_SESSION_sendMessage_session_not_open),
         cmocka_unit_test(test_SSHC_SESSION_sendMessage_rekey_occurring),

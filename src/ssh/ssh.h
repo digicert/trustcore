@@ -156,6 +156,18 @@ enum asyncWaitEvents
 #define MAX_SESSION_WINDOW_SIZE                 (1024*2)
 #endif
 
+#ifndef SSH_SESSION_WINDOW_SIZE
+#define SSH_SESSION_WINDOW_SIZE                 (1024*64)
+#endif
+
+#ifndef SSH_SESSION_MAX_PACKET_SIZE
+#define SSH_SESSION_MAX_PACKET_SIZE             MAX_SESSION_WINDOW_SIZE
+#endif
+
+#if (SSH_SESSION_MAX_PACKET_SIZE > SSH_SESSION_WINDOW_SIZE)
+    #error ssh.h: SSH_SESSION_WINDOW_SIZE must be greater than SSH_SESSION_MAX_PACKET_SIZE
+#endif
+
 #ifndef SSH_SYNC_BUFFER_SIZE
 #define SSH_SYNC_BUFFER_SIZE                    (512)
 #endif
@@ -164,8 +176,8 @@ enum asyncWaitEvents
 #define MOCANA_SSH_SOCKET_STREAM_SIZE           (4096)
 #endif
 
-#if (MAX_SESSION_WINDOW_SIZE > SSH_MAX_BUFFER_SIZE)
-#error ssh.h: SSH_MAX_BUFFER_SIZE must be greater than MAX_SESSION_WINDOW_SIZE
+#if (SSH_SESSION_MAX_PACKET_SIZE > SSH_MAX_BUFFER_SIZE)
+#error ssh.h: SSH_MAX_BUFFER_SIZE must be greater than SSH_SESSION_MAX_PACKET_SIZE
 #endif
 
 /* SSH Key Blob Types */

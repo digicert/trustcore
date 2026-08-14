@@ -375,7 +375,7 @@ SSHC_connect(TCP_SOCKET tempSocket, sbyte4 *pConnectionInstance, sbyte *pCommonN
             pConn->numBytesRead    = 0;
             pConn->instance        = instance;
 
-            if (OK > (status = CIRC_BUF_create(&pConn->pCircBufDescr, 2 * MAX_SESSION_WINDOW_SIZE)))
+            if (OK > (status = CIRC_BUF_create(&pConn->pCircBufDescr, 2 * SSH_SESSION_WINDOW_SIZE)))
                 goto exit;
 
             if (NULL == (pConn->pReadBuffer = MALLOC(SSHC_BUFFER_SIZE)))
@@ -595,8 +595,8 @@ sshcProtocolUpcall(sbyte4 connectionInstance, enum sshcSessionTypes sessionEvent
         if (0 == mesgLen)
             goto exit;
 
-        if (MAX_SESSION_WINDOW_SIZE < mesgLen)
-            mesgLen = MAX_SESSION_WINDOW_SIZE;  /*!-!-! should never happen */
+        if (SSH_SESSION_MAX_PACKET_SIZE < mesgLen)
+            mesgLen = SSH_SESSION_MAX_PACKET_SIZE;  /*!-!-! should never happen */
 
         /* store the length of the data */
         if (1 == mesgLen)
@@ -771,7 +771,7 @@ SSHC_sendMessage(sbyte4 connectionInstance, ubyte *pBuffer, ubyte4 bufferSize, u
 
     if (CONNECT_OPEN == pDescr->connectionState)
     {
-        if (((MAX_SESSION_WINDOW_SIZE / 8) >= pDescr->pContextSSH->sessionState.windowSize) ||
+        if (((SSH_SESSION_WINDOW_SIZE / 8) >= pDescr->pContextSSH->sessionState.windowSize) ||
             (bufferSize >= pDescr->pContextSSH->sessionState.windowSize))
         {
             /* read data to prevent blocking on SSH transport window changes */
