@@ -90,16 +90,8 @@ openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
 # Create combined client certificate
 cat client.crt client.key > client.pem
 
-# Create symbolic links in parent directory for convenience
-echo "Creating convenience links..."
-cd "${SCRIPT_DIR}"
-ln -sf certs/server.pem server.pem
-ln -sf certs/server.key server.key
-ln -sf certs/ca.pem ca.pem
-ln -sf certs/client.pem client.pem
-ln -sf certs/client.key client.key
-
 # Cleanup CSRs and temp files
+cd "${SCRIPT_DIR}"
 rm -f "${CERTS_DIR}"/*.csr "${CERTS_DIR}"/*_ext.cnf
 
 echo ""
@@ -115,19 +107,16 @@ echo "  client.pem   - Client certificate + key (for mTLS testing)"
 echo "  client.crt   - Client certificate only"
 echo "  client.key   - Client private key"
 echo ""
-echo "Symbolic links in ${SCRIPT_DIR}:"
-echo "  server.pem, server.key, ca.pem, client.pem, client.key"
-echo ""
 echo "Usage:"
 echo "  # Start mock server"
-echo "  python3 mock_azure_dps_server.py --cert server.pem --key server.key"
+echo "  python3 mock_azure_dps_server.py --cert certs/server.pem --key certs/server.key"
 echo ""
 echo "  # Start with client certificate verification"
-echo "  python3 mock_azure_dps_server.py --cert server.pem --key server.key --ca ca.pem"
+echo "  python3 mock_azure_dps_server.py --cert certs/server.pem --key certs/server.key --ca certs/ca.pem"
 echo ""
 echo "  # Test with curl"
 echo "  curl -k https://localhost:8443/0ne00000000/registrations/test-device/register"
 echo ""
 echo "  # Test with client cert"
-echo "  curl --cacert ca.pem --cert client.pem \\"
+echo "  curl --cacert certs/ca.pem --cert certs/client.pem \\"
 echo "       https://localhost:8443/0ne00000000/registrations/test-device/register"

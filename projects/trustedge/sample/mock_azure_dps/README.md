@@ -17,7 +17,7 @@ cd projects/trustedge/sample/mock_azure_dps
 ./generate_certs.sh
 
 # Run the mock server
-python3 mock_azure_dps_server.py --port 8443 --cert server.pem --key server.key
+python3 mock_azure_dps_server.py --port 8443 --cert certs/server.pem --key certs/server.key
 ```
 
 ## Test Scenarios

@@ -10,8 +10,8 @@ Usage:
 
 Options:
   --port PORT           Server port (default: 8443)
-  --cert FILE           TLS certificate file (default: server.pem)
-  --key FILE            TLS private key file (default: server.key)
+  --cert FILE           TLS certificate file (default: certs/server.pem)
+  --key FILE            TLS private key file (default: certs/server.key)
   --ca FILE             CA certificate for client auth (optional)
   --scenario SCENARIO   Default test scenario (default: success_pending)
   --responses-dir DIR   Directory containing response JSON files
@@ -325,10 +325,10 @@ def main():
   )
   parser.add_argument('--port', type=int, default=9443,
             help='Server port (default: 9443)')
-  parser.add_argument('--cert', default='server.pem',
-            help='TLS certificate file (default: server.pem)')
-  parser.add_argument('--key', default='server.key',
-            help='TLS private key file (default: server.key)')
+  parser.add_argument('--cert', default='certs/server.pem',
+            help='TLS certificate file (default: certs/server.pem)')
+  parser.add_argument('--key', default='certs/server.key',
+            help='TLS private key file (default: certs/server.key)')
   parser.add_argument('--ca', default=None,
             help='CA certificate for client auth (optional)')
   parser.add_argument('--scenario', default='success_pending',
