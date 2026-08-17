@@ -2601,6 +2601,8 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_TRUSTEDGE_HTTP_SERVER_ERROR,                   -22609)
     ERROR_DEF       (ERR_TRUSTEDGE_HTTP_INVALID_REQUEST_MSG,            -22610)
     ERROR_DEF       (ERR_TRUSTEDGE_AZURE_REGISTRATION_FAILED,           -22611)
+    ERROR_DEF       (ERR_TRUSTEDGE_AZURE_INVALID_REGISTRATION_STATE,    -22612)
+    ERROR_DEF       (ERR_TRUSTEDGE_AZURE_PROVIDER_CONFIG_NOT_FOUND,     -22613)
 
     /* TrustEdge Agent Error Codes */
     ERROR_DEF       (ERR_TRUSTEDGE_AGENT,                               -22700)

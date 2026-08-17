@@ -58,6 +58,7 @@ extern "C" {
  */
 MOC_EXTERN MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     TrustEdgeAgentCtx *pCtx,
+    TrustEdgeAgentPolicyNode *pPolicyNode,
     ubyte *pJson,
     ubyte4 jsonLen,
     ubyte4 *pHttpStatusCode,
@@ -65,6 +66,10 @@ MOC_EXTERN MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     ubyte4 *pServerRspLen,
     ubyte **ppProviderCredJson,
     ubyte4 *pProviderCredJsonLen);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_cloudServiceAzureReRegisterByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId);
 
 #ifdef __cplusplus
 }

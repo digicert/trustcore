@@ -93,6 +93,15 @@ MOC_EXTERN MSTATUS TRUSTEDGE_getKeyByPolicyId(
     sbyte *pId,
     AsymmetricKey **ppKey);
 
+MOC_EXTERN MSTATUS TRUSTEDGE_agentCertificateAssociateCloudPolicy(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    sbyte *pCloudPolicyId);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_agentCertificateCloudPolicyCheck(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId);
+
 #ifdef __cplusplus
 }
 #endif

@@ -47,10 +47,25 @@
 #include "../../trustedge/http/trustedge_https_util.h"
 #include "../../trustedge/utils/trustedge_tap.h"
 #include "../../trustedge/agent/trustedge_agent_certificate.h"
+#include "../../trustedge/agent/trustedge_agent_policy.h"
 
 /*----------------------------------------------------------------------------*/
 
 #define TRUSTEDGE_AZURE_IDENTITY_NAME       "AZURE_IDENTITY_CERT"
+
+#define REGISTRATION_STATE_FILE_PREFIX      "cloud_service_state_"
+#define PROVIDER_FILE_PREFIX                "provider_"
+
+#define CLOUD_SERVICE_STATE_JSTR                     "state"
+#define CLOUD_SERVICE_REGISTRATION_PENDING_JSTR      "REGISTRATION_PENDING"
+#define CLOUD_SERVICE_REGISTERED_JSTR                "REGISTERED"
+#define CLOUD_SERVICE_REREGISTRATION_PENDING_JSTR    "REREGISTRATION_PENDING"
+#define CLOUD_SERVICE_REREGISTERED_JSTR              "REREGISTERED"
+#define CLOUD_SERVICE_STATUS_JSTR                    "status"
+
+#define CLOUD_SERVICE_SUCCESS_JSON               "{\n    \"state\": \"%s\",\n    \"timestamp\": \"%s\"\n}"
+#define CLOUD_SERVICE_PENDING_JSON               "{\n    \"state\": \"%s\"\n}"
+#define CLOUD_SERVICE_ERROR_JSON                 "{\n    \"state\": \"%s\",\n    \"lastError\": {\n        \"timestamp\": \"%s\",\n        \"status\": %d,\n        \"statusString\": \"%s\"\n    }\n}"
 
 /*----------------------------------------------------------------------------*/
 
@@ -63,6 +78,7 @@ typedef enum
 typedef struct
 {
     TrustEdgeAgentCtx *pAgentCtx;
+    TrustEdgeAgentPolicyNode *pPolicyNode;
     HttpsClientCtx *pHttpCtx;
     sbyte *pSchemeAndHost;
     sbyte *pHost;
@@ -97,6 +113,14 @@ typedef struct
     ubyte *pServerRsp;
     ubyte4 serverRspLen;
 } CloudServiceAzureCtx;
+
+typedef enum
+{
+    AZURE_STATE_REGISTRATION_PENDING,
+    AZURE_STATE_REGISTERED,
+    AZURE_STATE_REREGISTRATION_PENDING,
+    AZURE_STATE_REREGISTERED
+} AzureRegistrationState;
 
 /*---------------------------------------------------------------------------*/
 
@@ -1005,6 +1029,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
     ubyte *pJson,
     ubyte4 jsonLen,
     TrustEdgeAgentCtx *pAgentCtx,
+    TrustEdgeAgentPolicyNode *pPolicyNode,
     CloudServiceAzureCtx **ppCtx)
 {
     MSTATUS status;
@@ -1034,6 +1059,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
     }
 
     pCtx->pAgentCtx = pAgentCtx;
+    pCtx->pPolicyNode = pPolicyNode;
 
     status = TRUSTEDGE_cloudServiceAzureParseProviderInfo(pCtx, pJson, jsonLen);
     if (OK != status)
@@ -1050,7 +1076,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
         /* Retrieve the identity certificate */
         status = TRUSTEDGE_getCertificateByPolicyId(
             pAgentCtx,
-            pAgentCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
+            pPolicyNode->pDependency->pPolicies->pPolicyId,
             &pCert, &certLen);
         if (OK != status)
         {
@@ -1063,7 +1089,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureContextCreate(
 
         status = TRUSTEDGE_getKeyByPolicyId(
             pAgentCtx,
-            pAgentCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
+            pPolicyNode->pDependency->pPolicies->pPolicyId,
             &pAsymKey);
         if (OK != status)
         {
@@ -3027,7 +3053,7 @@ static MSTATUS TRUSTEDGE_cloudServiceAzureGenerateServiceConfig(
 
         status = TRUSTEDGE_getCertificateAndKeyPathByPolicyId(
             pAzureCtx->pAgentCtx,
-            pAzureCtx->pAgentCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
+            pAzureCtx->pPolicyNode->pDependency->pPolicies->pPolicyId,
             &pCertPath, &pKeyPath);
         if (OK != status)
         {
@@ -3164,6 +3190,369 @@ exit:
     return status;
 }
 
+static void TRUSTEDGE_cloudServiceAzureGetStateString(
+    AzureRegistrationState state,
+    sbyte **ppState)
+{
+    switch (state)
+    {
+        case AZURE_STATE_REGISTERED:
+            *ppState = CLOUD_SERVICE_REGISTERED_JSTR;
+            break;
+        case AZURE_STATE_REREGISTRATION_PENDING:
+            *ppState = CLOUD_SERVICE_REREGISTRATION_PENDING_JSTR;
+            break;
+        case AZURE_STATE_REREGISTERED:
+            *ppState = CLOUD_SERVICE_REREGISTERED_JSTR;
+            break;
+        case AZURE_STATE_REGISTRATION_PENDING:
+            *ppState = CLOUD_SERVICE_REGISTRATION_PENDING_JSTR;
+            break;
+    }
+}
+
+static MSTATUS TRUSTEDGE_cloudServiceOutputStateConfig(
+    TrustEdgeAgentCtx *pCtx,
+    TrustEdgeAgentPolicyNode *pPolicyNode,
+    sbyte *pConfig,
+    sbyte4 configLen)
+{
+    MSTATUS status;
+    sbyte *pStateFilePath = NULL;
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pConfig->pProviderCredsDir, REGISTRATION_STATE_FILE_PREFIX,
+        &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pStateFilePath, pPolicyNode->pId,
+        &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pStateFilePath, JSON_EXT, &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = DIGICERT_writeFile(pStateFilePath, pConfig, configLen);
+
+exit:
+
+    if (NULL != pStateFilePath)
+        DIGI_FREE((void **) &pStateFilePath);
+
+    return status;
+}
+
+static MSTATUS TRUSTEDGE_cloudServiceOutputProviderConfig(
+    TrustEdgeAgentCtx *pCtx,
+    TrustEdgeAgentPolicyNode *pPolicyNode,
+    ubyte *pConfig,
+    ubyte4 configLen)
+{
+    MSTATUS status;
+    sbyte *pStateFilePath = NULL;
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pConfig->pProviderCredsDir, PROVIDER_FILE_PREFIX,
+        &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pStateFilePath, pPolicyNode->pId,
+        &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pStateFilePath, JSON_EXT, &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = DIGICERT_writeFile(pStateFilePath, pConfig, configLen);
+
+exit:
+
+    if (NULL != pStateFilePath)
+        DIGI_FREE((void **) &pStateFilePath);
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static MSTATUS TRUSTEDGE_cloudServiceAzureWriteState(
+    TrustEdgeAgentCtx *pCtx,
+    TrustEdgeAgentPolicyNode *pPolicyNode,
+    AzureRegistrationState state,
+    MSTATUS registerStatus,
+    ubyte *pJson,
+    ubyte4 jsonLen)
+{
+    MSTATUS status = OK;
+    sbyte *pOut = NULL;
+    sbyte4 outLen = 0;
+    sbyte *pState = NULL;
+    sbyte *pTimestamp = NULL;
+    int ret;
+
+    TRUSTEDGE_cloudServiceAzureGetStateString(state, &pState);
+
+    status = TRUSTEDGE_utilsGetTime(&pTimestamp, 0);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (AZURE_STATE_REGISTERED == state || AZURE_STATE_REREGISTERED == state)
+    {
+        ret = snprintf(pOut, outLen, CLOUD_SERVICE_SUCCESS_JSON,
+                pState,
+                pTimestamp);
+    }
+    else if (OK == registerStatus)
+    {
+        ret = snprintf(pOut, outLen, CLOUD_SERVICE_PENDING_JSON, pState);
+    }
+    else
+    {
+        ret = snprintf(pOut, outLen, CLOUD_SERVICE_ERROR_JSON,
+                pState,
+                pTimestamp,
+                registerStatus,
+                MERROR_lookUpErrorCode(registerStatus));
+    }
+
+    outLen = ret;
+    status = DIGI_MALLOC((void **) &pOut, outLen + 1);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (AZURE_STATE_REGISTERED == state || AZURE_STATE_REREGISTERED == state)
+    {
+        ret = snprintf(pOut, outLen + 1, CLOUD_SERVICE_SUCCESS_JSON,
+                pState,
+                pTimestamp);
+    }
+    else if (OK == registerStatus)
+    {
+        ret = snprintf(pOut, outLen + 1, CLOUD_SERVICE_PENDING_JSON, pState);
+    }
+    else
+    {
+        ret = snprintf(pOut, outLen + 1, CLOUD_SERVICE_ERROR_JSON,
+                pState,
+                pTimestamp,
+                registerStatus,
+                MERROR_lookUpErrorCode(registerStatus));
+    }
+
+    status = TRUSTEDGE_cloudServiceOutputStateConfig(pCtx, pPolicyNode, pOut, outLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if ((AZURE_STATE_REGISTERED == state || AZURE_STATE_REREGISTERED == state) && (NULL != pJson && 0 < jsonLen))
+    {
+        status = TRUSTEDGE_cloudServiceOutputProviderConfig(
+            pCtx, pPolicyNode, pJson, jsonLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+
+exit:
+
+    if (NULL != pTimestamp)
+        DIGI_FREE((void **) &pTimestamp);
+
+    if (NULL != pOut)
+        DIGI_FREE((void **) &pOut);
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static MSTATUS TRUSTEDGE_cloudServiceAzureReadStateFromFile(
+    sbyte *pStateFilePath,
+    AzureRegistrationState *pState)
+{
+    MSTATUS status;
+    ubyte *pJson = NULL;
+    ubyte4 jsonLen = 0;
+    sbyte *pStateStr = NULL;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 numTokens = 0;
+
+    status = DIGICERT_readFile(pStateFilePath, &pJson, &jsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pJson, jsonLen, &numTokens);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_utilReadJsonString(
+        pJCtx, 0, NULL, CLOUD_SERVICE_STATE_JSTR, &pStateStr, FALSE);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (0 == DIGI_STRNCMP(
+            pStateStr, CLOUD_SERVICE_REGISTERED_JSTR,
+            DIGI_STRLEN(CLOUD_SERVICE_REGISTERED_JSTR)))
+    {
+        *pState = AZURE_STATE_REGISTERED;
+    }
+    else if (0 == DIGI_STRNCMP(
+            pStateStr, CLOUD_SERVICE_REREGISTRATION_PENDING_JSTR,
+            DIGI_STRLEN(CLOUD_SERVICE_REREGISTRATION_PENDING_JSTR)))
+    {
+        *pState = AZURE_STATE_REREGISTRATION_PENDING;
+    }
+    else if (0 == DIGI_STRNCMP(
+            pStateStr, CLOUD_SERVICE_REREGISTERED_JSTR,
+            DIGI_STRLEN(CLOUD_SERVICE_REREGISTERED_JSTR)))
+    {
+        *pState = AZURE_STATE_REREGISTERED;
+    }
+    else if (0 == DIGI_STRNCMP(
+            pStateStr, CLOUD_SERVICE_REGISTRATION_PENDING_JSTR,
+            DIGI_STRLEN(CLOUD_SERVICE_REGISTRATION_PENDING_JSTR)))
+    {
+        *pState = AZURE_STATE_REGISTRATION_PENDING;
+    }
+    else
+    {
+        status = ERR_TRUSTEDGE_AZURE_INVALID_REGISTRATION_STATE;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+exit:
+
+    if (NULL != pStateStr)
+        DIGI_FREE((void **) &pStateStr);
+
+    if (NULL != pJCtx)
+        JSON_releaseContext(&pJCtx);
+
+    if (NULL != pJson)
+        DIGI_FREE((void **) &pJson);
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* Read <policy_id>_cloud_service_state.json file with the Azure registration
+ * state. If the file does not exist then it is created in the cloud provider
+ * directory.
+ */
+static MSTATUS TRUSTEDGE_cloudServiceAzureReadState(
+    TrustEdgeAgentCtx *pCtx,
+    TrustEdgeAgentPolicyNode *pPolicyNode,
+    AzureRegistrationState *pState)
+{
+    MSTATUS status;
+    sbyte *pStateFilePath = NULL;
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pConfig->pProviderCredsDir, REGISTRATION_STATE_FILE_PREFIX,
+        &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pStateFilePath, pPolicyNode->pId,
+        &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pStateFilePath, JSON_EXT, &pStateFilePath);
+    if (OK != status)
+        goto exit;
+
+    if (TRUE == FMGMT_pathExists(pStateFilePath, NULL))
+    {
+        status = TRUSTEDGE_cloudServiceAzureReadStateFromFile(
+            pStateFilePath, pState);
+        if (OK != status)
+            goto exit;
+    }
+    else
+    {
+        status = TRUSTEDGE_cloudServiceAzureWriteState(
+            pCtx, pPolicyNode, AZURE_STATE_REGISTRATION_PENDING, OK, NULL, 0);
+        if (OK != status)
+            goto exit;
+
+        *pState = AZURE_STATE_REGISTRATION_PENDING;
+    }
+
+exit:
+
+    if (NULL != pStateFilePath)
+        DIGI_FREE((void **) &pStateFilePath);
+
+    return status;
+}
+
 /*---------------------------------------------------------------------------*/
 
 /* Method is used to register against Azure DPS instance. It expects a JSON
@@ -3171,6 +3560,7 @@ exit:
  */
 extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     TrustEdgeAgentCtx *pCtx,
+    TrustEdgeAgentPolicyNode *pPolicyNode,
     ubyte *pJson,
     ubyte4 jsonLen,
     ubyte4 *pHttpStatusCode,
@@ -3184,10 +3574,38 @@ extern MSTATUS TRUSTEDGE_cloudServiceAzureRegister(
     byteBoolean retry;
     ubyte4 attempts = 0;
     sbyte *pLastAttemptTimestamp = NULL;
+    AzureRegistrationState state = AZURE_STATE_REGISTRATION_PENDING;
+
+    status = TRUSTEDGE_cloudServiceAzureReadState(
+        pCtx, pPolicyNode, &state);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,    
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (AZURE_STATE_REGISTERED == state || AZURE_STATE_REREGISTERED == state)
+    {
+        state = AZURE_STATE_REREGISTRATION_PENDING;
+
+        status = TRUSTEDGE_cloudServiceAzureWriteState(
+            pCtx, pPolicyNode, state, OK, NULL, 0);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
 
     /* Parse the JSON Azure attributes and create an Azure context. */
     status = TRUSTEDGE_cloudServiceAzureContextCreate(
-        pJson, jsonLen, pCtx, &pAzureCtx);
+        pJson, jsonLen, pCtx, pPolicyNode, &pAzureCtx);
     if (OK != status)
     {
         MSG_LOG_print(MSG_LOG_ERROR,
@@ -3351,6 +3769,285 @@ exit:
     }
 
     DIGI_FREE((void **) &pLastAttemptTimestamp);
+
+    if (OK == status)
+    {
+        if (AZURE_STATE_REGISTRATION_PENDING == state)
+        {
+            state = AZURE_STATE_REGISTERED;
+        }
+        else
+        {
+            state = AZURE_STATE_REREGISTERED;
+        }
+    }
+    tmpStatus = TRUSTEDGE_cloudServiceAzureWriteState(
+        pCtx, pPolicyNode, state, status, pJson, jsonLen);
+    if (OK == status)
+        status = tmpStatus;
+
+    return status;
+}
+
+/*---------------------------------------------------------------------------*/
+
+extern MSTATUS TRUSTEDGE_cloudServiceAzureReRegisterByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId)
+{
+    MSTATUS status, regStatus;
+    sbyte *pProviderConfigFilePath = NULL;
+    ubyte *pProviderConfigJson = NULL;
+    ubyte4 providerConfigJsonLen = 0;
+    ubyte4 httpStatusCode = 0;
+    ubyte *pServerRsp = NULL;
+    ubyte4 serverRspLen = 0;
+    ubyte *pProviderCredJson = NULL;
+    ubyte4 providerCredJsonLen = 0;
+    sbyte *pFileName = NULL;
+    TrustEdgeAgentPolicyNode *pPolicyNode = NULL;
+    sbyte *pUUID = NULL;
+    ubyte *pReq = NULL;
+    ubyte4 reqLen = 0;
+    ubyte *pPublishMsg = NULL;
+    ubyte4 publishMsgLen = 0;
+
+    /* Find policy node by policy ID */
+    status = TRUSTEDGE_agentPolicyFindNodeByIdAndType(
+        pCtx->pAppliedPolicies, pPolicyId, TE_POLICY_TYPE_CLOUDPLATFORM,
+        &pPolicyNode);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (NULL == pPolicyNode)
+    {
+        /* Not found in applied policies, don't attempt to re-register. Wait for
+         * backend to send cloud policy */
+        status = OK;
+        goto exit;
+    }
+
+    /* Read <cloudprovider>/<provider>_<policy_id>.json file */
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pConfig->pProviderCredsDir, PROVIDER_FILE_PREFIX,
+        &pProviderConfigFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pProviderConfigFilePath, pPolicyId,
+        &pProviderConfigFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pProviderConfigFilePath, JSON_EXT, &pProviderConfigFilePath);
+    if (OK != status)
+        goto exit;
+
+    if (FALSE == FMGMT_pathExists(pProviderConfigFilePath, NULL))
+    {
+        status = ERR_TRUSTEDGE_AZURE_PROVIDER_CONFIG_NOT_FOUND;
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = DIGICERT_readFile(
+        pProviderConfigFilePath, &pProviderConfigJson, &providerConfigJsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = TRUSTEDGE_cloudServiceAzureRegister(
+        pCtx, pPolicyNode, pProviderConfigJson, providerConfigJsonLen,
+        &httpStatusCode, &pServerRsp, &serverRspLen,
+        &pProviderCredJson, &providerCredJsonLen);
+    regStatus = status;
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+        status = TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
+            pCtx->configOptions.pDeviceId,
+            pCtx->configOptions.pAccountId,
+            pPolicyNode->pDeviceGroupId,
+            pPolicyNode->pId,
+            FALSE,
+            TRUE,
+            -1,
+            "failed to process cloud platform re-registration",
+            regStatus,
+            httpStatusCode,
+            pServerRsp,
+            serverRspLen,
+            &pReq,
+            &reqLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+        pUUID = "DeviceTM_Cloud_Platform_Policy_Failed";
+
+        /* Move policy node to failed policy */
+        status = TRUSTEDGE_agentPolicyUnlinkNode(
+            pPolicyNode, &pCtx->pAppliedPolicies);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        status = TRUSTEDGE_agentPolicyAddFinishedNode(
+            pCtx, pPolicyNode, &pCtx->pErrorPolicies);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        pPolicyNode->lastMsgSentType = TE_MSG_TYPE_UNKNOWN;
+        pPolicyNode->status = TE_POLICY_STATUS_FAILURE;
+    }
+    else
+    {
+        status = COMMON_UTILS_addPathExtension(
+            pPolicyId, JSON_EXT, &pFileName);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        status = COMMON_UTILS_addPathComponent(
+            pCtx->pConfig->pProviderCredsDir, pFileName, &pFileName);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        MSG_LOG_print(MSG_LOG_VERBOSE,
+            "Writing cloud platform provider credentials to %s\n", pFileName);
+
+        status = DIGICERT_writeFile(
+            pFileName, pProviderCredJson, providerCredJsonLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        status = TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
+            pCtx->configOptions.pDeviceId,
+            pCtx->configOptions.pAccountId,
+            pPolicyNode->pDeviceGroupId,
+            pPolicyNode->pId,
+            TRUE,
+            TRUE,
+            0,
+            NULL,
+            status,
+            httpStatusCode,
+            pServerRsp,
+            serverRspLen,
+            &pReq,
+            &reqLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d status: %d = %s\n",
+                    __func__, __LINE__, status,
+                    MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+        pUUID = "DeviceTM_Cloud_Platform_Policy_Completed";
+    }
+
+    if (NULL != pReq && 0 != reqLen)
+    {
+        status = TRUSTEDGE_agentProtobufCreate(
+            pCtx, pUUID, pReq, reqLen, &pPublishMsg, &publishMsgLen);
+        DIGI_FREE((void **) &pReq);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_AGENT_DEBUG_INTERNALS__)
+        TRUSTEDGE_agentKeepMsg(pCtx, pUUID, pPublishMsg, publishMsgLen);
+#endif
+
+        status = TRUSTEDGE_agentPublishMessage(
+            pCtx, TE_TOPIC_NDATA, pPublishMsg, publishMsgLen);
+        DIGI_FREE((void **) &pPublishMsg);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+
+exit:
+
+    if (NULL != pReq)
+        DIGI_FREE((void **) &pReq);
+
+    if (NULL != pProviderConfigFilePath)
+        DIGI_FREE((void **) &pProviderConfigFilePath);
+
+    if (NULL != pProviderConfigJson)
+        DIGI_FREE((void **) &pProviderConfigJson);
+
+    if (NULL != pServerRsp)
+        DIGI_FREE((void **) &pServerRsp);
+
+    if (NULL != pProviderCredJson)
+        DIGI_FREE((void **) &pProviderCredJson);
+
+    if (NULL != pFileName)
+        DIGI_FREE((void **) &pFileName);
 
     return status;
 }

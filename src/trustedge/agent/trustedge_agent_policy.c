@@ -527,6 +527,7 @@
     "    \"accountId\":\"%s\",\n" \
     "    \"timestamp\":\"%s\",\n" \
     "    \"mode\":\"cloudplatform_policy_completed\",\n" \
+    "    \"reregistration\": %s,\n" \
     "    \"deviceGroupId\":\"%s\",\n" \
     "    \"cloudPlatformPolicyId\":\"%s\"\n" \
     "}\n"
@@ -538,6 +539,7 @@
     "    \"accountId\":\"%s\",\n" \
     "    \"timestamp\":\"%s\",\n" \
     "    \"mode\":\"cloudplatform_policy_completed\",\n" \
+    "    \"reregistration\": %s,\n" \
     "    \"deviceGroupId\":\"%s\",\n" \
     "    \"cloudPlatformPolicyId\":\"%s\",\n" \
     "    \"azureRegistrationState\":\n" \
@@ -551,6 +553,7 @@
     "    \"accountId\":\"%s\",\n" \
     "    \"timestamp\":\"%s\",\n" \
     "    \"mode\":\"cloudplatform_policy_failed\",\n" \
+    "    \"reregistration\": %s,\n" \
     "    \"deviceGroupId\":\"%s\",\n" \
     "    \"cloudPlatformPolicyId\":\"%s\",\n" \
     "    \"azureRegistrationState\":\n" \
@@ -564,6 +567,7 @@
     "    \"accountId\":\"%s\",\n" \
     "    \"timestamp\":\"%s\",\n" \
     "    \"mode\":\"cloudplatform_policy_failed\",\n" \
+    "    \"reregistration\": %s,\n" \
     "    \"deviceGroupId\":\"%s\",\n" \
     "    \"cloudPlatformPolicyId\":\"%s\",\n" \
     "    \"azureRegistrationState\":\n" \
@@ -582,6 +586,7 @@
     "    \"accountId\":\"%s\",\n" \
     "    \"timestamp\":\"%s\",\n" \
     "    \"mode\":\"cloudplatform_policy_failed\",\n" \
+    "    \"reregistration\": %s,\n" \
     "    \"deviceGroupId\":\"%s\",\n" \
     "    \"cloudPlatformPolicyId\":\"%s\",\n" \
     "    \"cloudPlatformFailure\":\n" \
@@ -1514,7 +1519,7 @@ exit:
     return status;
 }
 
-static MSTATUS TRUSTEDGE_agentPolicyAddFinishedNode(
+extern MSTATUS TRUSTEDGE_agentPolicyAddFinishedNode(
     TrustEdgeAgentCtx *pCtx,
     TrustEdgeAgentPolicyNode *pNode,
     TrustEdgeAgentPolicyNode **ppNode)
@@ -1525,6 +1530,7 @@ static MSTATUS TRUSTEDGE_agentPolicyAddFinishedNode(
 
     pNode->status = TE_POLICY_STATUS_SUCCESS;
 
+    DIGI_FREE((void **) &(pNode->pCompletionTimestamp));
     status = TRUSTEDGE_utilsGetTime(&pNode->pCompletionTimestamp, 0);
     if (OK != status)
     {
@@ -2456,12 +2462,13 @@ exit:
     return status;
 }
 
-static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
+extern MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
     sbyte *pDeviceId,
     sbyte *pAccountId,
     sbyte *pDeviceGroupId,
     sbyte *pCloudPlatformPolicyId,
     intBoolean succeed,
+    byteBoolean reRegistration,
     sbyte4 errorCode,
     sbyte *pErrorDescr,
     MSTATUS statusCode,
@@ -2489,6 +2496,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         serverRspLen, pServerRsp);
@@ -2499,6 +2507,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         serverRspLen, pServerRsp);
@@ -2509,6 +2518,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId);
         status = DIGI_MALLOC((void **) &pMsg, ret + 1);
@@ -2518,6 +2528,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId);
     }
@@ -2527,6 +2538,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         serverRspLen, pServerRsp,
@@ -2539,6 +2551,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         serverRspLen, pServerRsp,
@@ -2551,6 +2564,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         serverRspLen, pServerRsp);
@@ -2561,6 +2575,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         serverRspLen, pServerRsp);
@@ -2571,6 +2586,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         statusCode,
@@ -2582,6 +2598,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         statusCode,
@@ -2593,6 +2610,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         errorCode,
@@ -2604,6 +2622,7 @@ static MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
                         pDeviceId,
                         pAccountId,
                         pTimeStamp,
+                        reRegistration ? "true" : "false",
                         pDeviceGroupId,
                         pCloudPlatformPolicyId,
                         errorCode,
@@ -4679,6 +4698,7 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                             pCtx->curPolicy.pPolicy->pDeviceGroupId,
                             pCtx->curPolicy.pPolicy->pId,
                             FALSE,
+                            FALSE,
                             -1,
                             "failed to process cloud platform response",
                             pCtx->curPolicy.data.cpps.status,
@@ -4770,6 +4790,7 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                             pCtx->configOptions.pAccountId,
                             pCtx->curPolicy.pPolicy->pDeviceGroupId,
                             pCtx->curPolicy.pPolicy->pId,
+                            FALSE,
                             FALSE,
                             -1,
                             "failed to create cloud platform request",
@@ -5538,6 +5559,7 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                         pCtx->curPolicy.pPolicy->pDeviceGroupId,
                         pCtx->curPolicy.pPolicy->pId,
                         FALSE,
+                        FALSE,
                         -1,
                         "failed to process cloud platform response",
                         pCtx->curPolicy.data.cpps.status,
@@ -5566,6 +5588,7 @@ extern MSTATUS TRUSTEDGE_agentProcessCurrentPolicyNodes(
                         pCtx->curPolicy.pPolicy->pDeviceGroupId,
                         pCtx->curPolicy.pPolicy->pId,
                         TRUE,
+                        FALSE,
                         0,
                         NULL,
                         pCtx->curPolicy.data.cpps.status,

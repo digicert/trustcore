@@ -6045,6 +6045,7 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
     {
         status = TRUSTEDGE_cloudServiceAzureRegister(
             pCtx,
+            pCtx->curPolicy.pPolicy,
             pCloudPlatformData->pProviderCredJson,
             pCloudPlatformData->providerCredJsonLen,
             &httpStatusCode,
@@ -6107,6 +6108,23 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
             MERROR_lookUpErrorCode(status));
         goto exit;
     }
+
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+    if (TRUE == isProvisionSelf)
+    {
+        status = TRUSTEDGE_agentCertificateAssociateCloudPolicy(
+            pCtx, pCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
+            pCtx->curPolicy.pPolicy->pId);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+#endif
 
 exit:
 

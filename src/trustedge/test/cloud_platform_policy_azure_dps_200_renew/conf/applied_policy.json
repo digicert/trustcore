@@ -1,0 +1,33 @@
+{
+    "appliedPolicies": [
+        {
+            "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+            "policyType": "CERTIFICATE",
+            "policyId": "294820113",
+            "priority": 0,
+            "policyErrorResponses": 0,
+            "creationTimestamp": "2026-08-05T22:10:20.224Z",
+            "processTimestamp": "2026-08-05T22:10:20.224Z",
+            "completionTimestamp": "2026-08-05T22:10:21.468Z",
+            "alias": "294820113",
+            "status": "SUCCESS"
+        },
+        {
+            "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+            "policyType": "CLOUDPLATFORM",
+            "policyId": "193850392",
+            "priority": 0,
+            "policyDependency": [
+                {
+                    "policyType": "CERTIFICATE",
+                    "policyId": "294820113"
+                }
+            ],
+            "policyErrorResponses": 0,
+            "creationTimestamp": "2026-08-14T22:20:52.340Z",
+            "processTimestamp": "2026-08-14T22:20:52.340Z",
+            "completionTimestamp": "2026-08-14T22:21:03.023Z",
+            "status": "SUCCESS"
+        }
+    ]
+}

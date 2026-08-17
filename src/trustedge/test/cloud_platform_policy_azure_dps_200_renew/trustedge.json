@@ -1,0 +1,25 @@
+{
+    "directory_paths": {
+        "bin_dir": "./bin",
+        "lib_dir": "./lib",
+        "root_dir": "<path>",
+        "conf_dir": "<path>/conf",
+        "keystore_dir": "<path>/keystore"
+    },
+    "proxy": {
+
+    },
+    "agent": {
+        "bootstrap": "<path>/bootstrap_config.json",
+        "workspace_dir": "/tmp",
+        "enforce_token": false,
+        "log_payload": true,
+        "renewal_hours": 10000
+    },
+    "cloud_provider":{
+        "provider_creds_dir":"<path>/cloudprovider"
+    },
+    "log": {
+        "loglevel": "VERBOSE"
+    }
+}
