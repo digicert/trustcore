@@ -2010,6 +2010,7 @@ extern MSTATUS TRUSTEDGE_agentParseArtifactDownloadChunk(TrustEdgeAgentCtx *pCtx
     ubyte4 artifactOffset = 0, artifactLength = 0;
     byteBoolean processedArtifact = FALSE;
     ubyte4 chunkBufferOffset;
+    ubyte8 writeOffset;
     ubyte *pMode = "ab";  /* Binary mode required for ZIP file */
 
     pCtx->needToProcessResponse = FALSE;
@@ -2104,8 +2105,27 @@ extern MSTATUS TRUSTEDGE_agentParseArtifactDownloadChunk(TrustEdgeAgentCtx *pCtx
     MSG_LOG_print(MSG_LOG_VERBOSE, "Chunk Buffer Offset: %d\n", chunkBufferOffset);
     MSG_LOG_print(MSG_LOG_VERBOSE, "Chunk Size: %d\n", artifactLength);
 
+    /* Bounds check: reject oversized/inconsistent chunks that would overflow the buffer (CVE fix for DTM-11585).
+     * The octet-stream body length (artifactLength) must match the JSON-declared chunk size, must not exceed the
+     * negotiated per-chunk size, and the write must stay within the config-sized window buffer.
+     * writeOffset is computed once in widened arithmetic and reused for the buffer pointer below. */
+    writeOffset = (ubyte8)chunkBufferOffset * pCtx->curPolicy.data.ups.pArtifact->chunkSize;
+    if (artifactLength != chunkSize ||
+        artifactLength > pCtx->curPolicy.data.ups.pArtifact->chunkSize ||
+        writeOffset + artifactLength > pCtx->chunkBufferSize)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "Rejecting artifact chunk: octet-stream length=%u, declared chunk size=%u, negotiated chunk size=%u, "
+            "buffer index=%u, write offset=%llu, write end=%llu, buffer capacity=%u\n",
+            artifactLength, chunkSize, pCtx->curPolicy.data.ups.pArtifact->chunkSize,
+            chunkBufferOffset, (unsigned long long)writeOffset,
+            (unsigned long long)(writeOffset + artifactLength), pCtx->chunkBufferSize);
+        status = ERR_TRUSTEDGE_UNEXPECTED_MSG;
+        goto exit;
+    }
+
     status = FMGMT_fread(
-        pCtx->pChunkBuffer + (chunkBufferOffset * pCtx->curPolicy.data.ups.pArtifact->chunkSize), 1, artifactLength, pFile, &read);
+        pCtx->pChunkBuffer + writeOffset, 1, artifactLength, pFile, &read);
     if (OK != status)
     {
         FMGMT_remove(pFilePath, FALSE);
