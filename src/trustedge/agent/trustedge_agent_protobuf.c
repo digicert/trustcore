@@ -518,6 +518,29 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
             {
                 MSG_LOG_print(MSG_LOG_DEBUG, "%s: Regular body path (non-artifact)\n", __func__);
 
+                /* A well-formed message carries the payload field once. A
+                 * non-NULL buffer with offset reset to 0 signals a second field
+                 * instance reusing the once-allocated buffer, which would allow a
+                 * server-controlled heap overflow (DTM-11587) -- reject it. */
+                if ((NULL != pAgentCtx->pbMsg.pBody) &&
+                    (0 == pField->data.bytes.offset))
+                {
+                    MSG_LOG_print(MSG_LOG_ERROR,
+                        "%s: ERROR - duplicate payload field in message\n", __func__);
+                    status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                    goto exit;
+                }
+
+                if ((pField->data.bytes.offset > pField->data.bytes.totalLen) ||
+                    (pField->data.bytes.bufLen >
+                        pField->data.bytes.totalLen - pField->data.bytes.offset))
+                {
+                    MSG_LOG_print(MSG_LOG_ERROR,
+                        "%s: ERROR - payload chunk exceeds buffer bounds\n", __func__);
+                    status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                    goto exit;
+                }
+
                 if (NULL == pAgentCtx->pbMsg.pBody)
                 {
                     MSG_LOG_print(MSG_LOG_DEBUG, "%s: Allocating pBody, size=%u\n", 
@@ -579,6 +602,27 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                 goto exit;
             }
 
+            /* Reject a second field instance reusing the once-allocated buffer
+             * and bounds-check the copy to prevent a heap overflow (DTM-11587). */
+            if ((NULL != pAgentCtx->pbMsg.ppNames[pAgentCtx->pbMsg.metricCount - 1]) &&
+                (0 == pField->data.bytes.offset))
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - duplicate metric name field in message\n", __func__);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
+            if ((pField->data.bytes.offset > pField->data.bytes.totalLen) ||
+                (pField->data.bytes.bufLen >
+                    pField->data.bytes.totalLen - pField->data.bytes.offset))
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - metric name chunk exceeds buffer bounds\n", __func__);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
             if (NULL == pAgentCtx->pbMsg.ppNames[pAgentCtx->pbMsg.metricCount - 1])
             {
                 status = DIGI_CALLOC(
@@ -615,6 +659,27 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
             {
                 MSG_LOG_print(MSG_LOG_ERROR, "%s: ERROR - ppValues is NULL\n", __func__);
                 status = ERR_NULL_POINTER;
+                goto exit;
+            }
+
+            /* Reject a second field instance reusing the once-allocated buffer
+             * and bounds-check the copy to prevent a heap overflow (DTM-11587). */
+            if ((NULL != pAgentCtx->pbMsg.ppValues[pAgentCtx->pbMsg.metricCount - 1]) &&
+                (0 == pField->data.bytes.offset))
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - duplicate metric value field in message\n", __func__);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
+            if ((pField->data.bytes.offset > pField->data.bytes.totalLen) ||
+                (pField->data.bytes.bufLen >
+                    pField->data.bytes.totalLen - pField->data.bytes.offset))
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - metric value chunk exceeds buffer bounds\n", __func__);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
                 goto exit;
             }
 
