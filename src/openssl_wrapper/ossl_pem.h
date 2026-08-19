@@ -382,6 +382,12 @@ int PEM_write_bio_##name(BIO *bp, type *x, const EVP_CIPHER *enc, \
 #  define DECLARE_PEM_read_bio(name, type) \
         type *PEM_read_bio_##name(BIO *bp, type **x, pem_password_cb *cb, void *u);
 
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+#  define DECLARE_PEM_read_bio_ex(name, type) \
+        type *PEM_read_bio_##name##_ex(BIO *bp, type **x, pem_password_cb *cb, void *u, \
+                                       OSSL_LIB_CTX *libctx, const char *propq);
+#endif
+
 #  define DECLARE_PEM_write_bio(name, type) \
         int PEM_write_bio_##name(BIO *bp, type *x);
 
@@ -519,6 +525,9 @@ DECLARE_PEM_rw_const(DHparams, DH)
 DECLARE_PEM_write_const(DHxparams, DH)
 # endif
 DECLARE_PEM_rw_cb(PrivateKey, EVP_PKEY)
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+DECLARE_PEM_read_bio_ex(PrivateKey, EVP_PKEY)
+#endif
 DECLARE_PEM_rw(PUBKEY, EVP_PKEY)
 
 int PEM_write_bio_PKCS8PrivateKey_nid(BIO *bp, EVP_PKEY *x, int nid,

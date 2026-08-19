@@ -545,6 +545,12 @@ EVP_PKEY *ssl_get_evp_pkey_from_file(SSL_CTX *ctx, const char *file, int type)
         pkey = DIGI_PEM_read_bio_PrivateKey(in, NULL,
                                        ctx->default_passwd_callback,
                                        ctx->default_passwd_callback_userdata);
+#elif defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+        pkey = PEM_read_bio_PrivateKey_ex(in, NULL,
+                                          ctx->default_passwd_callback,
+                                          ctx->default_passwd_callback_userdata,
+                                          ctx->orig_ssl_ctx.libctx,
+                                          ctx->orig_ssl_ctx.propq);
 #else
         pkey = PEM_read_bio_PrivateKey(in, NULL,
                                        ctx->default_passwd_callback,
