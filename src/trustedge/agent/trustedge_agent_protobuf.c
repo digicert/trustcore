@@ -20,6 +20,10 @@
 
 #include <stdio.h>
 
+/* Hard upper bound on a single length-delimited field's declared size. Caps
+ * server-controlled allocations to avoid OOM/size overflow DoS (DTM-11587). */
+#define TE_PROTOBUF_MAX_FIELD_LEN (1024U * 1024U * 1024U)
+
 typedef struct
 {
     TrustEdgeAgentCtx *pAgentCtx;
@@ -531,6 +535,15 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                     goto exit;
                 }
 
+                if (pField->data.bytes.totalLen > TE_PROTOBUF_MAX_FIELD_LEN)
+                {
+                    MSG_LOG_print(MSG_LOG_ERROR,
+                        "%s: ERROR - payload size %u exceeds maximum %u\n",
+                        __func__, pField->data.bytes.totalLen, TE_PROTOBUF_MAX_FIELD_LEN);
+                    status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                    goto exit;
+                }
+
                 if ((pField->data.bytes.offset > pField->data.bytes.totalLen) ||
                     (pField->data.bytes.bufLen >
                         pField->data.bytes.totalLen - pField->data.bytes.offset))
@@ -613,6 +626,15 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                 goto exit;
             }
 
+            if (pField->data.bytes.totalLen > TE_PROTOBUF_MAX_FIELD_LEN)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - metric name size %u exceeds maximum %u\n",
+                    __func__, pField->data.bytes.totalLen, TE_PROTOBUF_MAX_FIELD_LEN);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
             if ((pField->data.bytes.offset > pField->data.bytes.totalLen) ||
                 (pField->data.bytes.bufLen >
                     pField->data.bytes.totalLen - pField->data.bytes.offset))
@@ -669,6 +691,15 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
             {
                 MSG_LOG_print(MSG_LOG_ERROR,
                     "%s: ERROR - duplicate metric value field in message\n", __func__);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
+            if (pField->data.bytes.totalLen > TE_PROTOBUF_MAX_FIELD_LEN)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - metric value size %u exceeds maximum %u\n",
+                    __func__, pField->data.bytes.totalLen, TE_PROTOBUF_MAX_FIELD_LEN);
                 status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
                 goto exit;
             }
