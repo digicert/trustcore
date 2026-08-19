@@ -15975,7 +15975,12 @@ static MSTATUS OSSL_certCallback(
     /* Create the store context. For this step, a X509_STORE_CTX will be used to
      * check the certificate chain against the certificate store.
      */
-    pStoreCtx = X509_STORE_CTX_new();
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pStoreCtx = X509_STORE_CTX_new_ex(pS->ssl_ctx->orig_ssl_ctx.libctx,
+                                      pS->ssl_ctx->orig_ssl_ctx.propq);
+#else
+     pStoreCtx = X509_STORE_CTX_new();
+#endif
     if (NULL == pStoreCtx)
         goto exit;
 
@@ -29072,7 +29077,13 @@ SSL_use_PrivateKey_ASN1(
 
     /* Deserialize the key.
      */
-    pEvpKey = d2i_PrivateKey(type, NULL, &pKeyData, keyDataLen);
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pEvpKey = d2i_PrivateKey_ex(type, NULL, &pKeyData, keyDataLen,
+                                pS->ssl_ctx->orig_ssl_ctx.libctx,
+                                pS->ssl_ctx->orig_ssl_ctx.propq);
+#else
+     pEvpKey = d2i_PrivateKey(type, NULL, &pKeyData, keyDataLen);
+#endif
     if (NULL == pEvpKey)
     {
         SSLerr(SSL_F_SSL_USE_PRIVATEKEY_ASN1, ERR_R_ASN1_LIB);
@@ -29421,7 +29432,14 @@ int SSL_CTX_use_PrivateKey_ASN1(int type, SSL_CTX *ctx,
     EVP_PKEY *pkey;
 
     p = d;
-    if ((pkey = d2i_PrivateKey(type, NULL, &p, (long)len)) == NULL) {
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
+    pkey = d2i_PrivateKey_ex(type, NULL, &p, (long)len,
+                             ctx->orig_ssl_ctx.libctx,
+                             ctx->orig_ssl_ctx.propq);
+#else
+    pkey = d2i_PrivateKey(type, NULL, &p, (long)len);
+#endif
+    if (pkey == NULL) {
         SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_ASN1, ERR_R_ASN1_LIB);
         return (0);
     }
