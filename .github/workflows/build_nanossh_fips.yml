@@ -1,0 +1,164 @@
+name: "Build_NanoSSH_FIPS"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 15 * * *'  # Every day at 9:00 PM IST (3:30 PM UTC)
+
+jobs:
+  build-nanossh-fips-test:
+    runs-on: [digicert-medium]
+
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake build-essential yasm
+          cmake --version
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Build FIPS Crypto Library
+        id: fips_lib_build
+        continue-on-error: true
+        run: |
+          cd projects/crypto_fips
+          ./MAKE_ALL_UB24_ESV.sh
+
+      - name: Install FIPS Crypto Library
+        id: fips_lib_install
+        continue-on-error: true
+        run: |
+          sudo cp projects/crypto_fips/x86_64/libmss.so     /usr/local/lib/
+          sudo cp projects/crypto_fips/x86_64/libmss.so.sig /usr/local/lib/
+          sudo ldconfig
+          cp -r projects/crypto_fips/x86_64/libmss.so lib/
+          cp -r projects/crypto_fips/x86_64/libmss.so.sig lib/
+
+      # ---------------- NanoSSH FIPS builds ----------------
+
+      - name: Build ssh_server (FIPS)
+        id: ssh_server_fips
+        continue-on-error: true
+        run: |
+          rm -f samples/bin/ssh_server
+          ./scripts/nanossh/ssh_server/build_ssh_server_ncrypto.sh --fips --gdb --debug
+          test -f samples/bin/ssh_server
+
+      - name: Build ssh_client (FIPS)
+        id: ssh_client_fips
+        continue-on-error: true
+        run: |
+          rm -f samples/bin/ssh_client
+          ./scripts/nanossh/ssh_client/build_ssh_client_ncrypto.sh --fips --gdb --debug
+          test -f samples/bin/ssh_client
+
+      - name: Build ssh_server (FIPS 700-compat)
+        id: ssh_server_fips_700
+        continue-on-error: true
+        run: |
+          rm -f samples/bin/ssh_server
+          ./scripts/nanossh/ssh_server/build_ssh_server_ncrypto.sh --fips --fips-700-compat
+          test -f samples/bin/ssh_server
+
+      - name: Build ssh_client (FIPS 700-compat)
+        id: ssh_client_fips_700
+        continue-on-error: true
+        run: |
+          rm -f samples/bin/ssh_client
+          ./scripts/nanossh/ssh_client/build_ssh_client_ncrypto.sh --fips --fips-700-compat
+          test -f samples/bin/ssh_client
+
+      - name: Build ssh_server_sp800_135
+        id: ssh_sp800_135_build
+        continue-on-error: true
+        run: |
+          rm -f samples/bin/ssh_server_sp800_135
+          ./scripts/nanossh/ssh_server/build_ssh_server_ncrypto_sp800_135.sh --gdb --debug --enable-weak-ciphers
+          test -f samples/bin/ssh_server_sp800_135
+
+      - name: Run SP800-135 KDF test (sampleUsageSSH status = 0)
+        id: ssh_sp800_135_kdf
+        continue-on-error: true
+        run: |
+          test -f samples/bin/ssh_server_sp800_135
+          LD_LIBRARY_PATH="$PWD/lib:$LD_LIBRARY_PATH" ./samples/bin/ssh_server_sp800_135
+          echo "sampleUsageSSH returned status 0 (KDF PASS)"
+
+      - name: Build summary
+        if: always()
+        run: |
+          FAILED=0
+          if [[ "${{ steps.fips_lib_build.outcome }}" == "failure" ]]; then
+            echo "❌ Build FIPS Crypto Library FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.fips_lib_install.outcome }}" == "failure" ]]; then
+            echo "❌ Install FIPS Crypto Library FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_server_fips.outcome }}" == "failure" ]]; then
+            echo "❌ Build ssh_server (FIPS) FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_client_fips.outcome }}" == "failure" ]]; then
+            echo "❌ Build ssh_client (FIPS) FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_server_fips_700.outcome }}" == "failure" ]]; then
+            echo "❌ Build ssh_server (FIPS 700-compat) FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_client_fips_700.outcome }}" == "failure" ]]; then
+            echo "❌ Build ssh_client (FIPS 700-compat) FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_sp800_135_build.outcome }}" == "failure" ]]; then
+            echo "❌ Build ssh_server_sp800_135 FAILED"
+            FAILED=1
+          fi
+          if [[ "${{ steps.ssh_sp800_135_kdf.outcome }}" == "failure" ]]; then
+            echo "❌ SP800-135 KDF test (sampleUsageSSH status = 0) FAILED"
+            FAILED=1
+          fi
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "One or more NanoSSH FIPS builds/tests failed."
+            exit 1
+          else
+            echo ""
+            echo "All NanoSSH FIPS builds and KDF test passed."
+          fi
+
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled())
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="Build NanoSSH FIPS failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="Build NanoSSH FIPS failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

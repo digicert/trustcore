@@ -1,5 +1,5 @@
-MSS_SRC_DIR/examples/sftp_example.c
-MSS_SRC_DIR/examples/sftp_example_filesys.c
+MSS_SRC_DIR/../samples/ssh_server/src/sftp_example.c
+MSS_SRC_DIR/../samples/ssh_server/src/sftp_example_filesys.c
 MSS_SRC_DIR/ssh/dump_mesg.c
 MSS_SRC_DIR/ssh/ssh_ocsp.c
 MSS_SRC_DIR/ssh/sftp.c

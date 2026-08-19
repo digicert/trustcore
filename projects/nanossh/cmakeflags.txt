@@ -259,6 +259,12 @@ function(buildflags targetdir extraFlags mocana_flags)
 
   if(CM_ENABLE_FIPS)
       string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_FIPS_MODULE__" mocana_flags)
+      # The FIPS binary (libmss.so) provides the 4K and 64K AES-GCM implementations
+      # but NOT the 256B one. Without an explicit table-size macro, crypto/gcm.h defaults
+      # to __ENABLE_DIGICERT_GCM_256B__, causing ssh_trans.c to reference the 256b GCM
+      # symbols that are absent from libmss.so (undefined references at link time).
+      # Select the 4K table so ssh uses the FIPS-provided GCM implementation.
+      string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_GCM_4K__" mocana_flags)
       if (CM_ENABLE_STRICT_DH)
           string(STRIP "${mocana_flags} -D__ENABLE_DIGICERT_STRICT_DH_GROUP__" mocana_flags)
       endif()
