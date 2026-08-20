@@ -848,7 +848,11 @@ if (CM_BUILD_SSL_CLIENT)
     endif()
 
     if(CM_ENABLE_FIPS)
-      set(MSS_SOURCES ${MSS_SOURCES} "MSS_SRC_DIR/examples/fips_utils.c")
+      if(BUILD_FOR_OSI OR USE_OSI_PATH)
+        set(MSS_SOURCES ${MSS_SOURCES} "MSS_SRC_DIR/../samples/common/fips_utils.c")
+      else()
+        set(MSS_SOURCES ${MSS_SOURCES} "MSS_SRC_DIR/examples/fips_utils.c")
+      endif()
     endif()
 
     string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MSS_SOURCES "${MSS_SOURCES}")
@@ -884,7 +888,17 @@ if (CM_BUILD_SSL_CLIENT)
         target_compile_definitions(${TARGET_NAME}   PRIVATE "${MOCANA_FLAGS}")
     endif()
 
-    move_to_bin(${TARGET_NAME})
+    if(BUILD_FOR_OSI)
+        # Open-source layout: shared libraries live in lib/, sample executables in samples/bin/
+        set(SAMPLE_BIN_DIR "${MSS_DIR}/samples/bin")
+        add_custom_command(
+            TARGET ${TARGET_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${SAMPLE_BIN_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET_NAME}> ${SAMPLE_BIN_DIR}/${TARGET_NAME})
+    else()
+        move_to_bin(${TARGET_NAME})
+    endif()
 
 endif()
 
@@ -1199,7 +1213,17 @@ if (CM_BUILD_SSL_CLIENT_SP800_135)
         target_compile_definitions(${TARGET_NAME}   PRIVATE "${MOCANA_FLAGS}")
     endif()
 
-    move_to_bin(${TARGET_NAME})
+    if(BUILD_FOR_OSI)
+        # Open-source layout: shared libraries live in lib/, sample executables in samples/bin/
+        set(SAMPLE_BIN_DIR "${MSS_DIR}/samples/bin")
+        add_custom_command(
+            TARGET ${TARGET_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${SAMPLE_BIN_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET_NAME}> ${SAMPLE_BIN_DIR}/${TARGET_NAME})
+    else()
+        move_to_bin(${TARGET_NAME})
+    endif()
 
 endif()
 
@@ -1277,7 +1301,11 @@ if (CM_BUILD_SSL_SERVER)
     endif()
 
     if(CM_ENABLE_FIPS)
-      set(MSS_SOURCES ${MSS_SOURCES} "MSS_SRC_DIR/examples/fips_utils.c")
+      if(BUILD_FOR_OSI OR USE_OSI_PATH)
+        set(MSS_SOURCES ${MSS_SOURCES} "MSS_SRC_DIR/../samples/common/fips_utils.c")
+      else()
+        set(MSS_SOURCES ${MSS_SOURCES} "MSS_SRC_DIR/examples/fips_utils.c")
+      endif()
     endif()
 
     string(REGEX REPLACE "MSS_SRC_DIR/" "${MSS_SRC_DIR}/" MSS_SOURCES "${MSS_SOURCES}")
@@ -1315,7 +1343,17 @@ if (CM_BUILD_SSL_SERVER)
         target_compile_definitions(${TARGET_NAME}   PRIVATE "${MOCANA_FLAGS}")
     endif()
 
-    move_to_bin(${TARGET_NAME})
+    if(BUILD_FOR_OSI)
+        # Open-source layout: shared libraries live in lib/, sample executables in samples/bin/
+        set(SAMPLE_BIN_DIR "${MSS_DIR}/samples/bin")
+        add_custom_command(
+            TARGET ${TARGET_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${SAMPLE_BIN_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET_NAME}> ${SAMPLE_BIN_DIR}/${TARGET_NAME})
+    else()
+        move_to_bin(${TARGET_NAME})
+    endif()
 
 endif()
 

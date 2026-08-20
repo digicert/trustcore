@@ -1,0 +1,3 @@
+MSS_SRC_DIR/../samples/ssh_client/src/sshc_example.c
+MSS_SRC_DIR/../samples/ssh_client/src/sshc_shell_example.c
+MSS_SRC_DIR/../samples/common/digicert_example.c

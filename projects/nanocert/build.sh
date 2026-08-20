@@ -107,7 +107,7 @@ do
             ;;
         --fips)
             echo "Building with FIPS enabled...";
-            BUILD_OPTIONS+=" -DCM_ENABLE_FIPS=ON -DCM_DISABLE_PQC=ON"
+            BUILD_OPTIONS+=" -DCM_ENABLE_FIPS=ON"
             ;;
         --export)
             echo "Building Export Edition library...";

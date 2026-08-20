@@ -220,8 +220,18 @@ if (CM_BUILD_SSH_CLIENT)
         ${TPM2_LIB})
 
 	if(NOT CM_BUILD_SHARED_LIBS)
+        set(SSH_CLIENT_BIN_DIR ${MSS_BIN_DIR})
+        if(BUILD_FOR_OSI)
+            # OSI executable: mss_osi_sources.txt holds only the ssh client library
+            # sources (no example/main). Pull in the sample sources (main + digicert
+            # example helpers) from samples/ so the executable links.
+            set(srclist ${srclist} "${CMAKE_CURRENT_SOURCE_DIR}/ssh_client/mss_osi_example_sources.txt")
+            # Place the sample executable in samples/bin (matches NanoSSL ssl_server/ssl_client).
+            set(SSH_CLIENT_BIN_DIR "${MSS_DIR}/samples/bin")
+            file(MAKE_DIRECTORY ${SSH_CLIENT_BIN_DIR})
+        endif()
         buildexecutable(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
-                        ${NSSH_BUILD_DIR} "ssh_client" ${MSS_BIN_DIR} ${libraryLists})
+                        ${NSSH_BUILD_DIR} "ssh_client" ${SSH_CLIENT_BIN_DIR} ${libraryLists})
     else()
         set(TARGET_NAME "nanosshc")
 
@@ -323,8 +333,18 @@ if (CM_BUILD_SSH_SERVER)
     endif()
 
     if(NOT CM_BUILD_SHARED_LIBS)
+        set(SSH_SERVER_BIN_DIR ${MSS_BIN_DIR})
+        if(BUILD_FOR_OSI)
+            # OSI executable: mss_osi_sources.txt holds only the ssh library sources
+            # (no example/main). Pull in the sample sources (main, sftp file table,
+            # digicert example helpers) from samples/ so the executable links.
+            set(srclist ${srclist} "${CMAKE_CURRENT_SOURCE_DIR}/ssh_server/mss_osi_example_sources.txt")
+            # Place the sample executable in samples/bin (matches NanoSSL ssl_server/ssl_client).
+            set(SSH_SERVER_BIN_DIR "${MSS_DIR}/samples/bin")
+            file(MAKE_DIRECTORY ${SSH_SERVER_BIN_DIR})
+        endif()
         buildexecutable(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
-                         ${NSSH_BUILD_DIR} "ssh_server" ${MSS_BIN_DIR} ${libraryLists})
+                         ${NSSH_BUILD_DIR} "ssh_server" ${SSH_SERVER_BIN_DIR} ${libraryLists})
     else()
         set(TARGET_NAME "nanosshs")
 
@@ -404,8 +424,15 @@ if (CM_BUILD_SSH_SERVER_SP800_135)
     endif()
 
     if(NOT CM_BUILD_SHARED_LIBS)
+        set(SSH_SERVER_BIN_DIR ${MSS_BIN_DIR})
+        if(BUILD_FOR_OSI)
+            # Under OSI, MSS_BIN_DIR points at lib/. Place the SP800-135 ACVP test
+            # executable in samples/bin to match ssh_server/ssh_client/ssl_*.
+            set(SSH_SERVER_BIN_DIR "${MSS_DIR}/samples/bin")
+            file(MAKE_DIRECTORY ${SSH_SERVER_BIN_DIR})
+        endif()
         buildexecutable(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
-                         ${NSSH_BUILD_DIR} "ssh_server" ${MSS_BIN_DIR} ${libraryLists})
+                         ${NSSH_BUILD_DIR} "ssh_server" ${SSH_SERVER_BIN_DIR} ${libraryLists})
     else()
         set(TARGET_NAME "nanosshs")
         buildLibrary(${LIB_TYPE} ${TARGET_NAME} "${includelist}" "${srclist}" ${MSS_SRC_DIR}
