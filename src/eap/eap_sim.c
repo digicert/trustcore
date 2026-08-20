@@ -1122,7 +1122,7 @@ eap_simDecodeAttr(eapSimCb *eapSim,
                 /* Should be  > 1 */
                 if (2 > attrLen)
                 {
-                    DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "Invalid AT_IDENTITY  Len Attr Sent");
+                    DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "Invalid AT_NEXT_PSEUDONYM  Len Attr Sent");
                     status = ERR_EAP_SIM_INVALID_ATTRLEN;
                     goto exit;
                 }
@@ -1130,6 +1130,15 @@ eap_simDecodeAttr(eapSimCb *eapSim,
                 DIGI_MEMCPY((ubyte *)&eapSim->psuedonymLen,cur,2);
                 eapSim->psuedonymLen = EAP_HTONS(eapSim->psuedonymLen);
                 cur+=2; /* Actual Identity Len */
+
+                /* attrLen*4-4 is the identity data actually present in this attribute. */
+                if ((eapSim->psuedonymLen > (ubyte2)(attrLen * 4 - 4)) ||
+                    (eapSim->psuedonymLen > EAP_SIM_MAX_IDENTITY_LEN))
+                {
+                    DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "Invalid AT_NEXT_PSEUDONYM Len Attr Sent");
+                    status = ERR_EAP_SIM_INVALID_ATTRLEN;
+                    goto exit;
+                }
 
                 if (eapSim->psuedonym)
                 {
@@ -1182,6 +1191,15 @@ eap_simDecodeAttr(eapSimCb *eapSim,
                 DIGI_MEMCPY((ubyte *)&eapSim->reauthIdLen,cur,2);
                 eapSim->reauthIdLen = EAP_HTONS(eapSim->reauthIdLen);
                 cur+=2; /* Actual Identity Len */
+
+                /* attrLen*4-4 is the identity data actually present in this attribute. */
+                if ((eapSim->reauthIdLen > (ubyte2)(attrLen * 4 - 4)) ||
+                    (eapSim->reauthIdLen > EAP_SIM_MAX_IDENTITY_LEN))
+                {
+                    DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "Invalid AT_NEXT_REAUTH_ID Len Attr Sent");
+                    status = ERR_EAP_SIM_INVALID_ATTRLEN;
+                    goto exit;
+                }
 
                 if (eapSim->reauthId)
                 {

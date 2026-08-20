@@ -2589,42 +2589,45 @@ EAP_FASTgetAuthId(ubyte *pkt, ubyte4 pktLen, ubyte **authId, ubyte2 *authIdLen)
     ubyte2    len;
     MSTATUS   status = OK;
 
-    if (2 > pktLen)
+    if (6 > pktLen)
     {
         status = ERR_EAP_TLS_INVALID_LEN;
         goto exit;
     }
 
-    if (pktLen > 2)
+    ptr = pkt + 2;
+    /* This is the first pkt, so data is Authority ID */
+    type = *ptr++;
+    type = (type << 8) + *ptr++;
+
+    if (type != EAP_FAST_AUTH_ID_TYPE)
     {
-        ptr = pkt + 2;
-        /* This is the first pkt, so data is Authority ID */
-        type = *ptr++;
-        type = (type << 8) + *ptr++;
-
-        if (type != EAP_FAST_AUTH_ID_TYPE)
-        {
-            status = ERR_EAP_FAST_AUTH_ID_ERROR;
-            goto exit;
-        }
-        len = *ptr++;
-        len = (len << 8) + *ptr++;
-
-        *authId = MALLOC(len);
-        if (NULL == *authId)
-        {
-            status = ERR_MEM_ALLOC_FAIL;
-            goto exit;
-        }
-
-        status = DIGI_MEMCPY(*authId, ptr, len);
-        *authIdLen = len;
-        DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "EAP_FASTgetAuthId: AuthId.");
-#if defined(__ENABLE_ALL_DEBUGGING__)
-        EAP_PrintBytes( *authId, *authIdLen);
-        DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "  ");
-#endif
+        status = ERR_EAP_FAST_AUTH_ID_ERROR;
+        goto exit;
     }
+    len = *ptr++;
+    len = (len << 8) + *ptr++;
+
+    if ((ubyte4)len > (pktLen - 6))
+    {
+        status = ERR_EAP_TLS_INVALID_LEN;
+        goto exit;
+    }
+
+    *authId = MALLOC(len);
+    if (NULL == *authId)
+    {
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
+    }
+
+    status = DIGI_MEMCPY(*authId, ptr, len);
+    *authIdLen = len;
+    DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "EAP_FASTgetAuthId: AuthId.");
+#if defined(__ENABLE_ALL_DEBUGGING__)
+    EAP_PrintBytes( *authId, *authIdLen);
+    DEBUG_PRINTNL(DEBUG_EAP_MESSAGE, (sbyte *) "  ");
+#endif
 
 exit:
     return status;
