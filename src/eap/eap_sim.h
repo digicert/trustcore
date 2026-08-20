@@ -124,6 +124,9 @@ extern "C" {
 
 #define EAP_SIM_PACKET_SIZE                     (1024)
 
+/* Maximum accepted identity length (e.g., pseudonym/reauth ID) to bound allocations and keep responses within EAP_SIM_PACKET_SIZE. */
+#define EAP_SIM_MAX_IDENTITY_LEN                (512)
+
 
 /*------------------------------------------------------------------*/
 
