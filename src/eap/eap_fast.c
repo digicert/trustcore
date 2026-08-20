@@ -2608,7 +2608,8 @@ EAP_FASTgetAuthId(ubyte *pkt, ubyte4 pktLen, ubyte **authId, ubyte2 *authIdLen)
     len = *ptr++;
     len = (len << 8) + *ptr++;
 
-    if ((ubyte4)len > (pktLen - 6))
+    /* Absent A-ID is signalled by omitting the TLV; a zero-length TLV is malformed */
+    if ((0 == len) || ((ubyte4)len > (pktLen - 6)))
     {
         status = ERR_EAP_TLS_INVALID_LEN;
         goto exit;
