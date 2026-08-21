@@ -14,7 +14,7 @@
  * *Contact DigiCert at sales@digicert.com for more details.*
  */
 
-#include "../common/moptions.h"
+#include "../../src/common/moptions.h"
 #ifdef __DIGICERT_FORCE_ENTROPY__
 #ifndef __DISABLE_DIGICERT_ADD_ENTROPY__
 #include "../common/mdefs.h"

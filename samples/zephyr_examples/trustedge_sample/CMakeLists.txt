@@ -27,7 +27,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(trustedge_sample C)
 
 
-set(MSS_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/../../../..")
+set(MSS_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/../../..")
 set(MSS_SRC_DIR "${MSS_DIR}/src")
 set(TRUSTCORE_LIB_DIR "${MSS_DIR}/bin_static")
 
