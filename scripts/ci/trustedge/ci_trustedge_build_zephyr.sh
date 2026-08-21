@@ -94,7 +94,7 @@ run_setup() {
     echo "export ZEPHYR_BASE=${ZEPHYR_INSTALL_DIR}/zephyrproject/zephyr" >> ${HOME}/.bashrc
     echo "export ZEPHYR_TOOLCHAIN_VARIANT=zephyr" >> ${HOME}/.bashrc
     echo "export ZEPHYR_SDK_INSTALL_DIR=\"${ZEPHYR_INSTALL_DIR}/zephyr-sdk-`cat SDK_VERSION`\"" >> ${HOME}/.bashrc
-    echo "export PATH=\"${ZEPHYR_INSTALL_DIR}/zephyrproject/scripts:$PATH\"" >> ${HOME}/.bashrc
+    echo "export PATH=\"${ZEPHYR_INSTALL_DIR}/zephyrproject/scripts:\$PATH\"" >> ${HOME}/.bashrc
     echo "alias zephenv='source ${ZEPHYR_INSTALL_DIR}/zephyrproject/.venv/bin/activate'" >> ${HOME}/.bashrc
     echo "Zephyr installed in ${ZEPHYR_INSTALL_DIR}"
     echo "IMPORTANT: Run command \"zephenv\" to use west and other utilitis and run \"deactivate\" when done."
