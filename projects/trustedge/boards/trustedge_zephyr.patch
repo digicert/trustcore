@@ -1,0 +1,67 @@
+diff --git a/boards/native/native_sim/native_sim.dts b/boards/native/native_sim/native_sim.dts
+index 162fcf07457..48fe6402074 100644
+--- a/boards/native/native_sim/native_sim.dts
++++ b/boards/native/native_sim/native_sim.dts
+@@ -61,7 +61,7 @@
+ 
+ 	flashcontroller0: flash-controller@0 {
+ 		compatible = "zephyr,sim-flash";
+-		reg = <0x00000000 DT_SIZE_K(2048)>;
++		reg = <0x00000000 DT_SIZE_K(4096)>;
+ 
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+@@ -72,7 +72,7 @@
+ 			compatible = "soc-nv-flash";
+ 			erase-block-size = <4096>;
+ 			write-block-size = <1>;
+-			reg = <0x00000000 DT_SIZE_K(2048)>;
++			reg = <0x00000000 DT_SIZE_K(4096)>;
+ 
+ 			partitions {
+ 				compatible = "fixed-partitions";
+diff --git a/dts/arm/st/h7/stm32h745.dtsi b/dts/arm/st/h7/stm32h745.dtsi
+index 294fd02c502..871343b6667 100644
+--- a/dts/arm/st/h7/stm32h745.dtsi
++++ b/dts/arm/st/h7/stm32h745.dtsi
+@@ -19,7 +19,7 @@
+ 				/* maximum erase time for a 128K sector */
+ 				max-erase-time = <4000>;
+ 			};
+-			flash1: flash@8100000 {
++			flash1: flash@81FFC00 {
+ 				compatible = "st,stm32-nv-flash", "soc-nv-flash";
+ 				write-block-size = <32>;
+ 				erase-block-size = <DT_SIZE_K(128)>;
+diff --git a/dts/arm/st/h7/stm32h745Xi_m4.dtsi b/dts/arm/st/h7/stm32h745Xi_m4.dtsi
+index 8ad4e0f871e..3f8446eaa9a 100644
+--- a/dts/arm/st/h7/stm32h745Xi_m4.dtsi
++++ b/dts/arm/st/h7/stm32h745Xi_m4.dtsi
+@@ -16,9 +16,9 @@
+ 
+ 	soc {
+ 		flash-controller@52002000 {
+-			flash1: flash@8100000 {
+-				reg = <0x08100000 DT_SIZE_K(1024)>;
+-				bank2-flash-size = <1024>;
++			flash1: flash@81FFC00 {
++				reg = <0x081FFC00 DT_SIZE_K(1)>;
++				bank2-flash-size = <1>;
+ 			};
+ 		};
+ 
+diff --git a/dts/arm/st/h7/stm32h745Xi_m7.dtsi b/dts/arm/st/h7/stm32h745Xi_m7.dtsi
+index 0e79c0150f3..e059bdbfd8a 100644
+--- a/dts/arm/st/h7/stm32h745Xi_m7.dtsi
++++ b/dts/arm/st/h7/stm32h745Xi_m7.dtsi
+@@ -23,7 +23,9 @@
+ 	soc {
+ 		flash-controller@52002000 {
+ 			flash0: flash@8000000 {
+-				reg = <0x08000000 DT_SIZE_K(1024)>;
++				erase-block-size = <4096>;
++				write-block-size = <1>;
++				reg = <0x08000000 DT_SIZE_K(2047)>;
+ 			};
+ 		};
+ 

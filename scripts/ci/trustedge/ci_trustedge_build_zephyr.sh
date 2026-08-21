@@ -3,7 +3,7 @@
 set -e
 SCRIPT_DIR=$( cd $(dirname $0) ; pwd -P )
 ROOT_DIR=${SCRIPT_DIR}/../../..
-EXAMPLE_DIR=${ROOT_DIR}/src/examples/zephyr_examples
+EXAMPLE_DIR=${ROOT_DIR}/samples/zephyr_examples
 ZEPHYR_DEPS_DIR=${ROOT_DIR}/projects/trustedge/zephyr_deps
 MSS_SRC_DIR=${ROOT_DIR}/src
 
@@ -94,7 +94,7 @@ run_setup() {
     echo "export ZEPHYR_BASE=${ZEPHYR_INSTALL_DIR}/zephyrproject/zephyr" >> ${HOME}/.bashrc
     echo "export ZEPHYR_TOOLCHAIN_VARIANT=zephyr" >> ${HOME}/.bashrc
     echo "export ZEPHYR_SDK_INSTALL_DIR=\"${ZEPHYR_INSTALL_DIR}/zephyr-sdk-`cat SDK_VERSION`\"" >> ${HOME}/.bashrc
-    echo "export PATH=${ZEPHYR_INSTALL_DIR}/zephyrproject/scripts:$PATH" >> ${HOME}/.bashrc
+    echo "export PATH=\"${ZEPHYR_INSTALL_DIR}/zephyrproject/scripts:\$PATH\"" >> ${HOME}/.bashrc
     echo "alias zephenv='source ${ZEPHYR_INSTALL_DIR}/zephyrproject/.venv/bin/activate'" >> ${HOME}/.bashrc
     echo "Zephyr installed in ${ZEPHYR_INSTALL_DIR}"
     echo "IMPORTANT: Run command \"zephenv\" to use west and other utilitis and run \"deactivate\" when done."
@@ -434,7 +434,7 @@ if [ ${TRUSTEDGE_SAMPLE} -eq 1 ]; then
 
         echo "combine bootloader and application into one image.."
         pushd "${MCUBOOT_PATH}"
-        python scripts/assemble.py -b "${MCUBOOT_PATH}/boot/zephyr/build/" -p ${ROOT_DIR}/src/examples/zephyr_examples/trustedge_sample/build/zephyr/trustedge.signed.bin -o ${ROOT_DIR}/bin/trustedge_with_mcuboot.bin
+        python scripts/assemble.py -b "${MCUBOOT_PATH}/boot/zephyr/build/" -p ${ROOT_DIR}/samples/zephyr_examples/trustedge_sample/build/zephyr/trustedge.signed.bin -o ${ROOT_DIR}/bin/trustedge_with_mcuboot.bin
         popd
     fi
 
@@ -446,7 +446,7 @@ if [ ${TRUSTEDGE_SAMPLE} -eq 1 ]; then
     popd
     rm -f ${ROOT_DIR}/bin_static/libtrustedge.so 2>/dev/null || true
 
-    echo "build dir => src/examples/zephyr_examples/trustedge_sample/build/"
+    echo "build dir => samples/zephyr_examples/trustedge_sample/build/"
 
     if [ "native_sim" == "${BOARD_ARG}" ]; then
         if [ -f ${TRUSTEDGE_SAMPLE_DIR}/build/zephyr/trustedge.exe ]; then
@@ -457,10 +457,15 @@ if [ ${TRUSTEDGE_SAMPLE} -eq 1 ]; then
             exit 1
         fi
 
-        #echo "building provisioning tool"
-        #pushd ${EXAMPLE_DIR}/device_provision
-        #west build -b  ${BOARD_TYPE} -p -- -DCONFIG_FUSE_FS_ACCESS=y -DDTC_OVERLAY_FILE="${BOARD_OVERLAY}"
-        #popd
+        echo "building provisioning tool"
+        pushd ${EXAMPLE_DIR}/device_provision
+        west build -b ${BOARD_TYPE} -p -- -DCONFIG_FUSE_FS_ACCESS=y -DDTC_OVERLAY_FILE="${BOARD_OVERLAY}"
+        popd
+
+        if [ ! -f ${EXAMPLE_DIR}/device_provision/build/zephyr/zephyr.exe ]; then
+            echo "could not find ${EXAMPLE_DIR}/device_provision/build/zephyr/zephyr.exe"
+            exit 1
+        fi
 
     elif [ "stm32h745i_disco" == "${BOARD_ARG}" ]; then
         if [ -f ${TRUSTEDGE_SAMPLE_DIR}/build/zephyr/trustedge.bin ]; then
@@ -525,17 +530,22 @@ if [ ${TRUSTEDGE_SAMPLE} -eq 2 ]; then
 fi
 
 if [ ${TRUSTEDGE_SAMPLE} -eq 3 ]; then
-    UNITTEST_SAMPLE_DIR=${EXAMPLE_DIR}/trustedge_dfu_handler_sample
+    UNITTEST_SAMPLE_DIR=${EXAMPLE_DIR}/ota_handler_sample
 
     echo "building OTA sample application"
 
-    if [ "native" == "${BOARD_ARG}" ]; then
-        FINAL_BIN_NAME="trustedge.exe"
-        CMAKE_ARGS="-DCONFIG_NET_NO_REBOOT=y"
-    elif [ "stm32" == "${BOARD_ARG}" ]; then
-        FINAL_BIN_NAME="trustedge.bin"
-        CMAKE_ARGS=""
-    fi
+    case "${BOARD_ARG}" in
+        native_sim)
+            FINAL_BIN_NAME="trustedge.exe"
+            ;;
+        stm32h745i_disco|nucleo_h745zi_q)
+            FINAL_BIN_NAME="trustedge.bin"
+            ;;
+        *)
+            echo "ota_handler_sample does not support board: ${BOARD_ARG}"
+            exit 1
+            ;;
+    esac
 
     pushd "${UNITTEST_SAMPLE_DIR}"
     west build -b ${BOARD_TYPE} -p --build-dir "${UNITTEST_SAMPLE_DIR}/build" -- -DDTC_OVERLAY_FILE="${BOARD_OVERLAY}" -DEXTRA_CONF_FILE="${BOARD_CONF_FILE}" -DIMAGE_NAME="OTA sample"
@@ -543,8 +553,8 @@ if [ ${TRUSTEDGE_SAMPLE} -eq 3 ]; then
 
     echo "build dir => ${UNITTEST_SAMPLE_DIR}/build/"
     if [ -f "${UNITTEST_SAMPLE_DIR}/build/zephyr/${FINAL_BIN_NAME}" ]; then
-        cp "${UNITTEST_SAMPLE_DIR}/build/zephyr/${FINAL_BIN_NAME}"  "${ROOT_DIR}/bin/network_sample"
-        echo "binary location => bin/network_sample"
+        cp "${UNITTEST_SAMPLE_DIR}/build/zephyr/${FINAL_BIN_NAME}"  "${ROOT_DIR}/bin/ota_handler_sample"
+        echo "binary location => bin/ota_handler_sample"
     else
         echo "could not find ${FINAL_BIN_NAME}"
         exit 1

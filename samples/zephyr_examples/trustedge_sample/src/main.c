@@ -43,7 +43,7 @@
 #endif
 /* #include "common/mrtos.h" */
 #include "common/mfmgmt.h"
-#include "trustedge/trustedge_main.h"
+#include "trustedge_main.h"
 
 #if !defined(__ENABLE_DIGICERT_NATIVE_SIM__)
 #include "dns.h"

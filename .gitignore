@@ -57,3 +57,4 @@ dkms.conf
 build/
 projects/platform/build/
 samples/bin/
+pki_certs/
