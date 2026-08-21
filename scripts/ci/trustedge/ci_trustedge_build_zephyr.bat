@@ -5,7 +5,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 
 set SCRIPT_DIR=%~dp0
 set ROOT_DIR=%SCRIPT_DIR%\..\..\..
-set "EXAMPLE_DIR=%ROOT_DIR%/src/examples/zephyr_examples"
+set "EXAMPLE_DIR=%ROOT_DIR%/samples/zephyr_examples"
 
 set BUILD_TYPE="Release"
 set FMGMT_SAMPLE=0
@@ -138,15 +138,15 @@ if %BUILD_TRUSTEDGE_LIB%==1 (
 
 if %APP_SAMPLE%==0 (
     echo "building trustedge sample"
-    set "SAMPLE_DIR=%ROOT_DIR%\src\examples\zephyr_examples\trustedge_sample\"
+    set "SAMPLE_DIR=%ROOT_DIR%\samples\zephyr_examples\trustedge_sample\"
 )
 if %APP_SAMPLE%==1 (
     echo "building tests sample"
-    set "SAMPLE_DIR=%ROOT_DIR%\src\examples\zephyr_examples\network_sample\"
+    set "SAMPLE_DIR=%ROOT_DIR%\samples\zephyr_examples\network_sample\"
 )
 if %APP_SAMPLE%==2 (
     echo "building OTA sample"
-    set "SAMPLE_DIR=%ROOT_DIR%\src\examples\zephyr_examples\trustedge_dfu_handler_sample\"
+    set "SAMPLE_DIR=%ROOT_DIR%\samples\zephyr_examples\ota_handler_sample\"
 )
 
 echo sample directory: !SAMPLE_DIR!

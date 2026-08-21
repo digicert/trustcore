@@ -85,6 +85,10 @@ If you need to add or configure a new TrustEdge cross-compilation toolchain, use
 
 If you need to integrate TrustEdge into a Yocto/Poky-based embedded Linux image, use the detailed Yocto guide instead of duplicating setup steps here. For guidance on creating a custom TrustEdge layer, adding the TrustEdge recipe, building the image, and running TrustEdge in QEMU, see [TrustEdge Yocto Build Guide](../../docs/trustedge_yocto_build_guide.md).
 
+### Building with Zephyr RTOS
+
+If you need to install, build, provision, flash, or run TrustEdge with Zephyr RTOS, use the detailed Zephyr guide instead of duplicating board-specific setup here. For guidance on the Zephyr environment, supported boards, native simulator flow, STM32H745 Discovery Kit flow, ESP32-S3-DevKitC flow, and validation commands, see [TrustEdge Zephyr RTOS Build Guide](../../docs/trustedge_zephyr_rtos_build_guide.md).
+
 ### Windows
 
 From the Visual Studio developer environment, run the Windows build script:

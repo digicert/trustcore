@@ -18,7 +18,7 @@
  * *Contact DigiCert at sales@digicert.com for more details.*
  */
 
-#include "../common/moptions.h"
+#include "../../src/common/moptions.h"
 
 #ifdef __ENABLE_DIGICERT_CUSTOM_ENTROPY_INJECT__
 
