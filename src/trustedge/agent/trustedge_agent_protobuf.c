@@ -21,8 +21,14 @@
 #include <stdio.h>
 
 /* Hard upper bound on a single length-delimited field's declared size. Caps
- * server-controlled allocations to avoid OOM/size overflow DoS (DTM-11587). */
-#define TE_PROTOBUF_MAX_FIELD_LEN (1024U * 1024U * 1024U)
+ * server-controlled in-memory allocations to avoid OOM/size overflow DoS
+ * (DTM-11587). Artifact downloads stream to a file and are not bounded here,
+ * so 1 MB comfortably fits UUIDs, metric strings, and cert/policy payloads. */
+#define TE_PROTOBUF_MAX_FIELD_LEN (1024U * 1024U)
+
+/* Upper bound for the in-memory body payload. Larger than the general field
+ * cap to accommodate non-constrained hosts that receive large bodies inline. */
+#define TE_PROTOBUF_MAX_BODY_LEN (1024U * 1024U * 1024U)
 
 typedef struct
 {
@@ -309,6 +315,37 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
         else if (4 == pField->fieldNumber)
         {
             /* UUID */
+
+            /* Reject a second field instance reusing the once-allocated buffer
+             * and bounds-check the copy to prevent a heap overflow (DTM-11587). */
+            if ((NULL != pAgentCtx->pbMsg.pUUID) &&
+                (0 == pField->data.bytes.offset))
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - duplicate UUID field in message\n", __func__);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
+            if (pField->data.bytes.totalLen > TE_PROTOBUF_MAX_FIELD_LEN)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - UUID size %u exceeds maximum %u\n",
+                    __func__, pField->data.bytes.totalLen, TE_PROTOBUF_MAX_FIELD_LEN);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
+            if ((pField->data.bytes.offset > pField->data.bytes.totalLen) ||
+                (pField->data.bytes.bufLen >
+                    pField->data.bytes.totalLen - pField->data.bytes.offset))
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: ERROR - UUID chunk exceeds buffer bounds\n", __func__);
+                status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
+                goto exit;
+            }
+
             if (NULL == pAgentCtx->pbMsg.pUUID)
             {
                 status = DIGI_CALLOC(
@@ -493,11 +530,11 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                     goto exit;
                 }
 
-                if (pField->data.bytes.totalLen > TE_PROTOBUF_MAX_FIELD_LEN)
+                if (pField->data.bytes.totalLen > TE_PROTOBUF_MAX_BODY_LEN)
                 {
                     MSG_LOG_print(MSG_LOG_ERROR,
                         "%s: ERROR - payload size %u exceeds maximum %u\n",
-                        __func__, pField->data.bytes.totalLen, TE_PROTOBUF_MAX_FIELD_LEN);
+                        __func__, pField->data.bytes.totalLen, TE_PROTOBUF_MAX_BODY_LEN);
                     status = ERR_TRUSTEDGE_AGENT_PROTOBUF_DECODE;
                     goto exit;
                 }
