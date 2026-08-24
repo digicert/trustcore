@@ -64,6 +64,8 @@ extern "C" {
 #define BOOTSTRAP_KEYALIAS_JSTR     "key_alias"
 #define BOOTSTRAP_CERTALIAS_JSTR    "cert_alias"
 
+#define SELECTED_CERT_ALIAS_JSTR    "selectedCertAlias"
+
 #ifndef TRUSTEDGE_AGENT_MAX_SLEEP_PERIOD_MS
 #define TRUSTEDGE_AGENT_MAX_SLEEP_PERIOD_MS     (5000)
 #endif
@@ -512,6 +514,19 @@ MOC_EXTERN MSTATUS TRUSTEDGE_utilsEval(
 
 MOC_EXTERN intBoolean TRUSTEDGE_sleepCheckStatusMS(
     ubyte4 sleepMS);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_utilsRetrieveCertificateCN(
+    ubyte *pCert,
+    ubyte4 certLen,
+    ubyte **ppCommonName,
+    ubyte4 *pCommonNameLen);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_utilsLoadCertificateAndKey(
+    certStorePtr pCertStore,
+    char *certificateAlias,
+    ubyte *pCert,
+    ubyte4 certLen,
+    AsymmetricKey *pAsymKey);
 
 #ifdef __cplusplus
 }

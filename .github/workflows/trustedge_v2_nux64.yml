@@ -56,7 +56,7 @@ jobs:
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
-          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --azure-dps
 
       - name: Push Artifact
         run: |
@@ -76,7 +76,7 @@ jobs:
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
-          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --azure-dps
 
       - name: Push Artifact for RPI64
         run: |
@@ -96,7 +96,7 @@ jobs:
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
-          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --azure-dps
 
       - name: Push Artifact for RPI32
         run: |

@@ -9,6 +9,7 @@ USERNAME="trustedge"
 INSTALL_DIR="/etc/digicert"
 KEYSTORE_DIR="${INSTALL_DIR}/keystore"
 CONF_DIR="${INSTALL_DIR}/conf"
+CLOUDPROVIDER_DIR="${INSTALL_DIR}/cloudprovider"
 SCRIPTS_DIR="${INSTALL_DIR}/scripts"
 
 SVC="trustedge.service"
@@ -43,12 +44,12 @@ create_user ()
 set_access_permission ()
 {
     dbg_msg "setting permissions"
-    chown -R ${USERNAME}:trustedge ${KEYSTORE_DIR} ${CONF_DIR} ${INSTALL_DIR}
+    chown -R ${USERNAME}:trustedge ${KEYSTORE_DIR} ${CONF_DIR} ${CLOUDPROVIDER_DIR} ${INSTALL_DIR}
 
-    # trustedge group members can write to Config and Keystore folders
+    # trustedge group members can write to Config, Keystore, and Cloudprovider folders
     chmod 775 ${INSTALL_DIR}
-    find ${KEYSTORE_DIR} ${CONF_DIR} -type d -exec chmod 775 {} \;
-    find ${KEYSTORE_DIR} ${CONF_DIR} -type f -exec chmod 664 {} \;
+    find ${KEYSTORE_DIR} ${CONF_DIR} ${CLOUDPROVIDER_DIR} -type d -exec chmod 775 {} \;
+    find ${KEYSTORE_DIR} ${CONF_DIR} ${CLOUDPROVIDER_DIR} -type f -exec chmod 664 {} \;
     chmod -R u=rwx,go=rx ${SCRIPTS_DIR}
 
     chown root:root "/usr/bin/trustedge"

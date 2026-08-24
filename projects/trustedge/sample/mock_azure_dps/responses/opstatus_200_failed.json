@@ -1,0 +1,13 @@
+{
+  "operationId": "5.3d2b1f9c8e7a6d4c.mock-op-12345678-1234-1234-1234-123456789abc",
+  "status": "failed",
+  "registrationState": {
+    "registrationId": "{{REGISTRATION_ID}}",
+    "createdDateTimeUtc": "2026-08-04T12:00:00.0000000Z",
+    "status": "failed",
+    "errorCode": 400207,
+    "errorMessage": "Custom allocation policy returned non-successful status code: BadRequest",
+    "lastUpdatedDateTimeUtc": "2026-08-04T12:00:05.0000000Z",
+    "etag": "\"mock-etag-failed\""
+  }
+}

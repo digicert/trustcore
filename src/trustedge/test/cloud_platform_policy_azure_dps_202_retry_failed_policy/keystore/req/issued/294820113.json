@@ -1,0 +1,82 @@
+{
+    "originalCertSpec": {
+    "policyService": "CertificatePolicy",
+    "deviceId": "DEVICE-ID-TEST-0",
+    "accountId": "ACCOUNT-ID-TEST-0",
+    "mode": "certificate_specification",
+    "certificatePolicyId": "294820113",
+    "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+    "certificateSpecification": {
+        "certificateRequestFormat": {
+            "format": "PKCS10"
+        },
+        "keyCertAttributes": {
+            "keyAlgorithm": [ "RSA+2048" ],
+            "source": "SW"
+        },
+        "csrAttributes": {
+            "fields": [
+                {
+                    "id": "signature_algorithm",
+                    "defaultValue": [ "sha256WithRSA" ]
+                },
+                {
+                    "id": "subject.common_name",
+                    "defaultValue": [ "TrustEdge-Dev" ]
+                },
+                {
+                    "id": "subject.country",
+                    "defaultValue": [ "USA" ]
+                },
+                {
+                    "id": "subject.state",
+                    "defaultValue": [ "California" ]
+                },
+                {
+                    "id": "subject.locality",
+                    "defaultValue": [ "Sunnyvale" ]
+                },
+                {
+                    "id": "subject.organization_name",
+                    "defaultValue": [ "Digicert" ]
+                },
+                {
+                    "id": "subject.organization_unit",
+                    "defaultValue": [ "Digicert TrustEdge" ]
+                },
+                {
+                    "id": "subject.email",
+                    "defaultValue": [ "trustedge@digicert.com" ]
+                },
+                {
+                    "id": "subject.serial_number",
+                    "defaultValue": [ "SN-0123456789" ]
+                },
+                {
+                    "id": "key_usage.rsa_additional_values",
+                    "defaultValue": [ "digital_signature" ]
+                },
+                {
+                    "id": "key_usage.rsa_additional_values",
+                    "defaultValue": [ "key_encipherment" ]
+                },
+                {
+                    "id": "extended_key_usage.additional_values",
+                    "defaultValue": [ "server_authentication" ]
+                },
+                {
+                    "id": "extended_key_usage.additional_values",
+                    "defaultValue": [ "client_authentication" ]
+                }
+            ]
+        }
+    }
+},
+    "selectedKeySource": "SW",
+    "selectedKeyAlgorithm": "RSA+2048",
+    "selectedKeyAlias": "294820113",
+    "request": "-----BEGIN CERTIFICATE REQUEST-----\nMIIDRDCCAiwCAQAwgb4xFjAUBgNVBAMTDVRydXN0RWRnZS1EZXYxDDAKBgNVBAYT\nA1VTQTETMBEGA1UECBMKQ2FsaWZvcm5pYTESMBAGA1UEBxMJU3Vubnl2YWxlMREw\nDwYDVQQKEwhEaWdpY2VydDEbMBkGA1UECxMSRGlnaWNlcnQgVHJ1c3RFZGdlMSUw\nIwYJKoZIhvcNAQkBFhZ0cnVzdGVkZ2VAZGlnaWNlcnQuY29tMRYwFAYDVQQFEw1T\nTi0wMTIzNDU2Nzg5MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3ygX\nD20UtUa+AN6d2YQInooF+fAsiONDtaVZUi66y/me+dmhhACN5BHIQM2hoX3DEDx+\n2VhP0JTOkIGweLklLOF0jEpVflcyVNQrDk3fccJG3YIHhXmbF9dgY3YqqSjRMYH2\n9RckoNNu4ukFMD3pVxjFtxHSWAU8xTI3weHf1yXkv2YoHSPhX9+Od/Wcfy/qp0r4\n1kDShYaur/4eHx0wEKubFwhDIXzTw3cHmUtSPzzA3C4hXt0NoFtFwLgW/sdp8RnJ\n4ncswesYxGKf9D6mmbO6W2PWiwEHVRzUzFyC67PTjKshGyRFmbEkNJAP5/PBCh/l\nchMm3SUZsSiz2A1c4wIDAQABoEAwPgYJKoZIhvcNAQkOMTEwLzAOBgNVHQ8BAf8E\nBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMA0GCSqGSIb3DQEB\nCwUAA4IBAQBqvXF4StgmGZPkLRk/hfM1afTirrbMkFfi4OQP2AIikBDJTq3+9ke9\nFlYDxGK8IUti2khhARuOqh+GyWDg+/durDf3k3//1oE5lay4x3Wg7k+4BfuzLNds\nA+Q3j4vvaoGcO1943t4JyNkOhreR9tDJf0BXQmguMxJNp/m6BVJTa6VvNgbf9Lp8\nBduXljuWALTGA+CDvALYxBKrjAlcZwODIWMt1Pv+cMLRBguCfWWQLRGSdPzP+hDn\nhqkVtBxScKVvKIAtBZ/MMU56wTLcmTrkWtGlDxCx32UcqyfPUQ4gxYgswHXtyELa\n3eyCj55CROhRapu514RAfWOhhZJEKBxL\n-----END CERTIFICATE REQUEST-----\n",
+    "selectedCertAlias": "294820113",
+    "certIssuedTime": "20260729161904Z",
+    "certExpireTime": "20270729161904Z"
+}

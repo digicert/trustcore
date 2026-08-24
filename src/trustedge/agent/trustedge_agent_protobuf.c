@@ -274,22 +274,14 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
     ubyte4 i;
     sbyte *pPayloadFile = NULL;
 
-    MSG_LOG_print(MSG_LOG_DEBUG,
-        "%s: ENTER - pArg=%p, pMsg=%p, fieldNumber=%u, finalChunk=%d\n",
-        __func__, pArg, (void*)pMsg, pField->fieldNumber, finalChunk);
-
     (void) TRUSTEDGE_agentProtobufPrintMessageDecoder(
         pArg, pMsg, msgCount, pField, finalChunk);
 
     if (gpPayload == pMsg)
     {
-        MSG_LOG_print(MSG_LOG_DEBUG, "%s: Processing gpPayload, fieldNumber=%u\n", 
-            __func__, pField->fieldNumber);
-
         if (2 == pField->fieldNumber)
         {
             /* Metric */
-            MSG_LOG_print(MSG_LOG_DEBUG, "%s: Processing Metric field\n", __func__);
             status = DIGI_CALLOC(
                 (void **) &ppNames, pAgentCtx->pbMsg.metricCount + 1, sizeof(sbyte *));
             if (OK != status)
@@ -313,14 +305,10 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
             pAgentCtx->pbMsg.ppValues = ppValues;
 
             pAgentCtx->pbMsg.metricCount++;
-            MSG_LOG_print(MSG_LOG_DEBUG, "%s: metricCount now %u\n", __func__, pAgentCtx->pbMsg.metricCount);
         }
         else if (4 == pField->fieldNumber)
         {
             /* UUID */
-            MSG_LOG_print(MSG_LOG_DEBUG, "%s: Processing UUID field, offset=%u, bufLen=%u, totalLen=%u\n", 
-                __func__, pField->data.bytes.offset, pField->data.bytes.bufLen, pField->data.bytes.totalLen);
-
             if (NULL == pAgentCtx->pbMsg.pUUID)
             {
                 status = DIGI_CALLOC(
@@ -338,9 +326,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
 
             if (TRUE == finalChunk)
             {
-                MSG_LOG_print(MSG_LOG_DEBUG, "%s: UUID finalChunk, pUUID=%s\n", 
-                    __func__, pAgentCtx->pbMsg.pUUID);
-
                 if (0 == DIGI_STRCMP(pAgentCtx->pbMsg.pUUID, "DeviceTM_Pending_Policies"))
                 {
                     pAgentCtx->pbMsg.msgType = TE_MSG_TYPE_PENDING_POLICIES;
@@ -378,14 +363,8 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                     pAgentCtx->pbMsg.msgType = TE_MSG_TYPE_CLOUDPLATFORM;
                 }
 
-                MSG_LOG_print(MSG_LOG_DEBUG, "%s: msgType set to %d\n", 
-                    __func__, pAgentCtx->pbMsg.msgType);
-
                 if (TE_MSG_TYPE_UNKNOWN != pAgentCtx->pbMsg.msgType)
                 {
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: Adding %u desired attributes\n", 
-                        __func__, pAgentCtx->pbMsg.metricCount);
-
                     for (i = 0; i < pAgentCtx->pbMsg.metricCount; i++)
                     {
                         if (NULL != pAgentCtx->pbMsg.ppNames[i] && NULL != pAgentCtx->pbMsg.ppValues[i])
@@ -408,23 +387,15 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
         else if (5 == pField->fieldNumber)
         {
             /* Payload */
-            MSG_LOG_print(MSG_LOG_DEBUG, 
-                "%s: Processing Payload field (5), msgType=%d, offset=%u, bufLen=%u, totalLen=%u, finalChunk=%d\n", 
-                __func__, pAgentCtx->pbMsg.msgType, pField->data.bytes.offset, 
-                pField->data.bytes.bufLen, pField->data.bytes.totalLen, finalChunk);
-
             if (TE_MSG_TYPE_UNKNOWN == pAgentCtx->pbMsg.msgType)
             {
                 /* Unknown message, just drop the data */
-                MSG_LOG_print(MSG_LOG_DEBUG, "%s: Unknown msgType, dropping data\n", __func__);
                 status = OK;
             }
             else if (pAgentCtx->pbMsg.msgType == TE_MSG_TYPE_ARTIFACT_DOWNLOAD ||
                      pAgentCtx->pbMsg.msgType == TE_MSG_TYPE_ARTIFACT_DOWNLOAD_CHUNK)
             {
                 /* partial chunk */
-                MSG_LOG_print(MSG_LOG_DEBUG, "%s: ARTIFACT_DOWNLOAD path, pWorkspaceDir=%s\n", 
-                    __func__, pAgentCtx->pWorkspaceDir ? pAgentCtx->pWorkspaceDir : (sbyte *)"NULL");
 
                 /* 1. Create mime parser context if not created */
                 /* 2. Pass chunk to mime parser context */
@@ -433,8 +404,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                 if (0 == pField->data.bytes.offset)
                 {
                     pPayloadFile = "payload.mime";
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: First chunk, creating file %s\n", 
-                        __func__, pPayloadFile);
 
                     /* First chunk - create file with appropriate size */
                     if (NULL == pAgentCtx->pWorkspaceDir)
@@ -452,7 +421,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                         goto exit;
                     }
 
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: Opening file %s\n", __func__, pFilePath);
                     FMGMT_remove(pFilePath, FALSE);
 
                     status = FMGMT_fopen(
@@ -468,9 +436,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
 
                     DIGI_FREE((void **) &pFilePath);
                 }
-
-                MSG_LOG_print(MSG_LOG_DEBUG, "%s: Writing %u bytes to artifact file\n", 
-                    __func__, pField->data.bytes.bufLen);
 
                 if (NULL == pAgentCtx->pbMsg.pArtifactFile)
                 {
@@ -497,15 +462,9 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
 
                 if (TRUE == finalChunk)
                 {
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: finalChunk - closing file and processing body\n", __func__);
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: pBody=%p, bodyLen=%u\n", 
-                        __func__, (void*)pAgentCtx->pbMsg.pBody, pAgentCtx->pbMsg.bodyLen);
 
                     FMGMT_fclose(&pAgentCtx->pbMsg.pArtifactFile);
                     pAgentCtx->pbMsg.pArtifactFile = NULL;
-
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: Calling TRUSTEDGE_agentProcessBody(msgType=%d, pBody=%p, bodyLen=%u)\n", 
-                        __func__, pAgentCtx->pbMsg.msgType, (void*)pAgentCtx->pbMsg.pBody, pAgentCtx->pbMsg.bodyLen);
 
                     status = TRUSTEDGE_agentProcessBody(
                         pAgentCtx, pAgentCtx->pbMsg.msgType,
@@ -520,7 +479,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
             }
             else
             {
-                MSG_LOG_print(MSG_LOG_DEBUG, "%s: Regular body path (non-artifact)\n", __func__);
 
                 /* A well-formed message carries the payload field once. A
                  * non-NULL buffer with offset reset to 0 signals a second field
@@ -556,9 +514,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
 
                 if (NULL == pAgentCtx->pbMsg.pBody)
                 {
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: Allocating pBody, size=%u\n", 
-                        __func__, pField->data.bytes.totalLen + 1);
-
                     status = DIGI_CALLOC(
                         (void **) &pAgentCtx->pbMsg.pBody, 1,
                         pField->data.bytes.totalLen + 1);
@@ -576,9 +531,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
                 {
                     pAgentCtx->pbMsg.bodyLen = pField->data.bytes.totalLen;
 
-                    MSG_LOG_print(MSG_LOG_DEBUG, "%s: Calling TRUSTEDGE_agentProcessBody(msgType=%d, pBody=%p, bodyLen=%u)\n", 
-                        __func__, pAgentCtx->pbMsg.msgType, (void*)pAgentCtx->pbMsg.pBody, pAgentCtx->pbMsg.bodyLen);
-
                     status = TRUSTEDGE_agentProcessBody(
                         pAgentCtx, pAgentCtx->pbMsg.msgType,
                         pAgentCtx->pbMsg.pBody, pAgentCtx->pbMsg.bodyLen);
@@ -595,8 +547,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
 
     if (gpMetric == pMsg)
     {
-        MSG_LOG_print(MSG_LOG_DEBUG, "%s: Processing gpMetric, fieldNumber=%u\n", 
-            __func__, pField->fieldNumber);
 
         if (1 == pField->fieldNumber)
         {
@@ -664,8 +614,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
 
     if (gpMetricOneofValue == pMsg)
     {
-        MSG_LOG_print(MSG_LOG_DEBUG, "%s: Processing gpMetricOneofValue, fieldNumber=%u\n", 
-            __func__, pField->fieldNumber);
 
         if (15 == pField->fieldNumber)
         {
@@ -733,7 +681,6 @@ static MSTATUS TRUSTEDGE_agentProtobufMessageDecoder(
 
 exit:
 
-    MSG_LOG_print(MSG_LOG_DEBUG, "%s: EXIT - status=%d\n", __func__, status);
     return status;
 }
 
@@ -842,20 +789,10 @@ extern MSTATUS TRUSTEDGE_agentProtobufProcess(
 {
     MSTATUS status;
 
-    /* Debug: Validate inputs */
-    MSG_LOG_print(MSG_LOG_DEBUG,
-        "%s: ENTER - pAgentCtx=%p, pPayload=%p, payloadLen=%u, finished=%d\n",
-        __func__, (void*)pAgentCtx, (void*)pPayload, payloadLen, finished);
-
-    MSG_LOG_print(MSG_LOG_DEBUG,
-        "%s: pAgentCtx->pPBCtx=%p, curTopic=%u\n",
-        __func__, (void*)pAgentCtx->pPBCtx, pAgentCtx->curTopic);
-
     if (NULL == pAgentCtx->pPBCtx)
     {
         MSG_LOG_printRaw(MSG_LOG_VERBOSE, "\n    Inbound Message on Topic: %.*s\n", DIGI_STRLEN(pAgentCtx->pAllTopics[pAgentCtx->curTopic].pTopic), pAgentCtx->pAllTopics[pAgentCtx->curTopic].pTopic);
 
-        MSG_LOG_print(MSG_LOG_DEBUG, "%s: Clearing protobuf header\n", __func__);
         status = TRUSTEDGE_agentProtobufClearHeader(&pAgentCtx->pbMsg);
         if (OK != status)
         {
@@ -864,7 +801,6 @@ extern MSTATUS TRUSTEDGE_agentProtobufProcess(
             goto exit;
         }
 
-        MSG_LOG_print(MSG_LOG_DEBUG, "%s: Acquiring protobuf context\n", __func__);
         status = PROTOBUF_acquireContext(&pAgentCtx->pPBCtx);
         if (OK != status)
         {
@@ -873,7 +809,6 @@ extern MSTATUS TRUSTEDGE_agentProtobufProcess(
             goto exit;
         }
 
-        MSG_LOG_print(MSG_LOG_DEBUG, "%s: Setting message decoder\n", __func__);
         status = PROTOBUF_setMessageDecoder(
             pAgentCtx->pPBCtx, gpPayload, COUNTOF(gpPayload),
             TRUSTEDGE_agentProtobufMessageDecoder, pAgentCtx);
@@ -885,7 +820,6 @@ extern MSTATUS TRUSTEDGE_agentProtobufProcess(
         }
     }
 
-    MSG_LOG_print(MSG_LOG_DEBUG, "%s: Decoding message, payloadLen=%u\n", __func__, payloadLen);
     status = PROTOBUF_messageDecode(pAgentCtx->pPBCtx, pPayload, payloadLen);
     if (OK != status)
     {
@@ -903,7 +837,6 @@ exit:
         PROTOBUF_releaseContext(&pAgentCtx->pPBCtx);
     }
 
-    MSG_LOG_print(MSG_LOG_DEBUG, "%s: EXIT - status=%d\n", __func__, status);
     return status;
 }
 

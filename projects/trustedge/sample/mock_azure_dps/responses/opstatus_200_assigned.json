@@ -1,0 +1,25 @@
+{
+  "operationId": "5.3d2b1f9c8e7a6d4c.mock-op-12345678-1234-1234-1234-123456789abc",
+  "status": "assigned",
+  "registrationState": {
+    "x509": {
+      "certificateInfo": {
+        "subjectName": "CN={{REGISTRATION_ID}}",
+        "sha1Thumbprint": "AABBCCDD11223344556677889900AABBCCDD1122",
+        "sha256Thumbprint": "AABBCCDD11223344556677889900AABBCCDD1122AABBCCDD11223344556677889900",
+        "issuerName": "CN=Mock Issuer CA",
+        "notBeforeUtc": "2026-01-01T00:00:00.0000000Z",
+        "notAfterUtc": "2027-01-01T00:00:00.0000000Z",
+        "serialNumber": "1234567890"
+      }
+    },
+    "registrationId": "{{REGISTRATION_ID}}",
+    "createdDateTimeUtc": "2026-08-04T12:00:00.0000000Z",
+    "assignedHub": "mock-iot-hub.azure-devices.net",
+    "deviceId": "{{DEVICE_ID}}",
+    "status": "assigned",
+    "substatus": "initialAssignment",
+    "lastUpdatedDateTimeUtc": "2026-08-04T12:00:05.0000000Z",
+    "etag": "\"mock-etag-67890\""
+  }
+}

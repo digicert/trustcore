@@ -39,22 +39,40 @@ extern MSTATUS COMMON_UTILS_unescapeNewLine(
     ubyte4 *pDataLen)
 {
     MSTATUS status = OK;
-    ubyte4 index, shift = 0;
+    ubyte4 readIndex = 0;
+    ubyte4 writeIndex = 0;
 
-    index = 0;
-    while ((index + shift) < *pDataLen)
+    while (readIndex < *pDataLen)
     {
-        pData[index] = pData[index + shift];
-        if ('\\' == pData[index])
+        if ('\\' == pData[readIndex] && (readIndex + 1) < *pDataLen)
         {
-            pData[index] = '\n';
-            shift++;
+            if ('n' == pData[readIndex + 1])
+            {
+                /* Replace \n sequence with newline character */
+                pData[writeIndex] = '\n';
+                readIndex += 2;
+            }
+            else if ('\\' == pData[readIndex + 1])
+            {
+                /* Replace \\ sequence with single backslash */
+                pData[writeIndex] = '\\';
+                readIndex += 2;
+            }
+            else
+            {
+                pData[writeIndex] = pData[readIndex];
+                readIndex++;
+            }
         }
-
-        index++;
+        else
+        {
+            pData[writeIndex] = pData[readIndex];
+            readIndex++;
+        }
+        writeIndex++;
     }
 
-    *pDataLen = index;
+    *pDataLen = writeIndex;
 
     return status;
 }

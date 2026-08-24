@@ -162,6 +162,28 @@ MOC_EXTERN MSTATUS TRUSTEDGE_agentSendPolicyRefresh(
         sbyte *pAccountId,
         sbyte *pDeviceGroupId);
 
+MOC_EXTERN MSTATUS TRUSTEDGE_agentConstructCloudPlatformPolicyStatus(
+    sbyte *pDeviceId,
+    sbyte *pAccountId,
+    sbyte *pDeviceGroupId,
+    sbyte *pCloudPlatformPolicyId,
+    intBoolean succeed,
+    byteBoolean reRegistration,
+    sbyte4 errorCode,
+    sbyte *pErrorDescr,
+    MSTATUS statusCode,
+    ubyte4 httpStatusCode,
+    ubyte *pServerRsp,
+    ubyte4 serverRspLen,
+    ubyte **ppReq,
+    ubyte4 *pReqLen
+);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_agentPolicyAddFinishedNode(
+    TrustEdgeAgentCtx *pCtx,
+    TrustEdgeAgentPolicyNode *pNode,
+    TrustEdgeAgentPolicyNode **ppNode);
+
 #ifdef __cplusplus
 }
 #endif

@@ -80,7 +80,7 @@ jobs:
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
-          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc  --azure-dps
       - name: Push Artifact - Unsigned Debian Package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -112,7 +112,7 @@ jobs:
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
-          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi64 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc  --azure-dps
       - name: Push Artifact for RPI64 - Unsigned Debian Package
         if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -147,7 +147,7 @@ jobs:
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
-          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --version-string ${{ steps.trustedge-client-version.outputs.version }} --toolchain rpi32 --monolithic --package --tpm2 --cvc --proxy --pqc --pqc-composite --enable-pc --azure-dps
       - name: Push Artifact for RPI32 - Unsigned Debian Package
         if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

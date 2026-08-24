@@ -1,0 +1,6 @@
+{
+  "errorCode": 503001,
+  "trackingId": "mock-tracking-503-12345678-1234-1234-1234-123456789abc",
+  "message": "Service unavailable. Please retry later.",
+  "timestampUtc": "2026-08-04T12:00:00.0000000Z"
+}
