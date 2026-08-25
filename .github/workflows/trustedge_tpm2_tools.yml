@@ -14,7 +14,7 @@ env:
   NEXUS_LINARO_ARM_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
 jobs:
   TrustEdge_v2_TPM2_Tools:
-    runs-on: [digicert-large]
+    runs-on: ${{ github.repository == 'digicert/trustcore-test' && 'digicert-large' || 'ubuntu-22.04' }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -30,7 +30,8 @@ jobs:
           branch: main
           search_commit_body: true
 
-      - name: Install dependencies
+      - name: Install dependencies from Nexus
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           sudo apt-get update
           sudo apt-get install -y zip
@@ -41,6 +42,14 @@ jobs:
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
           cmake --version
+
+      - name: Install dependencies from public repositories
+        if: github.repository != 'digicert/trustcore-test'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip cmake
+          cmake --version
+
       - name: Build TPM2 Tools
         run: |
           export CMAKE_DIR=/opt/cmake
@@ -52,6 +61,7 @@ jobs:
           name: tpm2_tools-x86_64-${{ steps.trustedge-client-version.outputs.version }}
           path: dist/*.zip
       - name: Install toolchain for RPI64
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           sudo mkdir -p /opt/sysroots/master
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_SYSROOT_REPO_URL }} -O -v
@@ -59,16 +69,19 @@ jobs:
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_AARCH64_GCC_REPO_URL }} -O -v
           sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz -C /opt/sysroots/master
       - name: Build TPM2 Tools for RPI64
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
           ./scripts/ci/trustedge/build_trustedge_tools.sh --toolchain rpi64
       - name: Push Artifact for RPI64
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: tpm2_tools-aarch64-${{ steps.trustedge-client-version.outputs.version }}
           path: dist/*.zip
       - name: Install toolchain for RPI32
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           sudo mkdir -p /opt/sysroots/master
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_SYSROOT_REPO_URL }} -O -v
@@ -76,11 +89,13 @@ jobs:
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_LINARO_ARM_GCC_REPO_URL }} -O -v
           sudo tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz -C /opt/sysroots/master
       - name: Build TPM2 Tools for RPI32
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
           ./scripts/ci/trustedge/build_trustedge_tools.sh --toolchain rpi32
       - name: Push Artifact for RPI32
+        if: github.repository == 'digicert/trustcore-test'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: tpm2_tools-arm32-${{ steps.trustedge-client-version.outputs.version }}
