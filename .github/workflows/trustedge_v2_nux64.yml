@@ -18,7 +18,7 @@ env:
   NEXUS_LINARO_ARM_GCC_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/linaro/linaro-6.5.0-2018-12/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
 jobs:
   TrustEdge_v2:
-    runs-on: [digicert-large]
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
