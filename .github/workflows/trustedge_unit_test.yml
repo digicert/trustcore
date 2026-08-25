@@ -7,10 +7,6 @@ on:
     paths:
       - .github/workflows/trustedge_unit_test.yml
 
-env:
-  NEXUS_CMAKE_REPO_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/cmake/cmake-3.22.1/cmake-3.22.1-linux-x86_64.sh
-  NEXUS_JANSSON_URL: https://repo.dev.blu.digicert.com/repository/digicert-artifacts/dependencies/jansson/2.13/jansson-2.13.tar.bz2
-
 jobs:
   TrustEdge_v2:
     runs-on: ubuntu-24.04
