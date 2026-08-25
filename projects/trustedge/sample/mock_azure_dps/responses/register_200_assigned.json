@@ -1,0 +1,14 @@
+{
+  "operationId": "5.3d2b1f9c8e7a6d4c.mock-op-12345678-1234-1234-1234-123456789abc",
+  "status": "assigned",
+  "registrationState": {
+    "registrationId": "{{REGISTRATION_ID}}",
+    "createdDateTimeUtc": "2026-08-04T12:00:00.0000000Z",
+    "assignedHub": "mock-iot-hub.azure-devices.net",
+    "deviceId": "{{DEVICE_ID}}",
+    "status": "assigned",
+    "substatus": "initialAssignment",
+    "lastUpdatedDateTimeUtc": "2026-08-04T12:00:01.0000000Z",
+    "etag": "\"mock-etag-12345\""
+  }
+}

@@ -62,7 +62,7 @@ jobs:
         run: |
           export CMAKE_DIR=/opt/cmake
           export PATH=$CMAKE_DIR/bin:$PATH
-          ./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --gdb --version-string ${{ steps.trustedge-client-version.outputs.version }} --unittest --enable-coverage --proxy --pqc --pqc-composite --enable-pc
+          ./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --gdb --version-string ${{ steps.trustedge-client-version.outputs.version }} --unittest --enable-coverage --proxy --pqc --pqc-composite --enable-pc  --azure-dps
           cat ./projects/trustedge/build/Testing/Temporary/LastTest.log
 
       - name: Baseline Coverage

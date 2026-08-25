@@ -95,6 +95,9 @@
 #include "../../trustedge/agent/trustedge_agent_updatepolicy.h"
 #include "../../trustedge/agent/trustedge_agent_attributes.h"
 #include "../../trustedge/agent/trustedge_agent_certificate.h"
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+#include "../../trustedge/cloud_provider/trustedge_cloud_service_azure.h"
+#endif
 #include "../../http/http_context.h"
 #include "../../http/http.h"
 #include "../../est/est_cert_utils.h"
@@ -5875,6 +5878,94 @@ exit:
     return status;
 }
 
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+
+/* JSON will be in one of the two formats
+ *
+ * 1. Server has provisioned device with cloud platform credentials. The JSON
+ * will contain the following fields:
+
+{
+  "operationId": "<id>",
+  "registrationState": {
+    "assignedHub": "<hub>",
+    "createdDateTimeUtc": "<time>",
+    "deviceId": "<id>",
+    "registrationId": "<id>",
+    "x509": {
+      "certificateInfo": { ... },
+      "enrollmentGroupId": "<string>"
+    }
+  },
+  "status": "<status>"
+
+ *
+ * 2. Server provides credentials for device to provision itself with
+ * cloud platform. The JSON will contain the following fields:
+
+{
+  "operationId": "<id>",
+  "brokerType": "AZURE_IOT_DPS",
+  "attributes": [
+    {
+      "key": "<brokerKey>",
+      "value": "<brokerKeyValue>"
+    }
+  ]
+}
+
+ * This function will parse the JSON and determine which type of cloud platform
+ * provisioning is being performed. If the device needs to provision itself,
+ * this function will return TRUE. If the device has been provisioned by the
+ * server, this function will return FALSE.
+ */
+static MSTATUS TRUSTEDGE_agentParseCloudResponse(
+    ubyte *pJson,
+    ubyte4 jsonLen,
+    byteBoolean *pProvisionSelf)
+{
+    MSTATUS status;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 numTokens;
+    sbyte *pBrokerType = NULL;
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pJson, jsonLen, &numTokens);
+    if (OK != status)
+    {
+        status = ERR_TRUSTEDGE_MSG_PARSING_ERROR;
+        goto exit;
+    }
+
+    status = JSON_getJsonStringValue(
+        pJCtx, 0, "brokerType", &pBrokerType, FALSE);
+    if (OK == status && NULL != pBrokerType)
+    {
+        /* Device needs to provision itself with cloud platform */
+        *pProvisionSelf = TRUE;
+        goto exit;
+    }
+
+    /* Device has been provisioned by the server */
+    status = OK;
+    *pProvisionSelf = FALSE;
+
+exit:
+    DIGI_FREE((void **) &pBrokerType);
+    if (NULL != pJCtx)
+    {
+        JSON_releaseContext(&pJCtx);
+    }
+    return status;
+}
+
+#endif /* __ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__ */
+
 /*----------------------------------------------------------------------------*/
 
 static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
@@ -5890,6 +5981,14 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
     MimePayload payloadData = { 0 };
     sbyte *pFileName = NULL;
     sbyte *pOutFile = NULL;
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+    byteBoolean isProvisionSelf = FALSE;
+    ubyte4 httpStatusCode = 0;
+    ubyte *pServerRsp = NULL;
+    ubyte4 serverRspLen = 0;
+#endif
+    ubyte *pProviderCredJson = NULL;
+    ubyte4 providerCredJsonLen = 0;
 
     pHandlerData = createCloudPlatformHandlerData (pCtx);
     if (NULL == pHandlerData)
@@ -5923,6 +6022,57 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
         goto exit;
     }
 
+    pCtx->curPolicy.data.cpps.status = OK;
+    pCtx->curPolicy.data.cpps.httpStatusCode = 0;
+    pCtx->curPolicy.data.cpps.pServerRsp = NULL;
+    pCtx->curPolicy.data.cpps.serverRspLen = 0;
+
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+    status = TRUSTEDGE_agentParseCloudResponse(
+        pCloudPlatformData->pProviderCredJson,
+        pCloudPlatformData->providerCredJsonLen,
+        &isProvisionSelf);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (TRUE == isProvisionSelf)
+    {
+        status = TRUSTEDGE_cloudServiceAzureRegister(
+            pCtx,
+            pCtx->curPolicy.pPolicy,
+            pCloudPlatformData->pProviderCredJson,
+            pCloudPlatformData->providerCredJsonLen,
+            &httpStatusCode,
+            &pServerRsp,
+            &serverRspLen,
+            &pProviderCredJson,
+            &providerCredJsonLen);
+        pCtx->curPolicy.data.cpps.status = status;
+        pCtx->curPolicy.data.cpps.httpStatusCode = httpStatusCode;
+        pCtx->curPolicy.data.cpps.pServerRsp = pServerRsp;
+        pCtx->curPolicy.data.cpps.serverRspLen = serverRspLen;
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+    else
+#endif
+    {
+        pProviderCredJson = pCloudPlatformData->pProviderCredJson;
+        providerCredJsonLen = pCloudPlatformData->providerCredJsonLen;
+    }
+
     status = COMMON_UTILS_addPathExtension(
         pCtx->curPolicy.pPolicy->pId, JSON_EXT, &pFileName);
     if (OK != status)
@@ -5949,8 +6099,7 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
         "Writing cloud platform provider credentials to %s\n", pOutFile);
 
     status = DIGICERT_writeFile(
-        pOutFile, pCloudPlatformData->pProviderCredJson,
-        pCloudPlatformData->providerCredJsonLen);
+        pOutFile, pProviderCredJson, providerCredJsonLen);
     if (OK != status)
     {
         MSG_LOG_print(MSG_LOG_ERROR,
@@ -5960,11 +6109,34 @@ static MSTATUS TRUSTEDGE_agentParseCloudPlatform(
         goto exit;
     }
 
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+    if (TRUE == isProvisionSelf)
+    {
+        status = TRUSTEDGE_agentCertificateAssociateCloudPolicy(
+            pCtx, pCtx->curPolicy.pPolicy->pDependency->pPolicies->pPolicyId,
+            pCtx->curPolicy.pPolicy->pId);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+#endif
+
 exit:
 
     DIGI_FREE((void ** ) &pId);
     DIGI_FREE((void **) &pFileName);
     DIGI_FREE((void **) &pOutFile);
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+    if (TRUE == isProvisionSelf && NULL != pProviderCredJson)
+    {
+        DIGI_FREE((void **) &pProviderCredJson);
+    }
+#endif
     JSON_releaseContext(&pJCtx);
     freeCloudPlatformHandlerData (&pHandlerData);
 
@@ -7050,22 +7222,6 @@ static MSTATUS TRUSTEDGE_agentProcessCommand(
     byteBoolean finished)
 {
     MSTATUS status;
-
-    /* Debug: Input validation */
-    MSG_LOG_print(MSG_LOG_DEBUG,
-        "%s: ENTER - pCtx=%p, pPayload=%p, payloadLen=%u, finished=%d\n",
-        __func__, (void*)pCtx, (void*)pPayload, payloadLen, finished);
-
-    MSG_LOG_print(MSG_LOG_DEBUG,
-        "%s: pCtx->pPBCtx=%p, pCtx->curTopic=%u\n",
-        __func__, (void*)pCtx->pPBCtx, pCtx->curTopic);
-
-    if (pCtx->curTopic < TE_TOPIC_LAST)
-    {
-        MSG_LOG_print(MSG_LOG_DEBUG,
-            "%s: pAllTopics[curTopic].pTopic=%p\n",
-            __func__, (void*)pCtx->pAllTopics[pCtx->curTopic].pTopic);
-    }
 
     status = TRUSTEDGE_agentProtobufProcess(
         pCtx, pPayload, payloadLen, finished);

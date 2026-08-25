@@ -18,13 +18,15 @@
 #include "../../trustedge/agent/trustedge_agent_certificate.h"
 #include "../../trustedge/agent/trustedge_agent_policy.h"
 #include "../../trustedge/agent/trustedge_agent_persist.h"
+#include "../../trustedge/cloud_provider/trustedge_cloud_service_azure.h"
 
 #ifdef __ENABLE_DIGICERT_PQC__
 #include "../../crypto_interface/crypto_interface_qs.h"
 #include "../../crypto_interface/crypto_interface_qs_sig.h"
 #endif
 
-#define SELECTED_CERT_ALIAS_JSTR    "selectedCertAlias"
+#include <string.h>
+
 #define CERT_EXPIRE_TIME_JSTR       "certExpireTime"
 #define LAST_RENEW_REQUEST_JSTR     "lastRenewRequest"
 #define LAST_RENEW_RESPONSE_JSTR    "lastRenewResponse"
@@ -34,6 +36,8 @@
 #define SC_DEVICE_GROUP_ID_JSTR         "deviceGroupId"
 #define SC_CERTIFICATE_POLICY_ID_JSTR   "certificatePolicyId"
 #define SC_REQUEST_JSTR                 "request"
+
+#define CLOUD_POLICY_ID_JSTR           "cloudPolicyId"
 
 #define CERTIFICATE_RENEW_UUID      "DeviceTM_Certificate_Policy_Renew_Request"
 
@@ -1680,7 +1684,26 @@ static void freeCertificateHandlerData (MimePartProcessArg **ppStruct)
 #define PKCS7_HEADER        "-----BEGIN PKCS7-----\n"
 #define PKCS7_FOOTER        "-----END PKCS7-----\n"
 
-static MSTATUS TRUSTEDGE_getKeyById(
+/*
+ * Lookup and load an asymmetric key associated with a certificate policy ID.
+ *
+ * This routine reads persisted certificate-policy/key metadata for the current
+ * agent context, parses the JSON payload, resolves the entry matching `pId`,
+ * and returns the loaded key via `ppKey`.
+ *
+ * Parameters:
+ *   pCtx   - TrustEdge agent context (required).
+ *   pId    - Certificate policy identifier to resolve (required).
+ *   ppKey  - Output key pointer. On success, receives a newly initialized key
+ *            owned by the caller; on failure, remains NULL/unmodified by caller
+ *            expectations in this module.
+ *
+ * Return:
+ *   MSTATUS indicating success/failure of persistence read, JSON parsing,
+ *   policy lookup, and key load steps. All transient allocations are released
+ *   on exit through the common cleanup path.
+ */
+extern MSTATUS TRUSTEDGE_getKeyByPolicyId(
     TrustEdgeAgentCtx *pCtx,
     sbyte *pId,
     AsymmetricKey **ppKey)
@@ -1916,7 +1939,7 @@ static MSTATUS processCertificateRenewMimePart(
             goto exit;
         }
 
-        status = TRUSTEDGE_getKeyById(
+        status = TRUSTEDGE_getKeyByPolicyId(
             pState->pCtx, pId, &pState->pKey);
         if (OK != status)
         {
@@ -2040,6 +2063,21 @@ extern MSTATUS TRUSTEDGE_agentParseCertificateRenew(
         goto exit;
     }
 
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+    /* Check if cloud policy has been associated */
+    status = TRUSTEDGE_agentCertificateCloudPolicyCheck(
+        pCtx, pCertData->pId);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+#endif
+
+
 exit:
 
     if (NULL != pCertDescArray)
@@ -2055,3 +2093,841 @@ exit:
 
     return status;
 }
+
+/**
+ * Retrieve a stored certificate for the specified certificate policy ID.
+ *
+ * This function loads persisted certificate metadata/state associated with the
+ * active TrustEdge agent context, searches for an entry that matches
+ * `pPolicyId`, and returns the corresponding certificate buffer and length.
+ *
+ * Parameters:
+ * - pCtx: Initialized TrustEdge agent context used to resolve persistence data.
+ * - pPolicyId: NUL-terminated certificate policy identifier to match.
+ * - ppCert: Output pointer that receives an allocated certificate buffer on
+ *   success. Caller is responsible for freeing returned memory using the
+ *   project allocator conventions.
+ * - pCertLen: Output length (bytes) of `*ppCert` on success.
+ *
+ * Behavior:
+ * - Validates required inputs.
+ * - Reads and parses persisted certificate JSON content.
+ * - Locates certificate data by policy ID.
+ * - Populates output parameters only when a matching certificate is found.
+ *
+ * Return:
+ * - `MSTATUS_OK` on success.
+ * - A non-zero status code on validation, persistence, parse, lookup, or
+ *   allocation failure.
+ *
+ * Notes:
+ * - The function follows the common `goto exit` cleanup pattern to guarantee
+ *   consistent resource release for all error paths.
+ */
+extern MSTATUS TRUSTEDGE_getCertificateByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    ubyte **ppCert,
+    ubyte4 *pCertLen)
+{
+    MSTATUS status;
+    sbyte *pFilePath = NULL;
+    ubyte *pJson = NULL;
+    ubyte4 jsonLen = 0;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 numTokens = 0;
+    sbyte *pAlias = NULL;
+    ubyte *pCert = NULL;
+    ubyte4 certLen = 0;
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pIssuedCertDir, pPolicyId, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = COMMON_UTILS_addPathExtension(pFilePath, JSON_EXT, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = DIGICERT_readFile(pFilePath, &pJson, &jsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pJson, jsonLen, &numTokens);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_getJsonStringValue(
+        pJCtx, 0, SELECTED_CERT_ALIAS_JSTR, &pAlias, TRUE);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pConfig->pKeystoreCertsDir, pAlias, &pFilePath);
+    if (OK != status)
+        goto exit;
+
+    status = COMMON_UTILS_addPathExtension(
+        pFilePath, TRUSTEDGE_SUFFIX_PEM, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = DIGICERT_readFile(pFilePath, &pCert, &certLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    *ppCert = pCert;
+    *pCertLen = certLen;
+    pCert = NULL;
+
+exit:
+
+    DIGI_FREE((void **) &pCert);
+    DIGI_FREE((void **) &pJson);
+    DIGI_FREE((void **) &pAlias);
+    DIGI_FREE((void **) &pFilePath);
+    JSON_releaseContext(&pJCtx);
+
+    return status;
+}
+
+/**
+ * Resolve certificate and private-key file paths for a certificate policy.
+ *
+ * This function locates persisted certificate metadata for the supplied policy ID,
+ * parses the stored JSON payload, and extracts path values for both certificate and
+ * key material. On success, output pointers are populated with allocated strings.
+ *
+ * Inputs:
+ * - pCtx: initialized agent context used for persistence and policy access.
+ * - pPolicyId: null-terminated certificate policy identifier.
+ *
+ * Outputs:
+ * - ppCertPath: receives allocated certificate path string on success.
+ * - ppKeyPath: receives allocated private-key path string on success.
+ *
+ * Ownership:
+ * - Caller owns returned output buffers and must free them when no longer needed.
+ *
+ * Error handling:
+ * - Uses a single exit path for centralized cleanup of transient allocations and
+ *   JSON context resources.
+ */
+MSTATUS TRUSTEDGE_getCertificateAndKeyPathByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    sbyte **ppCertPath,
+    sbyte **ppKeyPath)
+{
+    /* Working state for persisted data lookup and JSON parsing. */
+    MSTATUS status;
+    sbyte *pFilePath = NULL;
+    sbyte *pJson = NULL;
+    ubyte4 jsonLen = 0;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 numTokens = 0;
+    sbyte *pAlias = NULL;
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pIssuedCertDir, pPolicyId, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = COMMON_UTILS_addPathExtension(pFilePath, JSON_EXT, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = DIGICERT_readFile(pFilePath, (ubyte **) &pJson, &jsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pJson, jsonLen, &numTokens);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (NULL != ppCertPath)
+    {
+        status = JSON_getJsonStringValue(
+            pJCtx, 0, SELECTED_CERT_ALIAS_JSTR, &pAlias, TRUE);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        status = COMMON_UTILS_addPathComponent(
+            pCtx->pConfig->pKeystoreCertsDir, pAlias, ppCertPath);
+        if (OK != status)
+            goto exit;
+
+        status = COMMON_UTILS_addPathExtension(
+            *ppCertPath, TRUSTEDGE_SUFFIX_PEM, ppCertPath);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+
+    if (NULL != ppKeyPath)
+    {
+        DIGI_FREE((void **) &pAlias);
+        status = JSON_getJsonStringValue(
+            pJCtx, 0, SELECTED_CERT_ALIAS_JSTR, &pAlias, TRUE);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        status = COMMON_UTILS_addPathComponent(
+            pCtx->pConfig->pKeystoreKeysDir, pAlias, ppKeyPath);
+        if (OK != status)
+            goto exit;
+
+        status = COMMON_UTILS_addPathExtension(
+            *ppKeyPath, ".pem", ppKeyPath);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+
+exit:
+
+    /* Centralized cleanup for all error/success paths. */
+    DIGI_FREE((void **) &pAlias);
+    DIGI_FREE((void **) &pJson);
+    DIGI_FREE((void **) &pFilePath);
+    JSON_releaseContext(&pJCtx);
+
+    return status;
+}
+
+static MSTATUS TRUSTEDGE_agentCertificateEscapeJsonString(
+    sbyte *pString,
+    sbyte **ppEscapedString,
+    ubyte4 *pEscapedLen)
+{
+    MSTATUS status = OK;
+    sbyte *pEscaped = NULL;
+    ubyte4 len = 0;
+    ubyte4 outLen = 0;
+    ubyte4 i = 0;
+
+    if (NULL == pString || NULL == ppEscapedString || NULL == pEscapedLen)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    len = DIGI_STRLEN(pString);
+    status = DIGI_MALLOC((void **) &pEscaped, (len * 2) + 1);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    for (i = 0; i < len; ++i)
+    {
+        switch (pString[i])
+        {
+            case '\\':
+                pEscaped[outLen++] = '\\';
+                pEscaped[outLen++] = '\\';
+                break;
+            case '"':
+                pEscaped[outLen++] = '\\';
+                pEscaped[outLen++] = '"';
+                break;
+            case '\n':
+                pEscaped[outLen++] = '\\';
+                pEscaped[outLen++] = 'n';
+                break;
+            case '\r':
+                pEscaped[outLen++] = '\\';
+                pEscaped[outLen++] = 'r';
+                break;
+            case '\t':
+                pEscaped[outLen++] = '\\';
+                pEscaped[outLen++] = 't';
+                break;
+            default:
+                pEscaped[outLen++] = pString[i];
+                break;
+        }
+    }
+
+    pEscaped[outLen] = '\0';
+    *ppEscapedString = pEscaped;
+    *pEscapedLen = outLen;
+    pEscaped = NULL;
+
+exit:
+
+    if (NULL != pEscaped)
+        DIGI_FREE((void **) &pEscaped);
+
+    return status;
+}
+
+static MSTATUS TRUSTEDGE_agentCertificateAddOrUpdateJsonString(
+    ubyte *pJson,
+    ubyte4 jsonLen,
+    sbyte *pKey,
+    sbyte *pValue,
+    ubyte **ppUpdatedJson,
+    ubyte4 *pUpdatedJsonLen)
+{
+    MSTATUS status = OK;
+    sbyte *pJsonStr = (sbyte *) pJson;
+    sbyte *pKeyPattern = NULL;
+    sbyte *pKeyPos = NULL;
+    sbyte *pKeyEnd = NULL;
+    sbyte *pColonPos = NULL;
+    sbyte *pValueStart = NULL;
+    sbyte *pValueEnd = NULL;
+    sbyte *pEscapedValue = NULL;
+    ubyte4 escapedValueLen = 0;
+    ubyte4 prefixLen = 0;
+    ubyte4 suffixLen = 0;
+    ubyte4 outLen = 0;
+    ubyte *pUpdatedJson = NULL;
+    sbyte *pCloseBrace = NULL;
+    sbyte *pScan = NULL;
+    sbyte *pInsertPrefix = "";
+    ubyte4 keyPatternLen = 0;
+    sbyte *pFinalJson = NULL;
+
+    if (NULL == pJson || NULL == pKey || NULL == pValue ||
+        NULL == ppUpdatedJson || NULL == pUpdatedJsonLen)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    keyPatternLen = DIGI_STRLEN(pKey) + 3;
+    status = DIGI_MALLOC((void **) &pKeyPattern, keyPatternLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    snprintf(pKeyPattern, keyPatternLen, "\"%s\"", pKey);
+    pKeyPos = strstr(pJsonStr, pKeyPattern);
+    if (NULL != pKeyPos)
+    {
+        pKeyEnd = pKeyPos + DIGI_STRLEN(pKeyPattern);
+        pColonPos = strchr(pKeyEnd, ':');
+        if (NULL == pColonPos)
+        {
+            status = ERR_UM_JSON_PARSE_FAILED;
+            goto exit;
+        }
+
+        pValueStart = strchr(pColonPos, '"');
+        if (NULL == pValueStart)
+        {
+            status = ERR_UM_JSON_PARSE_FAILED;
+            goto exit;
+        }
+
+        pValueEnd = pValueStart + 1;
+        while ((*pValueEnd != '\0') &&
+               !((*pValueEnd == '"') && (*(pValueEnd - 1) != '\\')))
+        {
+            pValueEnd++;
+        }
+
+        if ('\0' == *pValueEnd)
+        {
+            status = ERR_UM_JSON_PARSE_FAILED;
+            goto exit;
+        }
+
+        status = TRUSTEDGE_agentCertificateEscapeJsonString(
+            pValue, &pEscapedValue, &escapedValueLen);
+        if (OK != status)
+            goto exit;
+
+        prefixLen = (ubyte4) (pValueStart - pJsonStr);
+        suffixLen = (ubyte4) ((pJsonStr + jsonLen) - (pValueEnd + 1));
+        outLen = prefixLen + 1 + escapedValueLen + 1 + suffixLen;
+
+        status = DIGI_MALLOC((void **) &pUpdatedJson, outLen + 1);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        memcpy(pUpdatedJson, pJsonStr, prefixLen);
+        pUpdatedJson[prefixLen] = '"';
+        memcpy(pUpdatedJson + prefixLen + 1, pEscapedValue, escapedValueLen);
+        pUpdatedJson[prefixLen + 1 + escapedValueLen] = '"';
+        memcpy(pUpdatedJson + prefixLen + 2 + escapedValueLen,
+               pValueEnd + 1, suffixLen);
+        pUpdatedJson[outLen] = '\0';
+
+        *ppUpdatedJson = (ubyte *) pUpdatedJson;
+        *pUpdatedJsonLen = outLen;
+        pUpdatedJson = NULL;
+    }
+    else
+    {
+        pCloseBrace = strrchr(pJsonStr, '}');
+        if (NULL == pCloseBrace)
+        {
+            status = ERR_UM_JSON_PARSE_FAILED;
+            goto exit;
+        }
+
+        pScan = pCloseBrace - 1;
+        while ((pScan >= pJsonStr) && ((*pScan == ' ') || (*pScan == '\t') ||
+               (*pScan == '\n') || (*pScan == '\r')))
+        {
+            pScan--;
+        }
+
+        if ((pScan > pJsonStr) && (*pScan != '{'))
+            pInsertPrefix = ",";
+
+        status = TRUSTEDGE_agentCertificateEscapeJsonString(
+            pValue, &pEscapedValue, &escapedValueLen);
+        if (OK != status)
+            goto exit;
+
+        status = DIGI_MALLOC((void **) &pFinalJson,
+            (pCloseBrace - pJsonStr) + DIGI_STRLEN(pInsertPrefix) +
+            1 + DIGI_STRLEN(pKeyPattern) + 1 + escapedValueLen + 2 + 2);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        snprintf((sbyte *) pFinalJson, (pCloseBrace - pJsonStr) + DIGI_STRLEN(pInsertPrefix) +
+            1 + DIGI_STRLEN(pKeyPattern) + 1 + escapedValueLen + 2 + 2,
+            "%.*s%s\"%s\":\"%s\"}",
+            (int) (pCloseBrace - pJsonStr), pJsonStr,
+            pInsertPrefix, pKey, pEscapedValue);
+
+        *ppUpdatedJson = (ubyte *) pFinalJson;
+        *pUpdatedJsonLen = DIGI_STRLEN((sbyte *) pFinalJson);
+        pFinalJson = NULL;
+    }
+
+exit:
+
+    if (NULL != pEscapedValue)
+        DIGI_FREE((void **) &pEscapedValue);
+
+    if (NULL != pKeyPattern)
+        DIGI_FREE((void **) &pKeyPattern);
+
+    if (NULL != pUpdatedJson)
+        DIGI_FREE((void **) &pUpdatedJson);
+
+    if (NULL != pFinalJson)
+        DIGI_FREE((void **) &pFinalJson);
+
+    return status;
+}
+
+static MSTATUS TRUSTEDGE_agentCertificatePersistCloudPolicyId(
+    sbyte *pFilePath,
+    sbyte *pCloudPolicyId)
+{
+    MSTATUS status;
+    ubyte *pJson = NULL;
+    ubyte4 jsonLen = 0;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 numTokens = 0;
+    sbyte *pExistingCloudPolicyId = NULL;
+    ubyte *pUpdatedJson = NULL;
+    ubyte4 updatedJsonLen = 0;
+
+    status = DIGICERT_readFile(pFilePath, &pJson, &jsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pJson, jsonLen, &numTokens);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    /* Try to get cloud policy ID */
+    status = JSON_getJsonStringValue(
+        pJCtx, 0, CLOUD_POLICY_ID_JSTR, &pExistingCloudPolicyId, TRUE);
+    if (OK == status)
+    {
+        status = TRUSTEDGE_agentCertificateAddOrUpdateJsonString(
+            pJson, jsonLen, CLOUD_POLICY_ID_JSTR, pCloudPolicyId,
+            &pUpdatedJson, &updatedJsonLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+    else if (ERR_NOT_FOUND == status)
+    {
+        status = TRUSTEDGE_agentCertificateAddOrUpdateJsonString(
+            pJson, jsonLen, CLOUD_POLICY_ID_JSTR, pCloudPolicyId,
+            &pUpdatedJson, &updatedJsonLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+    else
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = DIGICERT_writeFile(pFilePath, pUpdatedJson, updatedJsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+exit:
+
+    DIGI_FREE((void **) &pJson);
+    DIGI_FREE((void **) &pUpdatedJson);
+    DIGI_FREE((void **) &pExistingCloudPolicyId);
+    JSON_releaseContext(&pJCtx);
+
+    return status;
+}
+
+/* Read the JSON file stored in issued directory corresponding to the policy ID
+ * and check if the cloud policy ID is already associated with it. If not, add
+ * the cloud policy ID entry. If it already exists then override it with the new
+ * cloud policy ID. This is to ensure that the cloud policy ID is always up to
+ * date.
+ */
+MOC_EXTERN MSTATUS TRUSTEDGE_agentCertificateAssociateCloudPolicy(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    sbyte *pCloudPolicyId)
+{
+    MSTATUS status;
+    sbyte *pFilePath = NULL;
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pIssuedCertDir, pPolicyId, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = COMMON_UTILS_addPathExtension(pFilePath, JSON_EXT, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (FALSE == FMGMT_pathExists(pFilePath, NULL))
+    {
+        /* Didn't find it, not a fatal error */
+        goto exit;
+    }
+
+    status = TRUSTEDGE_agentCertificatePersistCloudPolicyId(
+        pFilePath, pCloudPolicyId);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+exit:
+
+    if (NULL != pFilePath)
+        DIGI_FREE((void **) &pFilePath);
+
+    return status;
+}
+
+#if defined(__ENABLE_DIGICERT_TRUSTEDGE_CLOUD_SERVICE_AZURE__)
+
+MOC_EXTERN MSTATUS TRUSTEDGE_agentCertificateCloudPolicyCheck(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId)
+{
+    MSTATUS status;
+    sbyte *pFilePath = NULL;
+    ubyte *pJson = NULL;
+    ubyte4 jsonLen = 0;
+    JSON_ContextType *pJCtx = NULL;
+    ubyte4 numTokens = 0;
+    sbyte *pCloudPolicyId = NULL;
+
+    status = COMMON_UTILS_addPathComponent(
+        pCtx->pIssuedCertDir, pPolicyId, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = COMMON_UTILS_addPathExtension(pFilePath, JSON_EXT, &pFilePath);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    if (FALSE == FMGMT_pathExists(pFilePath, NULL))
+    {
+        /* Didn't find it, not a fatal error */
+        goto exit;
+    }
+
+    status = DIGICERT_readFile(pFilePath, &pJson, &jsonLen);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_acquireContext(&pJCtx);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_parse(pJCtx, pJson, jsonLen, &numTokens);
+    if (OK != status)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+    status = JSON_getJsonStringValue(
+        pJCtx, 0, CLOUD_POLICY_ID_JSTR, &pCloudPolicyId, TRUE);
+    if (OK == status)
+    {
+        MSG_LOG_print(MSG_LOG_INFO,
+            "Cloud policy ID %s is associated with policy %s\n",
+            pCloudPolicyId, pPolicyId);
+
+        status = TRUSTEDGE_cloudServiceAzureReRegisterByPolicyId(
+            pCtx, pCloudPolicyId);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+    else if (ERR_NOT_FOUND == status)
+    {
+        status = OK;
+    }
+    else
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d status: %d = %s\n",
+            __func__, __LINE__, status,
+            MERROR_lookUpErrorCode(status));
+        goto exit;
+    }
+
+exit:
+
+    if (NULL != pFilePath)
+        DIGI_FREE((void **) &pFilePath);
+
+    if (NULL != pJson)
+        DIGI_FREE((void **) &pJson);
+
+    if (NULL != pJCtx)
+        JSON_releaseContext(&pJCtx);
+
+    if (NULL != pCloudPolicyId)
+        DIGI_FREE((void **) &pCloudPolicyId);
+
+    return status;
+}
+
+#endif

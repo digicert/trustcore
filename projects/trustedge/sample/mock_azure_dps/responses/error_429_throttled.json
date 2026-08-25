@@ -1,0 +1,6 @@
+{
+  "errorCode": 429001,
+  "trackingId": "mock-tracking-429-12345678-1234-1234-1234-123456789abc",
+  "message": "Number of operations exceeded. Please retry after 10 seconds.",
+  "timestampUtc": "2026-08-04T12:00:00.0000000Z"
+}

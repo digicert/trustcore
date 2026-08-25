@@ -1,0 +1,16 @@
+{
+    "appliedPolicies": [
+        {
+            "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+            "policyType": "CERTIFICATE",
+            "policyId": "294820113",
+            "priority": 0,
+            "policyErrorResponses": 0,
+            "creationTimestamp": "2026-08-05T22:10:20.224Z",
+            "processTimestamp": "2026-08-05T22:10:20.224Z",
+            "completionTimestamp": "2026-08-05T22:10:21.468Z",
+            "alias": "294820113",
+            "status": "SUCCESS"
+        }
+    ]
+}

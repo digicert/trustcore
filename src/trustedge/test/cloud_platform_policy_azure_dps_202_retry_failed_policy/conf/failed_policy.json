@@ -1,0 +1,22 @@
+{
+    "failedPolicies": [
+        {
+            "deviceGroupId": "DEVICE-GROUP-ID-TEST-0",
+            "policyType": "CLOUDPLATFORM",
+            "policyId": "193850392",
+            "priority": 0,
+            "policyDependency": [
+                {
+                    "policyType": "CERTIFICATE",
+                    "policyId": "294820113"
+                }
+            ],
+            "policyErrorResponses": 0,
+            "creationTimestamp": "2026-08-12T23:13:44.692Z",
+            "processTimestamp": "2026-08-12T23:13:44.693Z",
+            "errorTimestamp": "2026-08-12T23:13:55.381Z",
+            "status": "FAILED",
+            "policyState": "CLOUDPLATFORM"
+        }
+    ]
+}

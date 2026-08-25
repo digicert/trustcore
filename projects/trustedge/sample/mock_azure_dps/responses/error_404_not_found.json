@@ -1,0 +1,6 @@
+{
+  "errorCode": 404001,
+  "trackingId": "mock-tracking-404-12345678-1234-1234-1234-123456789abc",
+  "message": "Registration not found",
+  "timestampUtc": "2026-08-04T12:00:00.0000000Z"
+}

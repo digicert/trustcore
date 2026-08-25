@@ -3799,10 +3799,16 @@ extern MSTATUS TRUSTEDGE_agentPersistCertSpecAddOrUpdateRenewRequestTime(
     if (i == dataLen - timeStampLen)
     {
         i = dataLen - 1;
-        while ('}' != pData[i])
+        while (i > 0 && '}' != pData[i])
             i--;
 
+        /* Skip back over any whitespace before '}' so the closing character of
+         * the last value is preserved regardless of formatting. */
         i--;
+        while (i > 0 && (' ' == pData[i] || '\t' == pData[i] ||
+                         '\n' == pData[i] || '\r' == pData[i]))
+            i--;
+        i++;
 
         ret = snprintf(NULL, 0, PERSISTED_CERT_SPEC_CERT_RENEW_JSON,
                         i, pData,

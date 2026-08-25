@@ -69,6 +69,39 @@ MOC_EXTERN MSTATUS TRUSTEDGE_agentCertificateRenewalPending(
     sbyte *pId,
     byteBoolean *pIsPending);
 
+MOC_EXTERN MSTATUS TRUSTEDGE_getCertificateAndKeyByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    ubyte **ppCert,
+    ubyte4 *pCertLen,
+    AsymmetricKey **ppAsymKey);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_getCertificateAndKeyPathByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    sbyte **ppCertPath,
+    sbyte **ppKeyPath);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_getCertificateByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    ubyte **ppCert,
+    ubyte4 *pCertLen);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_getKeyByPolicyId(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pId,
+    AsymmetricKey **ppKey);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_agentCertificateAssociateCloudPolicy(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId,
+    sbyte *pCloudPolicyId);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_agentCertificateCloudPolicyCheck(
+    TrustEdgeAgentCtx *pCtx,
+    sbyte *pPolicyId);
+
 #ifdef __cplusplus
 }
 #endif

@@ -127,6 +127,7 @@ function show_usage
     echo "  --esp32-version        - ESP IDF version. Must be followed by the version."
     echo "  --esp32-idf-path       - Path to ESP IDF install location. Must be followed by the path."
     echo "  --esp32-sdkconfig-path - Path to ESP32 sdkconfig file. Must be followed by the path."
+    echo "  --azure-dps            - Build with Azure DPS support."
     echo ""
     if [ -n "$1" ]; then
         echo "$1"
@@ -396,6 +397,10 @@ do
         --enable-posix)
             echo "Building with posix support enabled...";
             COMMON_BUILD_OPTIONS+=" $1"
+            ;;
+        --azure-dps)
+            echo "Building with Azure DPS support enabled...";
+            TRUSTEDGE_BUILD_OPTIONS+=" $1"
             ;;
         *)
             show_usage "Invalid option: $1"
