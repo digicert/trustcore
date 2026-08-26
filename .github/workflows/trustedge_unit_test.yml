@@ -13,7 +13,7 @@ env:
 
 jobs:
   TrustEdge_v2:
-    runs-on: [digicert-large]
+    runs-on: ${{ github.repository == 'digicert/trustcore-test' && 'digicert-large' || 'ubuntu-22.04' }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -29,7 +29,8 @@ jobs:
           branch: main
           search_commit_body: true
 
-      - name: Install dependencies
+      - name: Install dependencies from Nexus
+        if: github.repository == 'digicert/trustcore-test'
         run: |
           curl -u ${{ secrets.DEV_REPO_USERNAME }}:${{ secrets.DEV_REPO_PASSWORD }} ${{ env.NEXUS_CMAKE_REPO_URL }} -O -v
           export CMAKE_DIR=/opt/cmake
@@ -44,6 +45,12 @@ jobs:
           ./configure
           make
           sudo make install
+
+      - name: Install dependencies from public repositories
+        if: github.repository != 'digicert/trustcore-test'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake libjansson-dev
 
       - name: Install lcov
         run: |
