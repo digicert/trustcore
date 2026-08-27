@@ -1818,26 +1818,7 @@ TRUSTEDGE_HTTPS_UTIL_performHttpRequest(httpContext *pHttpContext)
 
                         if (httpStatusCode == 401)
                         {
-                            ubyte4 index;
-                            ubyte* pAuthStr = NULL;
-                            ubyte4 authStrLen = 0;
-
                             (void) HTTP_CONTEXT_resetContext(pHttpContext);
-
-                            /* set authorization string if appropriate */
-                            if (authStrLen > 0)
-                            {
-                                if (OK > (status = HTTP_COMMON_setHeaderIfNotSet(
-                                                   pHttpContext, index, pAuthStr,
-                                                   authStrLen)))
-                                {
-                                    MSG_LOG_print(MSG_LOG_ERROR,
-                                            "%s line %d status: %d = %s\n",
-                                            __func__, __LINE__, status,
-                                            MERROR_lookUpErrorCode(status));
-                                    goto exit;
-                                }
-                            }
                         }
                     }
                     else
