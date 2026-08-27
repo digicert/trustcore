@@ -19,7 +19,15 @@ set(LIB_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/../../lib")
 set(BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../bin")
 set(CMAKE_BUILD_RPATH "${LIB_DIR}")
 set(SAMPLE_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../samples/bin")
-set(SAMPLE_FILE_PATH "${SAMPLE_BIN_DIR}/ike")
+
+# The IKE library/target is named after the selected variant. The SP800-135 test
+# build produces lib<ike_sp800_135> and its executable, otherwise the default ike.
+if(CM_BUILD_IKE_SP800_135)
+  set(IKE_TARGET_NAME "ike_sp800_135")
+else()
+  set(IKE_TARGET_NAME "ike")
+endif()
+set(SAMPLE_FILE_PATH "${SAMPLE_BIN_DIR}/${IKE_TARGET_NAME}")
 
 ###############################################################################################
 # Kernel module builds (when CM_BUILD_IPSECMOD=ON, set via BUILD_KERNELMOD in top-level CMake)
@@ -28,6 +36,32 @@ if(CM_BUILD_IPSECMOD)
   execute_process(COMMAND uname -r OUTPUT_VARIABLE KERNEL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
   set(KDIR "/lib/modules/${KERNEL_VERSION}/build")
   set(MODDIR "/lib/modules/${KERNEL_VERSION}/kernel/mocana")
+
+  # Out-of-tree kernel modules must be built with the same compiler the
+  # running kernel was built with. The kernel injects flags such as
+  # -ftrivial-auto-var-init=zero that older gcc versions reject, so detect the
+  # kernel's gcc major version and use a matching gcc-<major> binary if present.
+  # KMOD_CC_ARG is passed on the module make command lines; GNU make forwards
+  # command-line overrides (CC=...) to every recursive/sub-make via MAKEFLAGS,
+  # so it reaches the inner "make -C $(KDIR) ... modules" invocation as well.
+  set(KMOD_CC_ARG)
+  set(_kernel_cc_line "")
+  if(EXISTS "${KDIR}/.config")
+    file(STRINGS "${KDIR}/.config" _kernel_cc_line REGEX "^CONFIG_CC_VERSION_TEXT=.*gcc")
+  endif()
+  if(_kernel_cc_line MATCHES "gcc-([0-9]+)")
+    set(_kernel_gcc_major "${CMAKE_MATCH_1}")
+    find_program(KERNEL_CC "gcc-${_kernel_gcc_major}")
+    if(KERNEL_CC)
+      set(KMOD_CC_ARG "CC=${KERNEL_CC}")
+      message(STATUS "Kernel modules will be built with ${KERNEL_CC} (matches kernel compiler)")
+    else()
+      message(WARNING
+        "The running kernel was built with gcc-${_kernel_gcc_major}, but that "
+        "compiler was not found. Install gcc-${_kernel_gcc_major} if the kernel "
+        "module build fails with an 'unrecognized command-line option' error.")
+    endif()
+  endif()
 
 
   foreach(_dir common crypto harness platform)
@@ -62,23 +96,26 @@ if(CM_BUILD_IPSECMOD)
     endif()
     message(STATUS "FIPS crypto Module.symvers = ${FIPS_CRYPTO_SYMVERS}")
 
+    # NOTE: moc_ipsec_bridge.o is an obsolete pre-rename compatibility shim.
+    # It imports literal MOC_* symbols and re-exports them as DIGI_*, which only
+    # made sense when moc_platform.c exported MOC_* names. In this (renamed) tree
+    # moc_platform.c exports the DIGI_* platform symbols directly, so the bridge
+    # is redundant and would fail modpost with undefined MOC_* symbols. We build
+    # moc_platform_mod.ko WITHOUT NO_CRYPTO so the bridge is not compiled.
     add_custom_target(moc_platform_mod
       COMMAND make TGTNAME=x86_64 KERNEL=${KERNEL_VERSION} RTOS=__RTOS_LINUX__
               KDIR=${KDIR} MODDIR=${MODDIR} MSS_DIR=${MSS_DIR}
-              NO_CRYPTO=true
-              KBUILD_EXTRA_SYMBOLS=${FIPS_CRYPTO_SYMVERS}
+              ${KMOD_CC_ARG}
               clean all
       COMMAND ${CMAKE_COMMAND} -E copy
               ${CMAKE_CURRENT_SOURCE_DIR}/src/moc_platform_module/moc_platform_mod.ko ${BIN_DIR}/
-      COMMAND ${CMAKE_COMMAND} -E copy
-              ${CMAKE_CURRENT_SOURCE_DIR}/src/moc_platform_module/moc_ipsec_bridge.ko ${BIN_DIR}/
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/moc_platform_module
-      COMMENT "Building moc_platform_mod.ko and moc_ipsec_bridge.ko (FIPS)"
+      COMMENT "Building moc_platform_mod.ko (FIPS, DIGI_* platform exports)"
     )
   else()
     add_custom_target(moc_platform_mod
       COMMAND make TGTNAME=x86_64 KERNEL=${KERNEL_VERSION} RTOS=__RTOS_LINUX__
-              KDIR=${KDIR} MODDIR=${MODDIR} MSS_DIR=${MSS_DIR} all
+              KDIR=${KDIR} MODDIR=${MODDIR} MSS_DIR=${MSS_DIR} ${KMOD_CC_ARG} all
       COMMAND ${CMAKE_COMMAND} -E copy
               ${CMAKE_CURRENT_SOURCE_DIR}/src/moc_platform_module/moc_platform_mod.ko ${BIN_DIR}/
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/moc_platform_module
@@ -93,10 +130,23 @@ if(CM_BUILD_IPSECMOD)
       COMMENT "Skipping moc_crypto build (FIPS uses prebuilt moc_crypto.ko)"
     )
   else()
+    # The crypto sources are symlinked in-place and use relative includes like
+    # "../common/moptions.h" and "../crypto/aes.h". The example Makefile normally
+    # resolves these via its own `CC=gcc -I$(PWD)/../`, but our ${KMOD_CC_ARG}
+    # (CC=gcc-<major>) is a command-line override that supersedes the Makefile's
+    # CC and drops that -I. We restore it through KCFLAGS, but must use -iquote
+    # (not -I): kbuild appends KCFLAGS *after* the kernel's own -I paths, and the
+    # kernel tree ships a conflicting crypto/aes.h that would otherwise shadow
+    # Mocana's aes.h. For quoted includes gcc searches -iquote dirs before all -I
+    # dirs, so the absolute path below wins and "../common"/"../crypto" resolve to
+    # the samples/nanosec/{common,crypto} symlinks regardless of the build cwd.
     add_custom_target(moc_crypto
-      COMMAND make TGTNAME=x86_64 KERNEL=${KERNEL_VERSION} RTOS=__RTOS_LINUX__
+      COMMAND ${CMAKE_COMMAND} -E env
+              "KCFLAGS=-iquote${CMAKE_CURRENT_SOURCE_DIR}/src"
+              make TGTNAME=x86_64 KERNEL=${KERNEL_VERSION} RTOS=__RTOS_LINUX__
               KDIR=${KDIR} MODDIR=${MODDIR} MSS_DIR=${MSS_DIR}
               KBUILD_EXTRA_SYMBOLS=${CMAKE_CURRENT_SOURCE_DIR}/src/moc_platform_module/Module.symvers
+              ${KMOD_CC_ARG}
               links all
       COMMAND ${CMAKE_COMMAND} -E copy
               ${CMAKE_CURRENT_SOURCE_DIR}/src/crypto_module_example/moc_crypto.ko ${BIN_DIR}/
@@ -114,8 +164,9 @@ if(CM_BUILD_IPSECMOD)
     add_custom_target(ipsec_modules
       COMMAND ${CMAKE_COMMAND} -E env
               "KBUILD_EXTRA_SYMBOLS=${_ipsec_extra_symvers}"
+              "KCFLAGS=-Wno-error=strict-prototypes -Wno-error=old-style-definition -Wno-error=missing-prototypes"
               make NO_CRYPTO=true BUILD_IPSEC_MOD=y SUITEB=y CUSTOM_ENTROPY=y CLEAN=
-                   MSS_DIR=${MSS_DIR} -f make/Makefile.linux.ipsec.qa modules
+                   MSS_DIR=${MSS_DIR} ${KMOD_CC_ARG} -f make/Makefile.linux.ipsec.qa modules
       COMMAND make CLEAN= MSS_DIR=${MSS_DIR} -f make/Makefile.linux.ipsec.qa loadConfig
       COMMAND ${CMAKE_COMMAND} -E copy
               ${CMAKE_CURRENT_SOURCE_DIR}/src/linux/mocana/moc_ipsec.ko ${BIN_DIR}/
@@ -125,7 +176,7 @@ if(CM_BUILD_IPSECMOD)
     )
   else()
     add_custom_target(ipsec_modules
-      COMMAND make BUILD_IPSEC_MOD=y SUITEB=y CLEAN= MSS_DIR=${MSS_DIR} -f make/Makefile.linux.ipsec.qa modules
+      COMMAND make BUILD_IPSEC_MOD=y SUITEB=y CLEAN= MSS_DIR=${MSS_DIR} ${KMOD_CC_ARG} -f make/Makefile.linux.ipsec.qa modules
       COMMAND make CLEAN= MSS_DIR=${MSS_DIR} -f make/Makefile.linux.ipsec.qa loadConfig
       COMMAND ${CMAKE_COMMAND} -E copy
               ${CMAKE_CURRENT_SOURCE_DIR}/src/linux/mocana/moc_ipsec.ko ${BIN_DIR}/
@@ -206,28 +257,45 @@ endif()
 ########################################################################
 # Build nanosec example executable
 ########################################################################
+# The default sample provides the full IKE server: digicert_example.c holds
+# main(), which calls IKE_EXAMPLE_main() from ike_example.c.
+#
+# The SP800-135 test variant instead builds the NIST KDF known-answer harness
+# (ike2/nist/test/ike2_nist_sample.c). That file carries its own main() which
+# runs sampleUsageIKE() and prints "sampleUsageIKE status = 0" then exits, so it
+# must NOT be linked with digicert_example.c/ike_example.c (duplicate main). Its
+# body is fully guarded by __ENABLE_DIGICERT_SP800_135_ACVP__, added below. This
+# source set mirrors projects/nanosec/example/mss_ike_sp800_135_sources.txt.
 set(SOURCE_FILES
-    ${SRC_DIR}/../samples/common/digicert_example.c
     ${SRC_DIR}/../samples/common/ca_mgmt_example.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ike_example.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ike_cert_utils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ikeadm_example.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ikecfg_example.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ipseckey_example.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ipseckey_example_linux.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/mcp_example.c
     ${SRC_DIR}/common/mstdlib.c
     ${SRC_DIR}/common/mem_part.c
     ${SRC_DIR}/platform/kmem_part.c
 )
 
-add_executable(nanosec ${SOURCE_FILES})
-set_target_properties(nanosec PROPERTIES OUTPUT_NAME "ike")
+if(CM_BUILD_IKE_SP800_135)
+  list(APPEND SOURCE_FILES ${SRC_DIR}/ike2/nist/test/ike2_nist_sample.c)
+  list(APPEND IKE_DEFINITIONS __ENABLE_DIGICERT_SP800_135_ACVP__)
+else()
+  list(APPEND SOURCE_FILES
+      ${SRC_DIR}/../samples/common/digicert_example.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/ike_example.c
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/ipseckey_example_linux.c
+  )
+endif()
 
-if(TARGET ike)
-  add_dependencies(nanosec ike)
-  set_source_files_properties("${LIB_DIR}/libike.so" PROPERTIES GENERATED TRUE)
-  set_source_files_properties("${LIB_DIR}/libike.a"  PROPERTIES GENERATED TRUE)
+add_executable(nanosec ${SOURCE_FILES})
+set_target_properties(nanosec PROPERTIES OUTPUT_NAME "${IKE_TARGET_NAME}")
+
+if(TARGET ${IKE_TARGET_NAME})
+  add_dependencies(nanosec ${IKE_TARGET_NAME})
+  set_source_files_properties("${LIB_DIR}/lib${IKE_TARGET_NAME}.so" PROPERTIES GENERATED TRUE)
+  set_source_files_properties("${LIB_DIR}/lib${IKE_TARGET_NAME}.a"  PROPERTIES GENERATED TRUE)
 endif()
 
 if(CM_BUILD_IPSECMOD)
@@ -256,7 +324,7 @@ if("STATIC" STREQUAL "${LIB_TYPE}")
   set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.a")
   set(CERT_ENROLL_LIB      "${LIB_DIR}/libcert_enroll.a")
   set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.a")
-  set(IKE_LIB              "${LIB_DIR}/libike.a")
+  set(IKE_LIB              "${LIB_DIR}/lib${IKE_TARGET_NAME}.a")
   if(CM_ENABLE_TAP)
     set(NANOTAP2_COMMON_LIB  "${LIB_DIR}/libnanotap2_common.a")
     set(NANOTAP2_CONFIGPARSER_LIB "${LIB_DIR}/libnanotap2_configparser.a")
@@ -288,7 +356,7 @@ else()
   set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.so")
   set(CERT_ENROLL_LIB      "${LIB_DIR}/libcert_enroll.so")
   set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
-  set(IKE_LIB              "${LIB_DIR}/libike.so")
+  set(IKE_LIB              "${LIB_DIR}/lib${IKE_TARGET_NAME}.so")
   if(CM_ENABLE_FIPS)
     set(FIPS_LIB           "${LIB_DIR}/libmss.so")
     if(NOT EXISTS "${FIPS_LIB}")

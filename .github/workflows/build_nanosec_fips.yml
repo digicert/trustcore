@@ -1,0 +1,269 @@
+name: "Build_NanoSec_FIPS"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '0 16 * * *'  # Every day at 9:30 PM IST (4:00 PM UTC)
+
+jobs:
+  build-nanosec-fips:
+    runs-on: ubuntu-24.04
+
+    env:
+      CC: gcc-12
+      KCFLAGS: "-Wno-error=strict-prototypes -Wno-error=old-style-definition -Wno-error=missing-prototypes"
+
+    steps:
+      - name: Install Dependencies
+        id: install_deps
+        continue-on-error: true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake make gcc-12 jq yasm \
+            linux-headers-$(uname -r)
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Verify proprietary FIPS crypto module is present
+        id: guard
+        continue-on-error: true
+        run: |
+          if [ ! -d src/fips/crypto_module/kernel_modules/crypto ]; then
+            echo "::error::src/fips/crypto_module is missing. This proprietary FIPS"
+            echo "::error::crypto module must be provided (private checkout / secure"
+            echo "::error::artifact) before this workflow can build FIPS kernel modules."
+            exit 1
+          fi
+
+      # ---------------------------------------------------------------
+      # PHASE 1a - build FIPS userspace lib (libmss.so) + so_sign host tool
+      # ---------------------------------------------------------------
+      - name: Build libmss.so (FIPS userspace crypto)
+        id: fips_lib
+        continue-on-error: true
+        run: |
+          cd projects/crypto_fips
+          ./MAKE_ALL_UB24_ESV.sh
+          sudo cp x86_64/libmss.so     /usr/local/lib/
+          sudo cp x86_64/libmss.so.sig /usr/local/lib/
+          sudo ldconfig
+          cd "$GITHUB_WORKSPACE"
+          cp projects/crypto_fips/x86_64/libmss.so     lib/
+          cp projects/crypto_fips/x86_64/libmss.so.sig lib/
+
+      # ---------------------------------------------------------------
+      # PHASE 1b - build FIPS crypto KERNEL module -> Module.symvers + moc_crypto.ko
+      #   Order matters: moc_platform FIRST, then crypto.
+      # ---------------------------------------------------------------
+      - name: Build FIPS crypto kernel module (Module.symvers + moc_crypto.ko)
+        id: kmod_build
+        continue-on-error: true
+        run: |
+          SO_SIGN="$GITHUB_WORKSPACE/projects/crypto_fips/x86_64/host/so_sign"
+
+          cd "$GITHUB_WORKSPACE/src/fips/crypto_module/kernel_modules/moc_platform"
+          make clean links all OS_NAME=SELFHOST_X86_64_UBUNTU ARCH=x86_64 TGTNAME=x86_64 \
+            KERNEL=$(uname -r) KDIR=/lib/modules/$(uname -r)/build \
+            MODDIR=/lib/modules/$(uname -r)/kernel/mocana SO_SIGN="$SO_SIGN"
+
+          cd "$GITHUB_WORKSPACE/src/fips/crypto_module/kernel_modules/crypto"
+          make clean links all OS_NAME=SELFHOST_X86_64_UBUNTU ARCH=x86_64 TGTNAME=x86_64 \
+            KERNEL=$(uname -r) KDIR=/lib/modules/$(uname -r)/build \
+            MODDIR=/lib/modules/$(uname -r)/kernel/mocana SO_SIGN="$SO_SIGN"
+
+      # ---------------------------------------------------------------
+      # PHASE 2 - build FIPS IPsec + kernel modules + ike
+      # ---------------------------------------------------------------
+      - name: Configure (CMake, FIPS + kernel modules)
+        id: cmake_cfg
+        continue-on-error: true
+        run: |
+          export KBUILD_EXTRA_SYMBOLS="$GITHUB_WORKSPACE/src/fips/crypto_module/kernel_modules/crypto/Module.symvers"
+          cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_NANOSEC=ON \
+                -DBUILD_KERNELMOD=ON -DENABLE_FIPS=ON -B build -S .
+
+      - name: Build
+        id: cmake_build
+        continue-on-error: true
+        run: |
+          export KBUILD_EXTRA_SYMBOLS="$GITHUB_WORKSPACE/src/fips/crypto_module/kernel_modules/crypto/Module.symvers"
+          cmake --build build
+
+      # ---------------------------------------------------------------
+      # PHASE 3 - stage the loadable validated crypto module for runtime
+      #   + PHASE 3.5 - install crypto module at its FIPS integrity path
+      # ---------------------------------------------------------------
+      - name: Stage FIPS kernel modules for runtime
+        id: stage
+        continue-on-error: true
+        run: |
+          # Stage the FIPS platform module (built with MOC_USE_VFS_READ) so the
+          # load chain uses the correct build; the samples moc_platform_mod.ko
+          # lacks DIGI_readVFS() and makes moc_crypto fail integrity with -16523.
+          cp src/fips/crypto_module/kernel_modules/moc_platform/moc_platform_mod.ko bin/
+          cp src/fips/crypto_module/kernel_modules/crypto/moc_crypto.ko     bin/ || true
+          cp src/fips/crypto_module/kernel_modules/crypto/moc_crypto.ko.sig bin/ || true
+
+          # Install the crypto module + signature to the compile-time integrity
+          # path baked into the module (FIPS_INTEG_TEST_BINARY_FILENAME /
+          # FIPS_INTEG_TEST_HASH_FILENAME). moc_crypto init reads these at load;
+          # missing -> -7201, stale/mismatched -> -16523.
+          K="$(uname -r)"
+          sudo mkdir -p "/lib/modules/$K/kernel/mocana"
+          sudo cp src/fips/crypto_module/kernel_modules/crypto/moc_crypto.ko \
+            "/lib/modules/$K/kernel/mocana/default_moc_linux_crypto.ko.$K"
+          sudo cp src/fips/crypto_module/kernel_modules/crypto/moc_crypto.ko.sig \
+            "/lib/modules/$K/kernel/mocana/default_moc_linux_crypto.ko.sig.$K"
+
+      # ---------------------------------------------------------------
+      # PHASE 4 - load the module chain and verify moc_crypto passes integrity
+      # ---------------------------------------------------------------
+      - name: Load NanoSec FIPS kernel modules
+        id: load_modules
+        continue-on-error: true
+        run: |
+          # unload any previous chain first (reverse order), ignore errors
+          sudo rmmod moc_ipsec_mod moc_ipsec moc_memdrv moc_crypto moc_platform_mod 2>/dev/null || true
+
+          # dependency order: platform (FIPS build) -> crypto -> memdrv -> ipsec -> ipsec_mod
+          # all modules load from bin/; moc_crypto's integrity self-test still
+          # reads its copy from /lib/modules/$(uname -r)/kernel/mocana (staged above).
+          sudo insmod bin/moc_platform_mod.ko
+          sudo insmod bin/moc_crypto.ko
+
+          # moc_crypto returns rc=0 even when its FIPS integrity self-test fails,
+          # so verify it is actually resident (init status 0) before continuing.
+          if ! lsmod | awk '{print $1}' | grep -qx moc_crypto; then
+            echo "::error::moc_crypto not resident - FIPS integrity self-test failed"
+            sudo dmesg | grep -E "moc_crypto_init|finished" | tail -5 || true
+            exit 1
+          fi
+          echo "moc_crypto is resident:"
+          sudo dmesg | grep finished | tail -1 || true
+
+          sudo insmod bin/moc_memdrv.ko
+          sudo insmod bin/moc_ipsec.ko
+          sudo insmod bin/moc_ipsec_mod.ko
+
+          echo "=== loaded modules ==="
+          lsmod | grep '^moc_' || true
+
+      - name: Verify NanoSec IKE sample was built
+        id: verify_ike
+        continue-on-error: true
+        run: |
+          test -f samples/bin/ike || exit 1
+          ls -la samples/bin/ike
+
+      # ---------------------------------------------------------------
+      # PHASE 5 - build + verify the SP800-135 KDF known-answer test
+      #   This is a userspace known-answer test (no kernel modules needed).
+      #   It builds the ike_sp800_135 variant into a separate build dir so it
+      #   does not disturb the FIPS server build above.
+      # ---------------------------------------------------------------
+      - name: Build SP800-135 KDF test (ike_sp800_135)
+        id: kdf_build
+        continue-on-error: true
+        run: |
+          cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_NANOSEC=ON \
+                -DCM_BUILD_IKE_SP800_135=ON -DCM_ENABLE_UNSECURE=ON \
+                -B build_kdf -S .
+          cmake --build build_kdf
+          test -f samples/bin/ike_sp800_135
+          ls -la samples/bin/ike_sp800_135
+
+      - name: Verify SP800-135 KDF known-answer test
+        id: kdf_verify
+        continue-on-error: true
+        run: |
+          ./samples/bin/ike_sp800_135 | tee /tmp/kdf.out
+          grep -q "42a6415f55def1a764aa3265a0ab43e3702d7d6d36a0bf2f19952816d6209a3a" /tmp/kdf.out \
+            || { echo "::error::SP800-135 KDF SKEYSEED(Rekey) known-answer mismatch"; exit 1; }
+          grep -q "sampleUsageIKE status = 0" /tmp/kdf.out \
+            || { echo "::error::SP800-135 KDF test did not report status 0"; exit 1; }
+          echo "SP800-135 KDF known-answer test PASSED"
+
+      - name: Show produced artifacts
+        if: always()
+        run: |
+          echo "=== kernel modules ==="; ls -la bin/*.ko bin/*.sig 2>/dev/null || true
+          echo "=== ike ==="; ls -la samples/bin/ike 2>/dev/null || true
+          echo "=== ike_sp800_135 ==="; ls -la samples/bin/ike_sp800_135 2>/dev/null || true
+
+      - name: Build summary
+        if: always()
+        run: |
+          FAILED=0
+          if [[ "${{ steps.guard.outcome }}" == "failure" ]]; then
+            echo "❌ Verify proprietary FIPS crypto module FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.fips_lib.outcome }}" == "failure" ]]; then
+            echo "❌ Build libmss.so (FIPS userspace) FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.kmod_build.outcome }}" == "failure" ]]; then
+            echo "❌ Build FIPS crypto kernel module FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.cmake_cfg.outcome }}" == "failure" ]]; then
+            echo "❌ CMake configure FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.cmake_build.outcome }}" == "failure" ]]; then
+            echo "❌ CMake build FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.stage.outcome }}" == "failure" ]]; then
+            echo "❌ Stage FIPS kernel modules FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.load_modules.outcome }}" == "failure" ]]; then
+            echo "❌ Load NanoSec FIPS kernel modules FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.verify_ike.outcome }}" == "failure" ]]; then
+            echo "❌ Verify NanoSec IKE sample (samples/bin/ike) FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.kdf_build.outcome }}" == "failure" ]]; then
+            echo "❌ Build SP800-135 KDF test (samples/bin/ike_sp800_135) FAILED"; FAILED=1
+          fi
+          if [[ "${{ steps.kdf_verify.outcome }}" == "failure" ]]; then
+            echo "❌ Verify SP800-135 KDF known-answer test FAILED"; FAILED=1
+          fi
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo ""
+            echo "One or more NanoSec FIPS build/load steps failed."
+            exit 1
+          else
+            echo ""
+            echo "All NanoSec FIPS build and module-load steps passed."
+          fi
+
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled())
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="Build NanoSec FIPS failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="Build NanoSec FIPS failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
