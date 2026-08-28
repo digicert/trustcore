@@ -1,0 +1,18 @@
+############################################################################
+# File:        Makefile.linux.modules
+# Created:     Mon Aug 06 17:04:44 -0700 2007
+# Description: Makefile targets for building Linux kernel modules
+############################################################################
+
+all_modules:
+ifneq ($(RTOS), __RTOS_LINUX__)
+		make V=1 -C $(KDIR) M=$(PWD) modules
+		@echo ********************************** $(RTOS)
+else
+		make V=1 -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+		@echo *********************************** $(KDIR)
+endif	
+
+clean_modules:
+	make -C $(KDIR) M=$(PWD) clean
+

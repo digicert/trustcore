@@ -259,6 +259,11 @@ endif()
 
 if(CM_ENABLE_FIPS)
     string(STRIP "${MOCANA_FLAGS} -D__ENABLE_DIGICERT_FIPS_MODULE__" MOCANA_FLAGS)
+    # The FIPS binary (libmss.so) provides the 4K and 64K AES-GCM
+    # implementations but NOT the default 256B variant. Select the 4K table so
+    # IKE/IPsec uses the FIPS-provided GCM implementation (only one GCM size
+    # macro may be defined at a time).
+    string(STRIP "${MOCANA_FLAGS} -D__ENABLE_DIGICERT_GCM_4K__" MOCANA_FLAGS)
 endif()
 
 if(CM_ENABLE_EAPA)

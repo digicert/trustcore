@@ -259,7 +259,8 @@ endif
 
 ifeq (y, $(CUSTOM_ENTROPY))
 links_custom_entropy:
-	[ -L custom_entropy.c  ] || ln -s ../../../../../src/examples/custom_entropy.c .
+	[ -L custom_entropy.c  ] || ln -s ../../../../common/custom_entropy.c .
+	[ -L custom_entropy.h  ] || ln -s ../../../../common/custom_entropy.h .
 else
 links_custom_entropy:
 endif
