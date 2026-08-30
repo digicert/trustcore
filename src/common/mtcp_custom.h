@@ -37,6 +37,7 @@ extern "C" {
 
 #endif
 
+#if defined(__RTOS_THREADX__)
 /* ── ThreadX + NetX Duo custom TCP platform ──────────────────────────────────
  *
  * The tcp_netxduo.c adapter provides its own THREADX_TCP_BSD_* functions that
@@ -58,6 +59,7 @@ extern "C" {
 #define TCP_IS_SOCKET_VALID(s) ((s) > 0)
 /* Pull in the function declarations for all THREADX_TCP_BSD_* symbols above */
 #include "../platform/threadx/tcp_netxduo.h"
+#endif
 #endif
 
 /*------------------------------------------------------------------*/
