@@ -31,6 +31,9 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/timeb.h>
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
+#include <stdio.h>
+#include <time.h>
 #endif
 
 #if defined(__RTOS_ZEPHYR__)
@@ -114,6 +117,10 @@
 #define DEFAULT_TRUSTEDGE_CONFIG_PATH       "/etc/digicert/trustedge.json"
 #elif defined(__RTOS_WIN32__)
 #define DEFAULT_TRUSTEDGE_CONFIG_PATH       "C:\\ProgramData\\DigiCert\\TrustEdge\\trustedge.json"
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__) || defined(__RTOS_FREERTOS__)
+/* Bare-metal RTOS: no real filesystem; TRUSTEDGE_utilsGetConfigPath() is not
+ * called in the EST-only path.  Provide a placeholder so the TU compiles. */
+#define DEFAULT_TRUSTEDGE_CONFIG_PATH       "/est/trustedge.json"
 #else
 #error "No default trustedge config filed specified for this platform"
 #endif
@@ -1389,6 +1396,49 @@ extern MSTATUS TRUSTEDGE_utilsGetElapsedTime(ubyte4 *pElapsedTime)
 exit:
 
     return status;
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
+    MSTATUS status;
+    TimeDate td = {0};
+    const int dom[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    ubyte4 epoch;
+    int yr, mo;
+
+    if (NULL == pElapsedTime)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    *pElapsedTime = 0;
+    status = RTOS_timeGMT(&td);
+    if (OK != status)
+        goto exit;
+
+    /* Convert TimeDate to Unix epoch: td.m_year=0 means 1970 */
+    epoch = 0;
+    for (yr = 0; yr < (int)td.m_year; yr++) {
+        int y4 = 1970 + yr;
+        epoch += (ubyte4)(((y4 % 4 == 0 && y4 % 100 != 0) || (y4 % 400 == 0)) ? 366 : 365);
+    }
+    for (mo = 0; mo < (int)td.m_month - 1; mo++) {
+        epoch += (ubyte4)dom[mo];
+        if (mo == 1) {
+            int y4 = 1970 + (int)td.m_year;
+            if ((y4 % 4 == 0 && y4 % 100 != 0) || (y4 % 400 == 0))
+                epoch++;
+        }
+    }
+    epoch += (ubyte4)((int)td.m_day - 1);
+    epoch = epoch * 24u + (ubyte4)td.m_hour;
+    epoch = epoch * 60u + (ubyte4)td.m_minute;
+    epoch = epoch * 60u + (ubyte4)td.m_second;
+
+    *pElapsedTime = epoch;
+    status = OK;
+
+exit:
+
+    return status;
 #else
 #error "No time implementation for platform"
 #endif
@@ -2328,6 +2378,27 @@ static time_t TRUSTEDGE_utilsTimeGM(struct tm *tm)
         unsetenv("TZ");
     tzset();
     return ret;
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
+    /* Portable UTC-only timegm — no POSIX needed on bare-metal */
+    static const int s_dom[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    int year = tm->tm_year + 1900;
+    int y, m;
+    time_t result = 0;
+    for (y = 1970; y < year; y++) {
+        result += 365;
+        if ((y % 4 == 0 && y % 100 != 0) || (y % 400 == 0))
+            result++;
+    }
+    for (m = 0; m < tm->tm_mon; m++) {
+        result += s_dom[m];
+        if (m == 1 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)))
+            result++;
+    }
+    result += tm->tm_mday - 1;
+    result = result * 24 + tm->tm_hour;
+    result = result * 60 + tm->tm_min;
+    result = result * 60 + tm->tm_sec;
+    return result;
 #else
 #error "No timegm implementation for platform"
 #endif
@@ -2361,6 +2432,44 @@ intBoolean TRUSTEDGE_utilsInValidTimeWindow(sbyte *pTimeStr, sbyte4 timeWindow)
 
     policyTime = (sbyte4)TRUSTEDGE_utilsTimeGM(&policyTimeStruct);
     currentTime = (sbyte4)time(NULL);
+
+    if (-1 == policyTime || -1 == currentTime)
+        return FALSE;
+
+    if ((currentTime > policyTime) && (currentTime - policyTime > timeWindow))
+        return FALSE;
+
+    if ((policyTime > currentTime) && (policyTime - currentTime > timeWindow))
+        return FALSE;
+
+    return TRUE;
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
+    struct tm policyTimeStruct = {0};
+    struct tm curStruct = {0};
+    sbyte4 policyTime;
+    sbyte4 currentTime;
+    TimeDate td = {0};
+    int parsed;
+
+    parsed = sscanf((const char *)pTimeStr, "%d-%d-%dT%d:%d:%d",
+        &policyTimeStruct.tm_year, &policyTimeStruct.tm_mon, &policyTimeStruct.tm_mday,
+        &policyTimeStruct.tm_hour, &policyTimeStruct.tm_min, &policyTimeStruct.tm_sec);
+    if (parsed < 6)
+        return FALSE;
+    policyTimeStruct.tm_year -= 1900;
+    policyTimeStruct.tm_mon -= 1;
+
+    policyTime = (sbyte4)TRUSTEDGE_utilsTimeGM(&policyTimeStruct);
+
+    if (OK != RTOS_timeGMT(&td))
+        return FALSE;
+    curStruct.tm_year = (int)td.m_year + 70;
+    curStruct.tm_mon  = (int)td.m_month - 1;
+    curStruct.tm_mday = (int)td.m_day;
+    curStruct.tm_hour = (int)td.m_hour;
+    curStruct.tm_min  = (int)td.m_minute;
+    curStruct.tm_sec  = (int)td.m_second;
+    currentTime = (sbyte4)TRUSTEDGE_utilsTimeGM(&curStruct);
 
     if (-1 == policyTime || -1 == currentTime)
         return FALSE;
@@ -2423,6 +2532,40 @@ intBoolean TRUSTEDGE_utilsInValidTimeWindowStr(sbyte *pTimeStr1, sbyte *pTimeStr
         return FALSE;
 
     return TRUE;
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
+    struct tm structTime1 = {0};
+    struct tm structTime2 = {0};
+    sbyte4 time1;
+    sbyte4 time2;
+    int parsed;
+
+    parsed = sscanf((const char *)pTimeStr1, "%d-%d-%dT%d:%d:%d",
+        &structTime1.tm_year, &structTime1.tm_mon, &structTime1.tm_mday,
+        &structTime1.tm_hour, &structTime1.tm_min, &structTime1.tm_sec);
+    if (parsed < 6)
+        return FALSE;
+    structTime1.tm_year -= 1900;
+    structTime1.tm_mon -= 1;
+
+    time1 = (sbyte4)TRUSTEDGE_utilsTimeGM(&structTime1);
+
+    parsed = sscanf((const char *)pTimeStr2, "%d-%d-%dT%d:%d:%d",
+        &structTime2.tm_year, &structTime2.tm_mon, &structTime2.tm_mday,
+        &structTime2.tm_hour, &structTime2.tm_min, &structTime2.tm_sec);
+    if (parsed < 6)
+        return FALSE;
+    structTime2.tm_year -= 1900;
+    structTime2.tm_mon -= 1;
+
+    time2 = (sbyte4)TRUSTEDGE_utilsTimeGM(&structTime2);
+
+    if (-1 == time1 || -1 == time2)
+        return FALSE;
+
+    if (time1 > time2)
+        return FALSE;
+
+    return TRUE;
 #else
 #error "No time implementation for platform"
 #endif
@@ -2466,6 +2609,44 @@ intBoolean TRUSTEDGE_utilsIsExpired(sbyte *pTimeStr, sbyte4 timeWindowSeconds)
     {
         return FALSE;
     }
+
+    endTime += timeWindowSeconds;
+
+    if (endTime >= checkTime)
+        return TRUE;
+
+    return FALSE;
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
+    struct tm timeStruct = {0};
+    struct tm curStruct = {0};
+    sbyte4 checkTime;
+    sbyte4 endTime;
+    TimeDate td = {0};
+    int parsed;
+
+    /* Format: YYYYMMDDHHMMSSZ */
+    parsed = sscanf((const char *)pTimeStr, "%4d%2d%2d%2d%2d%2d",
+        &timeStruct.tm_year, &timeStruct.tm_mon, &timeStruct.tm_mday,
+        &timeStruct.tm_hour, &timeStruct.tm_min, &timeStruct.tm_sec);
+    if (parsed < 6)
+        return FALSE;
+    timeStruct.tm_year -= 1900;
+    timeStruct.tm_mon -= 1;
+
+    checkTime = (sbyte4)TRUSTEDGE_utilsTimeGM(&timeStruct);
+
+    if (OK != RTOS_timeGMT(&td))
+        return FALSE;
+    curStruct.tm_year = (int)td.m_year + 70;
+    curStruct.tm_mon  = (int)td.m_month - 1;
+    curStruct.tm_mday = (int)td.m_day;
+    curStruct.tm_hour = (int)td.m_hour;
+    curStruct.tm_min  = (int)td.m_minute;
+    curStruct.tm_sec  = (int)td.m_second;
+    endTime = (sbyte4)TRUSTEDGE_utilsTimeGM(&curStruct);
+
+    if (-1 == checkTime || -1 == endTime)
+        return FALSE;
 
     endTime += timeWindowSeconds;
 
