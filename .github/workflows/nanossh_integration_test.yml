@@ -29,7 +29,7 @@ jobs:
       env:
         MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
       run: |
-	git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
 
     - name: Copy SSH Test Files
       run: |
