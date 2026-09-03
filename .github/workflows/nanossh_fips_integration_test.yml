@@ -1,12 +1,16 @@
-name: "NanoSSH Integration Tests"
+name: "NanoSSH FIPS Integration Tests"
+
+permissions:
+  contents: read
+
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '30 3 * * 1'   # Monday 9am IST
-    - cron: '30 3 * * 4'   # Thursday 9am IST
+    - cron: '30 6 * * 2'   # Tuesday 12:00 PM IST (06:30 UTC)
+    - cron: '30 6 * * 5'   # Friday 12:00 PM IST (06:30 UTC)
 
 jobs:
-  ssh-integration-tests:
+  ssh-fips-integration-tests:
     runs-on: ubuntu-22.04
 
     steps:
@@ -16,7 +20,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y cmake python3-pip valgrind expect
+        sudo apt install -y cmake build-essential yasm python3-pip valgrind expect
         cmake --version
         pip3 install --upgrade pip
         pip3 install psutil
@@ -25,16 +29,34 @@ jobs:
         sudo apt-get install -y lcov
         lcov --version
 
+    - name: Build FIPS Crypto Library
+      run: |
+        cd projects/crypto_fips
+        ./MAKE_ALL_UB24_ESV.sh
+
+    - name: Install FIPS Crypto Library
+      run: |
+        sudo cp projects/crypto_fips/x86_64/libmss.so     /usr/local/lib/
+        sudo cp projects/crypto_fips/x86_64/libmss.so.sig /usr/local/lib/
+        sudo ldconfig
+        cp -r projects/crypto_fips/x86_64/libmss.so     lib/
+        cp -r projects/crypto_fips/x86_64/libmss.so.sig lib/
+
     - name: Clone mocn-qa-m-products
       env:
         MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
       run: |
-	git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+      	git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
 
     - name: Copy SSH Test Files
       run: |
         cp -r mocn-qa-m-products/ssh_test/test_open_source/* .
         cp -r mocn-qa-m-products/ssl_test/keystore .
+
+    - name: Print OpenSSH Version
+      run: |
+        ssh -V
+        sshd -V || sudo sshd -V || true
 
     - name: Prepare SSHD
       run: |
@@ -64,11 +86,11 @@ jobs:
         sudo chown $USERNAME:$USERNAME $USER_HOME/.ssh/authorized_keys
         sudo chmod 600 $USER_HOME/.ssh/authorized_keys
 
-    - name: Run SSH Integration Test
+    - name: Run SSH FIPS Integration Test
       env:
         CM_ENV_CODE_COVERAGE: 1
       run: |
-        PYTHONUNBUFFERED=1 python3 run.py global_nanossh_cap_no_tap.json
+        PYTHONUNBUFFERED=1 python3 run.py global_nanossh_cap_no_tap_fips.json
 
     - name: Baseline Coverage
       run: |
@@ -89,7 +111,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
-        name: nanossh_integration_test_coverage_summary
+        name: nanossh_fips_integration_test_coverage_summary
         path: coverage_summary.log
         retention-days: 5
 
@@ -97,7 +119,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
-        name: report_valgrind
+        name: report_valgrind_fips
         path: report_valgrind.zip
         retention-days: 5
 
@@ -105,21 +127,21 @@ jobs:
       if: always()
       run: |
         rm -rf mocn-qa-m-products
-        
+
     - name: Get Slack User ID
       if: always()
       id: slack_map
       run: |
         GITHUB_USER="${{ github.actor }}"
         SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
-        
+
         SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
-        
+
         echo "GitHub User: $GITHUB_USER"
         echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
 
     - name: Send Slack notification (Failure)
-      if: always() && (failure() || cancelled()) 
+      if: always() && (failure() || cancelled())
       run: |
         SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
         if [ -n "$SLACK_USER_ID" ]; then
@@ -128,8 +150,8 @@ jobs:
           MENTION="${GITHUB_ACTOR}"
         fi
         if [ "$GITHUB_REF_NAME" = "main" ]; then
-          MESSAGE="NanoSSH Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="NanoSSH FIPS Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         else
-          MESSAGE="NanoSSH Integration failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-        fi  
+          MESSAGE="NanoSSH FIPS Integration failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        fi
         curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

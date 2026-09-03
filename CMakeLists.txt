@@ -109,7 +109,6 @@ endif()
 
 if(ENABLE_FIPS)
   set(CM_ENABLE_FIPS ON CACHE BOOL "Build with FIPS enabled." FORCE)
-  set(DISABLE_PQC ON CACHE BOOL "Disable Quantum Safe algorithms." FORCE)
 
   set(CM_ENABLE_CUSTOM_ENTROPY ON CACHE BOOL "Enable Custom Entropy." FORCE)
 
