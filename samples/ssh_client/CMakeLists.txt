@@ -45,6 +45,16 @@ set(NANOCERT_LIB         "${LIB_DIR}/libnanocert.so")
 set(NANOSSHC_LIB         "${LIB_DIR}/libnanosshc.so")
 set(CERT_ENROLL_LIB      "${LIB_DIR}/libcert_enroll.so")
 
+if(CM_ENABLE_FIPS)
+  set(FIPS_LIB             "${LIB_DIR}/libmss.so")
+  if(NOT EXISTS "${FIPS_LIB}")
+    message(FATAL_ERROR "FIPS build requires libmss.so in ${LIB_DIR}. Copy your FIPS-enabled libmss.so there before building.")
+  endif()
+  list(APPEND FIPS_LIB pthread dl)
+  list(APPEND CMAKE_BUILD_RPATH "${LIB_DIR}")
+  list(APPEND CMAKE_INSTALL_RPATH "${LIB_DIR}")
+endif()
+
 if(CM_ENABLE_SSL)
   set(NANOSSL_LIB          "${LIB_DIR}/libnanossl.so")
 endif()
@@ -78,6 +88,7 @@ if(CM_ENABLE_TAP)
       ${NANOTAP2_LIB}
       ${SMP_LIB}
       ${TPM2_LIB}
+      ${FIPS_LIB}
       )
 
 else()
@@ -94,6 +105,7 @@ else()
       ${NANOCERT_LIB}
       $<$<BOOL:${CM_ENABLE_SSL}>:${NANOSSL_LIB}>
       ${CERT_ENROLL_LIB}
+      ${FIPS_LIB}
       )
 
 endif()
