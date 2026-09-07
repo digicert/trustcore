@@ -25,16 +25,19 @@ jobs:
         sudo apt-get install -y lcov
         lcov --version
 
-    - name: Clone mocn-qa-m-products
-      env:
-        MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
-      run: |
-        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+    - name: Checkout mocn-qa-m-products
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      with:
+        repository: digicert/mocn-qa-m-products
+        token: ${{ secrets.MY_SECRET_TOKEN }}
+        path: mocn-qa-m-products
+        persist-credentials: false
+        fetch-depth: 1
 
     - name: Copy SSH Test Files
       run: |
-        cp -r mocn-qa-m-products/ssh_test/test_open_source/* .
-        cp -r mocn-qa-m-products/ssl_test/keystore .
+        cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/ssh_test/test_open_source/* .
+        cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/ssl_test/keystore .
 
     - name: Prepare SSHD
       run: |
@@ -46,7 +49,7 @@ jobs:
         # Variables
         USERNAME="jenkins_agent"
         PASSWORD="${{ secrets.JENKINS_AGENT_PASSWORD }}"
-        AUTH_KEYS_SRC="mocn-qa-m-products/ssh_test/test_open_source/openssh_keys/authorized_keys"
+        AUTH_KEYS_SRC="$GITHUB_WORKSPACE/mocn-qa-m-products/ssh_test/test_open_source/openssh_keys/authorized_keys"
         USER_HOME="/home/$USERNAME"
 
         # 1. Create the user with password
@@ -67,6 +70,7 @@ jobs:
     - name: Run SSH Integration Test
       env:
         CM_ENV_CODE_COVERAGE: 1
+        MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
       run: |
         PYTHONUNBUFFERED=1 python3 run.py global_nanossh_cap_no_tap.json
 
@@ -104,7 +108,7 @@ jobs:
     - name: Cleanup mocn-qa-m-products
       if: always()
       run: |
-        rm -rf mocn-qa-m-products
+        rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
         
     - name: Get Slack User ID
       if: always()
@@ -130,6 +134,6 @@ jobs:
         if [ "$GITHUB_REF_NAME" = "main" ]; then
           MESSAGE="NanoSSH Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         else
-          MESSAGE="NanoSSH Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="NanoSSH Integration failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         fi  
         curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
