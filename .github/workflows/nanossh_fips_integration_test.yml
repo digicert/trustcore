@@ -92,6 +92,7 @@ jobs:
     - name: Run SSH FIPS Integration Test
       env:
         CM_ENV_CODE_COVERAGE: 1
+        MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
       run: |
         PYTHONUNBUFFERED=1 python3 run.py global_nanossh_cap_no_tap_fips.json
 
