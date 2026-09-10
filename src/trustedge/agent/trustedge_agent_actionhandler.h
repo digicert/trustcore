@@ -40,6 +40,12 @@ extern "C" {
 #define TRUSTEDGE_launchActionHandler               TRUSTEDGE_launchActionHandlerWindows
 #define TRUSTEDGE_actionHandlerGenerateArgs         TRUSTEDGE_actionHandlerGenerateArgsWindows
 #define TRUSTEDGE_actionHandlerDeleteArgs           TRUSTEDGE_actionHandlerDeleteArgsWindows
+#elif defined(__RTOS_THREADX__) || defined(__RTOS_AZURE__)
+/* ThreadX/AzureRTOS: OTA update actions (process launching) are not
+ * supported on embedded targets — stubs in trustedge_agent_threadx.c.    */
+#define TRUSTEDGE_launchActionHandler               TRUSTEDGE_launchActionHandlerThreadX
+#define TRUSTEDGE_actionHandlerGenerateArgs         TRUSTEDGE_actionHandlerGenerateArgsThreadX
+#define TRUSTEDGE_actionHandlerDeleteArgs           TRUSTEDGE_actionHandlerDeleteArgsThreadX
 #else
 #error UNSUPPORTED PLATFORM
 #endif

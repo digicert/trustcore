@@ -123,7 +123,7 @@ THREADX_UDP_getAddressOfHost(sbyte *pHostName, MOC_IP_ADDRESS *pRetIpAddress)
     {
         if (NULL != fpHostName)
         {
-            *pRetIpAddress = fpHostName(pHostName);
+            *pRetIpAddress = fpHostName((const char *)pHostName);
             status = OK;
         }
         else
@@ -481,7 +481,7 @@ THREADX_UDP_recvFrom(void *pUdpDescr, MOC_IP_ADDRESS* pPeerAddress, ubyte2* pPee
             status = ERR_UDP_READ;
     }
 
-    if (NX_SUCCESS != nx_udp_source_extract(pPacket, pPeerAddress, &remotePort))
+    if (NX_SUCCESS != nx_udp_source_extract(pPacket, (ULONG *)pPeerAddress, &remotePort))
     {
         status = ERR_UDP_READ;
         goto exit;

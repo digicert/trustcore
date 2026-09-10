@@ -30,6 +30,10 @@ LOG_MODULE_DECLARE(trustedge, LOG_LEVEL_DBG);
 #include <stdarg.h>
 #endif
 
+#ifdef __RTOS_THREADX__
+#include <stdarg.h>
+#endif
+
 #if defined(__ENABLE_DIGICERT_MSG_LOG__)
 
 #include "../common/mtypes.h"

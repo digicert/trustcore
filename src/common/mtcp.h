@@ -622,11 +622,13 @@ MOC_EXTERN MSTATUS TCP_LISTEN_SOCKET_LOCAL(TCP_SOCKET *socket, ubyte2 portNumber
 MOC_EXTERN MSTATUS TCP_LISTEN_SOCKET_ADDR(TCP_SOCKET *pSocket, sbyte *pIpAddress, ubyte2 portNumber);
 MOC_EXTERN MSTATUS TCP_ACCEPT_SOCKET(TCP_SOCKET *clientSocket, TCP_SOCKET listenSocket, intBoolean *isBreakSignalRequest);
 MOC_EXTERN MSTATUS TCP_ACCEPT_SOCKET_TIMEOUT(TCP_SOCKET *clientSocket, TCP_SOCKET listenSocket, ubyte4 timeoutSeconds);
+#ifndef __CUSTOM_TCP__
 #ifndef __THREADX_TCP__
 MOC_EXTERN MSTATUS TCP_CONNECT      (TCP_SOCKET *pConnectSocket, sbyte *pIpAddress, ubyte2 portNo);
 #else
 MOC_EXTERN MSTATUS TCP_CONNECT      (TCP_SOCKET *pConnectSocket, sbyte *ipAddress, ubyte2 portNo);
 #endif
+#endif /* !__CUSTOM_TCP__ — custom impl (e.g. tcp_netxduo.h) provides its own declaration */
 MOC_EXTERN MSTATUS TCP_CONNECT_TIMEOUT (TCP_SOCKET *pConnectSocket, sbyte *ipAddress, ubyte2 portNo, ubyte4 msTimeout);
 MOC_EXTERN MSTATUS TCP_CLOSE_SOCKET (TCP_SOCKET socket);
 

@@ -37,6 +37,31 @@ extern "C" {
 
 #endif
 
+#if defined(__RTOS_THREADX__)
+/* ── ThreadX + NetX Duo custom TCP platform ──────────────────────────────────
+ *
+ * The tcp_netxduo.c adapter provides its own THREADX_TCP_BSD_* functions that
+ * bridge NanoSSL TCP calls to NetX Duo sockets.  We declare __CUSTOM_TCP__ so
+ * mtcp.h does NOT try to use any POSIX/RTOS BSD-socket platform, and we define
+ * TCP_SOCKET as a plain int (used as a 1-based slot index in tcp_netxduo.c).
+ */
+#if !defined(__CUSTOM_TCP__)
+#define __CUSTOM_TCP__
+#define CUSTOM_TCP
+#define TCP_SOCKET int
+#define TCP_LISTEN_SOCKET THREADX_TCP_BSD_listenSocket
+#define TCP_ACCEPT_SOCKET THREADX_TCP_BSD_acceptSocket
+#define TCP_CLOSE_SOCKET THREADX_TCP_BSD_closeSocket
+#define TCP_READ_AVL    THREADX_TCP_BSD_readSocketAvailable
+#define TCP_READ_AVL_EX THREADX_TCP_BSD_readSocketAvailable
+#define TCP_WRITE THREADX_TCP_BSD_writeSocket
+#define TCP_CONNECT THREADX_TCP_BSD_connectSocket
+#define TCP_IS_SOCKET_VALID(s) ((s) > 0)
+/* Pull in the function declarations for all THREADX_TCP_BSD_* symbols above */
+#include "../platform/threadx/tcp_netxduo.h"
+#endif
+#endif
+
 /*------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
