@@ -321,7 +321,6 @@ jobs:
 
       - name: Run NanoSSL Integration Test
         env:
-          CM_ENV_CODE_COVERAGE: 1
           MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
         run: |
           python3 nanossl_integration_test.py build_server_cap_tap_local.json
