@@ -1,13 +1,15 @@
-name: "NanoCert EST TAP LOCAL Integration Tests"
+name: "NanoSSL TAP LOCAL Integration Tests"
 
 on:
   workflow_dispatch: {}
+  
   schedule:
-    - cron: '30 12 * * 3'   # Wednesday 6:00 PM IST
-    - cron: '30 12 * * 5'   # Friday 6:00 PM IST
+    - cron: '0 8 * * 2'   # Tuesday 1:30 PM IST
+    - cron: '0 8 * * 5'   # Friday 1:30 PM IST
 
 jobs:
-  nanocert-est-tap-local-integration-tests:
+  nanossl-tap-local-integration-tests:
+  
     runs-on: ubuntu-22.04
 
     steps:
@@ -28,11 +30,11 @@ jobs:
           lcov --version
           valgrind --version
           expect -v
-          
+
       - name: Prepare thirdparty_app directory
         run: |
           mkdir -p ~/thirdparty_app
-
+          
       - name: Install OpenSSL 3.0.7
         run: |
           cd ~/thirdparty_app
@@ -43,12 +45,12 @@ jobs:
           make -j$(nproc)
           sudo make install
           cd ..
-
+  
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
-        
+
       - name: Checkout mocn-qa-m-products
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -57,6 +59,10 @@ jobs:
           path: mocn-qa-m-products
           persist-credentials: false
           fetch-depth: 1
+
+      - name: Copy EST Test Files
+        run: |
+          cp -r "$GITHUB_WORKSPACE/mocn-qa-m-products/estc_test/test_opensource/"* "$GITHUB_WORKSPACE/"
 
       - name: Setup /etc/digicert folder
         run: |
@@ -189,56 +195,143 @@ jobs:
             echo "ERROR: creds.tpm2 NOT found"
             exit 1
           fi
-          
-      - name: Copy EST Test Files
-        run: |
-          cp -r "$GITHUB_WORKSPACE/mocn-qa-m-products/estc_test/test_opensource/"* "$GITHUB_WORKSPACE/"
 
-      - name: Run NanoCert EST + TLS Integration Test
+      - name: Debug TPM before TAP
+        run: |
+          echo "======================================"
+          echo "ACTUAL TAP TEST USER"
+          echo "======================================"
+          whoami
+          id
+      
+          echo "======================================"
+          echo "TPM DEVICE"
+          echo "======================================"
+          ls -l /dev/tpm0
+          getfacl /dev/tpm0 || true
+      
+          echo "======================================"
+          echo "TPM ACCESS"
+          echo "======================================"
+          if test -r /dev/tpm0; then
+            echo "TPM read access: OK"
+          else
+            echo "TPM read access: FAILED"
+          fi
+      
+          if test -w /dev/tpm0; then
+            echo "TPM write access: OK"
+          else
+            echo "TPM write access: FAILED"
+          fi
+      
+          echo "======================================"
+          echo "TPM STATE"
+          echo "======================================"
+          ls -ld "$HOME/tpm-state"
+          ls -la "$HOME/tpm-state"
+      
+          echo "======================================"
+          echo "SWTPM PROCESS"
+          echo "======================================"
+          ps -ef | grep '[s]wtpm'
+      
+          echo "======================================"
+          echo "SWTPM VERSION"
+          echo "======================================"
+          swtpm --version
+      
+          echo "======================================"
+          echo "LIBTPMS VERSION"
+          echo "======================================"
+          pkg-config --modversion libtpms
+      
+          echo "======================================"
+          echo "OPENSSL VERSION"
+          echo "======================================"
+          openssl version -a
+      
+          echo "======================================"
+          echo "SWTPM LOG BEFORE TAP"
+          echo "======================================"
+          cat /tmp/swtpm.log || true
+      
+          echo "======================================"
+          echo "DIGICERT TPM FILES"
+          echo "======================================"
+          ls -l /etc/digicert/tpm2.conf
+          ls -l /etc/digicert/creds.tpm2
+      
+          echo "======================================"
+          echo "TRUSTCORE TPM BINARIES"
+          echo "======================================"
+      
+          find . -type f -perm -111 2>/dev/null | \
+            grep -Ei 'tpm|sign|smp|fapi|sapi' | head -100 || true
+
+      - name: Generate TAP Certs and Keys using NanoCert EST
         env:
           CM_ENV_CODE_COVERAGE: 1
           DEVICETRUST_DEMO_CRED: ${{ secrets.DEVICETRUST_DEMO_CRED }}
+        run: |
+          PYTHONUNBUFFERED=1 python3 tap_certs_keys.py build_client_cap_tap_local.json
+
+      - name: Collect swtpm diagnostics
+        if: always()
+        run: |
+          echo "======================================"
+          echo "SWTPM PROCESS AFTER TAP"
+          echo "======================================"
+
+          ps aux | grep '[s]wtpm' || true
+
+          echo "======================================"
+          echo "SWTPM LOG AFTER TAP"
+          echo "======================================"
+
+          sudo cat /tmp/swtpm.log || true
+
+          echo "======================================"
+          echo "TPM STATE AFTER TAP"
+          echo "======================================"
+
+          ls -la "$HOME/tpm-state" || true
+
+          echo "======================================"
+          echo "TPM DEVICE AFTER TAP"
+          echo "======================================"
+
+          ls -l /dev/tpm0 || true
+          
+      - name: Install OpenSSL 1.1.1k
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+          tar -xf openssl-1.1.1k.tar.gz
+          cd openssl-1.1.1k
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+
+      - name: Copy SSL Test Files
+        run: |
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/ssl_test/test_opensource/* .
+
+      - name: Run NanoSSL Integration Test
+        env:
           MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
         run: |
-          sudo cp /etc/digicert/tpm2.conf keystore/
-          sudo cp /etc/digicert/creds.tpm2 keystore/
-          PYTHONUNBUFFERED=1 python3 est_sample.py build_client_cap_tap_local.json
-
-      - name: Baseline Coverage
-        run: |
-          lcov --no-external --capture --initial --directory . --output-file /tmp/est_base.info
-
-      - name: Capture Coverage
-        run: |
-          lcov --no-external --capture --directory . --output-file /tmp/est_test.info
-          lcov --ignore-errors inconsistent --add-tracefile /tmp/est_base.info --add-tracefile /tmp/est_test.info --output-file /tmp/est_total.info
-
-      - name: Print Coverage Summary
-        run: |
-          echo "Coverage Summary:"
-          lcov --extract /tmp/est_total.info '*/est/*' --output-file /tmp/est_filtered.info
-          lcov --list /tmp/est_filtered.info | tee coverage_summary.log
-
-      - name: Upload Coverage Summary Artifact
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: nanocert_est_tap_local_integration_test_coverage_summary
-          path: coverage_summary.log
-          retention-days: 5
-
+          python3 nanossl_integration_test.py build_server_cap_tap_local.json
+      
       - name: Upload Valgrind Report Artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: report_valgrind_client
-          path: report_valgrind_client.zip
+          name: report_valgrind
+          path: report_valgrind.zip
           retention-days: 5
-
-      - name: Cleanup mocn-qa-m-products
-        run: |
-          rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
-      
+          
       - name: Get Slack User ID
         if: always()
         id: slack_map
@@ -252,7 +345,7 @@ jobs:
           echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
   
       - name: Send Slack notification (Failure)
-        if: always() && (failure() || cancelled())
+        if: always() && (failure() || cancelled()) 
         run: |
           SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
           if [ -n "$SLACK_USER_ID" ]; then
@@ -260,10 +353,10 @@ jobs:
           else
             MENTION="${GITHUB_ACTOR}"
           fi
+          
           if [ "$GITHUB_REF_NAME" = "main" ]; then
-            MESSAGE="NanoCert EST TAP Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            MESSAGE="NanoSSL TAP Local Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
-            MESSAGE="NanoCert EST TAP Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          fi  
+            MESSAGE="NanoSSL TAP Local Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
           curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
