@@ -86,7 +86,6 @@ jobs:
       with:
         repository: digicert/mocn-qa-m-products
         token: ${{ secrets.MY_SECRET_TOKEN }}
-        ref: DTM-9958-automation-opensource-tpm-2-emulator-nanossl-tap-local-tests
         path: mocn-qa-m-products
         persist-credentials: false
         fetch-depth: 1
