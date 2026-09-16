@@ -87,6 +87,8 @@ static ubyte moc_thread_stack[MOCANA_THREAD_STACK_SIZE]
 
 /**
  * The ThreadX OS itself has no date/time API
+ * KNOWN LIMITATION: always fails until a board RTC/epoch source is wired in
+ * here, which disables elapsed-time and cert expiry checks on ThreadX.
  */
 int THREADX_timeGMT(TimeDate *t)
 {

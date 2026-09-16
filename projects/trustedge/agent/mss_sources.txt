@@ -9,3 +9,4 @@ MSS_SRC_DIR/trustedge/agent/trustedge_agent_protobuf.c
 MSS_SRC_DIR/trustedge/agent/trustedge_agent_updatepolicy.c
 MSS_SRC_DIR/trustedge/agent/trustedge_agent_linux.c
 MSS_SRC_DIR/trustedge/agent/trustedge_agent_windows.c
+MSS_SRC_DIR/trustedge/agent/trustedge_agent_threadx.c

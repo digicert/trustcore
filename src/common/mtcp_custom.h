@@ -57,6 +57,8 @@ extern "C" {
 #define TCP_WRITE THREADX_TCP_BSD_writeSocket
 #define TCP_CONNECT THREADX_TCP_BSD_connectSocket
 #define TCP_IS_SOCKET_VALID(s) ((s) > 0)
+#define TCP_INIT THREADX_TCP_NETXDUO_init
+#define TCP_SHUTDOWN THREADX_TCP_NETXDUO_shutdown
 /* Pull in the function declarations for all THREADX_TCP_BSD_* symbols above */
 #include "../platform/threadx/tcp_netxduo.h"
 #endif

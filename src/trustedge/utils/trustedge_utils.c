@@ -1410,6 +1410,8 @@ exit:
     }
 
     *pElapsedTime = 0;
+    /* THREADX_timeGMT() always returns ERR_RTOS_GMT_TIME_NOT_AVAILABLE until a
+     * board RTC/epoch source is wired in, so this call fails on ThreadX today. */
     status = RTOS_timeGMT(&td);
     if (OK != status)
         goto exit;
@@ -2384,6 +2386,11 @@ static time_t TRUSTEDGE_utilsTimeGM(struct tm *tm)
     int year = tm->tm_year + 1900;
     int y, m;
     time_t result = 0;
+
+    /* sscanf-parsed month fields are never range-checked before this call */
+    if (tm->tm_mon < 0 || tm->tm_mon > 11)
+        return (time_t)-1;
+
     for (y = 1970; y < year; y++) {
         result += 365;
         if ((y % 4 == 0 && y % 100 != 0) || (y % 400 == 0))

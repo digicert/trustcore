@@ -7,6 +7,11 @@
  * layer to the NetX Duo socket API via nx_tcp_* calls.
  */
 
+/* Compiled unconditionally via projects/platform/mss_sources.txt for every
+ * platform target; guard the whole file so non-ThreadX builds do not pull in
+ * the ThreadX/NetX Duo-only headers below. */
+#if defined(__RTOS_THREADX__)
+
 #include "platform/threadx/tcp_netxduo.h"
 
 #include <string.h>
@@ -95,6 +100,19 @@ void TRUSTCORE_NETXDUO_SetContext(NX_IP *ip_ptr, NX_PACKET_POOL *pool_ptr)
 {
     g_netx_ip = ip_ptr;
     g_netx_pool = pool_ptr;
+}
+
+/* TCP_INIT / TCP_SHUTDOWN targets (see mtcp_custom.h). NetX Duo/ThreadX
+ * bring-up and teardown happen during board init (TRUSTCORE_NETXDUO_SetContext),
+ * so these just satisfy MOC_CHECK_TCP_INIT/MOC_CHECK_TCP_SHUTDOWN in initmocana.c. */
+MSTATUS THREADX_TCP_NETXDUO_init(void)
+{
+    return OK;
+}
+
+MSTATUS THREADX_TCP_NETXDUO_shutdown(void)
+{
+    return OK;
 }
 
 MSTATUS THREADX_TCP_BSD_closeSocket(TCP_SOCKET socket)
@@ -222,11 +240,15 @@ MSTATUS THREADX_TCP_BSD_readSocketAvailable(TCP_SOCKET socket,
     }
 
     (void)nx_packet_length_get(packet, &packet_length);
+
+    /* nx_packet_data_retrieve() would copy the FULL packet regardless of
+     * maxBytesToRead; use the offset-bounded extraction API capped to the
+     * already-clamped packet_length to avoid overflowing pBuffer. */
     if (packet_length > maxBytesToRead) {
         packet_length = maxBytesToRead;
     }
 
-    status = nx_packet_data_retrieve(packet, pBuffer, &bytes_copied);
+    status = nx_packet_data_extract_offset(packet, 0, pBuffer, packet_length, &bytes_copied);
     if (status != NX_SUCCESS) {
         (void)nx_packet_release(packet);
         return ERR_TCP_READ_ERROR;
@@ -343,7 +365,19 @@ MSTATUS THREADX_TCP_BSD_acceptSocket(TCP_SOCKET *clientSocket,
         return ERR_TCP_ACCEPT_ERROR;
     }
 
+    /* KNOWN LIMITATION: this converts the listening slot itself into the
+     * accepted connection and returns the same handle to the caller. A
+     * subsequent accept on listenSocket fails the !slot->is_server check
+     * above, and closeSocket() uses the client-unbind path instead of server
+     * unaccept/relisten. A correct fix needs a separate slot for the accepted
+     * connection while keeping the listening NX_TCP_SOCKET in place for
+     * relisten, which needs validation against real NetX Duo hardware/
+     * toolchain not available in this environment. Callers that accept a
+     * single connection per listener (TrustEdge's current usage) are
+     * unaffected. */
     slot->is_server = 0U;
     *clientSocket = listenSocket;
     return OK;
 }
+
+#endif /* __RTOS_THREADX__ */

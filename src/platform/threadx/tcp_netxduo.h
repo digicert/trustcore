@@ -23,6 +23,9 @@ extern "C" {
 
 void TRUSTCORE_NETXDUO_SetContext(NX_IP *ip_ptr, NX_PACKET_POOL *pool_ptr);
 
+MSTATUS THREADX_TCP_NETXDUO_init(void);
+MSTATUS THREADX_TCP_NETXDUO_shutdown(void);
+
 MSTATUS THREADX_TCP_BSD_closeSocket(TCP_SOCKET socket);
 MSTATUS THREADX_TCP_BSD_connectSocket(TCP_SOCKET *pConnectSocket,
                                       sbyte *pIpAddress,

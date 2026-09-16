@@ -90,6 +90,7 @@ MSS_SRC_DIR/platform/threadx_alt_tcp.c
 MSS_SRC_DIR/platform/threadx_alt_udp.c
 MSS_SRC_DIR/platform/threadx_rtos.c
 MSS_SRC_DIR/platform/threadx_tcp.c
+MSS_SRC_DIR/platform/threadx/tcp_netxduo.c
 MSS_SRC_DIR/platform/treck_tcp.c
 MSS_SRC_DIR/platform/treck_udp.c
 MSS_SRC_DIR/platform/ucos_iii_rtos.c
