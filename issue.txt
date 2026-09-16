@@ -1,0 +1,40 @@
+Refer to PR @digicert/trustcore/pull/147 (ThreadX integration).
+
+Address ALL issues reported by Cycode and Copilot code reviewer:
+
+1. **Security Fixes (Cycode Priority):**
+   - Fix format string vulnerability in AZURERTOS_fprintf() — never use 
+     user-controlled pFormat as format string directly
+   - Add return value validation for snprintf/vsnprintf (check for negative 
+     returns and truncation)
+   - Validate signed-to-unsigned integer conversions
+   - Add NULL pointer checks and input sanitization to all buffer operations
+
+2. **Code Refactoring (As Specified):**
+   - Replace strncpy() calls with snprintf() for safer string handling
+   - Ensure all string buffers are properly null-terminated
+   - Add bounds checking to all buffer operations
+
+3. **Critical Issues from Copilot Review:**
+   - Fix AZURERTOS_fmgmt.c issues:
+     * Zero-length writes failing to create/truncate files
+     * Path truncation and collision risks (AZ_FMGMT_PATH_MAX boundary)
+     * Unchecked size arithmetic risking buffer overruns
+     * Handle r+ mode correctly (distinguish from w/a)
+     * Implement or gate directory enumeration functions properly
+   
+   - Fix vsnprintf() handling in fprintf():
+     * Add explicit checks for n < 0 (encoding error)
+     * Add checks for n >= buffer_size (truncation)
+     * Return appropriate error codes
+   
+   - Fix UTILS_mkdir() integration:
+     * Ensure consistent directory creation handling
+     * Validate all mkdir operations return expected status
+
+4. **Additional Code Quality:**
+   - Validate all integer casts and conversions
+   - Ensure error handling is complete and consistent
+
+Output: Create a pull request with all fixes applied and clear commit messages 
+explaining each security improvement and refactoring.

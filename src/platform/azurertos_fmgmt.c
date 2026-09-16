@@ -108,8 +108,7 @@ extern MSTATUS AZURERTOS_fopen(const sbyte *pFileName, const sbyte *pMode,
     h = handle_alloc();
     if (!h) return ERR_MEM_ALLOC_FAIL;
 
-    strncpy(h->path, (const char *)pFileName, AZ_FMGMT_PATH_MAX - 1U);
-    h->path[AZ_FMGMT_PATH_MAX - 1U] = '\0';
+    snprintf(h->path, AZ_FMGMT_PATH_MAX, "%s", (const char *)pFileName); /* snprintf always null-terminates */
     h->writable   = isWrite;
     h->appendMode = isAppend;
 
@@ -414,8 +413,7 @@ extern MSTATUS AZURERTOS_changeCWD(const sbyte *pPath)
 extern MSTATUS AZURERTOS_getCWD(sbyte *pBuf, ubyte4 bufLen)
 {
     if (!pBuf || !bufLen) return ERR_NULL_POINTER;
-    strncpy((char *)pBuf, "/", (size_t)bufLen);
-    pBuf[bufLen - 1U] = '\0';
+    snprintf((char *)pBuf, bufLen, "%s", "/"); /* snprintf always null-terminates */
     return OK;
 }
 
@@ -449,8 +447,7 @@ extern MSTATUS AZURERTOS_getFullPath(const sbyte *pRelPath, sbyte *pAbsBuf,
                                      ubyte4 absBufLen)
 {
     if (!pRelPath || !pAbsBuf || !absBufLen) return ERR_NULL_POINTER;
-    strncpy((char *)pAbsBuf, (const char *)pRelPath, (size_t)(absBufLen - 1U));
-    pAbsBuf[absBufLen - 1U] = '\0';
+    snprintf((char *)pAbsBuf, absBufLen, "%s", (const char *)pRelPath); /* snprintf always null-terminates */
     return OK;
 }
 
