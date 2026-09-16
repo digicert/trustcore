@@ -328,7 +328,9 @@ extern MSTATUS AZURERTOS_fprintf(FileDescriptor pFileCtx, const sbyte *pFormat, 
     n = vsnprintf(buf, sizeof(buf), (const char *)pFormat, args);
     va_end(args);
 
-    if (n <= 0) return OK;
+    if (n < 0) return ERR_INVALID_INPUT;         /* encoding error */
+    if (n >= (int)sizeof(buf)) return ERR_BUFFER_TOO_SMALL; /* output truncated, buf holds < n bytes */
+    if (n == 0) return OK;
     return AZURERTOS_fwrite((const ubyte *)buf, 1U, (ubyte4)n, pFileCtx, &wrote);
 }
 
@@ -468,12 +470,16 @@ extern MSTATUS AZURERTOS_getDirectoryPathAlloc(const sbyte *pPath,
 
     DIGI_MEMCPY(*ppDirPath, pPath, len);
 
-    /* strip trailing filename: find last '/' */
-    p = *ppDirPath + len - 2U;
-    while (p > *ppDirPath && *p != '/')
-        --p;
-    if (*p == '/')
-        *(p + 1U) = '\0';
+    /* strip trailing filename: find last '/' (guard against underflow when pPath is empty) */
+    if (len >= 2U) {
+        p = *ppDirPath + len - 2U;
+        while (p > *ppDirPath && *p != '/')
+            --p;
+        if (*p == '/')
+            *(p + 1U) = '\0';
+    } else {
+        (*ppDirPath)[0] = '\0';
+    }
 
     return OK;
 }
