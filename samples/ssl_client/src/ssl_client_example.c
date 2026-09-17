@@ -145,9 +145,16 @@
 #endif
 #endif
 
-#if (defined(__ENABLE_DIGICERT_DSA__))
+/* DSA cannot be negotiated in TLS 1.3, so only default to it
+ * when TLS 1.3 support isn't compiled in. */
+#if (defined(__ENABLE_DIGICERT_DSA__) && !defined(__ENABLE_DIGICERT_TLS13__))
 #undef SSLC_DEF_SERVERCERT
 #define SSLC_DEF_SERVERCERT             "DSACertCA.der"
+#endif
+
+/* No default cert resolved (RSA/ECC disabled, DSA unusable under TLS 1.3) */
+#ifndef SSLC_DEF_SERVERCERT
+#error "No usable default server cert: enable RSA/ECC, or disable TLS 1.3 to allow DSA."
 #endif
 
 #if defined(__ENABLE_DIGICERT_TAP__)
