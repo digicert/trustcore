@@ -147,11 +147,18 @@
 #endif
 #endif
 
-#if (defined(__ENABLE_DIGICERT_DSA__))
+/* DSA cannot be negotiated in TLS 1.3, so only default to it
+ * when TLS 1.3 support isn't compiled in. */
+#if (defined(__ENABLE_DIGICERT_DSA__) && !defined(__ENABLE_DIGICERT_TLS13__))
 #undef SSLS_DEF_SERVERCERT
 #undef SSLS_DEF_SERVERBLOB
 #define SSLS_DEF_SERVERCERT                     "DSACertCA.der"
 #define SSLS_DEF_SERVERBLOB                     "DSACertCAKey.dat"
+#endif
+
+/* No default cert resolved (RSA/ECC disabled, DSA unusable under TLS 1.3) */
+#ifndef SSLS_DEF_SERVERCERT
+#error "No usable default server cert: enable RSA/ECC, or disable TLS 1.3 to allow DSA."
 #endif
 
 #if defined(__ENABLE_DIGICERT_WIN_STUDIO_BUILD__)
