@@ -3,10 +3,6 @@ name: "NanoSSL TAP REMOTE Integration Tests"
 on:
   workflow_dispatch: {}
 
-  push:
-    branches:
-      - 'DTM-13332-automation-nanossl-tap-remote'
-
   schedule:
     - cron: '0 8 * * 2'   # Tuesday 1:30 PM IST
     - cron: '0 8 * * 5'   # Friday 1:30 PM IST
