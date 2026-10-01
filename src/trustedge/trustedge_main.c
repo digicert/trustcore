@@ -73,6 +73,7 @@
 
 #ifdef __RTOS_ZEPHYR__
 #include <zephyr/logging/log.h>
+#include <zephyr/drivers/hwinfo.h>
 LOG_MODULE_REGISTER(trustedge, LOG_LEVEL_DBG);
 #endif
 
@@ -348,14 +349,16 @@ static sbyte4 TRUSTEDGE_httpResponseBodyCallback(httpContext *pHttpContext, ubyt
 {
     MSTATUS status = OK;
     sbyte *pContentLengthStr = NULL;
+    intBoolean isContentLengthKnown;
 	MOC_UNUSED(isContinueFromBlock);
 
     /* the index for ContentLength */
     ubyte4 index = NUM_HTTP_RESPONSES + NUM_HTTP_GENERALHEADERS + ContentLength;
 
+    isContentLengthKnown = (pHttpContext->responseBitmask[index/8] & (1<<(index & 7))) ? TRUE : FALSE;
+
     /* if contentlength known, allocate memory only once */
-    if (pHttpContext->receivedPendingDataLength <= 0 &&
-            pHttpContext->responseBitmask[index/8] & (1<<(index & 7)))
+    if (pHttpContext->receivedPendingDataLength <= 0 && isContentLengthKnown)
     {
         sbyte *pStop;
         sbyte4 contentLength;
@@ -380,17 +383,43 @@ static sbyte4 TRUSTEDGE_httpResponseBodyCallback(httpContext *pHttpContext, ubyt
         contentLength = DIGI_ATOL((sbyte*)pContentLengthStr, (const sbyte**)&pStop);
         FREE(pContentLengthStr);
         pContentLengthStr = NULL;
+
+        /* reject a bogus/negative declared length instead of trusting it blindly */
+        if (contentLength <= 0)
+        {
+            status = ERR_HTTP_MALFORMED_MESSAGE;
+            goto exit;
+        }
+
         if (pHttpContext->pReceivedPendingDataFree)
         {
             FREE(pHttpContext->pReceivedPendingDataFree);
         }
-        pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData = (ubyte*) MALLOC(contentLength);
+        if (NULL == (pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData = (ubyte*) MALLOC(contentLength)))
+        {
+            status = ERR_MEM_ALLOC_FAIL;
+            goto exit;
+        }
     }
 
     /* accumulate response body in httpContext pReceivedDataPending */
-    if (!(pHttpContext->responseBitmask[index/8] & (1<<(index & 7))))
+    if (!isContentLengthKnown)
     {
-        ubyte *pNewBuffer = (ubyte*)MALLOC(pHttpContext->receivedPendingDataLength+dataLength);
+        ubyte *pNewBuffer;
+
+        /* unknown length: guard the growth against integer overflow */
+        if (dataLength > (0xFFFFFFFFu - pHttpContext->receivedPendingDataLength))
+        {
+            status = ERR_HTTP_BUFFER_OVERFLOW;
+            goto exit;
+        }
+
+        pNewBuffer = (ubyte*)MALLOC(pHttpContext->receivedPendingDataLength+dataLength);
+        if (NULL == pNewBuffer)
+        {
+            status = ERR_MEM_ALLOC_FAIL;
+            goto exit;
+        }
         if (pHttpContext->receivedPendingDataLength > 0)
         {
             /* copy existing data */
@@ -418,6 +447,35 @@ static sbyte4 TRUSTEDGE_httpResponseBodyCallback(httpContext *pHttpContext, ubyt
         pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData = pNewBuffer;
     } else
     {
+        /* the declared length is still present in the header string on every
+           delivery; re-derive it and reject cumulative overflow instead of
+           writing past the one-time allocation sized from it */
+        sbyte *pStop2;
+        sbyte4 declaredLen = 0;
+        sbyte *pLenBuf2 = NULL;
+        HTTP_stringDescr *pStrDescr2 = &(pHttpContext->responses[index]);
+
+        if (pStrDescr2->httpStringLength > 0)
+        {
+            if (NULL == (pLenBuf2 = MALLOC(pStrDescr2->httpStringLength+1)))
+            {
+                status = ERR_MEM_ALLOC_FAIL;
+                goto exit;
+            }
+            DIGI_MEMCPY(pLenBuf2, pStrDescr2->pHttpString, pStrDescr2->httpStringLength);
+            pLenBuf2[pStrDescr2->httpStringLength] = '\0';
+            declaredLen = DIGI_ATOL((sbyte*)pLenBuf2, (const sbyte**)&pStop2);
+            FREE(pLenBuf2);
+        }
+
+        if ((NULL == pHttpContext->pReceivedPendingDataFree) || (declaredLen <= 0) ||
+            (pHttpContext->receivedPendingDataLength > (ubyte4) declaredLen) ||
+            (dataLength > (ubyte4) declaredLen - pHttpContext->receivedPendingDataLength))
+        {
+            status = ERR_HTTP_BUFFER_OVERFLOW;
+            goto exit;
+        }
+
         status = DIGI_MEMCPY(pHttpContext->pReceivedPendingDataFree+pHttpContext->receivedPendingDataLength, pDataReceived, dataLength);
         if (OK != status)
         {
@@ -3541,6 +3599,177 @@ exit:
 #define TRUSTEDGE_TCP_SERVER_PORT   8080
 #define BUFFER_SIZE                 1024
 
+/* Define this flag to locally generates bootstrap key and create a CSR which
+ * is sent to the provisioning server. The provisioning server returns the
+ * corresponding bootstrap */
+#define TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST
+
+#if defined(__RTOS_ZEPHYR__) && defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+
+#define CSR_PARAMS_TEMPLATE \
+    "# Subject\n" \
+    "countryName=US\n" \
+    "commonName=%s\n" \
+    "stateOrProvinceName=CA\n" \
+    "localityName=MV\n" \
+    "organizationName=DigiCert\n" \
+    "organizationalUnitName=Engineering\n" \
+    "# Requested Extensions\n" \
+    "isCA=false\n" \
+    "keyUsage=digitalSignature\n"
+
+#define DEVICE_ID_MAX_LEN 16
+#define DEVICE_NAME_MAX_LEN 64
+
+static sbyte g_deviceName[DEVICE_NAME_MAX_LEN] = {0};
+static sbyte g_deviceId[DEVICE_ID_MAX_LEN * 2 + 1] = {0};
+
+static void TRUSTEDGE_getDeviceIdentifiers(void)
+{
+    ubyte devId[DEVICE_ID_MAX_LEN] = {0};
+    ssize_t idLen = 0;
+    ubyte4 i = 0;
+
+    /* Get hardware device ID */
+    idLen = hwinfo_get_device_id(devId, sizeof(devId));
+    if (idLen <= 0)
+    {
+        /* Fallback to timestamp-based ID if hwinfo not available */
+        snprintf(g_deviceId, sizeof(g_deviceId), "%08x", (unsigned int)k_uptime_get_32());
+    }
+    else
+    {
+        /* Convert to hex string (use first 8 bytes max for readability) */
+        ubyte4 useLen = (idLen > 8) ? 8 : idLen;
+        for (i = 0; i < useLen; i++)
+        {
+            snprintf(&g_deviceId[i * 2], 3, "%02x", devId[i]);
+        }
+    }
+
+    /* Build device name: board-hwid (use CONFIG_BOARD to avoid slashes in CONFIG_BOARD_TARGET) */
+    snprintf(g_deviceName, sizeof(g_deviceName), "%s-%s", CONFIG_BOARD, g_deviceId);
+}
+
+static MSTATUS TRUSTEDGE_createBootstrapRequest(ubyte **ppCSR, ubyte4 *pCSRLen)
+{
+    MSTATUS status;
+    AsymmetricKey asymKey = { 0 };
+    CertCsrCtx *pCsrCtx = NULL;
+    CertKeyCtx keyCtx = { 0 };
+    ubyte *pKeyPem = NULL;
+    ubyte4 keyPemLen = 0;
+    sbyte pCSRParams[512] = {0};
+
+    if (NULL == ppCSR || NULL == pCSRLen)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    *ppCSR = NULL;
+    *pCSRLen = 0;
+
+    /* Get device identifiers (populates g_deviceId and g_deviceName) */
+    TRUSTEDGE_getDeviceIdentifiers();
+
+    /* Build CSR params with device ID as CN */
+    snprintf(pCSRParams, sizeof(pCSRParams), CSR_PARAMS_TEMPLATE, g_deviceId);
+
+    printk("CSR Common Name (CN): %s\n", g_deviceId);
+    printk("Device Name: %s\n", g_deviceName);
+
+    CRYPTO_initAsymmetricKey(&asymKey);
+
+    /* Generate EC P256 key */
+    status = CRYPTO_createECCKeyEx(&asymKey, cid_EC_P256);
+    if (OK != status)
+        goto exit;
+
+    status = CRYPTO_INTERFACE_EC_generateKeyPairAux(
+        asymKey.key.pECC, RANDOM_rngFun, g_pRandomContext);
+    if (OK != status)
+        goto exit;
+
+    /* Serialize the private key to PEM format */
+    status = CRYPTO_serializeAsymKey(
+        MOC_ASYM(hwAccelCtx)
+        &asymKey,
+        privateKeyPem,
+        &pKeyPem,
+        &keyPemLen
+    );
+    if (OK != status)
+        goto exit;
+
+    /* Write the private key to file */
+    status = DIGICERT_writeFile(
+        "etc/digicert/keystore/keys/bootstrap-key.pem",
+        pKeyPem,
+        keyPemLen
+    );
+    if (OK != status)
+        goto exit;
+
+    /* Allocate and initialize CSR context */
+    status = DIGI_CALLOC((void **)&pCsrCtx, 1, sizeof(CertCsrCtx));
+    if (OK != status)
+        goto exit;
+
+    /* Add CSR attributes from pCSRParams (TOML format) */
+    status = CERT_ENROLL_addCsrAttributes(
+        pCsrCtx,
+        TOML,                       /* format */
+        0,                          /* cmcType (unused for TOML) */
+        NULL,                       /* evalFunction */
+        NULL,                       /* pEvalFunctionArg */
+        &asymKey,                   /* pKey */
+        certEnrollAlgUndefined,     /* keyAlgorithm */
+        FALSE,                      /* processSigAlgs */
+        ht_sha256,                  /* hashId */
+        (ubyte *)pCSRParams,        /* pIn */
+        DIGI_STRLEN(pCSRParams),    /* inLen */
+        NULL,                       /* pExtCtx */
+        EXT_ENROLL_FLOW_NONE        /* extFlow */
+    );
+    if (OK != status)
+        goto exit;
+
+    /* Set the key context to use our generated key for signing */
+    keyCtx.pKey = &asymKey;
+
+    /* Generate the CSR (PEM format) */
+    status = CERT_ENROLL_generateCSRRequest(
+        &keyCtx,                    /* pKeyCtx */
+        NULL,                       /* pTapKeyCtx */
+        pCsrCtx,                    /* pCsrCtx */
+        0,                          /* cmcType */
+        ppCSR,                      /* ppCsr */
+        pCSRLen                     /* pCsrLen */
+    );
+    if (OK != status)
+        goto exit;
+
+    printk("CSR generated: %u bytes\n", *pCSRLen);
+    printk("CSR first 60 chars: %.60s\n", (char *)*ppCSR);
+
+exit:
+    if (NULL != pKeyPem)
+    {
+        DIGI_FREE((void **)&pKeyPem);
+    }
+
+    if (NULL != pCsrCtx)
+    {
+        CERT_ENROLL_cleanupCsrCtx(pCsrCtx);
+        DIGI_FREE((void **)&pCsrCtx);
+    }
+
+    CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
+    return status;
+}
+
+#endif
+
 static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *pFilename)
 {
 #if defined(__RTOS_ZEPHYR__)
@@ -3553,6 +3782,10 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     k_timeout_t timeout = K_MSEC(2000);
     FileDescriptor pCtx = NULL;
     int totalBytes = 0;
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+    ubyte *pCSR = NULL;
+    ubyte4 csrLen = 0;
+#endif
 
     status = TRUSTEDGE_utilsGetHostByName("provision.digicert.com", pIpAddr);
     if (OK != status)
@@ -3576,6 +3809,16 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     }
     else if (0 == DIGI_STRCMP(pFilename, "bootstrap"))
     {
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+        status = TRUSTEDGE_createBootstrapRequest(&pCSR, &csrLen);
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        pFilename = "bootstrapparams";
+#endif
+
         status = FMGMT_fopen("bootstrap.zip", "wb", &pCtx);
         if (OK != status)
             goto exit;
@@ -3587,6 +3830,29 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     {
         goto exit;
     }
+
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+    /* Send the device name followed by the CSR to the server */
+    if (NULL != pCSR && csrLen > 0)
+    {
+        /* Send device name with newline terminator */
+        sbyte deviceNameLine[DEVICE_NAME_MAX_LEN + 2] = {0};
+        snprintf(deviceNameLine, sizeof(deviceNameLine), "%s\n", g_deviceName);
+
+        status = TCP_WRITE(serverSocket, deviceNameLine, DIGI_STRLEN(deviceNameLine), &numBytesSent);
+        if (OK != status)
+        {
+            goto exit;
+        }
+
+        /* Send CSR */
+        status = TCP_WRITE(serverSocket, (sbyte *)pCSR, csrLen, &numBytesSent);
+        if (OK != status)
+        {
+            goto exit;
+        }
+    }
+#endif
 
     do {
 
@@ -3612,6 +3878,12 @@ static MSTATUS TRUSTEDGE_tcpClient(TCP_SOCKET serverSocket, ubyte2 port, sbyte *
     status = OK;
 
 exit:
+#if defined(TRUSTEDGE_LOCAL_BOOTSTRAP_REQUEST)
+    if (NULL != pCSR)
+    {
+        DIGI_FREE((void **)&pCSR);
+    }
+#endif
 
     return status;
 #else

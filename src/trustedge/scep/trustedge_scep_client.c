@@ -230,13 +230,15 @@ SCEP_CLIENT_http_responseBodyCallback(httpContext *pHttpContext,
     MSTATUS status = OK;
     ubyte* lengthBuffer = NULL;
     ubyte* newBuffer = NULL;
+    intBoolean isContentLengthKnown;
 
     /* the index for ContentLength */
     static const ubyte4 index = NUM_HTTP_RESPONSES + NUM_HTTP_GENERALHEADERS + ContentLength;
 
+    isContentLengthKnown = (pHttpContext->responseBitmask[index/8] & (1<<(index & 7))) ? TRUE : FALSE;
+
     /* if contentlength known, allocate memory only once */
-    if (pHttpContext->receivedPendingDataLength <= 0 &&
-        pHttpContext->responseBitmask[index/8] & (1<<(index & 7)))
+    if (pHttpContext->receivedPendingDataLength <= 0 && isContentLengthKnown)
     {
          sbyte *stop;
          sbyte4 contentLength=0;
@@ -251,16 +253,21 @@ SCEP_CLIENT_http_responseBodyCallback(httpContext *pHttpContext,
             DIGI_MEMCPY(lengthBuffer, strDescr->pHttpString, strDescr->httpStringLength);
             lengthBuffer[strDescr->httpStringLength] = 0;
             contentLength = DIGI_ATOL((sbyte*)lengthBuffer, (const sbyte**)&stop);
-            if (contentLength > 0)
+            FREE(lengthBuffer);
+            lengthBuffer = NULL;
+
+            /* reject a bogus/negative declared length instead of trusting it blindly */
+            if (contentLength <= 0)
             {
-               if (NULL == (pHttpContext->pReceivedPendingData = (ubyte*) MALLOC(contentLength)))
-               {
+                status = ERR_HTTP_MALFORMED_MESSAGE;
+                goto exit;
+            }
+            if (NULL == (pHttpContext->pReceivedPendingData = (ubyte*) MALLOC(contentLength)))
+            {
                  status = ERR_MEM_ALLOC_FAIL;
                  goto exit;
-
-               }
-               pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData;
             }
+            pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData;
          }
          else
          {
@@ -269,8 +276,14 @@ SCEP_CLIENT_http_responseBodyCallback(httpContext *pHttpContext,
      }
 
      /* accumulate response body in httpContext pReceivedDataPending */
-     if (!(pHttpContext->responseBitmask[index/8] & (1<<(index & 7))))
+     if (!isContentLengthKnown)
      {
+        /* unknown length: guard the growth against integer overflow */
+        if (dataLength > (0xFFFFFFFFu - pHttpContext->receivedPendingDataLength))
+        {
+            status = ERR_HTTP_BUFFER_OVERFLOW;
+            goto exit;
+        }
         if (NULL == (newBuffer = (ubyte*)MALLOC(pHttpContext->receivedPendingDataLength+dataLength)))
         {
               status = ERR_MEM_ALLOC_FAIL;
@@ -288,9 +301,39 @@ SCEP_CLIENT_http_responseBodyCallback(httpContext *pHttpContext,
              FREE(pHttpContext->pReceivedPendingDataFree);
          }
          pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData = newBuffer;
-     } else
+     }
+     else
      {
-         DIGI_MEMCPY(pHttpContext->pReceivedPendingDataFree+pHttpContext->receivedPendingDataLength, pDataReceived, dataLength);
+        /* the declared length is still present in the header string on every
+           delivery; re-derive it and reject cumulative overflow instead of
+           writing past the one-time allocation sized from it */
+        sbyte *stop2;
+        sbyte4 declaredLen = 0;
+        ubyte* lenBuf2 = NULL;
+        HTTP_stringDescr* strDescr2 = &(pHttpContext->responses[index]);
+
+        if (strDescr2->httpStringLength > 0)
+        {
+            if (NULL == (lenBuf2 = (ubyte*)MALLOC(strDescr2->httpStringLength+1)))
+            {
+                status = ERR_MEM_ALLOC_FAIL;
+                goto exit;
+            }
+            DIGI_MEMCPY(lenBuf2, strDescr2->pHttpString, strDescr2->httpStringLength);
+            lenBuf2[strDescr2->httpStringLength] = 0;
+            declaredLen = DIGI_ATOL((sbyte*)lenBuf2, (const sbyte**)&stop2);
+            FREE(lenBuf2);
+        }
+
+        if ((NULL == pHttpContext->pReceivedPendingDataFree) || (declaredLen <= 0) ||
+            (pHttpContext->receivedPendingDataLength > (ubyte4) declaredLen) ||
+            (dataLength > (ubyte4) declaredLen - pHttpContext->receivedPendingDataLength))
+        {
+            status = ERR_HTTP_BUFFER_OVERFLOW;
+            goto exit;
+        }
+
+        DIGI_MEMCPY(pHttpContext->pReceivedPendingDataFree+pHttpContext->receivedPendingDataLength, pDataReceived, dataLength);
      }
      pHttpContext->receivedPendingDataLength += dataLength;
 

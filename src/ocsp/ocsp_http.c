@@ -182,10 +182,12 @@ OCSP_CLIENT_http_responseBodyCallback(httpContext *pHttpContext,
     static const ubyte4 index      = NUM_HTTP_RESPONSES + NUM_HTTP_GENERALHEADERS + ContentLength;
     ubyte*              pNewBuffer = NULL;
     MSTATUS             status     = OK;
+    intBoolean          isContentLengthKnown;
+
+    isContentLengthKnown = (pHttpContext->responseBitmask[index / 8] & (1 << (index & 7))) ? TRUE : FALSE;
 
     /* if contentlength known, allocate memory only once */
-    if ((0 >= pHttpContext->receivedPendingDataLength) &&
-        (pHttpContext->responseBitmask[index / 8] & (1 << (index & 7))))
+    if ((0 >= pHttpContext->receivedPendingDataLength) && isContentLengthKnown)
     {
         sbyte*            stop;
         sbyte4            contentLength;
@@ -193,13 +195,31 @@ OCSP_CLIENT_http_responseBodyCallback(httpContext *pHttpContext,
 
         contentLength = DIGI_ATOL((sbyte*)strDescr->pHttpString, (const sbyte**)&stop);
 
+        /* reject a bogus/negative declared length instead of trusting it blindly */
+        if (contentLength <= 0)
+        {
+            status = ERR_HTTP_MALFORMED_MESSAGE;
+            goto exit;
+        }
+
         /* This needs to be freed by the application */
-        pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData = (ubyte*) MALLOC(contentLength);
+        if (NULL == (pHttpContext->pReceivedPendingDataFree = pHttpContext->pReceivedPendingData = (ubyte*) MALLOC(contentLength)))
+        {
+            status = ERR_MEM_ALLOC_FAIL;
+            goto exit;
+        }
     }
 
     /* accumulate response body in httpContext pReceivedDataPending */
-    if (!(pHttpContext->responseBitmask[index/8] & (1<<(index & 7))))
+    if (!isContentLengthKnown)
     {
+        /* unknown length: guard the growth against integer overflow */
+        if (dataLength > (0xFFFFFFFFu - pHttpContext->receivedPendingDataLength))
+        {
+            status = ERR_HTTP_BUFFER_OVERFLOW;
+            goto exit;
+        }
+
         pNewBuffer = (ubyte*)MALLOC(pHttpContext->receivedPendingDataLength + dataLength);
 
         if (NULL == pNewBuffer)
@@ -226,6 +246,23 @@ OCSP_CLIENT_http_responseBodyCallback(httpContext *pHttpContext,
     }
     else
     {
+        /* the declared length is still present in the header string on every
+           delivery; re-derive it and reject cumulative overflow instead of
+           writing past the one-time allocation sized from it */
+        sbyte*            stop2;
+        sbyte4            declaredLen = 0;
+        HTTP_stringDescr* strDescr2   = &(pHttpContext->responses[index]);
+
+        declaredLen = DIGI_ATOL((sbyte*)strDescr2->pHttpString, (const sbyte**)&stop2);
+
+        if ((NULL == pHttpContext->pReceivedPendingDataFree) || (declaredLen <= 0) ||
+            (pHttpContext->receivedPendingDataLength > (ubyte4) declaredLen) ||
+            (dataLength > (ubyte4) declaredLen - pHttpContext->receivedPendingDataLength))
+        {
+            status = ERR_HTTP_BUFFER_OVERFLOW;
+            goto exit;
+        }
+
         DIGI_MEMCPY(pHttpContext->pReceivedPendingDataFree+pHttpContext->receivedPendingDataLength, pDataReceived, dataLength);
     }
 

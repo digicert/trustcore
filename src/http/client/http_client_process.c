@@ -568,6 +568,14 @@ HTTP_CLIENT_PROCESS_receiveResponse(httpContext *pHttpContext,
                                 goto exit;
                             }
 
+                            /* reject a delivery larger than the declared remaining length instead of
+                               underflowing the u32 counter and passing the excess to the callback */
+                            if (dataLength > pHttpContext->contentLength)
+                            {
+                                status = ERR_HTTP_MALFORMED_MESSAGE;
+                                goto exit;
+                            }
+
                             pHttpContext->contentLength -= dataLength;
                             if (OK > (status = HTTP_httpSettings()->funcPtrResponseBodyCallback(pHttpContext, pData, dataLength, (sbyte4)isContinueFromBlock)))
                             {
