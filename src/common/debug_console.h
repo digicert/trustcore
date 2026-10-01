@@ -182,15 +182,12 @@ void my_printf(__VA_ARGS__);
     #define DB_PRINT  printf
 #endif
 
-#elif defined(__AZURE_RTOS__)
-  void DIGI_STM32_logUsrMsg(__VA_ARGS__);
-	#define DB_PRINT  DIGI_STM32_logUsrMsg
 #else
-    #define DB_PRINT(...)  DEBUG_CONSOLE_printf(__VA_ARGS__)
-    #if defined(__LINUX_RTOS__) && defined(__KERNEL__)
-        #define DB_PRINT_CONT(...)  DEBUG_CONSOLE_printf(KERN_CONT __VA_ARGS__)
-    #endif
-#endif
+  #define DB_PRINT(...)  DEBUG_CONSOLE_printf(__VA_ARGS__)
+  #if defined(__LINUX_RTOS__) && defined(__KERNEL__)
+    #define DB_PRINT_CONT(...)  DEBUG_CONSOLE_printf(KERN_CONT __VA_ARGS__)
+  #endif
+#endif /* platform selection */
 
   #endif /* __ENABLE_CUSTOM_DEBUG_CONSOLE_DEFS__ */
 

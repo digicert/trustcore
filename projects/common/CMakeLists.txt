@@ -149,9 +149,8 @@ endif()
 
 # Construct build_info.h
 if(CM_ENABLE_BUILD_INFO)
-  configure_file(${MSS_SRC_DIR}/common/build_info.h.in
-                 ${MSS_SRC_DIR}/common/build_info.h
-                 @ONLY)
+  include(generate_build_info)
+  digicert_generate_build_info("${MSS_DIR}")
 endif()
 
 message("COMMON_BUILD_DIR = ${COMMON_BUILD_DIR}")

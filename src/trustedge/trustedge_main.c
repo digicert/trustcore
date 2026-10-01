@@ -3669,7 +3669,7 @@ extern int TRUSTEDGE_launch(enum TrustedgeMode mode)
                 goto exit;
             }
 
-            pthread_join((uintptr) clientTid, NULL);
+            RTOS_joinThread(clientTid, NULL);
 
             MSG_LOG_print(MSG_LOG_VERBOSE, "%s", "Files downloaded. Extracting..\n");
             status = TRUSTEDGE_install("filesystem.zip");
@@ -3689,7 +3689,7 @@ extern int TRUSTEDGE_launch(enum TrustedgeMode mode)
                     goto exit;
                 }
 
-                pthread_join((uintptr) clientTid, NULL);
+                RTOS_joinThread(clientTid, NULL);
             }
 
             MSG_LOG_print(MSG_LOG_VERBOSE, "%s", "Bootstrap configuration downloaded. Extracting...\n");

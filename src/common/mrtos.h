@@ -35,8 +35,10 @@ extern "C" {
 #include <stdlib.h>
 #endif
 
-#ifdef __AZURE_RTOS__
-#include "fx_api.h"
+#ifdef __CLM_FILEX__
+#define FX_SEEK_BEGIN    0
+#define FX_SEEK_FORWARD  1
+#define FX_SEEK_END      2
 #endif
 
 #ifdef __MQX_RTOS__

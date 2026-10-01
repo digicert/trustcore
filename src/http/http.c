@@ -659,6 +659,13 @@ exit:
 
 /*-------------------------------------------------------------------------*/
 
+#if defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
+/* Helpers from threadx_alt_udp.c — no dedicated header */
+extern MOC_IP_ADDRESS THREADX_inet_addr(char *addrstr);
+extern void THREADX_inet_ntoa(ubyte4 ulIPAddress, char *addrstr);
+extern MSTATUS THREADX_UDP_getAddressOfHost(sbyte *pHostName, MOC_IP_ADDRESS *pRetIpAddress);
+#endif
+
 extern MSTATUS HTTP_getHostIpAddr(sbyte* pHostName, sbyte **ppIpAddr)
 {
     MSTATUS status = OK;
@@ -799,17 +806,17 @@ extern MSTATUS HTTP_getHostIpAddr(sbyte* pHostName, sbyte **ppIpAddr)
     ip = *ppIpAddr;
     DIGI_MEMCPY (ip, addrstr, DIGI_STRLEN((sbyte *)addrstr));
     ip[DIGI_STRLEN((sbyte *)addrstr)] = '\0';
-#elif defined (__RTOS_AZURE__)
+#elif defined(__RTOS_AZURE__) || defined(__RTOS_THREADX__)
     ubyte4 ulIPAddress = 0;
     char addrstr[100] ;
     sbyte *ip = NULL;
     if( ( *pHostName >= '0' ) && ( *pHostName <= '9' ) )
     {
-        ulIPAddress = THREADX_inet_addr( pHostName );
+        ulIPAddress = THREADX_inet_addr( (char *)pHostName );
     }
     if(!ulIPAddress)
     {
-    	THREADX_UDP_getAddressOfHost( (const char *)pHostName, &ulIPAddress);
+    	THREADX_UDP_getAddressOfHost( (sbyte *)pHostName, &ulIPAddress);
     }
     if (0 == ulIPAddress)
     {

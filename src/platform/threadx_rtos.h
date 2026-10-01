@@ -20,6 +20,7 @@
 #ifndef THREADX_RTOS_H
 #define THREADX_RTOS_H
 
+#include "../common/moptions.h"
 #include "../common/mtypes.h"
 #include "../common/merrors.h"
 #include "../common/mrtos.h"
@@ -36,7 +37,7 @@ MOC_EXTERN ubyte4 THREADX_deltaMS(const moctime_t* origin, moctime_t* current);
 MOC_EXTERN ubyte4 THREADX_getUpTimeInMS(void);
 MOC_EXTERN void THREADX_destroyThread(RTOS_THREAD tid);
 MOC_EXTERN void THREADX_sleepMS(ubyte4 sleepTimeInMS);
-int THREADX_timeGMT(TimeDate*t);
+MSTATUS THREADX_timeGMT(TimeDate *t);
 
 typedef ubyte4 (*GetTimeInMSFunc) (void);
 /* Set function to use for getting time in MS */
@@ -48,6 +49,7 @@ MSTATUS THREADX_setMemPoolBlock(void *pMemoryBlock, ubyte4 blockSize);
 MSTATUS THREADX_setMemPoolBlockForThreadStack(void *pMemStack, ubyte4 totalThreadStackSize);
 void *THREADX_getNetworkPacketPool(void);
 void *THREADX_getNetworkIpInstance(void);
+MSTATUS THREADX_TCP_setNetworkContext(void *pIpInstance, void *pPacketPool);
 #endif
 
 void *THREADX_malloc(ubyte4 size);

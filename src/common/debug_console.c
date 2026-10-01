@@ -26,6 +26,9 @@
 #include "../common/mstdlib.h"
 #include "../common/mrtos.h"
 #include "../common/mtcp.h"
+#ifdef __RTOS_THREADX__
+#include <tx_api.h>
+#endif
 #if defined (__RTOS_THREADX__) && defined(_RENESAS_SYNERGY_)
 #include <app_common.h>
 #endif
