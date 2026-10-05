@@ -21,6 +21,7 @@
 MOC_EXTERN MSTATUS ASN1_getTagLen(
   ubyte expectedTag,
   ubyte *pDerEncoding,
+  ubyte4 derEncodingLen,
   ubyte4 *pEncodingLen
   )
 {
@@ -30,6 +31,12 @@ MOC_EXTERN MSTATUS ASN1_getTagLen(
   if ( (NULL == pDerEncoding) || (NULL == pEncodingLen) )
   {
     status = ERR_NULL_POINTER;
+    goto exit;
+  }
+
+  if (derEncodingLen < 2) /* at least must have a tag and length */
+  {
+    status = ERR_ASN_INVALID_DATA;
     goto exit;
   }
 
@@ -71,12 +78,34 @@ MOC_EXTERN MSTATUS ASN1_getTagLen(
       goto exit;
     }
 
+    if (derEncodingLen < 2 + byteCount)
+    {
+      status = ERR_ASN_INVALID_DATA;
+      goto exit;
+    }
+
     for (j = 0; j < byteCount; ++j)
       *pEncodingLen |= (*(pDerEncoding + byteCount - j) << (j * 8));
+
+    /* guard against overflow or casting to an sbyte4, 
+       If the msBit is set, we don't support that length. */
+    status = ERR_BAD_LENGTH;
+    if (0 != (*pEncodingLen & 0x80000000))
+    {
+      status = ERR_BAD_LENGTH;
+      goto exit;
+    }
 
     *pEncodingLen += byteCount;
   }
   *pEncodingLen += 2;
+
+  /* we allow pDerEncoding to be multiple asn1 items, but it at least should equal or exceed the length parsed */
+  if (derEncodingLen < *pEncodingLen)
+  {
+    status = ERR_BUFFER_OVERFLOW;
+    goto exit;
+  }
 
   status = OK;
 

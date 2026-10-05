@@ -2576,8 +2576,14 @@ MOC_EXTERN MSTATUS CERT_STORE_addGenericIdentity (
         for (i = 0; i < numCertificate; i++)
         {
             /* Determine the certificate length from the ASN1 encoding */
-            status = ASN1_getTagLen(0x30, certificates[i].data, &certLen);
-            if (OK != status)
+            status = ASN1_getTagLen(0x30, certificates[i].data, certificates[i].length, &certLen);
+            if (OK == status)
+            {
+                /* ASN1_getTagLen will validate the computed certLen is not bigger than 
+                   certificates[i].length, but if it's smaller, we will allow it and just truncate it */
+                certificates[i].length = certLen;
+            }
+            else
             {
 #ifdef __ENABLE_DIGICERT_CV_CERT__
                 if (0x7f == certificates[i].data[0])
@@ -2585,7 +2591,6 @@ MOC_EXTERN MSTATUS CERT_STORE_addGenericIdentity (
                     /* Not ASN1 sequence and starts with the right CVC tag byte.
                      * Assume this is CVC for now, if it is not we will fail the
                      * parse when adding to the store */
-                    certLen = certificates[i].length;
                     isCvc = TRUE;
                 }
                 else
@@ -2595,18 +2600,6 @@ MOC_EXTERN MSTATUS CERT_STORE_addGenericIdentity (
 #else
                 goto exit;
 #endif
-            }
-
-            /* Certlen should never be zero because that indicates indefinite length,
-            * but if that happens for some reason allow this cert into the store.
-            * We are checking here to make sure that the certificate length from
-            * the encoding matches the actual data length. There are some cases
-            * where we try to add two certs in a single bundle even though we only
-            * need the first cert. In these cases we will simply reset the data
-            * length so that only the first cert is actually processed. */
-            if ( (0 != certLen) && (certLen != certificates[i].length) )
-            {
-                certificates[i].length = certLen;
             }
 
             status = SB_Allocate (

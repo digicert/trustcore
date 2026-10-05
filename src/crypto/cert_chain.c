@@ -2060,7 +2060,7 @@ CERTCHAIN_createFromArray(
     certCount = 0;
     while (0 < curLen)
     {
-        status = ASN1_getTagLen(0x30, pCertBuffer, &length);
+        status = ASN1_getTagLen(0x30, pCertBuffer, (ubyte4) curLen, &length);
         if (OK != status)
             goto exit;
         
@@ -2068,15 +2068,7 @@ CERTCHAIN_createFromArray(
         pCertBuffer += length;
         certCount++;
     }
-
-    /* If the length is not zero then the certificate array contains invalid
-     * data or an error occured while parsing the data.
-     */
-    if (curLen != 0)
-    {
-        status = ERR_BAD_LENGTH;
-        goto exit;
-    }
+    /* curLen validated above to never be less than length, so no need to validate it's 0 */
 
     /* Allocate memory for the certificate chain.
      */
@@ -2101,9 +2093,10 @@ CERTCHAIN_createFromArray(
      * 
      * Each certificate will also be placed in the certificate chain.
      */
+    curLen = certArrLen;
     for (i = 0; i < certCount; ++i)
     {
-        status = ASN1_getTagLen(0x30, pCertArr, &length);
+        status = ASN1_getTagLen(0x30, pCertArr, (ubyte4) curLen, &length);
         if (OK != status)
             goto exit;
 
@@ -2123,6 +2116,7 @@ CERTCHAIN_createFromArray(
         pCertChain->certs[i].cert = pCertBuffer;
         pCertBuffer += length;
         pCertArr += length;
+        curLen -= length;
     }
 
     *ppRetCertChain = pCertChain;
