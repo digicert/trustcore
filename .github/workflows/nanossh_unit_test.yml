@@ -34,7 +34,7 @@ jobs:
         env:
           CM_ENV_CODE_COVERAGE: 1
         run: |
-          cmake -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DENABLE_SSH_UNITTEST=ON  -B build -S .
+          cmake -DENABLE_SSH_SERVER=ON -DENABLE_SSH_CLIENT=ON -DCM_ENABLE_KEYBOARD_INTERACTIVE=ON -DENABLE_SSH_UNITTEST=ON  -B build -S .
           cmake --build build
 
       - name: Baseline Coverage

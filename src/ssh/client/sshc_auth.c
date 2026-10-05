@@ -22,6 +22,7 @@
 #ifdef __ENABLE_DIGICERT_SSH_CLIENT__
 
 #include "../../common/mtypes.h"
+#include "../../common/mlimits.h"
 #include "../../common/mocana.h"
 #include "../../crypto/hw_accel.h"
 #include "../../common/mdefs.h"
@@ -474,17 +475,25 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
     keyIntInfoReq* pRequest)
 {
     MSTATUS status;
-    keyIntPrompt *pNewPrompt;
-    ubyte4 msgType;
+    keyIntPrompt *pNewPrompt = NULL;
+    ubyte4 msgType = 0;
     sbyte *pName = NULL;
     sbyte *pInstruction = NULL;
     ubyte4 languageTagLen = 0;
-    ubyte4 index;
-    ubyte4 i;
+    ubyte4 index = 0;
+    ubyte4 i = 0;
+    ubyte4 j = 0;
 
     if ((NULL == pInfoReqMsg) || (NULL == pRequest))
     {
         status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    /* guard against zero-length packet dereferencing msgType byte */
+    if (1 > infoReqMsgLen)
+    {
+        status = ERR_SSH_UNEXPECTED_END_MESSAGE;
         goto exit;
     }
 
@@ -522,7 +531,12 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
     languageTagLen = DIGI_NTOHL(pInfoReqMsg + index);
     index += 4;
 
-    /* unsupported. skip language tag. */
+    /* unsupported. skip language tag */
+    if (languageTagLen > (infoReqMsgLen - index))
+    {
+        status = ERR_SSH_UNEXPECTED_END_MESSAGE;
+        goto exit;
+    }
     index += languageTagLen;
 
     if ((4 + index) > infoReqMsgLen)
@@ -533,6 +547,12 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
 
     pRequest->numPrompts = DIGI_NTOHL(pInfoReqMsg + index);
     index += 4;
+
+    if (AUTH_MAX_NUM_PROMPTS < pRequest->numPrompts)
+    {
+        status = ERR_AUTH_MISCONFIGURED_PROMPTS;
+        goto exit;
+    }
 
     for (i = 0; i < pRequest->numPrompts; i++)
     {
@@ -549,7 +569,8 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
         pNewPrompt->promptLen = DIGI_NTOHL(pInfoReqMsg + index);
         index += 4;
 
-        if((pNewPrompt->promptLen + index) > infoReqMsgLen)
+        /* prevent overflow on huge declared prompt length by using subtraction */
+        if (pNewPrompt->promptLen > (infoReqMsgLen - index))
         {
             status = ERR_SSH_UNEXPECTED_END_MESSAGE;
             goto exit;
@@ -558,6 +579,13 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
         pNewPrompt->pPrompt = (sbyte *)(pInfoReqMsg + index);
         index += pNewPrompt->promptLen;
 
+        /* validate echo byte is within packet bounds before reading it */
+        if (index >= infoReqMsgLen)
+        {
+            status = ERR_SSH_UNEXPECTED_END_MESSAGE;
+            goto exit;
+        }
+
         pNewPrompt->echo = (pInfoReqMsg[index]);
         pRequest->prompts[i] = pNewPrompt;
         /* convert echo byte into null terminator */
@@ -565,9 +593,29 @@ static MSTATUS decodeKeyInfoReq(ubyte *pInfoReqMsg, ubyte4 infoReqMsgLen,
         index++;
     }
 
+    if (index != infoReqMsgLen)
+    {
+        status = ERR_SSH_UNEXPECTED_END_MESSAGE;
+        goto exit;
+    }
+
 exit:
     if (OK != status)
+    {
+        if (NULL != pName)
+            DIGI_FREE((void **)&pName);
+        if (NULL != pInstruction)
+            DIGI_FREE((void **)&pInstruction);
+        if (NULL != pNewPrompt)
+            DIGI_FREE((void **)&pNewPrompt);
+
+        for (j = 0; j < i; j++)
+        {
+            if (NULL != pRequest->prompts[j])
+                DIGI_FREE((void **)&(pRequest->prompts[j]));
+        }
         DIGI_MEMSET((ubyte *)pRequest, 0x00, sizeof(keyIntInfoReq));
+    }
     return status;
 }
 
@@ -620,11 +668,32 @@ static MSTATUS sendKeyInfoResp(sshClientContext *pContextSSH, keyIntInfoResp* pR
         goto exit;
     }
 
+    if (AUTH_MAX_NUM_PROMPTS < pResponse->numResponses)
+    {
+        status = ERR_AUTH_MISCONFIGURED_PROMPTS;
+        goto exit;
+    }
+
     /* 1 byte for message type, 4 bytes for number of responses */
     numBytesToWrite = 1 + 4;
 
     for(i = 0; i < pResponse->numResponses; i++)
+    {
+        /* reject callback-supplied NULL response entries before dereferencing */
+        if ((NULL == pResponse->responses[i]) ||
+            ((NULL == pResponse->responses[i]->pResponse) && (0 != pResponse->responses[i]->responseLen)))
+        {
+            status = ERR_NULL_POINTER;
+            goto exit;
+        }
+
+        if ((UBYTE4_MAX - numBytesToWrite - 4) < pResponse->responses[i]->responseLen)
+        {
+            status = ERR_PAYLOAD_TOO_LARGE;
+            goto exit;
+        }
         numBytesToWrite += 4 + pResponse->responses[i]->responseLen;
+    }
 
     status = DIGI_MALLOC((void **)&pPayload, numBytesToWrite);
     if(OK != status)
@@ -651,7 +720,7 @@ static MSTATUS sendKeyInfoResp(sshClientContext *pContextSSH, keyIntInfoResp* pR
     }
 
     status = SSHC_OUT_MESG_sendMessage(pContextSSH, pPayload, numBytesToWrite, &numBytesWritten);
-    if((OK != status) && (numBytesToWrite != numBytesWritten))
+    if((OK <= status) && (numBytesToWrite != numBytesWritten))
     {
         status = ERR_AUTH_MESG_FRAGMENTED;
     }
@@ -676,6 +745,7 @@ static MSTATUS SSHC_AUTH_processKeyboardInteractiveReq(sshClientContext *pContex
     }
 
     DIGI_MEMSET((ubyte *)&infoReq, 0x00, sizeof(keyIntInfoReq));
+    DIGI_MEMSET((ubyte *)&infoResp, 0x00, sizeof(keyIntInfoResp));
     status = decodeKeyInfoReq(pInfoReqMsg, infoReqMsgLen, &infoReq);
     if (OK != status)
         goto exit;
@@ -687,10 +757,11 @@ static MSTATUS SSHC_AUTH_processKeyboardInteractiveReq(sshClientContext *pContex
         goto exit;
     }
 
-    DIGI_MEMSET((ubyte *)&infoResp, 0x00, sizeof(keyIntInfoResp));
 
-    (SSHC_sshClientSettings()->funcPtrKeyIntAuthResp)(pContextSSH->connectionInstance,
+    status = (MSTATUS)(SSHC_sshClientSettings()->funcPtrKeyIntAuthResp)(pContextSSH->connectionInstance,
         &infoReq, &infoResp);
+    if (OK != status)
+        goto exit;
 
     status = sendKeyInfoResp(pContextSSH, &infoResp);
 
