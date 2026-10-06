@@ -1,0 +1,270 @@
+name: "OpenSSL Connector 3.5.0 TAP LOCAL Integration Tests"
+
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 9 * * 2'   # Tuesday 3:00 PM IST
+    - cron: '30 9 * * 5'   # Friday 3:00 PM IST
+
+permissions:
+  contents: read
+
+jobs:
+  openssl-connector-3-5-0-tap-local-integration-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake python3-pip valgrind expect
+          cmake --version
+          pip3 install --upgrade pip
+          pip3 install psutil
+          pip3 install tls-client
+          pip3 install typing_extensions
+          pip3 install pexpect
+          sudo apt-get install -y lcov
+          sudo apt-get install -y unzip dh-autoreconf libssl-dev libtasn1-6-dev pkg-config libtpms-dev net-tools iproute2 libjson-glib-dev libgnutls28-dev gawk socat libseccomp-dev libfuse-dev libfuse3-dev build-essential automake autoconf libtool git
+          valgrind --version
+          expect -v
+
+      - name: Prepare thirdparty_app directory
+        run: |
+          mkdir -p ~/thirdparty_app
+
+      - name: Install OpenSSL 3.0.7
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
+          tar -xf openssl-3.0.7.tar.gz
+          cd openssl-3.0.7
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Checkout mocn-qa-m-products
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          repository: digicert/mocn-qa-m-products
+          ref: DTM-13431-adding-github-action-for-openssl-connector-3-5-0-tap-local-using-tpm-2-emulator
+          token: ${{ secrets.MY_SECRET_TOKEN }}
+          path: mocn-qa-m-products
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup /etc/digicert folder
+        run: |
+          sudo mkdir -p /etc/digicert/
+          sudo chown -R "$USER:$USER" /etc/digicert/
+          sudo chmod 777 /etc/digicert/
+
+      - name: Setup trustedge user and group
+        run: |
+          sudo useradd -MU trustedge || true
+
+          echo "===== TRUSTEDGE USER ====="
+          getent passwd trustedge || true
+
+          echo "===== TRUSTEDGE GROUP ====="
+          getent group trustedge || true
+
+      - name: Clone the libtpms and swtpm repositories
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/libtpms.git
+          git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/swtpm.git
+
+      - name: Build libtpms
+        run: |
+          cd "$GITHUB_WORKSPACE/libtpms"
+          ./autogen.sh --with-openssl --with-tpm2 --prefix=/usr/local
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+
+      - name: Build swtpm
+        run: |
+          cd "$GITHUB_WORKSPACE/swtpm"
+
+          ./autogen.sh --with-openssl --with-cuse --prefix=/usr/local
+
+          make -j$(nproc)
+
+          sudo make install
+
+          sudo ldconfig
+
+      - name: Prepare TPM state
+        run: |
+          echo "===== STOP EXISTING SWTPM ====="
+
+          sudo pkill -f 'swtpm cuse -n tpm0' || true
+
+          echo "===== REMOVE OLD TPM STATE ====="
+
+          rm -rf "$HOME/tpm-state"
+
+          mkdir -p "$HOME/tpm-state"
+
+          echo "===== TPM STATE ====="
+          ls -ld "$HOME/tpm-state"
+          ls -la "$HOME/tpm-state"
+
+      - name: Run swtpm
+        run: |
+          sudo LD_LIBRARY_PATH=/usr/local/lib swtpm cuse -n tpm0 --tpm2 --tpmstate dir=$HOME/tpm-state --flags startup-clear --log file=/tmp/swtpm.log &
+          sleep 4
+
+      - name: Verify TPM device creation
+        run: |
+          echo "===== TPM DEVICE ====="
+          ls -l /dev/tpm0
+
+          echo "===== SWTPM PROCESS ====="
+          ps aux | grep '[s]wtpm' || true
+
+          echo "===== SWTPM LOG ====="
+          sudo cat /tmp/swtpm.log || true
+
+          echo "===== TPM STATE ====="
+          ls -la "$HOME/tpm-state"
+
+      - name: Grant runner TPM access
+        run: |
+          sudo setfacl -m u:runner:rw /dev/tpm0
+
+          echo "===== TPM DEVICE ====="
+          ls -l /dev/tpm0
+
+          echo "===== TPM ACL ====="
+          getfacl /dev/tpm0
+
+          echo "===== RUNNER TPM ACCESS ====="
+
+          sudo -u runner test -r /dev/tpm0
+          sudo -u runner test -w /dev/tpm0
+
+          echo "Runner TPM read/write access: OK"
+
+      - name: Clone TrustEdge and provision TPM2
+        run: |
+          cd "$GITHUB_WORKSPACE"
+
+          git clone https://github.com/digicert/trustedge.git
+
+          cd trustedge/tools/SecureElement
+
+          ls -l tpm2_tools-x86_64-24.7.2-3262.zip
+
+          unzip -o tpm2_tools-x86_64-24.7.2-3262.zip
+          unzip -o tpm2_tools-x86_64.zip
+
+          chmod +x provision_tpm2.sh
+
+          sudo ./provision_tpm2.sh
+
+      - name: Check DigiCert TPM files
+        run: |
+          DIR="/etc/digicert/"
+
+          echo "===== DIGICERT DIRECTORY ====="
+          ls -la "$DIR"
+
+          if [ -f "$DIR/tpm2.conf" ]; then
+            echo "tpm2.conf exists"
+          else
+            echo "ERROR: tpm2.conf NOT found"
+            exit 1
+          fi
+
+          if [ -f "$DIR/creds.tpm2" ]; then
+            echo "creds.tpm2 exists"
+          else
+            echo "ERROR: creds.tpm2 NOT found"
+            exit 1
+          fi
+          
+      - name: Copy EST Test Files
+        run: |
+          cp -r "$GITHUB_WORKSPACE/mocn-qa-m-products/estc_test/test_opensource/"* "$GITHUB_WORKSPACE/"
+          
+      - name: Generate TAP Certs and Keys using NanoCert EST
+        env:
+          CM_ENV_CODE_COVERAGE: 1
+          DEVICETRUST_DEMO_CRED: ${{ secrets.DEVICETRUST_DEMO_CRED }}
+        run: |
+          PYTHONUNBUFFERED=1 python3 tap_certs_keys.py build_client_cap_tap_local.json
+
+      - name: Git Clean
+        run: |
+          git clean -fxxd
+
+      - name: Install OpenSSL 1.0.2l
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz
+          tar -xf openssl-1.0.2l.tar.gz
+          cd openssl-1.0.2l
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+
+      - name: Install OpenSSL 1.1.1k
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+          tar -xf openssl-1.1.1k.tar.gz
+          cd openssl-1.1.1k
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
+
+      - name: Prepare thirdparty directory
+        run: |
+          mkdir -p thirdparty
+
+      - name: Install OpenSSL 3.5.0
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
+          tar -xzf openssl-3.5.0.tar.gz -C thirdparty/
+
+      - name: Copy SSL Test Files
+        run: |
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/qa_utils/setup_qa_reports/jenkins_auto_integration/* .
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/openssl_shim_test/test_opensource/* .
+
+      - name: List TPM2 Cert/Key Folder
+        run: |
+          echo "===== \$HOME/tpm2_cert_key CONTENTS ====="
+          ls -la "$HOME/tpm2_cert_key"
+
+      - name: Add host entries
+        run: |
+          echo "127.0.0.1 webapptap.securitydemos.net" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 athena.securitydemos.net" | sudo tee -a /etc/hosts
+
+      - name: Run OpenSSL Connector Integration Test
+        env:
+          MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
+        run: |
+          PYTHONUNBUFFERED=1 python3 python_integration_test_temp.py ossl_3_5_0_cap_tap_local.json
+
+      - name: Upload Valgrind Report Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: report_valgrind_tls
+          path: report_valgrind_tls.zip
+          retention-days: 5
+
+      - name: Cleanup mocn-qa-m-products
+        run: |
+          rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
