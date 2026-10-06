@@ -52,7 +52,6 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: digicert/mocn-qa-m-products
-          ref: DTM-13431-adding-github-action-for-openssl-connector-3-5-0-tap-local-using-tpm-2-emulator
           token: ${{ secrets.MY_SECRET_TOKEN }}
           path: mocn-qa-m-products
           persist-credentials: false
