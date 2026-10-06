@@ -5748,6 +5748,7 @@
 #define __AZURE_TCP__
 #define __AZURE_UDP__
 #define __AZURE_FMGMT__
+#define __CLM_FILEX__
 #endif
 #elif defined( __RTOS_OSE__ )
 #define __OSE_RTOS__

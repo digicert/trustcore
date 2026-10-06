@@ -34,12 +34,63 @@
 #include <nx_user.h>
 
 
+extern ubyte4           THREADX_inet_addr(char *addrstr);
+
+#define THREADX_TCP_QUEUE_MAX       32
+#define THREADX_TCP_WINDOW_SIZE     4096
+
+#ifdef __RTOS_AZURE__
+static NX_IP *mpTcpIpInstance = NULL;
+static NX_PACKET_POOL *mpTcpPacketPool = NULL;
+#else
 /* defined in threadx_alt_rtos.c */
 extern NX_IP            mMocIpInstance;
 extern NX_PACKET_POOL   mMocPacketPool;
 
-#define THREADX_TCP_QUEUE_MAX       32
-#define THREADX_TCP_WINDOW_SIZE     4096
+static NX_IP *mpTcpIpInstance = &mMocIpInstance;
+static NX_PACKET_POOL *mpTcpPacketPool = &mMocPacketPool;
+#endif
+
+
+/*------------------------------------------------------------------*/
+
+#ifdef __RTOS_AZURE__
+extern MSTATUS
+THREADX_TCP_setNetworkContext(void *pIpInstance, void *pPacketPool)
+{
+    if ((NULL == pIpInstance) || (NULL == pPacketPool))
+        return ERR_NULL_POINTER;
+
+    mpTcpIpInstance = (NX_IP *)pIpInstance;
+    mpTcpPacketPool = (NX_PACKET_POOL *)pPacketPool;
+
+    return OK;
+}
+#endif
+
+
+/*------------------------------------------------------------------*/
+
+static ULONG
+THREADX_TCP_getWaitTicks(ubyte4 msTimeout)
+{
+    ULONG ticks;
+    ULONG partialTicks;
+
+    if (0 == msTimeout)
+        return NX_NO_WAIT;
+
+    if (0xFFFFFFFEUL <= msTimeout)
+        return NX_WAIT_FOREVER;
+
+    ticks = ((ULONG)msTimeout / 1000UL) * TX_TIMER_TICKS_PER_SECOND;
+    partialTicks = ((((ULONG)msTimeout % 1000UL) * TX_TIMER_TICKS_PER_SECOND) + 999UL) / 1000UL;
+
+    if (ticks > (NX_WAIT_FOREVER - 1UL) - partialTicks)
+        return NX_WAIT_FOREVER;
+
+    return ticks + partialTicks;
+}
 
 
 /*------------------------------------------------------------------*/
@@ -60,6 +111,11 @@ typedef struct
 extern MSTATUS
 THREADX_TCP_init()
 {
+#ifdef __RTOS_AZURE__
+    if ((NULL == mpTcpIpInstance) || (NULL == mpTcpPacketPool))
+        return ERR_TCP_INIT_FAIL;
+#endif
+
     return OK;
 }
 
@@ -87,7 +143,7 @@ THREADX_TCP_listenSocket(TCP_SOCKET *listenSocket, ubyte2 portNumber)
         return ERR_NULL_POINTER;
 
     /* Ensure the IP instance has been initialized.  */
-    nxStatus =  nx_ip_status_check(&mMocIpInstance, NX_IP_INITIALIZE_DONE,
+    nxStatus =  nx_ip_status_check(mpTcpIpInstance, NX_IP_INITIALIZE_DONE,
                                    &actualStatus, 100);
 
     if (NX_SUCCESS != nxStatus)
@@ -113,7 +169,7 @@ THREADX_TCP_listenSocket(TCP_SOCKET *listenSocket, ubyte2 portNumber)
     DIGI_MEMSET((ubyte *)pTcpIf->pTcpSocket, 0x00, sizeof(NX_TCP_SOCKET));
 
     /* Create a socket.  */
-    nxStatus =  nx_tcp_socket_create(&mMocIpInstance, pTcpIf->pTcpSocket, "listenSocket",
+    nxStatus =  nx_tcp_socket_create(mpTcpIpInstance, pTcpIf->pTcpSocket, "listenSocket",
                                       NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE,
                                       THREADX_TCP_WINDOW_SIZE,
                                       NX_NULL, NX_NULL);
@@ -124,7 +180,7 @@ THREADX_TCP_listenSocket(TCP_SOCKET *listenSocket, ubyte2 portNumber)
     }
 
     /* Setup this thread to listen.  */
-    nxStatus =  nx_tcp_server_socket_listen(&mMocIpInstance, (UINT)portNumber,
+    nxStatus =  nx_tcp_server_socket_listen(mpTcpIpInstance, (UINT)portNumber,
                                              pTcpIf->pTcpSocket, THREADX_TCP_QUEUE_MAX, NX_NULL);
 
     if (NX_SUCCESS != nxStatus)
@@ -141,7 +197,7 @@ THREADX_TCP_listenSocket(TCP_SOCKET *listenSocket, ubyte2 portNumber)
     goto exit;
 
 error_cleanup:
-    nx_tcp_server_socket_unlisten(&mMocIpInstance, (UINT)portNumber);
+    nx_tcp_server_socket_unlisten(mpTcpIpInstance, (UINT)portNumber);
 
     if (pTcpIf)
     {
@@ -226,7 +282,7 @@ THREADX_TCP_closeSocket(TCP_SOCKET socket)
 
         if (!pTcpIf->isListenSocket)
         {
-            if (NX_SUCCESS != nx_tcp_server_socket_relisten(&mMocIpInstance, pTcpIf->serverPort, pTcpIf->pTcpSocket))
+            if (NX_SUCCESS != nx_tcp_server_socket_relisten(mpTcpIpInstance, pTcpIf->serverPort, pTcpIf->pTcpSocket))
             {
                 goto exit;
             }
@@ -234,7 +290,7 @@ THREADX_TCP_closeSocket(TCP_SOCKET socket)
         else
         {
             nx_tcp_socket_delete(pTcpIf->pTcpSocket);
-            nx_tcp_server_socket_unlisten(&mMocIpInstance, pTcpIf->serverPort);
+            nx_tcp_server_socket_unlisten(mpTcpIpInstance, pTcpIf->serverPort);
         }
     }
     else
@@ -311,7 +367,8 @@ THREADX_TCP_readSocketAvailable(TCP_SOCKET socket, sbyte *pBuffer, ubyte4 maxByt
     }
 
 read_again:
-    nxStatus = nx_tcp_socket_receive(pTcpIf->pTcpSocket, &pPacket, msTimeout);
+    nxStatus = nx_tcp_socket_receive(pTcpIf->pTcpSocket, &pPacket,
+                                     THREADX_TCP_getWaitTicks(msTimeout));
 
     if (NX_SUCCESS != nxStatus)
     {
@@ -395,13 +452,13 @@ THREADX_TCP_writeSocket(TCP_SOCKET socket, sbyte *pBuffer, ubyte4 numBytesToWrit
     if (NULL == pTcpIf)
         return ERR_NULL_POINTER;
 
-    if (NX_SUCCESS != nx_packet_allocate(&mMocPacketPool, &pPacket, NX_TCP_PACKET, NX_NO_WAIT))
+    if (NX_SUCCESS != nx_packet_allocate(mpTcpPacketPool, &pPacket, NX_TCP_PACKET, NX_NO_WAIT))
     {
         status = ERR_MEM_ALLOC_FAIL;
         goto exit;
     }
 
-    if (NX_SUCCESS != nx_packet_data_append(pPacket, (VOID *) pBuffer, numBytesToWrite, &mMocPacketPool, NX_NO_WAIT))
+    if (NX_SUCCESS != nx_packet_data_append(pPacket, (VOID *) pBuffer, numBytesToWrite, mpTcpPacketPool, NX_NO_WAIT))
     {
         if (NULL != pPacket)
             nx_packet_release(pPacket);
@@ -431,12 +488,17 @@ THREADX_TCP_connectSocket(TCP_SOCKET *pConnectSocket, sbyte *ipAddress, ubyte2 p
 {
     MSTATUS                 status = OK;
     UINT                    nxStatus;
+    MOC_IP_ADDRESS          resolvedAddress;
     THREADX_TCP_interface*  pTcpIf = NULL;
 
     if ((NULL == pConnectSocket) || (NULL == ipAddress))
         return ERR_NULL_POINTER;
 
-    *pConnectSocket = NULL;
+    *pConnectSocket = 0;
+
+    resolvedAddress = THREADX_inet_addr((char *)ipAddress);
+    if (0 == resolvedAddress)
+        return ERR_TCP_CONNECT_ERROR;
 
     if (NULL == (pTcpIf = MALLOC(sizeof(THREADX_TCP_interface))))
     {
@@ -454,7 +516,7 @@ THREADX_TCP_connectSocket(TCP_SOCKET *pConnectSocket, sbyte *ipAddress, ubyte2 p
 
     DIGI_MEMSET((ubyte *)pTcpIf->pTcpSocket, 0x00, sizeof(NX_TCP_SOCKET));
 
-    nxStatus =  nx_tcp_socket_create(&mMocIpInstance, pTcpIf->pTcpSocket, "clientTcpSocket",
+    nxStatus =  nx_tcp_socket_create(mpTcpIpInstance, pTcpIf->pTcpSocket, "clientTcpSocket",
                                       NX_IP_NORMAL, NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE,
                                       THREADX_TCP_WINDOW_SIZE,
                                       NX_NULL, NX_NULL);
@@ -474,7 +536,7 @@ THREADX_TCP_connectSocket(TCP_SOCKET *pConnectSocket, sbyte *ipAddress, ubyte2 p
         goto error_cleanup;
     }
 
-    nxStatus = nx_tcp_client_socket_connect(pTcpIf->pTcpSocket, THREADX_inet_addr(ipAddress), portNo, NX_WAIT_FOREVER);
+    nxStatus = nx_tcp_client_socket_connect(pTcpIf->pTcpSocket, resolvedAddress, portNo, NX_WAIT_FOREVER);
 
     if (NX_SUCCESS != nxStatus)
     {
