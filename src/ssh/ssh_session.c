@@ -321,6 +321,13 @@ static MSTATUS handleChannelOpenConfirmation(sshContext *pContextSSH, ubyte *pMe
     serverWindowSize = getUbyte4(pMesg + 9);
     serverMaxPktSize = getUbyte4(pMesg + 13);
 
+    /* bound the peer-advertised maximum packet size before it reaches the
+     * port-forward send path's header subtraction */
+    if (serverMaxPktSize < SSH_SESSION_MIN_PACKET_SIZE)
+        serverMaxPktSize = SSH_SESSION_MIN_PACKET_SIZE;
+    else if (serverMaxPktSize > SSH_SESSION_MAX_PACKET_SIZE)
+        serverMaxPktSize = SSH_SESSION_MAX_PACKET_SIZE;
+
     if ( OK == ( status = isPfChannelActive(pContextSSH, myChannel, &pSession ) ) )
     {
         /* notify upper layer of open channel */
@@ -646,6 +653,16 @@ handleChannelOpenReq(sshContext *pContextSSH, ubyte *pMesg, ubyte4 mesgLen)
     recipientChannel = getUbyte4(pMesg + 1 + 4 + channelTypeLength);
     initWindowSize   = getUbyte4(pMesg + 1 + 4 + channelTypeLength + 4);
     maxPacketSize    = getUbyte4(pMesg + 1 + 4 + channelTypeLength + 8);
+
+    /* Bound the peer-advertised channel maximum packet size before it is
+     * stored.  Every server send path clamps its write length to this value
+     * and then subtracts the per-message header (up to 13 bytes); a value
+     * below that header size underflows the unsigned copy length.
+     * Enforce the configured min/max bounds here. */
+    if (maxPacketSize < SSH_SESSION_MIN_PACKET_SIZE)
+        maxPacketSize = SSH_SESSION_MIN_PACKET_SIZE;
+    else if (maxPacketSize > SSH_SESSION_MAX_PACKET_SIZE)
+        maxPacketSize = SSH_SESSION_MAX_PACKET_SIZE;
 
     failType    = SSH_OPEN_UNKNOWN_CHANNEL_TYPE;
     failMessage = &ssh_channelUnknown;

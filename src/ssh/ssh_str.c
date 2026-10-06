@@ -414,9 +414,15 @@ SSH_STR_copyStringFromPayload3(ubyte *pBuffer, ubyte4 bufSize,
         goto exit;
     }
 
-    if (*pBufIndex == bufSize)
+    if (*pBufIndex >= bufSize)
     {
         status = ERR_PAYLOAD_EMPTY;
+        goto exit;
+    }
+
+    if (4 > (bufSize - *pBufIndex))
+    {
+        status = ERR_SSH_UNEXPECTED_END_MESSAGE;
         goto exit;
     }
 

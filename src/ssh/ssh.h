@@ -164,8 +164,24 @@ enum asyncWaitEvents
 #define SSH_SESSION_MAX_PACKET_SIZE             MAX_SESSION_WINDOW_SIZE
 #endif
 
+/* Smallest peer-advertised channel maximum packet size we will honor.  The
+ * server send paths subtract up to 13 bytes of per-message header from this
+ * value before the payload copy, so a smaller value would underflow the
+ * unsigned copy length. */
+#ifndef SSH_SESSION_MIN_PACKET_SIZE
+#define SSH_SESSION_MIN_PACKET_SIZE             (64)
+#endif
+
+#if (SSH_SESSION_MIN_PACKET_SIZE <= 13)
+    #error ssh.h: SSH_SESSION_MIN_PACKET_SIZE must be greater than 13
+#endif
+
 #if (SSH_SESSION_MAX_PACKET_SIZE >= SSH_SESSION_WINDOW_SIZE)
     #error ssh.h: SSH_SESSION_WINDOW_SIZE must be greater than SSH_SESSION_MAX_PACKET_SIZE
+#endif
+
+#if (SSH_SESSION_MIN_PACKET_SIZE > SSH_SESSION_MAX_PACKET_SIZE)
+    #error ssh.h: SSH_SESSION_MAX_PACKET_SIZE must be greater than or equal to SSH_SESSION_MIN_PACKET_SIZE
 #endif
 
 #ifndef SSH_SYNC_BUFFER_SIZE

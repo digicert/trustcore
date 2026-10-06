@@ -185,10 +185,9 @@ MOC_EXTERN MSTATUS ASN1_OIDSearch( ASN1_ITEMPTR pItem, CStream s, const sbyte* w
                                 ASN1_ITEMPTR **ppResults);
 
 /** Read the length of the ASN.1 encoding.
- * <p>This function returns the length of the encoding. This length includes
- * the tag and length bytes themselves. This function will not validate the tag
- * itself. The caller must pass in a pointer which starts at the tag byte. This
- * function will not calculate the length for indefinite encodings. The function
+ * <p>This function returns the length of the encoding. This length includes the tag
+ * and length bytes themselves. The caller must pass in a pointer which starts at the tag byte.
+ * This function will not calculate the length for indefinite encodings. The function
  * will also return an error if the length exceeds 0x84. The caller must also
  * specify what the expected tag is. If the tag does not match with the expected
  * tag then an error will be thrown
@@ -196,10 +195,13 @@ MOC_EXTERN MSTATUS ASN1_OIDSearch( ASN1_ITEMPTR pItem, CStream s, const sbyte* w
  * @param expectedTag   The expected tag value. If this does not match the tag
  *                      in the encoding then an error will be thrown.
  * @param pDerEncoding  A pointer to the start of a ASN.1 DER encoded value.
- * @param pEncodingLen  The address where the function will deposit the length.
+ * @param derEncodingLen The length of the input ASN.1 DER encoded value buffer.
+ *                       This may contain multiple ASN.1 items and be larger than
+ *                       the computed length.
+ * @param pEncodingLen  The address where the function will deposit the computed length.
  */
 MOC_EXTERN MSTATUS ASN1_getTagLen(
-    ubyte expectedTag, ubyte *pDerEncoding, ubyte4 *pEncodingLen);
+    ubyte expectedTag, ubyte *pDerEncoding, ubyte4 derEncodingLen, ubyte4 *pEncodingLen);
 
 /** Read the tag and length bytes.
  * <p>This function simply returns the tag, the length, and how many bytes make up

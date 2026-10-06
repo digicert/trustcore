@@ -520,7 +520,7 @@ extern MSTATUS TRUSTEDGE_SCEP_main(KeyGenArgs *pKeyArgs, TrustEdgeScepCtx *pScep
                         pOutTemp, outLen, &tag, &certLen, &tagAndCount);
                     if (OK != status)
                     {
-                        MSG_LOG_print(MSG_LOG_ERROR, "main::ASN1_getTagLen::status: %d\n", status);
+                        MSG_LOG_print(MSG_LOG_ERROR, "main::ASN1_readTagAndLen::status: %d\n", status);
                         goto exit;
                     }
 

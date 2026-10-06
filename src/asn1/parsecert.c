@@ -5726,7 +5726,17 @@ X509_extractDistinguishedNamesBuffer(ASN1_ITEMPTR pSubName, CStream stream,
         subLabel = NULL;
         labelLen = 0;
         pTempItem = ASN1_FIRST_CHILD(pSubItem);
+        if (NULL == pTempItem)
+        {
+            status = ERR_CERT_INVALID_STRUCT;
+            goto exit;
+        }
         pTempItem = ASN1_FIRST_CHILD(pTempItem);
+        if (NULL == pTempItem)
+        {
+            status = ERR_CERT_INVALID_STRUCT;
+            goto exit;
+        }
 
         if (MAX_SUBNAME_COUNT <= subItemCount)
         {
@@ -5734,31 +5744,39 @@ X509_extractDistinguishedNamesBuffer(ASN1_ITEMPTR pSubName, CStream stream,
             goto exit;
         }
 
-        /* Copy oid in SUB_NAME structure */
-        if (pTempItem->tag == OID)
+        if (OID != pTempItem->tag)
         {
-            if (OK > (status = DIGI_MALLOC((void **)&subNameArr[subItemCount].oid, pTempItem->length + 1)))
-            {
-                goto exit;
-            }
-
-            const ubyte *oidData = CS_memaccess(stream, pTempItem->dataOffset - 1, pTempItem->length + 1);
-
-            if (OK > (status = DIGI_MEMCPY(subNameArr[subItemCount].oid, oidData, pTempItem->length + 1)))
-            {
-                goto exit;
-            }
-
-            for (i = 0; i < COUNTOF(subLabels); i++)
-            {
-                if (EqualOID(oidData, subLabels[i].oid))
-                {
-                    subLabel = &subLabels[i];
-                    break;
-                }
-            }
+            status = ERR_CERT_INVALID_STRUCT;
+            goto exit;
         }
 
+        /* Copy oid in SUB_NAME structure */
+        if (OK > (status = DIGI_MALLOC((void **)&subNameArr[subItemCount].oid, pTempItem->length + 1)))
+        {
+            goto exit;
+        }
+
+        const ubyte *oidData = CS_memaccess(stream, pTempItem->dataOffset - 1, pTempItem->length + 1);
+        if (NULL == oidData)
+        {
+            status = ERR_CERT_INVALID_STRUCT;
+            goto exit;
+        }
+
+        if (OK > (status = DIGI_MEMCPY(subNameArr[subItemCount].oid, oidData, pTempItem->length + 1)))
+        {
+            goto exit;
+        }
+
+        for (i = 0; i < COUNTOF(subLabels); i++)
+        {
+            if (EqualOID(oidData, subLabels[i].oid))
+            {
+                subLabel = &subLabels[i];
+                break;
+            }
+        }
+    
         pTempItem = ASN1_NEXT_SIBLING(pTempItem);
 
         /* Copy name in SUB_NAME structure */
@@ -5784,6 +5802,12 @@ X509_extractDistinguishedNamesBuffer(ASN1_ITEMPTR pSubName, CStream stream,
             }
 
             const ubyte *nameData = CS_memaccess(stream, pTempItem->dataOffset, pTempItem->length);
+            if (NULL == nameData)
+            {
+                status = ERR_CERT_INVALID_STRUCT;
+                goto exit;
+            }
+            
             if (OK > (status = DIGI_MEMCPY(subNameArr[subItemCount].name + labelLen, nameData, pTempItem->length)))
             {
                 goto exit;

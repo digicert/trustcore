@@ -1106,10 +1106,17 @@ extern MSTATUS CRYPTO_UTILS_getIssuerAndSerial(
     {
         goto exit;
     }
+    
+    status = ERR_CERT_INVALID_STRUCT;
+    /* sanity check we are not in danger of overflow or casting issues */
+    if (pSerial->length & 0x80000000)
+        goto exit;
+
+    pIter = CS_memaccess(cs, pSerial->dataOffset, (sbyte4) pSerial->length);
+    if (NULL == pIter)        
+        goto exit;
 
     serialDataLen = pSerial->length * 2;
-    pIter = CS_memaccess(cs, pSerial->dataOffset, pSerial->length);
-
     status = DIGI_MALLOC((void **) &pSerialData, serialDataLen);
     if (OK != status)
     {

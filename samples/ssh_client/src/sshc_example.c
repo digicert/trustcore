@@ -1058,6 +1058,14 @@ SSHC_EXAMPLE_keyboardInteractiveProcessRequestUpcall(int connectionInstance,
         goto exit;
     }
 
+    if (AUTH_MAX_NUM_PROMPTS < pRequestInfo->numPrompts)
+    {
+        printf("Error: server requested %lu prompts, max supported is %lu\n",
+            (unsigned long)pRequestInfo->numPrompts, (unsigned long)AUTH_MAX_NUM_PROMPTS);
+        status = ERR_AUTH_MISCONFIGURED_PROMPTS;
+        goto exit;
+    }
+
     /*
      * RFC 4256:
      *      For each prompt, the corresponding echo field indicates whether the

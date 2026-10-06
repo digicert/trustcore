@@ -2530,9 +2530,7 @@ exit:
 static MSTATUS
 OCSP_MESSAGE_checkResponderId(ocspContext *pOcspContext)
 {
-    ASN1_ITEMPTR            pIssuerCertSignature    = NULL;
     ASN1_ITEMPTR            pIssuerName             = NULL;
-    ASN1_ITEMPTR            pResponderCertSignature = NULL;
     ASN1_ITEMPTR            pResponderCertIssuer    = NULL;
     certDistinguishedName*  pResponderInfo          = NULL;
     AsymmetricKey           pubKey;
@@ -2544,9 +2542,6 @@ OCSP_MESSAGE_checkResponderId(ocspContext *pOcspContext)
         status = ERR_NULL_POINTER;
         goto exit;
     }
-
-    if (OK > (status = OCSP_MESSAGE_getCertificateSignature(ASN1_FIRST_CHILD(pOcspContext->ocspProcess.client.pResponderCert), &pResponderCertSignature)))
-        goto exit;
 
     if (OK > (status = OCSP_MESSAGE_getSignedCertificateChild(ASN1_FIRST_CHILD(pOcspContext->ocspProcess.client.pResponderCert), cert_issuer, &pResponderCertIssuer)))
         goto exit;
@@ -2569,12 +2564,9 @@ OCSP_MESSAGE_checkResponderId(ocspContext *pOcspContext)
             goto exit;
         }
 
-        /* b. responder cert signature == issuer cert signature */
-        if (OK > (status = OCSP_MESSAGE_getCertificateSignature(ASN1_FIRST_CHILD(pOcspContext->ocspProcess.client.pIssuerRoot), &pIssuerCertSignature)))
-            goto exit;
-
-        status = ASN1_CompareItems(pIssuerCertSignature, pOcspContext->ocspProcess.client.issuerCs,
-                             pResponderCertSignature, pOcspContext->ocspProcess.client.responderCs);
+        /* b. responder cert IS the issuer cert (whole certificate must match; signature bytes are public and must not confer authority) */
+        status = ASN1_CompareItems(ASN1_FIRST_CHILD(pOcspContext->ocspProcess.client.pIssuerRoot), pOcspContext->ocspProcess.client.issuerCs,
+                             ASN1_FIRST_CHILD(pOcspContext->ocspProcess.client.pResponderCert), pOcspContext->ocspProcess.client.responderCs);
 
         if (OK == status)
         {
@@ -2658,7 +2650,6 @@ OCSP_MESSAGE_checkResponderId(ocspContext *pOcspContext)
         MemFile      mf;
         CStream      cs;
         ASN1_ITEMPTR pTRespRoot;
-        ASN1_ITEMPTR pTRespSignature;
 
         if ((NULL == pOcspContext->pOcspSettings->pTrustedResponders[i].pCertPath) ||
             (0 >= pOcspContext->pOcspSettings->pTrustedResponders[i].certLen))
@@ -2680,11 +2671,9 @@ OCSP_MESSAGE_checkResponderId(ocspContext *pOcspContext)
             goto exit;
         }
 
-        /* responder cert signature == trusted cert signature */
-        if (OK > (status = OCSP_MESSAGE_getCertificateSignature(ASN1_FIRST_CHILD(pTRespRoot), &pTRespSignature)))
-            goto exit;
-
-        status = ASN1_CompareItems(pTRespSignature, cs, pResponderCertSignature,
+        /* responder cert IS a locally configured trusted responder (whole certificate must match, not just public signature bytes) */
+        status = ASN1_CompareItems(ASN1_FIRST_CHILD(pTRespRoot), cs,
+                                   ASN1_FIRST_CHILD(pOcspContext->ocspProcess.client.pResponderCert),
                                    pOcspContext->ocspProcess.client.responderCs);
 
         /* Free the above Parsed Tree Item */
