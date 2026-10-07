@@ -62,6 +62,7 @@ OCSP_ARG=
 VERSION_STRING=""
 DIGICERT_SCEP=
 PROXY_ARG=
+WEBSOCKET_ARG=
 PC_ARG=
 MEM_PROFILE_ARG=
 GCM_OPT=" --aes-gcm-256b"
@@ -108,6 +109,7 @@ function show_usage
     echo "  --msg-timestamp        - Enable timestamps in log messages."
     echo "  --persist-artifact     - Enable persisting artifact payload."
     echo "  --proxy                - Build with proxy support enabled."
+    echo "  --websocket            - Build with MQTT over WebSocket (WS/WSS) transport support."
     echo "  --x32                  - Build for 32-bit platforms."
     echo "  --x64                  - Build for 64-bit platforms."
     echo "  --service-certificate  - Build with service certificate mode support."
@@ -320,6 +322,10 @@ do
         --proxy)
             PROXY_ARG=" --proxy"
             ;;
+        --websocket)
+            echo "-- Building with WebSocket transport support...";
+            WEBSOCKET_ARG=" --websocket"
+            ;;
         --minimal)
             echo "Building with minimal ciphers";
             export CM_ENV_STRIP_FUNC=1
@@ -502,8 +508,13 @@ if [ ${NO_REBUILD} -eq 0 ]; then
         cd ${MSS_PROJECTS_DIR}/nanossl && ./clean.sh && ./build.sh $BUILD_OPTIONS ${EXPORT_ARG} $NANOSSL_BUILD_OPTIONS ${GCM_OPT} nanossl ${PQC_ARG} ${PQC_COMPOSITE_ARG} ${OQS_ARG} ${PROXY_ARG}
     fi
 
-    cd ${MSS_PROJECTS_DIR}/mqtt_client && ./clean.sh && ./build.sh $BUILD_OPTIONS $NANOMQTT_BUILD_OPTIONS ${PQC_ARG} nanomqtt
-    cd ${MSS_PROJECTS_DIR}/mqtt_client && ./clean.sh && ./build.sh $BUILD_OPTIONS $NANOMQTT_BUILD_OPTIONS ${PQC_ARG} mqtt_client_sample ${PROXY_ARG}
+    NANOMQTT_WEBSOCKET_ARG=
+    if ! [ -z "${WEBSOCKET_ARG}" ]; then
+        cd ${MSS_PROJECTS_DIR}/websocket && ./clean.sh && ./build.sh --libtype static --ssl $BUILD_OPTIONS nanows
+        NANOMQTT_WEBSOCKET_ARG=" --cmake-opt -DCM_ENABLE_WEBSOCKET_CLIENT=ON"
+    fi
+    cd ${MSS_PROJECTS_DIR}/mqtt_client && ./clean.sh && ./build.sh $BUILD_OPTIONS $NANOMQTT_BUILD_OPTIONS ${PQC_ARG} ${NANOMQTT_WEBSOCKET_ARG} nanomqtt
+    cd ${MSS_PROJECTS_DIR}/mqtt_client && ./clean.sh && ./build.sh $BUILD_OPTIONS $NANOMQTT_BUILD_OPTIONS ${PQC_ARG} ${NANOMQTT_WEBSOCKET_ARG} mqtt_client_sample ${PROXY_ARG}
 fi
 
 # Build trustedge binary
@@ -521,8 +532,8 @@ ARTIFACTS=("DEB" "RPM" "TGZ")
 
 # Loop through the array
 for GENERATOR in "${ARTIFACTS[@]}"; do
-    echo "cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${VERSION_STRING} ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${PC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} ${DIGICERT_SCEP} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --generator ${GENERATOR} ${PROXY_ARG}"
-    cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${VERSION_STRING} ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${PC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} ${DIGICERT_SCEP} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --generator ${GENERATOR} ${PROXY_ARG}
+    echo "cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${VERSION_STRING} ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${PC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} ${DIGICERT_SCEP} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --generator ${GENERATOR} ${PROXY_ARG} ${WEBSOCKET_ARG}"
+    cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${VERSION_STRING} ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${PC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} ${DIGICERT_SCEP} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --generator ${GENERATOR} ${PROXY_ARG} ${WEBSOCKET_ARG}
 
     if [ ${PACKAGE} -eq 1 ]; then
         if [ "${GENERATOR}" == "DEB" ]; then
@@ -537,6 +548,6 @@ for GENERATOR in "${ARTIFACTS[@]}"; do
 done
 
 if [ ${UNITTEST_ARG} -eq 1 ]; then
-    echo "cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --unittest --library"
-    cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --unittest --library
+    echo "cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --unittest --library ${WEBSOCKET_ARG}"
+    cd ${MSS_PROJECTS_DIR}/trustedge && ./clean.sh && ./build.sh ${SMP_ARG} ${TAP_MODE} ${PKCS11_ARG} ${CVC_ARG} ${OQS_ARG} ${PQC_ARG} ${EXPORT_ARG} $BUILD_OPTIONS $TRUSTEDGE_BUILD_OPTIONS --unittest --library ${WEBSOCKET_ARG}
 fi

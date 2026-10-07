@@ -57,6 +57,19 @@ if (ENABLE_MQTT_CLIENT)
     set(CM_ENABLE_SSL ON CACHE BOOL "Build with SSL." FORCE)
 endif()
 
+# WebSocket client build options
+option(ENABLE_WEBSOCKET_SUPPORT "Build WebSocket Support in MQTT (MQTT over WS/WSS)." OFF)
+option(WRITE_KEYLOG_FILE        "Write NSS key log file for TLS traffic decryption."  OFF)
+
+if(ENABLE_WEBSOCKET_SUPPORT)
+    set(ENABLE_MQTT_CLIENT ON CACHE BOOL "Build MQTT Client." FORCE)
+    set(CM_ENABLE_SSL ON CACHE BOOL "Build with SSL." FORCE)
+endif()
+
+if(WRITE_KEYLOG_FILE)
+    set(CM_ENABLE_SSL_KEYLOG_FILE ON CACHE BOOL "Write NSS key log file for TLS traffic decryption." FORCE)
+endif()
+
 # NanoTAP API example
 option(ENABLE_TAP_API_EXAMPLE "Build NanoTAP API Example." OFF)
 
@@ -91,9 +104,9 @@ option(ENABLE_TAP "Enable TAP" OFF)
 option(ENABLE_FIPS "Build with FIPS enabled." OFF)
 
 if(ENABLE_CI_EXAMPLE OR ENABLE_SSH_CLIENT OR ENABLE_SSH_SERVER
-    OR ENABLE_MQTT_CLIENT OR ENABLE_NANOROOT OR ENABLE_PKCS11_SOFTHSM
-    OR ENABLE_PKCS11_TEE OR ENABLE_TPM2 OR ENABLE_TAP_API_EXAMPLE
-    OR ENABLE_SCEP OR ENABLE_EST OR ENABLE_NANOSEC)
+    OR ENABLE_MQTT_CLIENT OR ENABLE_WEBSOCKET_SUPPORT OR ENABLE_NANOROOT
+    OR ENABLE_PKCS11_SOFTHSM OR ENABLE_PKCS11_TEE OR ENABLE_TPM2
+    OR ENABLE_TAP_API_EXAMPLE OR ENABLE_SCEP OR ENABLE_EST OR ENABLE_NANOSEC)
   set(_SSL_DEFAULT_DISABLED ON)
 else()
   set(_SSL_DEFAULT_DISABLED OFF)
@@ -138,6 +151,7 @@ if(
     AND NOT ENABLE_SSH_CLIENT
     AND NOT ENABLE_SSH_SERVER
     AND NOT ENABLE_MQTT_CLIENT
+    AND NOT ENABLE_WEBSOCKET_SUPPORT
     AND NOT ENABLE_NANOROOT
     AND NOT ENABLE_PKCS11_SOFTHSM
     AND NOT ENABLE_PKCS11_TEE
@@ -151,8 +165,9 @@ if(
 )
   message(FATAL_ERROR
     "No modules enabled. Please enable at least one of: ENABLE_CI_EXAMPLE, ENABLE_SSH_CLIENT, ENABLE_SSH_SERVER, "
-    "ENABLE_MQTT_CLIENT, ENABLE_NANOROOT, ENABLE_PKCS11_SOFTHSM, ENABLE_PKCS11_TEE, ENABLE_TPM2, ENABLE_TAP_API_EXAMPLE, "
-    "ENABLE_SCEP, ENABLE_EST, ENABLE_NANOSEC, (set DISABLE_SSL_CLIENT and/or DISABLE_SSL_SERVER to OFF)")
+    "ENABLE_MQTT_CLIENT, ENABLE_WEBSOCKET_SUPPORT, ENABLE_NANOROOT, ENABLE_PKCS11_SOFTHSM, ENABLE_PKCS11_TEE, "
+    "ENABLE_TPM2, ENABLE_TAP_API_EXAMPLE, ENABLE_SCEP, ENABLE_EST, ENABLE_NANOSEC, "
+    "(set DISABLE_SSL_CLIENT and/or DISABLE_SSL_SERVER to OFF)")
 endif()
 
 if(ENABLE_TAP_API_EXAMPLE)
@@ -377,6 +392,16 @@ if(NOT DISABLE_SSL_SERVER)
   )
 endif()
 
+if(ENABLE_WEBSOCKET_SUPPORT)
+  if("STATIC" STREQUAL "${LIB_TYPE}")
+    set(NANOWS_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanows.a)
+  else()
+    set(NANOWS_DEPENDENCY ${CMAKE_SOURCE_DIR}/lib/libnanows.so)
+  endif()
+  set(CM_BUILD_NANOWS ON CACHE BOOL "Build NanoWS library" FORCE)
+  add_subdirectory(projects/websocket)
+endif()
+
 # MQTT client library
 set(MQTT_CLIENT_HEADER "")
 set(MQTT_CLIENT_FILE ${CMAKE_BINARY_DIR}/mqtt_client_macros.h)
@@ -395,6 +420,9 @@ if(ENABLE_MQTT_CLIENT)
     DEPENDS ${MQTT_CLIENT_HEADER} ${NANOMQTT_DEPENDENCY}
   )
   set(CM_BUILD_NANOMQTT ON  CACHE BOOL "Build MQTT Client" FORCE)
+  if(ENABLE_WEBSOCKET_SUPPORT)
+    set(CM_ENABLE_WEBSOCKET_CLIENT ON CACHE BOOL "Build with WebSocket support." FORCE)
+  endif()
   add_subdirectory(projects/mqtt_client)
 endif()
 
@@ -466,6 +494,22 @@ if(ENABLE_MQTT_CLIENT)
       add_dependencies(mqtt_client_test overwrite_for_mqtt_client)
       target_compile_definitions(mqtt_client_test PUBLIC -DMOPTIONS_CUSTOM_HEADER="${MOPTIONS_CUSTOM_MQTT_CLIENT_FILE}")
     endif()
+
+    if(ENABLE_WEBSOCKET_SUPPORT)
+      target_compile_definitions(mqtt_client PUBLIC -D__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+      add_dependencies(mqtt_client nanows)
+      if(ENABLE_MQTT_TEST)
+        add_dependencies(mqtt_client_test nanows)
+      endif()
+    endif()
+  endif()
+endif()
+
+# WebSocket client sample
+if(ENABLE_WEBSOCKET_SUPPORT)
+  if(BUILD_SAMPLES)
+    add_subdirectory(samples/nanows)
+    add_dependencies(websocket_sample nanows)
   endif()
 endif()
 

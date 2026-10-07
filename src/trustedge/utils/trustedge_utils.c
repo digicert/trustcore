@@ -144,6 +144,10 @@
 #define KEYSTORE_DIR_JSTR           "keystore_dir"
 #define CONFIGURATION_JSTR          "configuration"
 #define REQUIRE_PQC_JSTR            "require_pqc"
+#define TRANSPORT_JSTR              "transport"
+#define TRANSPORT_PORT_JSTR         "port"
+#define TRANSPORT_FALLBACK_JSTR     "enable_transport_fallback"
+#define WS_MAX_BUFFER_JSTR          "ws_max_buffer"
 #define CERTIFICATE_JSTR            "certificate"
 #define SERVICE_DIR_JSTR            "service_dir"
 #define POLLING_INTERVAL_JSTR       "polling_interval"
@@ -326,16 +330,13 @@ extern MSTATUS TRUSTEDGE_utilsReadConfig(
     TrustEdgeConfig **ppConfig)
 {
     MSTATUS status;
+    sbyte *pJsonVal = NULL;
     TrustEdgeConfig *pConfig = NULL;
     ubyte *pData = NULL;
     ubyte4 dataLen = 0;
     JSON_ContextType *pJCtx = NULL;
     ubyte4 tokensFound, ndx;
     sbyte *pPath = NULL;
-#ifndef __DISABLE_TRUSTEDGE_REST_API__
-    sbyte *pJsonVal = NULL;
-#endif
-
     if (NULL == ppConfig)
     {
         status = ERR_NULL_POINTER;
@@ -476,6 +477,10 @@ extern MSTATUS TRUSTEDGE_utilsReadConfig(
     }
 
     pConfig->requirePQC = FALSE;
+    pConfig->pTransport = NULL;
+    pConfig->transportPort = 0;
+    pConfig->enableTransportFallback = FALSE;
+    pConfig->wsMaxBuffer = 0;
 
     status = JSON_getJsonObjectIndex(
         pJCtx, 0, CONFIGURATION_JSTR, &ndx, TRUE);
@@ -490,6 +495,73 @@ extern MSTATUS TRUSTEDGE_utilsReadConfig(
                 __func__, REQUIRE_PQC_JSTR, CONFIGURATION_JSTR);
             goto exit;
         }
+
+        status = JSON_getJsonStringValue(
+            pJCtx, ndx, TRANSPORT_JSTR, &pJsonVal, TRUE);
+        if (OK == status)
+        {
+            if (0 == DIGI_STRCMP(pJsonVal, (sbyte *) TRUSTEDGE_TRANSPORT_WS_SCHEME))
+            {
+                pConfig->transportPort = TRUSTEDGE_TRANSPORT_WS_PORT;
+            }
+            else if (0 == DIGI_STRCMP(pJsonVal, (sbyte *) TRUSTEDGE_TRANSPORT_WSS_SCHEME))
+            {
+                pConfig->transportPort = TRUSTEDGE_TRANSPORT_WSS_PORT;
+            }
+            else
+            {
+                status = ERR_TRUSTEDGE_AGENT;
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: Invalid value '%s' for '%s' key in '%s', expected '%s' or '%s'\n",
+                    __func__, pJsonVal, TRANSPORT_JSTR, CONFIGURATION_JSTR,
+                    TRUSTEDGE_TRANSPORT_WS_SCHEME, TRUSTEDGE_TRANSPORT_WSS_SCHEME);
+                goto exit;
+            }
+
+            pConfig->pTransport = pJsonVal;
+            pJsonVal = NULL;
+        }
+        else if (ERR_NOT_FOUND != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s: Failed to read '%s' key in '%s'\n",
+                __func__, TRANSPORT_JSTR, CONFIGURATION_JSTR);
+            goto exit;
+        }
+
+        if (NULL != pConfig->pTransport)
+        {
+            status = JSON_getJsonIntegerValue(
+                pJCtx, ndx, TRANSPORT_PORT_JSTR, &pConfig->transportPort, TRUE);
+            if (OK != status && ERR_NOT_FOUND != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: Failed to read '%s' key in '%s'\n",
+                    __func__, TRANSPORT_PORT_JSTR, CONFIGURATION_JSTR);
+                goto exit;
+            }
+
+            status = JSON_getJsonIntegerValue(
+                pJCtx, ndx, WS_MAX_BUFFER_JSTR, &pConfig->wsMaxBuffer, TRUE);
+            if (OK != status && ERR_NOT_FOUND != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: Failed to read '%s' key in '%s'\n",
+                    __func__, WS_MAX_BUFFER_JSTR, CONFIGURATION_JSTR);
+                goto exit;
+            }
+
+            status = JSON_getJsonBooleanValue(
+                pJCtx, ndx, TRANSPORT_FALLBACK_JSTR,
+                &pConfig->enableTransportFallback, TRUE);
+            if (OK != status && ERR_NOT_FOUND != status)
+            {
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s: Failed to read '%s' key in '%s'\n",
+                    __func__, TRANSPORT_FALLBACK_JSTR, CONFIGURATION_JSTR);
+                goto exit;
+            }
+        }
     }
     else if (ERR_NOT_FOUND != status)
     {
@@ -498,6 +570,8 @@ extern MSTATUS TRUSTEDGE_utilsReadConfig(
             __func__, CONFIGURATION_JSTR);
         goto exit;
     }
+
+    status = OK;
 
     status = JSON_getJsonObjectIndex(
         pJCtx, 0, CERTIFICATE_JSTR, &ndx, TRUE);
@@ -890,6 +964,13 @@ extern MSTATUS TRUSTEDGE_utilsReadConfig(
         }
     }
 
+    if (0 == pConfig->wsMaxBuffer)
+    {
+        pConfig->wsMaxBuffer = (TRUE == pConfig->chunkSupported)
+                             ? pConfig->chunkSize
+                             : TRUSTEDGE_TRANSPORT_WS_MAX_BUFFER;
+    }
+
     status = JSON_getJsonObjectIndex(
         pJCtx, 0, CLOUD_PROVIDER_JSTR, &ndx, TRUE);
     if (OK == status)
@@ -1074,10 +1155,8 @@ exit:
     JSON_releaseContext (&pJCtx);
     DIGI_FREE((void **) &pPath);
     DIGI_FREE((void **) &pData);
-#ifndef __DISABLE_TRUSTEDGE_REST_API__
     if (NULL != pJsonVal)
         (void) DIGI_FREE((void**) &pJsonVal);
-#endif
     TRUSTEDGE_utilsDeleteConfig(&pConfig);
 
     return status;
@@ -1151,6 +1230,7 @@ extern MSTATUS TRUSTEDGE_utilsCloneConfig (TrustEdgeConfig *pConfig, TrustEdgeCo
     pCopy->pTrustEdgeMode = TRUSTEDGE_utilsCloneString(pConfig->pTrustEdgeMode);
     pCopy->pCertificateMode = TRUSTEDGE_utilsCloneString(pConfig->pCertificateMode);
     pCopy->pProviderCredsDir = TRUSTEDGE_utilsCloneString(pConfig->pProviderCredsDir);
+    pCopy->pTransport = TRUSTEDGE_utilsCloneString(pConfig->pTransport);
 #ifndef __DISABLE_TRUSTEDGE_REST_API__
     pCopy->pRequestType = TRUSTEDGE_utilsCloneString(pConfig->pRequestType);
 #ifndef __DISABLE_TRUSTEDGE_HTTPS_REST_API__
@@ -1188,6 +1268,9 @@ extern MSTATUS TRUSTEDGE_utilsCloneConfig (TrustEdgeConfig *pConfig, TrustEdgeCo
     pCopy->port = pConfig->port;
 #endif
     pCopy->requirePQC = pConfig->requirePQC;
+    pCopy->transportPort = pConfig->transportPort;
+    pCopy->enableTransportFallback = pConfig->enableTransportFallback;
+    pCopy->wsMaxBuffer = pConfig->wsMaxBuffer;
     pCopy->exitClient = pConfig->exitClient;
 
     *ppConfig = pCopy;
@@ -1336,6 +1419,13 @@ extern MSTATUS TRUSTEDGE_utilsDeleteConfig(
         if (NULL != (*ppConfig)->pProviderCredsDir)
         {
             fstatus = DIGI_FREE((void **) &(*ppConfig)->pProviderCredsDir);
+            if (OK == status)
+                status = fstatus;
+        }
+
+        if (NULL != (*ppConfig)->pTransport)
+        {
+            fstatus = DIGI_FREE((void **) &(*ppConfig)->pTransport);
             if (OK == status)
                 status = fstatus;
         }

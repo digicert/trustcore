@@ -477,8 +477,8 @@ extern MSTATUS MQTT_negotiateConnection(
     }
 
     /* MQTT v5 spec 4.9:
-     * The send quota and Receive Maximum value are not 
-     * preserved across Network Connections, and are re-initialized with each 
+     * The send quota and Receive Maximum value are not
+     * preserved across Network Connections, and are re-initialized with each
      * new Network Connection */
     pCtx->clientSendQuota = pCtx->recvMax;
 
@@ -902,8 +902,8 @@ extern MSTATUS MQTT_publish(
         MQTT_timeoutStoredPublishes(pCtx);
 
         /* MQTT v5 spec 4.9:
-         * Each time the Client or Server sends a PUBLISH packet at QoS > 0, it decrements 
-         * the send quota. If the send quota reaches zero, the Client or Server MUST NOT send 
+         * Each time the Client or Server sends a PUBLISH packet at QoS > 0, it decrements
+         * the send quota. If the send quota reaches zero, the Client or Server MUST NOT send
          * any more PUBLISH packets with QoS > 0 */
         status = RTOS_mutexWait(pCtx->pMutex);
         if (OK != status)
@@ -1075,7 +1075,7 @@ exit:
         if (NULL != pCtx)
             pCtx->connectionState = CONNECT_NEGOTIATE;
     }
-    
+
     return status;
 }
 
@@ -1175,8 +1175,8 @@ exit:
 /*----------------------------------------------------------------------------*/
 
 MSTATUS MQTT_getClientIdFromConnInst(
-    sbyte4 connectionInstance, 
-    ubyte **ppClientId, 
+    sbyte4 connectionInstance,
+    ubyte **ppClientId,
     ubyte4 *pClientIdLen)
 {
     MSTATUS status;
@@ -1654,5 +1654,20 @@ exit:
 
     return status;
 }
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+#include "../websocket/websocket.h"
+
+/*----------------------------------------------------------------------------*/
+
+extern MSTATUS
+MQTT_setTransportWS(sbyte4 connectionInstance, WsContext *pWsCtx)
+{
+    return MQTT_setTransport(connectionInstance, pWsCtx,
+                             WS_mqttTransportSend,
+                             WS_mqttTransportRecv);
+}
+
+#endif /* __ENABLE_DIGICERT_WEBSOCKET_CLIENT__ */
 
 #endif /* __ENABLE_MQTT_CLIENT__ */

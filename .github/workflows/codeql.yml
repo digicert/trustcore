@@ -78,6 +78,8 @@ jobs:
           -DENABLE_TAP_API_EXAMPLE=ON \
           -DENABLE_EST=ON \
           -DENABLE_SCEP=ON \
+          -DENABLE_NANOSEC=ON \
+          -DENABLE_WEBSOCKET_SUPPORT=ON \
           -DSECURE_PATH="$(pwd)" \
           -D${{ matrix.feature }}=ON \
           -B build -S . && \

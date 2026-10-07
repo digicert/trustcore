@@ -2695,6 +2695,15 @@ enum enum_errDescrValues {
     ERROR_DEF       (ERR_MIME_FORMAT_INVALID,                           -24005)
     ERROR_DEF       (ERR_MIME_CONTENT_LENGTH_MISMATCH,                  -24006)
 
+    ERROR_DEF       (ERR_WS,                                            -25000)
+    ERROR_DEF       (ERR_WS_HANDSHAKE_FAILED,                           -25001)
+    ERROR_DEF       (ERR_WS_NOT_OPEN,                                   -25002)
+    ERROR_DEF       (ERR_WS_CLOSE_RECEIVED,                             -25003)
+    ERROR_DEF       (ERR_WS_PROTOCOL_ERROR,                             -25004)
+    ERROR_DEF       (ERR_WS_PAYLOAD_TOO_LARGE,                          -25005)
+    ERROR_DEF       (ERR_WS_BUFFER_FULL,                                -25006)
+    ERROR_DEF       (ERR_WS_SUBPROTOCOL_MISMATCH,                       -25007)
+
     /* Digicert Application error code */
     ERROR_DEF       (ERR_APP,                                           -50000)
     ERROR_DEF       (ERR_APP_VOIP,                                      -51000)

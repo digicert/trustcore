@@ -70,6 +70,16 @@ extern "C" {
 #define TRUSTEDGE_AGENT_MAX_SLEEP_PERIOD_MS     (5000)
 #endif
 
+#define TRUSTEDGE_TRANSPORT_WS             "ws"
+#define TRUSTEDGE_TRANSPORT_WSS            "wss"
+#define TRUSTEDGE_TRANSPORT_WS_SCHEME      TRUSTEDGE_TRANSPORT_WS"://"
+#define TRUSTEDGE_TRANSPORT_WSS_SCHEME     TRUSTEDGE_TRANSPORT_WSS"://"
+#define TRUSTEDGE_TRANSPORT_WS_PORT        80
+#define TRUSTEDGE_TRANSPORT_WSS_PORT       443
+#ifndef TRUSTEDGE_TRANSPORT_WS_MAX_BUFFER
+#define TRUSTEDGE_TRANSPORT_WS_MAX_BUFFER  16384
+#endif
+
 typedef struct
 {
     sbyte *pBinDir;
@@ -128,6 +138,10 @@ typedef struct
     ubyte4 chunkSize;
     ubyte4 chunkWindowSize;
     intBoolean requirePQC;
+    sbyte *pTransport;
+    ubyte4 transportPort;
+    intBoolean enableTransportFallback;
+    ubyte4 wsMaxBuffer;
     sbyte *pProviderCredsDir;
     intBoolean exitClient;
 } TrustEdgeConfig;

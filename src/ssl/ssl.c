@@ -2674,8 +2674,9 @@ To enable this function, at least one of the following flags must be defined in 
 @param pBuffer              Pointer to buffer containing the data to send.
 @param bufferSize           Number of bytes in \p pBuffer.
 
-@return     \c OK (0) if successful; otherwise a negative number error code
-            definition from merrors.h. To retrieve a string containing an
+@return     The number of bytes from \p pBuffer accepted for transmission
+            (a value >= 0) if successful; otherwise a negative number error
+            code definition from merrors.h. To retrieve a string containing an
             English text error identifier corresponding to the function's
             returned error status, use the \c DISPLAY_ERROR macro.
 

@@ -39,6 +39,7 @@
 #include "../../tap/tap_smp.h"
 #endif
 #include "../../cert_enroll/cert_enroll.h"
+#include "../../mqtt/mqtt_client.h"
 #include "../../trustedge/agent/trustedge_agent_policy_data_types.h"
 #include "../../trustedge/utils/trustedge_utils.h"
 #include "../../trustedge/agent/trustedge_agent.h"
@@ -69,6 +70,8 @@ extern "C" {
 #define DEFAULT_AGENT_RENEWAL_HOURS         24
 #define DEFAULT_CHUNK_SIZE                  131072
 #define DEFAULT_CHUNK_WINDOW_SIZE           4
+/* 4 KB covers protocol overhead (~1.3 KB measured) plus one partial raw read. */
+#define WS_BUFFER_OVERHEAD                  4096
 #ifndef __DISABLE_TRUSTEDGE_REST_API__
 #define DEFAULT_REQUEST_TYPE                "http"
 #define DEFAULT_SERVER_FQDN                 "localhost"
@@ -171,6 +174,9 @@ typedef struct
     sbyte4 transportProxy;
     byteBoolean persistConnection;
     MSTATUS status;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    WsContext *pWsCtx;
+#endif
 } TrustEdgeAgentMqtt;
 
 typedef struct

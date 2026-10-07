@@ -65,6 +65,8 @@ Run the build script with the following options:
 ./scripts/ci/trustedge/ci_trustedge_build.sh --monolithic --package --cvc --proxy --pqc --pqc-composite --enable-pc
 ```
 
+To build TrustEdge with WebSocket support, add `--websocket` to the command. See [MQTT-over-WebSockets for TrustEdge](#mqtt-over-websockets-for-trustedge).
+
 To build TrustEdge with NanoROOT TAP module support, include the `--nanoroot` option:
 
 ```bash
@@ -682,6 +684,70 @@ NanoROOT can also be used as the key source for TrustEdge Agent certificate oper
 In Device Trust Manager, create or update the certificate profile to use NanoROOT as the key source and provide the matching NanoROOT key handle. For Device Trust Manager details, refer to the [Device Trust Manager documentation](https://docs.digicert.com/en/device-trust-manager.html).
 
 After configuring the certificate profile, start TrustEdge as a service where supported or run the agent interactively using the steps in [TrustEdge Agent](#trustedge-agent).
+
+---
+
+## MQTT-over-WebSockets for TrustEdge
+
+Enable TrustEdge to use MQTT over WebSockets (WSS) in Layer-7 restricted enterprise and regulated networks where HTTPS/WebSocket traffic is permitted.
+
+These settings are configurable in the TrustEdge configuration file, `trustedge.json`, and they apply to the TrustEdge MQTT transport layer. When `transport` is not set, the WebSocket-related options below have no effect.
+
+### `transport`
+
+`transport` selects the connection scheme used by TrustEdge for the broker connection:
+
+- `ws://` for plain WebSocket
+- `wss://` for WebSocket over TLS
+
+If `transport` is unset, TrustEdge uses the normal non-WebSocket connection path.
+
+### `port`
+
+The configured port is used for the WebSocket connection.
+
+- `ws://`:`80`
+- `wss://`:`443`
+
+### `ws_max_buffer`
+
+`ws_max_buffer` is the size, in bytes, of the decoded payload buffer used by TrustEdge.
+
+You normally do not need to set it. If omitted, the default is `chunk_size` when `chunk_supported` is `true`, or 16 KB when it is `false`.
+
+When chunking is enabled, the buffer is never grown past this value. Instead the effective chunk size is capped at `ws_max_buffer - 4 KB`, logged when it applies.
+
+> **Important:** With `chunk_supported: false` there is no chunk size to cap, so an artifact larger than `ws_max_buffer` fails with a buffer-full error. Enable chunking, or set `ws_max_buffer` above your largest artifact.
+
+| Scenario | Payload buffer | Effective chunk size |
+|---|---|---|
+| `transport` unset | not used | `chunk_size` unchanged |
+| `chunk_supported: false`, `ws_max_buffer` omitted | 16 KB | not applicable |
+| `chunk_supported: true`, `ws_max_buffer` omitted, `chunk_size: 131072` | 131072 | 126976 (`chunk_size - 4 KB`) |
+| `chunk_supported: true`, `chunk_size: 65536`, `ws_max_buffer: 131072` | 131072 | 65536 (fits, unchanged) |
+| `chunk_supported: true`, `chunk_size: 131072`, `ws_max_buffer: 32768` | 32768 | 28672 (reduced, logged) |
+| `chunk_supported: true`, `ws_max_buffer: 4096` or less | - | startup error |
+
+### `enable_transport_fallback`
+
+`enable_transport_fallback` (default `false`) allows TrustEdge to retry an endpoint over native MQTT when the WebSocket connection cannot be established.
+
+> **Important:** When enabled, a WebSocket failure can switch TrustEdge to native MQTT on the port from the endpoint URI. Disable this option when WebSocket transport is required by policy.
+
+Fallback is attempted only for socket-level failures and for a WebSocket upgrade the server does not serve. TLS, certificate and MQTT application failures are always reported. WebSocket `401`/`403` responses and proxy `407` authentication responses do not trigger fallback, so fallback never masks an authentication problem. The fallback preserves TLS only when the selected endpoint uses `mqtts://`; an `mqtts://` endpoint configured with `wss://` falls back to native MQTT over TLS.
+
+### Example in `trustedge.json`
+
+```json
+"configuration": {
+    "transport": "wss://",
+    "port": 443,
+    "enable_transport_fallback": true,
+    "ws_max_buffer": 16384
+}
+```
+
+This configures TrustEdge to connect to the broker using WebSocket over TLS on port 443, with a 16 KB decoded payload buffer, and fallback to native MQTT when the WebSocket connection cannot be established.
 
 ---
 

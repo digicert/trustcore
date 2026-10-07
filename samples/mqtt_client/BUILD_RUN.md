@@ -10,6 +10,7 @@
 | `ENABLE_MQTT_TEST`                | Enable MQTT Client Functional Test           | `OFF`   |
 | `ENABLE_MQTT_UNITTEST`            | Enable MQTT Client Unit Test                 | `OFF`   |
 | `ENABLE_MQTT_STREAMING`           | Enable Streaming Support                     | `OFF`   |
+| `ENABLE_WEBSOCKET_SUPPORT`        | Enable MQTT Over Websocket Support           | `OFF`   |
 
 > **Note:** When `ENABLE_MQTT_CLIENT` is set to `ON`, it automatically enables proxy, async, persist, SCRAM, and SSL support.<br>
 > For the complete list of options and their details, refer to [`projects/mqtt_client/CMakeLists.txt`](../../projects/mqtt_client/CMakeLists.txt).
@@ -30,6 +31,8 @@ export MQTT_SSL_PORT=8883
 cmake -DBUILD_SAMPLES=ON -DENABLE_MQTT_CLIENT=ON -B build -S .
 cmake --build build
 ```
+
+> **Note:** This sample also supports MQTT-over-WebSocket transport when built with WebSocket support enabled (-DENABLE_WEBSOCKET_SUPPORT=ON). The build includes `WS` and `WSS` transport options for `--mqtt_transport`.
 
 **Run**
 

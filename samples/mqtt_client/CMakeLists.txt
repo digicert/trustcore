@@ -49,6 +49,7 @@ if("STATIC" STREQUAL "${LIB_TYPE}")
   set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.a")
   set(PLATFORM_LIB         "${LIB_DIR}/libplatform.a")
   set(NANOMQTT_LIB         "${LIB_DIR}/libnanomqtt.a")
+  set(NANOWS_LIB           "${LIB_DIR}/libnanows.a")
   set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.a")
   set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.a")
   set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.a")
@@ -77,6 +78,7 @@ else()
   set(INITIALIZE_LIB       "${LIB_DIR}/libinitialize.so")
   set(PLATFORM_LIB         "${LIB_DIR}/libplatform.so")
   set(NANOMQTT_LIB         "${LIB_DIR}/libnanomqtt.so")
+  set(NANOWS_LIB           "${LIB_DIR}/libnanows.so")
   set(NANOCRYPTO_LIB       "${LIB_DIR}/libnanocrypto.so")
   set(NANOCAP_LIB          "${LIB_DIR}/libnanocap.so")
   set(CRYPTO_INTERFACE_LIB "${LIB_DIR}/libcryptointerface.so")
@@ -99,12 +101,22 @@ else()
   
 endif()
 
+if(ENABLE_WEBSOCKET_SUPPORT)
+  set(NANOWS_LINK_LIB ${NANOWS_LIB})
+  foreach(target ${MQTT_TARGETS})
+    target_compile_definitions(${target} PRIVATE __ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+  endforeach()
+else()
+  set(NANOWS_LINK_LIB "")
+endif()
+
 # Link libraries to all MQTT targets
 if(CM_ENABLE_TAP)
   if("STATIC" STREQUAL "${LIB_TYPE}")
     # Static libraries with circular dependencies - use --start-group/--end-group
     foreach(target ${MQTT_TARGETS})
       target_link_libraries(${target} PRIVATE
+        ${NANOWS_LINK_LIB}
         ${NANOMQTT_LIB}
         ${NANOSSL_LIB}
         ${CERT_ENROLL_LIB}
@@ -135,6 +147,7 @@ if(CM_ENABLE_TAP)
         ${ASN1_LIB}
         ${COMMON_LIB}
         ${INITIALIZE_LIB}
+        ${NANOWS_LINK_LIB}
         ${NANOMQTT_LIB}
         ${NANOCRYPTO_LIB}
         ${NANOCAP_LIB}
@@ -155,6 +168,7 @@ else()
     # Static libraries with circular dependencies - use --start-group/--end-group
     foreach(target ${MQTT_TARGETS})
       target_link_libraries(${target} PRIVATE
+        ${NANOWS_LINK_LIB}
         ${NANOMQTT_LIB}
         ${NANOSSL_LIB}
         ${CERT_ENROLL_LIB}
@@ -180,6 +194,7 @@ else()
         ${ASN1_LIB}
         ${COMMON_LIB}
         ${INITIALIZE_LIB}
+        ${NANOWS_LINK_LIB}
         ${NANOMQTT_LIB}
         ${NANOCRYPTO_LIB}
         ${NANOCAP_LIB}
