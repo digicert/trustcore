@@ -1,4 +1,4 @@
-name: "OpenSSL Connector 3.5.0 TAP LOCAL Integration Tests"
+name: "OpenSSL Connector 3.5.0 TAP Local TLS and Crypto Test"
 
 on:
   workflow_dispatch: {}
@@ -46,7 +46,7 @@ jobs:
           cd ..
 
       - name: Checkout repository
-uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
 
@@ -252,7 +252,7 @@ uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
           echo "127.0.0.1 webapptap.securitydemos.net" | sudo tee -a /etc/hosts
           echo "127.0.0.1 athena.securitydemos.net" | sudo tee -a /etc/hosts
 
-      - name: Run OpenSSL Connector Integration Test
+      - name: Run OpenSSL Connector TLS Integration Test
         env:
           MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
         run: |
@@ -266,6 +266,50 @@ uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
           path: report_valgrind_tls.zip
           retention-days: 5
 
+      - name: Run OpenSSL Connector Crypto Integration Test
+        env:
+          MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
+        run: |
+          PYTHONUNBUFFERED=1 python3 python_integration_test_crypto.py ossl_3_5_0_cap_tap_local.json
+
+      - name: Upload Valgrind Report Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: report_valgrind_crypto
+          path: report_valgrind_crypto.zip
+          retention-days: 5
+
       - name: Cleanup mocn-qa-m-products
         run: |
           rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
+
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+  
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="OpenSSL Connector 3.5.0 TLS and Crypto Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="OpenSSL Connector 3.5.0 TLS and Crypto Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
