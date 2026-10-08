@@ -19536,11 +19536,12 @@ exit2:
     }
 #endif
 
-#ifdef __ENABLE_DIGICERT_TLS13__
     if (pSSLSock->pPartialHandshakeRecordBuffer != NULL)
     {
         DIGI_FREE((void **)&(pSSLSock->pPartialHandshakeRecordBuffer));
     }
+
+#ifdef __ENABLE_DIGICERT_TLS13__
 #if defined(__ENABLE_DIGICERT_SSL_MUTUAL_AUTH_SUPPORT__)
     if (pSSLSock->certificateRequestContext != NULL)
     {

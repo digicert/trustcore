@@ -833,6 +833,12 @@ typedef struct SSLSocket
     /* engineer defined cookie */
     void*                           cookie;
 
+    /* Reassembly state for a handshake message fragmented across TLS records
+     * (native in TLS 1.3, and possible in TLS 1.0-1.2 via an inspecting proxy). */
+    intBoolean                      isPartialHandshakeRecord;
+    ubyte*                          pPartialHandshakeRecordBuffer;
+    ubyte4                          partialHandshakeRecordBufferLen;
+
 #if defined(__ENABLE_DIGICERT_TLS13__)
     ubyte*                          certificateRequestContext;
     ubyte                           certificateRequestContextLength; /* 0..2^8-1 */
@@ -842,9 +848,6 @@ typedef struct SSLSocket
     ubyte                           filterCertExtensions;
     ubyte2                          certReqTotalExtensionsLength;
 #endif
-    intBoolean                      isPartialHandshakeRecord;
-    ubyte*                          pPartialHandshakeRecordBuffer;
-    ubyte4                          partialHandshakeRecordBufferLen;
 
     /* Keys generated */
     ubyte*                          pPskSecret;

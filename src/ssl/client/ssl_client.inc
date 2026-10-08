@@ -9142,9 +9142,7 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
 {
     ubyte2  recordLen;
     sbyte*  pMsg    = pSSLSock->pReceiveBuffer;
-#if defined(__ENABLE_DIGICERT_TLS13__)
     ubyte*  pTempMsg = NULL;
-#endif
 
     ubyte4  sizeofHandshakeHeader;
     MSTATUS status  = OK;
@@ -9167,14 +9165,13 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
 
     recordLen = (ubyte2)(pSSLSock->recordSize);
 
-#if defined(__ENABLE_DIGICERT_TLS13__)
-    /* TLS 1.3 can fragment a handshake message into multiple encrypted records;
-     * First fragment of a handshake message was read and partialHandshakeRecord flag is set;
-     * Process the next packet record
-     */
-    if (((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
-         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion)) &&
-         (pSSLSock->isPartialHandshakeRecord) && (pSSLSock->pPartialHandshakeRecordBuffer != NULL))
+    /* A handshake message can be fragmented across multiple TLS records: TLS 1.3
+     * does this natively, and an inspecting proxy can re-fragment the server
+     * Certificate for TLS 1.0/1.1/1.2 too. A prior record set partialHandshakeRecord;
+     * process the next record. DTLS (< 1.3) uses its own handshake fragmentation. */
+    if ((pSSLSock->isPartialHandshakeRecord) && (pSSLSock->pPartialHandshakeRecordBuffer != NULL) &&
+        (!pSSLSock->isDTLS ||
+         (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion)))
     {
         /* Get the handshakeRecLen from the first partial read */
         ubyte2 handshakeRecLen = getMediumValue(((SSLHandshakeHeader*)pSSLSock->pPartialHandshakeRecordBuffer)->handshakeSize);
@@ -9227,7 +9224,6 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
             }
         }
     }
-#endif
 
     while ((status >= OK) && (recordLen > 0))
     {
@@ -9257,12 +9253,22 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
             handshakeType = ((SSLHandshakeHeader*)pSHSH)->handshakeType;
         }
 
+	/* Reject 24-bit handshake lengths > 65535; getMediumValue() reads only the low 16 bits. */
+        if (pSHSH[1] != 0)
+        {
+            status = ERR_SSL_PROTOCOL_BAD_LENGTH;
+            break;
+        }
+
         /* check length */
         if ((ubyte2)handshakeRecLen > (ubyte2)recordLen)
         {
-#ifdef __ENABLE_DIGICERT_TLS13__
-            if ((!pSSLSock->isDTLS && TLS13_MINORVERSION == pSSLSock->sslMinorVersion) ||
-                 (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
+            /* Handshake message is fragmented across TLS records (e.g. an inspecting
+             * proxy re-fragments the server Certificate). Buffer this partial message
+             * and wait for the remaining records. DTLS (< 1.3) is excluded because it
+             * carries its own handshake fragment offset/length fields. */
+            if (!pSSLSock->isDTLS ||
+                (pSSLSock->isDTLS && DTLS13_MINORVERSION == pSSLSock->sslMinorVersion))
             {
                 pSSLSock->isPartialHandshakeRecord = TRUE;
 
@@ -9296,7 +9302,6 @@ handleClientHandshakeMessages(SSLSocket* pSSLSock)
                 goto exit;
             }
             else
-#endif
             {
                 status = ERR_SSL_PROTOCOL_BAD_LENGTH;
                 break;
@@ -10077,12 +10082,10 @@ exit:
 
     (void) VLONG_freeVlongQueue(&pVlongQueue);
 
-#if defined(__ENABLE_DIGICERT_TLS13__)
     if (pTempMsg != NULL)
     {
         DIGI_FREE((void **)&pTempMsg);
     }
-#endif
 
     return status;
 
