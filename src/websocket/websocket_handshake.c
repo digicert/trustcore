@@ -52,6 +52,20 @@ static byteBoolean WS_strCaseEq(const sbyte *pA, ubyte4 lenA, const sbyte *pB, u
     return TRUE;
 }
 
+static byteBoolean WS_containsCRLF(const sbyte *pValue)
+{
+    while ('\0' != *pValue)
+    {
+        if ('\r' == *pValue || '\n' == *pValue)
+        {
+            return TRUE;
+        }
+        pValue++;
+    }
+
+    return FALSE;
+}
+
 /*
  * Find the first \r\n in pBuf[0..len-1].
  * Sets *pLineLen to the byte count before \r\n and returns a pointer
@@ -179,9 +193,9 @@ extern MSTATUS WS_computeAccept(const sbyte *pBase64Key, sbyte *pAcceptOut)
     }
 
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
-    status = CRYPTO_INTERFACE_SHA1_completeDigest(MOC_HASH(hwAccelCtx) concat, 60, digest);
+    status = CRYPTO_INTERFACE_SHA1_completeDigest(concat, 60, digest);
 #else
-    status = SHA1_completeDigest(MOC_HASH(hwAccelCtx) concat, 60, digest);
+    status = SHA1_completeDigest(concat, 60, digest);
 #endif
 
     if (OK != status)
@@ -227,6 +241,14 @@ extern MSTATUS WS_buildUpgradeRequest(
     MSTATUS status = OK;
     byteBoolean hasSubProtocol = (NULL != pSubProtocol && '\0' != *pSubProtocol);
     sbyte4 n = 0;
+
+    if (NULL == pHost || NULL == pPath ||
+        WS_containsCRLF(pHost) || WS_containsCRLF(pPath) ||
+        (TRUE == hasSubProtocol && WS_containsCRLF(pSubProtocol)))
+    {
+        status = ERR_WS_HANDSHAKE_FAILED;
+        goto exit;
+    }
 
     if (0 != port)
     {

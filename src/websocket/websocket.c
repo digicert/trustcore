@@ -81,6 +81,12 @@ extern MSTATUS WS_createContext(WsContext **ppCtx, ubyte4 payloadBufSize)
     MSTATUS   status = OK;
     WsContext *pCtx  = NULL;
 
+    if (0 == payloadBufSize)
+    {
+        status = ERR_BAD_LENGTH;
+        goto exit;
+    }
+
     status = DIGI_MALLOC((void **)&pCtx, sizeof(WsContext));
     if (OK != status)
     {

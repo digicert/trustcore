@@ -56,7 +56,7 @@ extern void WS_applyMask(ubyte *pData, ubyte4 len, const ubyte *pMaskKey, ubyte4
 /* reserved codes that can't appear on the wire */
 static byteBoolean WS_isValidCloseCode(ubyte2 code)
 {
-    if (code < 1000  ||
+    if (code < 1000  || code > 4999 ||
         1004 == code ||
         1005 == code ||
         1006 == code ||
@@ -120,6 +120,12 @@ extern MSTATUS WS_frameEncode(
         headerLen = 2 + 8 + 4;
     }
 
+    if (payloadLen > 0xFFFFFFFFu - headerLen)
+    {
+        status = ERR_WS_PAYLOAD_TOO_LARGE;
+        goto exit;
+    }
+
     frameLen = headerLen + payloadLen;
 
     status = DIGI_MALLOC((void **)&pFrame, frameLen);
@@ -167,8 +173,14 @@ extern MSTATUS WS_frameEncode(
     pFrame[hIdx++] = pMaskKey[2];
     pFrame[hIdx++] = pMaskKey[3];
 
-    /* close frame can have empty payload */
-    if (NULL != pPayload && payloadLen > 0)
+    if (payloadLen > 0 && NULL == pPayload)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    /* Close frames can have an empty payload. */
+    if (payloadLen > 0)
     {
         status = DIGI_MEMCPY(pFrame + hIdx, pPayload, payloadLen);
         if (OK != status)
@@ -453,6 +465,13 @@ extern MSTATUS WS_frameDecode(
                             break;
 
                         case WS_OP_CLOSE:
+                            if (1 == pCtx->payloadLen)
+                            {
+                                *pConsumed = offset;
+                                status = ERR_WS_PROTOCOL_ERROR;
+                                goto exit;
+                            }
+
                             /* Capture up to 2 status code bytes for echoing */
                             if (pCtx->payloadLen >= 2)
                             {
