@@ -39,9 +39,17 @@
 #define UDP_RECV_TIMEOUT            10
 #define UDP_SEND_TIMEOUT            NX_WAIT_FOREVER
 
+#ifdef __RTOS_AZURE__
+static NX_IP *mpUdpIpInstance = NULL;
+static NX_PACKET_POOL *mpUdpPacketPool = NULL;
+#else
 /* defined in threadx_alt_rtos.c */
 extern NX_IP            mMocIpInstance;
 extern NX_PACKET_POOL   mMocPacketPool;
+
+static NX_IP *mpUdpIpInstance = &mMocIpInstance;
+static NX_PACKET_POOL *mpUdpPacketPool = &mMocPacketPool;
+#endif
 
 typedef MOC_IP_ADDRESS (*fpSetHostName)(const char *pHostname);
 
@@ -63,9 +71,31 @@ typedef struct
 
 /*------------------------------------------------------------------*/
 
+#ifdef __RTOS_AZURE__
+extern MSTATUS
+THREADX_UDP_setNetworkContext(void *pIpInstance, void *pPacketPool)
+{
+    if ((NULL == pIpInstance) || (NULL == pPacketPool))
+        return ERR_NULL_POINTER;
+
+    mpUdpIpInstance = (NX_IP *)pIpInstance;
+    mpUdpPacketPool = (NX_PACKET_POOL *)pPacketPool;
+
+    return OK;
+}
+#endif
+
+
+/*------------------------------------------------------------------*/
+
 extern MSTATUS
 THREADX_UDP_init(void)
 {
+#ifdef __RTOS_AZURE__
+    if ((NULL == mpUdpIpInstance) || (NULL == mpUdpPacketPool))
+        return ERR_UDP;
+#endif
+
     return OK;
 }
 
@@ -91,7 +121,7 @@ THREADX_UDP_getInterfaceAddress(sbyte *pHostName, MOC_IP_ADDRESS *pRetIpAddress)
 
     /* for example code we just default to the primary interface */
 
-    if (NX_SUCCESS != nx_ip_address_get(&mMocIpInstance, &srcAddr, &netmask))
+    if (NX_SUCCESS != nx_ip_address_get(mpUdpIpInstance, &srcAddr, &netmask))
     {
         status = ERR_UDP_GETSOCKNAME;
     }
@@ -232,7 +262,7 @@ THREADX_UDP_bindConnect(void **ppRetUdpDescr,
 
     DIGI_MEMSET((ubyte *)pUdpIf->pUdpSocket, 0x00, sizeof(NX_UDP_SOCKET));
 
-    if (NX_SUCCESS != nx_udp_socket_create(&mMocIpInstance, pUdpIf->pUdpSocket,
+    if (NX_SUCCESS != nx_udp_socket_create(mpUdpIpInstance, pUdpIf->pUdpSocket,
                                            "mocUdpSocket", NX_IP_NORMAL,
                                            NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE,
                                            THREADX_UDP_QUEUE_MAX))
@@ -347,13 +377,13 @@ THREADX_UDP_send(void *pUdpDescr, ubyte *pData, ubyte4 dataLength)
     MSTATUS                 status = OK;
     NX_PACKET *             pPacket = NULL;
 
-    if (NX_SUCCESS != nx_packet_allocate(&mMocPacketPool, &pPacket, NX_UDP_PACKET, UDP_SEND_TIMEOUT))
+    if (NX_SUCCESS != nx_packet_allocate(mpUdpPacketPool, &pPacket, NX_UDP_PACKET, UDP_SEND_TIMEOUT))
     {
         status = ERR_UDP_WRITE;
         goto exit;
     }
 
-    if (NX_SUCCESS != nx_packet_data_append(pPacket, (VOID *) pData, dataLength, &mMocPacketPool, UDP_SEND_TIMEOUT))
+    if (NX_SUCCESS != nx_packet_data_append(pPacket, (VOID *) pData, dataLength, mpUdpPacketPool, UDP_SEND_TIMEOUT))
     {
         if (NULL != pPacket)
             nx_packet_release(pPacket);
@@ -384,13 +414,13 @@ THREADX_UDP_sendTo(void *pUdpDescr, MOC_IP_ADDRESS peerAddress, ubyte2 peerPortN
     MSTATUS                 status = OK;
     NX_PACKET *             pPacket = NULL;
 
-    if (NX_SUCCESS != nx_packet_allocate(&mMocPacketPool, &pPacket, NX_UDP_PACKET, UDP_SEND_TIMEOUT))
+    if (NX_SUCCESS != nx_packet_allocate(mpUdpPacketPool, &pPacket, NX_UDP_PACKET, UDP_SEND_TIMEOUT))
     {
         status = ERR_MEM_ALLOC_FAIL;
         goto exit;
     }
 
-    if (NX_SUCCESS != nx_packet_data_append(pPacket, (VOID *) pData, dataLength, &mMocPacketPool, UDP_SEND_TIMEOUT))
+    if (NX_SUCCESS != nx_packet_data_append(pPacket, (VOID *) pData, dataLength, mpUdpPacketPool, UDP_SEND_TIMEOUT))
     {
         if (NULL != pPacket)
             nx_packet_release(pPacket);
@@ -521,7 +551,7 @@ THREADX_UDP_getSrcPortAddr(void *pUdpDescr, ubyte2 *pRetPortNo, MOC_IP_ADDRESS *
 
     *pRetPortNo = (ubyte2) localPort;
 
-    if (NX_SUCCESS != nx_ip_address_get(&mMocIpInstance, &srcAddr, &netmask))
+    if (NX_SUCCESS != nx_ip_address_get(mpUdpIpInstance, &srcAddr, &netmask))
     {
         status = ERR_UDP_GETSOCKNAME;
         goto exit;

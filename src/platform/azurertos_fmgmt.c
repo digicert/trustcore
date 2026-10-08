@@ -32,6 +32,89 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#define AZ_FMGMT_MOUNT_PATH_MAX 256U
+
+static sbyte s_mountPoint[AZ_FMGMT_MOUNT_PATH_MAX] = "/";
+
+extern signed int AZURERTOS_setMountPoint(unsigned char *pNewMountPath)
+{
+    MSTATUS status;
+    ubyte4 mountPathLength;
+
+    if (!pNewMountPath)
+        return ERR_NULL_POINTER;
+
+    mountPathLength = DIGI_STRLEN((const sbyte *)pNewMountPath);
+    if (mountPathLength == 0U)
+        return ERR_INVALID_INPUT;
+    if (mountPathLength >= AZ_FMGMT_MOUNT_PATH_MAX)
+        return ERR_BUFFER_OVERFLOW;
+
+    status = DIGI_MEMCPY(s_mountPoint, pNewMountPath, mountPathLength);
+    if (OK != status)
+        return status;
+
+    s_mountPoint[mountPathLength] = '\0';
+    return OK;
+}
+
+extern MSTATUS AZURERTOS_getFullPathAlloc(const sbyte *pRelativePath,
+                                          sbyte **ppAbsolutePath)
+{
+    MSTATUS status;
+    ubyte4 mountPathLength;
+    ubyte4 relativePathLength;
+    ubyte4 separatorLength;
+    ubyte4 allocationLength;
+    sbyte *pAbsolutePath;
+
+    if (!pRelativePath || !ppAbsolutePath)
+        return ERR_NULL_POINTER;
+
+    *ppAbsolutePath = NULL;
+    relativePathLength = DIGI_STRLEN(pRelativePath);
+    mountPathLength = DIGI_STRLEN(s_mountPoint);
+
+    if (pRelativePath[0] == '/')
+    {
+        if (relativePathLength == (ubyte4)-1)
+            return ERR_BUFFER_OVERFLOW;
+        allocationLength = relativePathLength + 1U;
+        status = DIGI_MALLOC((void **)&pAbsolutePath, allocationLength);
+        if (OK != status)
+            return status;
+
+        status = DIGI_MEMCPY(pAbsolutePath, pRelativePath, allocationLength);
+        if (OK != status)
+            DIGI_FREE((void **)&pAbsolutePath);
+        else
+            *ppAbsolutePath = pAbsolutePath;
+        return status;
+    }
+
+    separatorLength = (s_mountPoint[mountPathLength - 1U] == '/') ? 0U : 1U;
+    if (relativePathLength > ((ubyte4)-1 - mountPathLength - separatorLength - 1U))
+        return ERR_BUFFER_OVERFLOW;
+
+    allocationLength = mountPathLength + separatorLength + relativePathLength + 1U;
+    status = DIGI_MALLOC((void **)&pAbsolutePath, allocationLength);
+    if (OK != status)
+        return status;
+
+    status = DIGI_MEMCPY(pAbsolutePath, s_mountPoint, mountPathLength);
+    if (OK == status && separatorLength != 0U)
+        pAbsolutePath[mountPathLength] = '/';
+    if (OK == status)
+        status = DIGI_MEMCPY(pAbsolutePath + mountPathLength + separatorLength,
+                              pRelativePath, relativePathLength + 1U);
+    if (OK != status)
+        DIGI_FREE((void **)&pAbsolutePath);
+    else
+        *ppAbsolutePath = pAbsolutePath;
+
+    return status;
+}
+
 #ifdef __CLM_FILEX__
 
 /*

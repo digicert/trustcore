@@ -19,7 +19,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __THREADX_RTOS__
+#if defined(__THREADX_RTOS__) || defined(__AZURE_RTOS__)
 
 #include "../common/mdefs.h"
 #include "../common/mtypes.h"
@@ -1629,5 +1629,4 @@ THREADX_destroyThread(RTOS_THREAD tid)
     }
 }
 
-#endif /* __THREADX_RTOS__ */
-
+#endif /* __THREADX_RTOS__ || defined(__AZURE_RTOS__ */

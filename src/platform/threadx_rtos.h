@@ -29,6 +29,9 @@ MOC_EXTERN MSTATUS THREADX_createThread(void(*threadEntry)(void*), void* context
 MOC_EXTERN MSTATUS THREADX_mutexFree(RTOS_MUTEX* pMutex);
 MOC_EXTERN MSTATUS THREADX_mutexRelease(RTOS_MUTEX mutex);
 MOC_EXTERN MSTATUS THREADX_mutexWait(RTOS_MUTEX mutex);
+MOC_EXTERN MSTATUS THREADX_semFree(RTOS_SEM *pSem);
+MOC_EXTERN MSTATUS THREADX_semSignal(RTOS_SEM sem);
+MOC_EXTERN MSTATUS THREADX_semWait(RTOS_SEM sem);
 MOC_EXTERN MSTATUS THREADX_rtosInit(void);
 MOC_EXTERN MSTATUS THREADX_rtosInit(void);
 MOC_EXTERN MSTATUS THREADX_rtosShutdown(void);
@@ -50,6 +53,7 @@ MSTATUS THREADX_setMemPoolBlockForThreadStack(void *pMemStack, ubyte4 totalThrea
 void *THREADX_getNetworkPacketPool(void);
 void *THREADX_getNetworkIpInstance(void);
 MSTATUS THREADX_TCP_setNetworkContext(void *pIpInstance, void *pPacketPool);
+MSTATUS THREADX_UDP_setNetworkContext(void *pIpInstance, void *pPacketPool);
 #endif
 
 void *THREADX_malloc(ubyte4 size);

@@ -371,8 +371,10 @@ typedef struct DirectoryEntry
 #define FMGMT_mkdir                             AZURERTOS_mkdir
 #define FMGMT_getFirstFile                      AZURERTOS_getFirstFile
 #define FMGMT_getFullPath                       AZURERTOS_getFullPath
+#define FMGMT_getFullPathAlloc                  AZURERTOS_getFullPathAlloc
 #define FMGMT_getNextFile                       AZURERTOS_getNextFile
 #define FMGMT_closeDir                          AZURERTOS_closeDir
+#define FMGMT_setMountPoint                     AZURERTOS_setMountPoint
 #define FMGMT_fclose                            AZURERTOS_fclose
 #define FMGMT_fopen                             AZURERTOS_fopen
 #define FMGMT_fprintf                           AZURERTOS_fprintf
