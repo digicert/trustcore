@@ -400,6 +400,14 @@ extern MSTATUS WS_mqttTransportRecv(
 drain_ring_buffer:
         if (pCtx->payloadBufFill > 0)
         {
+            if (0 == pCtx->payloadBufSize ||
+                pCtx->payloadBufRead >= pCtx->payloadBufSize ||
+                pCtx->payloadBufFill > pCtx->payloadBufSize)
+            {
+                status = ERR_WS;
+                goto exit;
+            }
+
             ubyte4 toCopy = pCtx->payloadBufFill;
             ubyte4 chunk1, chunk2;
 
