@@ -1065,7 +1065,12 @@ MSTATUS RTOS_semTimedWait(RTOS_SEM sem, ubyte4 timeoutMS, byteBoolean *pTimeout)
         return OK;
     }
 
-    if ((TX_NO_INSTANCE == txStatus) || (TX_WAIT_ABORTED == txStatus))
+    if (TX_WAIT_ABORTED == txStatus)
+    {
+	return ERR_RTOS_SEM_CALL_INTR;
+    }
+
+    if (TX_WAIT_ABORTED == txStatus)
     {
         if (NULL != pTimeout)
         {
@@ -1104,6 +1109,15 @@ sbyte4 RTOS_timeCompare(const moctime_t *pTime1, const moctime_t *pTime2)
     {
         return 1;
     }
+    if (pTime1->u.time[1] < pTime2->u.time[1])
+    {
+        return -1;
+    }
+    if (pTime1->u.time[1] > pTime2->u.time[1])
+    {
+        return 1;
+    }
+
 
     return 0;
 }
