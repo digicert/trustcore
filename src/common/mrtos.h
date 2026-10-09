@@ -537,15 +537,11 @@ typedef RTOS_Notifier* RTOS_NOTIFIER_t;
 #define RTOS_mallocAlign16          THREADX_malloc_Align16
 #define RTOS_freeAlign16            THREADX_freeAlign16
 
-/* Underlying mutex implementation uses binary semaphores. Since the mutex and
- * semaphore abstraction uses the same underlying semaphore structure, some of
- * the RTOS_sem* APIs can also be mapped to the mutex APIs.
- */
 #define RTOS_semCreate              THREADX_semCreate
-#define RTOS_semWait                THREADX_mutexWait
+#define RTOS_semWait                THREADX_semWait
 #define RTOS_semTryWait             THREADX_semTryWait
-#define RTOS_semSignal              THREADX_mutexRelease
-#define RTOS_semFree                THREADX_mutexFree
+#define RTOS_semSignal              THREADX_semSignal
+#define RTOS_semFree                THREADX_semFree
 
 #elif defined __POSNET_RTOS__
 #define RTOS_rtosInit               POSNET_rtosInit

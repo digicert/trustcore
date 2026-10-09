@@ -31,7 +31,7 @@
 #define BSP_STACK_ALIGNMENT 8
 #endif
 
-#ifdef __RTOS_THREADX__
+#if defined(__THREADX_RTOS__) || defined(__AZURE_RTOS__)
 #include "tx_api.h"
 #include "../common/mdefs.h"
 #include "../common/mtypes.h"
@@ -919,4 +919,263 @@ THREADX_destroyThread(RTOS_THREAD tid)
     }
 } /* THREADX_destroyThread */
 
-#endif /* __THREADX_RTOS__ */
+
+/*------------------------------------------------------------------*/
+
+static ULONG THREADX_msToTicks(ubyte4 timeoutMS)
+{
+    uint64_t ticks;
+
+    if (0 == timeoutMS)
+    {
+        return TX_NO_WAIT;
+    }
+
+    ticks = ((uint64_t)timeoutMS * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U;
+    if (ticks >= TX_WAIT_FOREVER)
+    {
+        return TX_WAIT_FOREVER - 1U;
+    }
+
+    return (ULONG)ticks;
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS THREADX_semCreate(RTOS_SEM *pSem, sbyte4 initialValue)
+{
+    TX_SEMAPHORE *pTxSem;
+
+    if (NULL == pSem)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    pTxSem = (TX_SEMAPHORE *)MALLOC(sizeof(TX_SEMAPHORE));
+    if (NULL == pTxSem)
+    {
+        return ERR_RTOS_SEM_ALLOC;
+    }
+
+    DIGI_MEMSET((ubyte *)pTxSem, 0x00, sizeof(TX_SEMAPHORE));
+    if (TX_SUCCESS != tx_semaphore_create(pTxSem, "Mocana Sem", (ULONG)initialValue))
+    {
+        FREE(pTxSem);
+        return ERR_RTOS_SEM_INIT;
+    }
+
+    *pSem = (RTOS_SEM)pTxSem;
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS THREADX_semWait(RTOS_SEM sem)
+{
+    if (NULL == sem)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    if (TX_SUCCESS != tx_semaphore_get((TX_SEMAPHORE *)sem, TX_WAIT_FOREVER))
+    {
+        return ERR_RTOS_SEM_WAIT;
+    }
+
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS THREADX_semTryWait(RTOS_SEM sem)
+{
+    if (NULL == sem)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    if (TX_SUCCESS != tx_semaphore_get((TX_SEMAPHORE *)sem, TX_NO_WAIT))
+    {
+        return ERR_RTOS_SEM_WAIT;
+    }
+
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS THREADX_semSignal(RTOS_SEM sem)
+{
+    if (NULL == sem)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    if (TX_SUCCESS != tx_semaphore_put((TX_SEMAPHORE *)sem))
+    {
+        return ERR_RTOS_SEM_SIGNAL;
+    }
+
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS THREADX_semFree(RTOS_SEM *pSem)
+{
+    if ((NULL == pSem) || (NULL == *pSem))
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    if (TX_SUCCESS != tx_semaphore_delete((TX_SEMAPHORE *)*pSem))
+    {
+        return ERR_RTOS_SEM_FREE;
+    }
+
+    FREE(*pSem);
+    *pSem = NULL;
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS RTOS_semTimedWait(RTOS_SEM sem, ubyte4 timeoutMS, byteBoolean *pTimeout)
+{
+    UINT txStatus;
+
+    if (NULL == sem)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    txStatus = tx_semaphore_get((TX_SEMAPHORE *)sem, THREADX_msToTicks(timeoutMS));
+    if (TX_SUCCESS == txStatus)
+    {
+        if (NULL != pTimeout)
+        {
+            *pTimeout = FALSE;
+        }
+        return OK;
+    }
+
+    if (TX_WAIT_ABORTED == txStatus)
+    {
+	return ERR_RTOS_SEM_CALL_INTR;
+    }
+
+    if (TX_NO_INSTANCE == txStatus)
+    {
+        if (NULL != pTimeout)
+        {
+            *pTimeout = TRUE;
+        }
+        return OK;
+    }
+
+    return ERR_RTOS_SEM_WAIT;
+}
+
+
+/*------------------------------------------------------------------*/
+
+intBoolean RTOS_sleepCheckStatusMS(ubyte4 sleepTimeInMS)
+{
+    tx_thread_sleep(THREADX_msToTicks(sleepTimeInMS));
+    return FALSE;
+}
+
+
+/*------------------------------------------------------------------*/
+
+sbyte4 RTOS_timeCompare(const moctime_t *pTime1, const moctime_t *pTime2)
+{
+    if ((NULL == pTime1) || (NULL == pTime2))
+    {
+        return 0;
+    }
+
+    if (pTime1->u.time[0] < pTime2->u.time[0])
+    {
+        return -1;
+    }
+    if (pTime1->u.time[0] > pTime2->u.time[0])
+    {
+        return 1;
+    }
+    if (pTime1->u.time[1] < pTime2->u.time[1])
+    {
+        return -1;
+    }
+    if (pTime1->u.time[1] > pTime2->u.time[1])
+    {
+        return 1;
+    }
+
+
+    return 0;
+}
+
+
+/*------------------------------------------------------------------*/
+
+void RTOS_exitThread(void *pRetVal)
+{
+    (void)pRetVal;
+    (void)tx_thread_terminate(tx_thread_identify());
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS RTOS_joinThread(RTOS_THREAD tid, void **ppRetVal)
+{
+    PMTHREAD_CONTEXT pThreadContext = (PMTHREAD_CONTEXT)tid;
+    UINT state;
+    UINT txStatus;
+
+    (void)ppRetVal;
+    if (NULL == pThreadContext)
+    {
+        return ERR_NULL_POINTER;
+    }
+
+    do
+    {
+        txStatus = tx_thread_info_get(&pThreadContext->ThreadControl, TX_NULL, &state,
+                                      TX_NULL, TX_NULL, TX_NULL, TX_NULL, TX_NULL,
+                                      TX_NULL);
+        if (TX_SUCCESS != txStatus)
+        {
+            return ERR_RTOS;
+        }
+        if ((TX_COMPLETED != state) && (TX_TERMINATED != state))
+        {
+            tx_thread_sleep(10U);
+        }
+    } while ((TX_COMPLETED != state) && (TX_TERMINATED != state));
+
+    return OK;
+}
+
+
+/*------------------------------------------------------------------*/
+
+MSTATUS RTOS_processExecute(sbyte *pCmd, sbyte **ppOutput)
+{
+    (void)pCmd;
+    if (NULL != ppOutput)
+    {
+        *ppOutput = NULL;
+    }
+
+    return ERR_UNSUPPORTED_OPERATION;
+}
+
+#endif /* __THREADX_RTOS__ || defined(__AZURE_RTOS__ */

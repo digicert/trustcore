@@ -19,7 +19,7 @@
 
 #include "../common/moptions.h"
 
-#ifdef __THREADX_RTOS__
+#if defined(__THREADX_RTOS__) || defined(__AZURE_RTOS__)
 
 #include "../common/mdefs.h"
 #include "../common/mtypes.h"
@@ -1108,64 +1108,6 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-extern MSTATUS
-THREADX_semCreate(RTOS_SEM *pSem, sbyte4 initialValue)
-{
-    TX_SEMAPHORE *pTxSem;
-    MSTATUS status = ERR_NULL_POINTER;
-
-    if (NULL == pSem)
-    	goto exit;
-
-    if (NULL == (pTxSem = MALLOC(sizeof(TX_SEMAPHORE))))
-    {
-    	status = ERR_RTOS_SEM_ALLOC;
-        goto exit;
-    }
-
-    DIGI_MEMSET((ubyte *)pTxSem, 0x00, sizeof(TX_SEMAPHORE));
-
-    /* Creating binary semaphore */
-    if (TX_SUCCESS != tx_semaphore_create(pTxSem, "Mocana Sem", initialValue))
-    {
-    	status = ERR_RTOS_SEM_INIT;
-    	goto exit;
-    }
-
-    *pSem = (RTOS_SEM)pTxSem;
-    status = OK;
-
-exit:
-    return status;
-}
-
-/*------------------------------------------------------------------*/
-
-extern MSTATUS
-THREADX_semTryWait(RTOS_SEM sem)
-{
-	MSTATUS status;
-
-	if (NULL == sem)
-	{
-		status = ERR_NULL_POINTER;
-		goto exit;
-	}
-
-    if (TX_SUCCESS != tx_semaphore_get(sem, TX_NO_WAIT))
-    {
-        status = ERR_RTOS_SEM_WAIT;
-        goto exit;
-    }
-
-	status = OK;
-
-exit:
-	return status;
-}
-
-/*------------------------------------------------------------------*/
-
 extern ubyte4
 THREADX_getUpTimeInMS(void)
 {
@@ -1629,5 +1571,4 @@ THREADX_destroyThread(RTOS_THREAD tid)
     }
 }
 
-#endif /* __THREADX_RTOS__ */
-
+#endif /* __THREADX_RTOS__ || defined(__AZURE_RTOS__ */

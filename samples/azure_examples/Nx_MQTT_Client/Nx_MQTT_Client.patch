@@ -1,0 +1,283 @@
+diff --git a/Core/Src/syscalls.c b/Core/Src/syscalls.c
+index e10d76f..bdedfe9 100644
+--- a/Core/Src/syscalls.c
++++ b/Core/Src/syscalls.c
+@@ -139,6 +139,25 @@ int _unlink(char *name)
+   return -1;
+ }
+ 
++/* mkdir stub for TrustEdge on ThreadX — the RAM VFS uses flat path strings so
++ * directory creation is always a no-op; returning 0 satisfies UTILS_mkdir().   */
++int mkdir(const char *pathname, mode_t mode)
++{
++  (void)pathname;
++  (void)mode;
++  return 0;
++}
++
++/* pthread_join stub — TrustEdge calls pthread_join in PREINSTALL/INSTALLED code
++ * paths that are never reached when the device is already PROVISIONED.  The
++ * symbol must exist to satisfy the linker; the body is never executed.         */
++int pthread_join(unsigned long thread, void **retval)
++{
++  (void)thread;
++  (void)retval;
++  return 0;
++}
++
+ clock_t _times(struct tms *buf)
+ {
+   (void)buf;
+diff --git a/NetXDuo/App/app_netxduo.c b/NetXDuo/App/app_netxduo.c
+index 64437a5..d9ba80e 100644
+--- a/NetXDuo/App/app_netxduo.c
++++ b/NetXDuo/App/app_netxduo.c
+@@ -26,6 +26,9 @@
+ #include "app_azure_rtos.h"
+ #include "nx_ip.h"
+ #include  MQTT_TLS_CA_CERT_FILE
++#include "cert_store_flash.h"
++#include "platform/threadx_rtos.h"
++#include "trustedge_threadx.h"
+ /* USER CODE END Includes */
+ 
+ /* Private typedef -----------------------------------------------------------*/
+@@ -35,17 +38,19 @@ extern RNG_HandleTypeDef hrng;
+ TX_THREAD AppMainThread;
+ TX_THREAD AppMQTTClientThread;
+ TX_THREAD AppSNTPThread;
++TX_THREAD AppTrustEdgeThread;    /* DigiCert TrustEdge native registration flow */
+ 
+ TX_QUEUE  MsgQueueOne;
+ 
+ TX_SEMAPHORE Semaphore;
++TX_SEMAPHORE CLMReadySemaphore;   /* Released by TrustEdge thread when cert is ready */
+ 
+ NX_PACKET_POOL  AppPool;
+ NX_IP           IpInstance;
+ NX_DHCP         DhcpClient;
+ NXD_MQTT_CLIENT MqttClient;
+ NX_SNTP_CLIENT  SntpClient;
+-static NX_DNS   DnsClient;
++NX_DNS          DnsClient;  /* non-static: accessible by trustedge_threadx.c */
+ 
+ TX_EVENT_FLAGS_GROUP     SntpFlags;
+ 
+@@ -78,6 +83,15 @@ NX_SECURE_X509_CERT mqtt_remote_cert_extra_3;
+ ULONG current_time;
+ static NX_SECURE_X509_DNS_NAME mqtt_dns_name;
+ static UINT mqtt_server_name_verified;
++
++/* ── DigiCert mTLS client certificate (loaded by CLM at run time) ─────── */
++/* These are static so the TLS session can hold live pointers into them.    */
++static NX_SECURE_X509_CERT  device_tls_cert;
++static UCHAR                device_key_buf[512];   /* PKCS#8 ECC P-256 DER  */
++static UCHAR                device_cert_buf[2048]; /* X.509 DER             */
++static UINT                 device_cert_len;
++static UINT                 device_key_len;
++static UINT                 device_cert_loaded;    /* Non-zero when ready   */
+ /* USER CODE END PTD */
+ 
+ /* Private define ------------------------------------------------------------*/
+@@ -263,6 +277,23 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
+     return NX_NOT_ENABLED;
+   }
+ 
++  /* Allocate memory for the TrustEdge integration thread */
++  if (tx_byte_allocate(byte_pool, (VOID **) &pointer, TRUSTEDGE_THREAD_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
++  {
++    return TX_POOL_ERROR;
++  }
++
++  /* Create the TrustEdge thread (started from SNTP thread after time is valid) */
++  ret = tx_thread_create(&AppTrustEdgeThread, "App TrustEdge Thread",
++                         trustedge_threadx_entry, 0,
++                         pointer, TRUSTEDGE_THREAD_STACK_SIZE,
++                         TRUSTEDGE_THREAD_PRIORITY, TRUSTEDGE_THREAD_PRIORITY,
++                         TX_NO_TIME_SLICE, TX_DONT_START);
++  if (ret != TX_SUCCESS)
++  {
++    return NX_NOT_ENABLED;
++  }
++
+   /* Allocate the MsgQueueOne.  */
+   if (tx_byte_allocate(byte_pool, (VOID **) &pointer, APP_QUEUE_SIZE*sizeof(ULONG), TX_NO_WAIT) != TX_SUCCESS)
+   {
+@@ -277,6 +308,9 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
+ 
+   /* set DHCP notification callback  */
+   tx_semaphore_create(&Semaphore, "DHCP Semaphore", 0);
++
++  /* Semaphore signalled by CLM thread once the device certificate is ready */
++  tx_semaphore_create(&CLMReadySemaphore, "CLM Ready Semaphore", 0);
+ #endif
+   /* USER CODE END MX_NetXDuo_Init */
+ 
+@@ -566,6 +600,53 @@ UINT tls_setup_callback(NXD_MQTT_CLIENT *client_pt,
+     Error_Handler();
+   }
+ 
++  /* ── DigiCert mTLS: add device client certificate ───────────────────────
++   *
++   * If the CLM module has a valid device certificate, load it into the TLS
++   * session so the broker can authenticate this device (mutual TLS / mTLS).
++   *
++   * The MQTT broker must be configured to require client certificates signed
++   * by the DigiCert Device Trust Manager CA.
++   *
++   * NX_SECURE_X509_KEY_TYPE_EC_DER expects an EC private key in PKCS#8 DER
++   * format (the format produced by TrustCore NanoCrypto and by openssl pkcs8).
++   */
++  if (device_cert_loaded && device_cert_len > 0 && device_key_len > 0)
++  {
++    memset(&device_tls_cert, 0, sizeof(device_tls_cert));
++
++    ret = nx_secure_x509_certificate_initialize(
++              &device_tls_cert,
++              device_cert_buf, (USHORT)device_cert_len,
++              NX_NULL, 0,
++              device_key_buf, (USHORT)device_key_len,
++              NX_SECURE_X509_KEY_TYPE_EC_DER);
++
++    if (ret != NX_SUCCESS)
++    {
++      printf("[CLM] WARNING: Failed to parse device certificate (0x%08lx).\r\n"
++             "[CLM]          Continuing without mTLS.\r\n", (ULONG)ret);
++    }
++    else
++    {
++      ret = nx_secure_tls_local_certificate_add(TLS_session_ptr, &device_tls_cert);
++      if (ret != NX_SUCCESS)
++      {
++        printf("[CLM] WARNING: Failed to add device cert to TLS session (0x%08lx).\r\n"
++               "[CLM]          Continuing without mTLS.\r\n", (ULONG)ret);
++      }
++      else
++      {
++        printf("[CLM] mTLS: device certificate loaded into TLS session.\r\n");
++      }
++    }
++    ret = NX_SUCCESS; /* non-fatal — broker may still accept server-auth only */
++  }
++  else
++  {
++    printf("[CLM] No device certificate available — TLS server-auth only.\r\n");
++  }
++
+   return ret;
+ }
+ 
+@@ -654,9 +735,42 @@ static VOID App_SNTP_Thread_Entry(ULONG thread_input)
+     Error_Handler();
+   }
+ 
+-  /* start the MQTT client thread */
+-  tx_thread_resume(&AppMQTTClientThread);
++#ifdef TRUSTCORE_SDK_AVAILABLE
++  if (OK != THREADX_TCP_setNetworkContext(&IpInstance, &AppPool))
++  {
++    Error_Handler();
++  }
++  if (OK != THREADX_UDP_setNetworkContext(&IpInstance, &AppPool))
++  {
++    Error_Handler();
++  }
++#endif
++
++  /* Start the TrustEdge thread — it provisions the device via DTM using the
++     bootstrap.zip burned to flash at factory, then releases CLMReadySemaphore. */
++  tx_thread_resume(&AppTrustEdgeThread);
++
++}
+ 
++/**
++* @brief  Populate mTLS certificate buffers for the MQTT thread.
++*         Called by the TrustEdge thread after successful enrollment.
++*/
++void APP_SetDeviceCert(const uint8_t *cert, uint32_t cert_len,
++                       const uint8_t *key,  uint32_t key_len)
++{
++  if (cert && cert_len > 0 && cert_len <= sizeof(device_cert_buf))
++  {
++    memcpy(device_cert_buf, cert, cert_len);
++    device_cert_len = (UINT)cert_len;
++  }
++  if (key && key_len > 0 && key_len <= sizeof(device_key_buf))
++  {
++    memcpy(device_key_buf, key, key_len);
++    device_key_len = (UINT)key_len;
++  }
++  if (device_cert_len > 0 && device_key_len > 0)
++    device_cert_loaded = 1;
+ }
+ 
+ /**
+@@ -677,6 +791,15 @@ static VOID App_MQTT_Client_Thread_Entry(ULONG thread_input)
+ 
+   mqtt_server_ip.nxd_ip_version = 4;
+ 
++  /* Wait until the TrustEdge thread has enrolled the device certificate. */
++  printf("[MQTT] Waiting for TrustEdge to provide device certificate...\r\n");
++  if (tx_semaphore_get(&CLMReadySemaphore, TX_WAIT_FOREVER) != TX_SUCCESS)
++  {
++    Error_Handler();
++  }
++  printf("[MQTT] TrustEdge ready. mTLS=%s\r\n",
++         device_cert_loaded ? "enabled" : "disabled (server-auth only)");
++
+   /* Look up MQTT Server address. */
+   ret = nx_dns_host_by_name_get(&DnsClient, (UCHAR *)MQTT_BROKER_NAME,
+                                 &mqtt_server_ip.nxd_ip_address.v4, DEFAULT_TIMEOUT);
+@@ -709,12 +832,15 @@ static VOID App_MQTT_Client_Thread_Entry(ULONG thread_input)
+ 
+   if (ret != NX_SUCCESS)
+   {
+-    printf("\nMQTT client failed to connect to broker < %s >.\n",MQTT_BROKER_NAME);
++    printf("\n[MQTT] Failed to connect to broker <%s> (err=0x%08lx).\r\n",
++           MQTT_BROKER_NAME, (ULONG)ret);
+     Error_Handler();
+   }
+   else
+   {
+-    printf("\nMQTT client connected to broker < %s > at PORT %d :\n",MQTT_BROKER_NAME, MQTT_PORT);
++    printf("\n[MQTT] Connected to broker <%s> PORT %d (mTLS=%s)\r\n",
++           MQTT_BROKER_NAME, MQTT_PORT,
++           device_cert_loaded ? "enabled" : "server-auth only");
+   }
+ 
+   /* Subscribe to the topic with QoS level 1. */
+diff --git a/NetXDuo/App/app_netxduo.h b/NetXDuo/App/app_netxduo.h
+index e7aacda..d2add7c 100644
+--- a/NetXDuo/App/app_netxduo.h
++++ b/NetXDuo/App/app_netxduo.h
+@@ -37,6 +37,7 @@ extern "C" {
+ #include "nxd_sntp_client.h"
+ #include "nxd_dns.h"
+ #include "nx_driver_emw3080.h"
++#include <stdint.h>
+ /* USER CODE END Includes */
+ 
+ /* Exported types ------------------------------------------------------------*/
+@@ -96,6 +97,11 @@ extern "C" {
+ #define USER_DNS_ADDRESS            IP_ADDRESS(1, 1, 1, 1)   /* User should configure it with his DNS address */
+ 
+ #define DEFAULT_TIMEOUT             10 * NX_IP_PERIODIC_RATE
++
++/* TrustEdge native integration thread                                        */
++#define TRUSTEDGE_THREAD_STACK_SIZE (12 * DEFAULT_MEMORY_SIZE)  /* 12 KB */
++#define TRUSTEDGE_THREAD_PRIORITY   11
++
+ /* USER CODE END EC */
+ 
+ /* Exported macro ------------------------------------------------------------*/
+@@ -116,7 +122,9 @@ extern "C" {
+ UINT MX_NetXDuo_Init(VOID *memory_ptr);
+ 
+ /* USER CODE BEGIN EFP */
+-
++/* Called by the TrustEdge thread to hand the enrolled cert/key to the MQTT thread. */
++void APP_SetDeviceCert(const uint8_t *cert, uint32_t cert_len,
++                       const uint8_t *key,  uint32_t key_len);
+ /* USER CODE END EFP */
+ 
+ /* Private defines -----------------------------------------------------------*/

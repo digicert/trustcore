@@ -91,6 +91,10 @@ If you need to integrate TrustEdge into a Yocto/Poky-based embedded Linux image,
 
 If you need to install, build, provision, flash, or run TrustEdge with Zephyr RTOS, use the detailed Zephyr guide instead of duplicating board-specific setup here. For guidance on the Zephyr environment, supported boards, native simulator flow, STM32H745 Discovery Kit flow, ESP32-S3-DevKitC flow, and validation commands, see [TrustEdge Zephyr RTOS Build Guide](../../docs/trustedge_zephyr_rtos_build_guide.md).
 
+### Building with Azure RTOS/ThreadX
+
+If you need to add TrustEdge support to an Azure RTOS/ThreadX application, use the detailed Azure RTOS/ThreadX guide instead of duplicating board-specific setup here. For guidance on setting up the Ubuntu development environment, generating the `Nx_MQTT_Client` example with STM32CubeMX/STM32CubeIDE for the B-U585I-IOT02A board, integrating the TrustCore public repository, applying the required patch, and building the project, see [TrustEdge Azure RTOS/ThreadX Build Guide](../../docs/trustedge_azure_threadx_nx_mqtt_client.md).
+
 ### Windows
 
 From the Visual Studio developer environment, run the Windows build script:
