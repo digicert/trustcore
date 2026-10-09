@@ -38,6 +38,7 @@ function show_usage
   echo "   --persist-artifact     - Enable persisting artifact payload."
   echo "   --generator <name>     - Specify the generator to be used. DEB, TGZ"
   echo "   --proxy                - Build with proxy support."
+  echo "   --websocket            - Build with MQTT over WebSocket (WS/WSS) transport support."
   echo "   --x32                  - Build for 32-bit platforms."
   echo "   --x64                  - Build for 64-bit platforms."
   echo "   --board <board>        - Build for Zephyr OS for <board>"
@@ -289,6 +290,9 @@ do
             ;;
         --proxy)
             BUILD_OPTIONS+=" -DCM_ENABLE_PROXY=ON"
+            ;;
+        --websocket)
+            BUILD_OPTIONS+=" -DCM_ENABLE_WEBSOCKET_CLIENT=ON"
             ;;
         --disable-est)
             BUILD_OPTIONS+=" -DCM_DISABLE_EST=ON"

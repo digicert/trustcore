@@ -39,6 +39,9 @@
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
 #include "../../ssl/ssl.h"
 #endif /* ../__ENABLE_DIGICERT_SSL_CLIENT__ */
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+#include "../../websocket/websocket.h"
+#endif /* ../__ENABLE_DIGICERT_WEBSOCKET_CLIENT__ */
 
 /*----------------------------------------------------------------------------*/
 
@@ -61,6 +64,8 @@ MSTATUS MQTT_expectOutbound(sbyte4 connectionInstance, ExpectOutboundElem *pElem
 
 #define MQTT_TCP_TRANSPORT              "TCP"
 #define MQTT_SSL_TRANSPORT              "SSL"
+#define MQTT_WS_TRANSPORT               "WS"
+#define MQTT_WSS_TRANSPORT              "WSS"
 
 #define MQTT_ASYNC_DEFAULT_SEND_BUFFER_SIZE     (1024)
 #define MQTT_ASYNC_DEFAULT_RECV_BUFFER_SIZE     (1024)
@@ -208,7 +213,9 @@ static MqttTestNonBlockingElem *g_pNonBlockingElems[MQTT_TEST_MAX_NONBLOCKING_EL
 typedef enum
 {
     MQTT_TCP,
-    MQTT_SSL
+    MQTT_SSL,
+    MQTT_WS,
+    MQTT_WSS
 } MqttExampleTransport;
 
 /*----------------------------------------------------------------------------*/
@@ -233,6 +240,7 @@ static ubyte gExtended = FALSE;
 static ubyte gAllowUntrusted = FALSE;
 static hashTableOfPtrs* gpMqttTestClientTable = NULL;
 static ubyte gSsl = FALSE;
+static MqttExampleTransport gTransport = MQTT_TCP;
 
 typedef struct
 {
@@ -271,6 +279,9 @@ typedef struct
     ubyte4 recvBufferLen;
     ubyte4 bytesReceived;
     MqttExampleTransport transport;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    WsContext *pWsCtx;
+#endif
 } MqttTestClient;
 
 static MSTATUS MQTT_TEST_publishHandler(
@@ -459,6 +470,19 @@ static MSTATUS MQTT_EXAMPLE_sendPendingData(
 
         if (0 < sendNumBytes)
         {
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+            if (MQTT_WS == pCtx->transport || MQTT_WSS == pCtx->transport)
+            {
+                status = WS_mqttTransportSend(
+                    connInst, pCtx->pWsCtx, (sbyte *)pCtx->pSendBuffer, sendNumBytes);
+                if (OK != status)
+                {
+                    printf("WS_mqttTransportSend failed with status = %d on line %d\n", status, __LINE__);
+                    goto exit;
+                }
+            }
+            else
+#endif
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
@@ -667,7 +691,7 @@ MSTATUS MQTT_TEST_init()
     if (OK != status)
         goto exit;
 
-    
+
 #endif
 
 exit:
@@ -701,6 +725,9 @@ MSTATUS MQTT_TEST_addClient(sbyte *pClientId, sbyte4 connInst, TCP_SOCKET socket
     pClient->connInst = connInst;
     pClient->socket = socket;
     pClient->sslConnInst = sslConnInst;
+    pClient->transport = gTransport;
+    if (MQTT_TCP == pClient->transport && TRUE == gSsl)
+        pClient->transport = MQTT_SSL;
 
     status = HASH_TABLE_addPtr(gpMqttTestClientTable, hashVal, (void *)pClient);
     if (OK != status)
@@ -738,12 +765,9 @@ MSTATUS MQTT_TEST_addAsyncClient(sbyte *pClientId, sbyte4 connInst, TCP_SOCKET s
     pClient->sendBufferLen = sendBufSize;
     pClient->recvBufferLen = recvBufSize;
     pClient->async = TRUE;
-    pClient->transport = MQTT_TCP;
-
-    if (TRUE == gSsl)
-    {
+    pClient->transport = gTransport;
+    if (MQTT_TCP == pClient->transport && TRUE == gSsl)
         pClient->transport = MQTT_SSL;
-    }
 
     status = MQTT_setCookie(connInst, pClient);
     if (OK != status)
@@ -840,6 +864,12 @@ MSTATUS MQTT_TEST_removeClient(sbyte *pClientId, sbyte4 connInst)
             {
                 DIGI_FREE((void **)&pClient->pRecvBuffer);
             }
+        }
+#endif
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (NULL != pClient->pWsCtx)
+        {
+            WS_freeContext(&pClient->pWsCtx);
         }
 #endif
 
@@ -1158,7 +1188,7 @@ MSTATUS MQTT_TEST_parseandExecExpectOut(JSON_ContextType *pJsonCtx, ubyte4 start
     status = JSON_getToken(pJsonCtx, index, &token);
     if (OK != status)
         goto exit;
-    
+
     numExpects = token.elemCnt;
     status = DIGI_CALLOC((void **)&pElements, numExpects, sizeof(ExpectOutboundElem));
     if (OK != status)
@@ -1176,7 +1206,7 @@ MSTATUS MQTT_TEST_parseandExecExpectOut(JSON_ContextType *pJsonCtx, ubyte4 start
         pElements[i].packetId = (ubyte2)packetId;
 
         status = JSON_utilReadJsonString (
-            pJsonCtx, currIndex-1, NULL, MQTT_PACKET_TYPE_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_PACKET_TYPE_JSTR,
             &pPacketType, TRUE);
         if (OK != status)
             goto exit;
@@ -1232,6 +1262,7 @@ MSTATUS MQTT_TEST_parseServerSettings(JSON_ContextType *pJsonCtx, ubyte4 startin
     MSTATUS status;
     ubyte4 port = 0;
     sbyte *pModeValue = NULL;
+    sbyte *pTransportValue = NULL;
 
     if (NULL != gpCtx->pMqttServer)
     {
@@ -1263,6 +1294,38 @@ MSTATUS MQTT_TEST_parseServerSettings(JSON_ContextType *pJsonCtx, ubyte4 startin
 
     gpCtx->mqttPortNo = (ubyte2)port;
 
+    status = JSON_utilReadJsonString(
+        pJsonCtx, startingIndex, NULL, "transport", &pTransportValue, FALSE);
+    if (OK == status && NULL != pTransportValue)
+    {
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (0 == DIGI_STRCMP(pTransportValue, MQTT_WS_TRANSPORT))
+        {
+            gTransport = MQTT_WS;
+        }
+        else if (0 == DIGI_STRCMP(pTransportValue, MQTT_WSS_TRANSPORT))
+        {
+            gTransport = MQTT_WSS;
+            gSsl = TRUE;
+        }
+        else
+#endif
+        if (0 == DIGI_STRCMP(pTransportValue, MQTT_SSL_TRANSPORT))
+        {
+            gTransport = MQTT_SSL;
+            gSsl = TRUE;
+        }
+        else
+        {
+            gTransport = MQTT_TCP;
+        }
+        DIGI_FREE((void **)&pTransportValue);
+    }
+    else
+    {
+        status = OK;
+    }
+
 exit:
 
     if (NULL != pModeValue)
@@ -1279,9 +1342,12 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
     TCP_SOCKET socket = 0;
     sbyte *pClientId = NULL;
     sbyte4 connInst = 0;
+    MqttTestClient *pClient = NULL;
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     sbyte4 sslConnInst = 0;
-    MqttTestClient *pClient = NULL;
+#endif
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    WsContext *pWsCtx = NULL;
 #endif
 
     status = JSON_utilReadJsonString (
@@ -1293,8 +1359,22 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
     if (OK != status)
         goto exit;
 
+    status = MQTT_TEST_getClient(pClientId, &pClient);
+    if (OK != status)
+        goto exit;
+
+    connInst = pClient->connInst;
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (NULL != pClient->pWsCtx)
+    {
+        WS_close(pClient->pWsCtx, WS_CLOSE_NORMAL);
+        WS_freeContext(&pClient->pWsCtx);
+    }
+#endif
+
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-    if (TRUE == gSsl)
+    if (MQTT_SSL == pClient->transport || MQTT_WSS == pClient->transport)
     {
         status = MQTT_TEST_getSslConnFromClientId(pClientId, &sslConnInst);
         if (OK != status)
@@ -1302,7 +1382,7 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
 
         SSL_closeConnection(sslConnInst);
     }
-#endif 
+#endif
 
     printf("Resetting socket: %d for clientid: %s\n", socket, pClientId);
 
@@ -1313,16 +1393,15 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
     if (OK != status)
     {
         printf("TCP_CONNECT failed with status = %d on line %d\n", status, __LINE__);
+        goto exit;
     }
 
-#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-    if (TRUE == gSsl)
-    {
-        status = MQTT_TEST_getClient(pClientId, &pClient);
-        if (OK != status)
-            goto exit;
+    pClient->socket = socket;
 
-        sslConnInst = SSL_connect(pClient->socket, 0, NULL, NULL, gpCtx->pMqttServer, gpStore);
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+    if (MQTT_SSL == pClient->transport || MQTT_WSS == pClient->transport)
+    {
+        sslConnInst = SSL_connect(socket, 0, NULL, NULL, gpCtx->pMqttServer, gpStore);
         if (OK > sslConnInst)
         {
             status = sslConnInst;
@@ -1354,7 +1433,7 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
 
         pClient->sslConnInst = sslConnInst;
 
-        if (FALSE == pClient->async)
+        if (FALSE == pClient->async && MQTT_SSL == pClient->transport)
         {
             status = MQTT_setTransportSSL(connInst, sslConnInst);
             if (OK != status)
@@ -1366,8 +1445,62 @@ MSTATUS MQTT_TEST_resetNetwork(JSON_ContextType *pJsonCtx, ubyte4 startingIndex)
     }
 #endif
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (MQTT_WS == pClient->transport || MQTT_WSS == pClient->transport)
+    {
+        status = WS_createContext(&pWsCtx, WS_PAYLOAD_BUF_SIZE);
+        if (OK != status)
+        {
+            printf("WS_createContext failed with status = %d on line %d\n", status, __LINE__);
+            goto exit;
+        }
+
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+        if (MQTT_WSS == pClient->transport)
+        {
+            status = WS_connectSSL(pWsCtx, sslConnInst,
+                                   (const sbyte *)gpCtx->pMqttServer,
+                                   gpCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                   (const sbyte *)"/mqtt");
+        }
+        else
+#endif
+        {
+            status = WS_connect(pWsCtx, socket,
+                                (const sbyte *)gpCtx->pMqttServer,
+                                gpCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                (const sbyte *)"/mqtt");
+        }
+        if (OK != status)
+        {
+            printf("WS_connect failed with status = %d on line %d\n", status, __LINE__);
+            goto exit;
+        }
+
+        pClient->pWsCtx = pWsCtx;
+
+        if (FALSE == pClient->async)
+        {
+            status = MQTT_setTransportWS(connInst, pWsCtx);
+            if (OK != status)
+            {
+                printf("MQTT_setTransportWS failed with status = %d on line %d\n", status, __LINE__);
+                pClient->pWsCtx = NULL;
+                goto exit;
+            }
+        }
+
+        pWsCtx = NULL;
+    }
+#endif
+
 
 exit:
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (NULL != pWsCtx)
+        WS_freeContext(&pWsCtx);
+#endif
 
     if (NULL != pClientId)
     {
@@ -1445,8 +1578,8 @@ MSTATUS MQTT_TEST_parseAndExecDestroy(JSON_ContextType *pJsonCtx, ubyte4 startin
     if (OK != status)
         goto exit;
 
-    MQTT_TEST_removeClient(pClientId, connInst);
     status = MQTT_closeConnection(connInst);
+    MQTT_TEST_removeClient(pClientId, connInst);
 
 exit:
 
@@ -1495,6 +1628,19 @@ exit:
     return status;
 }
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+static MSTATUS MQTT_TEST_wsRecv(MqttTestClient *pCtx, ubyte4 timeoutMs)
+{
+    byteBoolean wsTimedOut = FALSE;
+    MSTATUS status = WS_mqttTransportRecv(
+        pCtx->connInst, pCtx->pWsCtx, (sbyte *)pCtx->pRecvBuffer,
+        pCtx->recvBufferLen, &pCtx->bytesReceived, timeoutMs, &wsTimedOut);
+    if (TRUE == wsTimedOut)
+        status = OK;
+    return status;
+}
+#endif
+
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
 static MSTATUS MQTT_TEST_asyncExpect(MqttTestClient *pCtx, ubyte4 loopms)
 {
@@ -1516,6 +1662,18 @@ static MSTATUS MQTT_TEST_asyncExpect(MqttTestClient *pCtx, ubyte4 loopms)
         timeout = loopms;
 
         pCtx->bytesReceived = 0;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (MQTT_WS == pCtx->transport || MQTT_WSS == pCtx->transport)
+        {
+            status = MQTT_TEST_wsRecv(pCtx, timeout);
+            if (OK != status)
+            {
+                printf("WS_mqttTransportRecv failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+        }
+        else
+#endif
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (MQTT_SSL == pCtx->transport)
         {
@@ -1585,6 +1743,18 @@ static MSTATUS MQTT_TEST_asyncExpect(MqttTestClient *pCtx, ubyte4 loopms)
         timeout = loopms;
 
         pCtx->bytesReceived = 0;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (MQTT_WS == pCtx->transport || MQTT_WSS == pCtx->transport)
+        {
+            status = MQTT_TEST_wsRecv(pCtx, timeout);
+            if (OK != status)
+            {
+                printf("WS_mqttTransportRecv failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+        }
+        else
+#endif
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (MQTT_SSL == pCtx->transport)
         {
@@ -1728,13 +1898,13 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
     for (i = 0; i < numExpects; i++)
     {
         status = JSON_utilReadJsonString (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_TOPIC_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_TOPIC_JSTR,
             (sbyte **)&(pExpects[i].pTopic), TRUE);
         if (OK != status)
             goto exit;
 
         status = JSON_utilReadJsonString (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_VALUE_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_VALUE_JSTR,
             (sbyte **)&(pExpects[i].pData), TRUE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
@@ -1743,7 +1913,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         if (ERR_NOT_FOUND == status)
         {
             status = JSON_utilReadJsonString (
-                pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_FILE_JSTR, 
+                pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_FILE_JSTR,
                 &pFilename, TRUE);
             if (OK != status)
                 goto exit;
@@ -1760,7 +1930,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         }
 
         status = JSON_utilReadJsonInt (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_QOS_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_QOS_JSTR,
             &qosInt, TRUE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
@@ -1772,7 +1942,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         }
 
         status = JSON_utilReadJsonInt (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_PAYLOAD_FRMT_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_PAYLOAD_FRMT_JSTR,
             &payloadFormat, TRUE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
@@ -1784,7 +1954,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         }
 
         status = JSON_utilReadJsonInt (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_MSG_EXPIRY_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_MSG_EXPIRY_JSTR,
             &msgExpiry, TRUE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
@@ -1796,7 +1966,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         }
 
         status = JSON_utilReadJsonString (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_CORR_DATA_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_CORR_DATA_JSTR,
             (sbyte **)&(pExpects[i].pCorrelationData), TRUE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
@@ -1807,7 +1977,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         }
 
         status = JSON_utilReadJsonString (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_CONTENT_TYPE_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_CONTENT_TYPE_JSTR,
             (sbyte **)&(pExpects[i].pContentType), TRUE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
@@ -1818,7 +1988,7 @@ MSTATUS MQTT_TEST_parseAndExecExpect(JSON_ContextType *pJsonCtx, ubyte4 starting
         }
 
         status = JSON_utilReadJsonString (
-            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_RESPONSE_TOPIC_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_EXPECT_RESPONSE_TOPIC_JSTR,
             (sbyte **)&(pExpects[i].pResponseTopic), TRUE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
@@ -1991,6 +2161,18 @@ static MSTATUS MQTT_TEST_asyncRecv(sbyte *pClientId, sbyte4 connInst, ubyte4 tim
             timeout = loopms;
 
             pCtx->bytesReceived = 0;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+            if (MQTT_WS == pCtx->transport || MQTT_WSS == pCtx->transport)
+            {
+                status = MQTT_TEST_wsRecv(pCtx, timeout);
+                if (OK != status)
+                {
+                    printf("WS_mqttTransportRecv failed with status = %d on line %d\n", status, __LINE__);
+                    goto exit;
+                }
+            }
+            else
+#endif
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
@@ -2050,6 +2232,18 @@ static MSTATUS MQTT_TEST_asyncRecv(sbyte *pClientId, sbyte4 connInst, ubyte4 tim
         }
 
         pCtx->bytesReceived = 0;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (MQTT_WS == pCtx->transport || MQTT_WSS == pCtx->transport)
+        {
+            status = MQTT_TEST_wsRecv(pCtx, timeoutMS);
+            if (OK != status)
+            {
+                printf("WS_mqttTransportRecv failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+        }
+        else
+#endif
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (MQTT_SSL == pCtx->transport)
         {
@@ -2103,7 +2297,7 @@ MSTATUS MQTT_TEST_parseAndExecRecv(JSON_ContextType *pJsonCtx, ubyte4 startingIn
     ubyte4 loopms = 0;
     moctime_t start = {0};
     moctime_t current = {0};
-    
+
     status = JSON_utilReadJsonString (
         pJsonCtx, startingIndex, NULL, MQTT_CLIENTID_JSTR, &pClientId, TRUE);
     if (OK != status)
@@ -2205,7 +2399,7 @@ MSTATUS MQTT_TEST_parseAndExecSubscribe(JSON_ContextType *pJsonCtx, ubyte4 start
     status = JSON_getToken(pJsonCtx, index, &token);
     if (OK != status)
         goto exit;
-    
+
     numTopics = token.elemCnt;
     status = DIGI_CALLOC((void **)&pTopics, numTopics, sizeof(MqttSubscribeTopic));
     if (OK != status)
@@ -2216,7 +2410,7 @@ MSTATUS MQTT_TEST_parseAndExecSubscribe(JSON_ContextType *pJsonCtx, ubyte4 start
     {
         maxQos = 0;
         status = JSON_utilReadJsonString (
-            pJsonCtx, currIndex-1, NULL, MQTT_PUB_TOPIC_JSTR, 
+            pJsonCtx, currIndex-1, NULL, MQTT_PUB_TOPIC_JSTR,
             (sbyte **)&(pTopics[i].pTopic), TRUE);
         if (OK != status)
             goto exit;
@@ -2294,13 +2488,13 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
     *pConnInst = connInst;
 
     status = JSON_utilReadJsonString (
-        pJsonCtx, startingIndex, NULL, MQTT_PUB_TOPIC_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_PUB_TOPIC_JSTR,
         (sbyte **)&pTopic, TRUE);
     if (OK != status)
         goto exit;
 
     status = JSON_utilReadJsonString (
-        pJsonCtx, startingIndex, NULL, MQTT_PUB_DATA_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_PUB_DATA_JSTR,
         (sbyte **)&pData, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2308,7 +2502,7 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
     if (ERR_NOT_FOUND == status)
     {
         status = JSON_utilReadJsonString (
-            pJsonCtx, startingIndex, NULL, MQTT_PUB_FILE_JSTR, 
+            pJsonCtx, startingIndex, NULL, MQTT_PUB_FILE_JSTR,
             (sbyte **)&pFilename, TRUE);
         if (OK != status)
             goto exit;
@@ -2331,7 +2525,7 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
         pJsonCtx, startingIndex, NULL, MQTT_RETAIN_JSTR, &retain, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
-    
+
     pubOptions.retain = (byteBoolean)retain;
 
     status = JSON_utilReadJsonInt (
@@ -2361,7 +2555,7 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
     }
 
     status = JSON_utilReadJsonString (
-        pJsonCtx, startingIndex, NULL, MQTT_CORRELATION_DATA_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_CORRELATION_DATA_JSTR,
         (sbyte **)&pubOptions.pCorrelationData, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2372,7 +2566,7 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
     }
 
     status = JSON_utilReadJsonString (
-        pJsonCtx, startingIndex, NULL, MQTT_CONTENT_TYPE_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_CONTENT_TYPE_JSTR,
         (sbyte **)&pubOptions.pContentType, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2383,7 +2577,7 @@ MSTATUS MQTT_TEST_parseAndExecPublish(JSON_ContextType *pJsonCtx, ubyte4 startin
     }
 
     status = JSON_utilReadJsonString (
-        pJsonCtx, startingIndex, NULL, MQTT_RESPONSE_TOPIC_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_RESPONSE_TOPIC_JSTR,
         (sbyte **)&pubOptions.pResponseTopic, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2479,17 +2673,17 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
         pJsonCtx, startingIndex, NULL, MQTT_CLEAN_START_JSTR, &cleanStart, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
-    
+
     mqttConnectOptions.cleanStart = (ubyte2)cleanStart;
 
     status = JSON_utilReadJsonInt (
-        pJsonCtx, startingIndex, NULL, MQTT_SESSION_EXPIRY_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_SESSION_EXPIRY_JSTR,
         &mqttConnectOptions.sessionExpiryIntervalSeconds, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
 
     status = JSON_utilReadJsonInt (
-        pJsonCtx, startingIndex, NULL, MQTT_RECV_MAX_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_RECV_MAX_JSTR,
         &recvMax, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2500,7 +2694,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
     }
 
     status = JSON_utilReadJsonInt (
-        pJsonCtx, startingIndex, NULL, MQTT_KEEPALIVE_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_KEEPALIVE_JSTR,
         &keepAlive, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2508,7 +2702,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
     mqttConnectOptions.keepAliveInterval = (ubyte2)keepAlive;
 
     status = JSON_utilReadJsonString (
-        pJsonCtx, startingIndex, NULL, MQTT_USERNAME_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_USERNAME_JSTR,
         (sbyte **)&mqttConnectOptions.pUsername, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2516,7 +2710,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
     mqttConnectOptions.usernameLen = DIGI_STRLEN(mqttConnectOptions.pUsername);
 
     status = JSON_utilReadJsonString (
-        pJsonCtx, startingIndex, NULL, MQTT_PASSWORD_JSTR, 
+        pJsonCtx, startingIndex, NULL, MQTT_PASSWORD_JSTR,
         (sbyte **)&mqttConnectOptions.pPassword, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
@@ -2542,7 +2736,7 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
     {
         mqttConnectOptions.willInfo.willTopicLen = (ubyte2)DIGI_STRLEN(mqttConnectOptions.willInfo.pWillTopic);
     }
-    
+
     status = JSON_utilReadJsonString(
         pJsonCtx, startingIndex, NULL, MQTT_WILL_PAYLOAD_JSTR,
         (sbyte **)&mqttConnectOptions.willInfo.pWill, TRUE);
@@ -2647,6 +2841,18 @@ MSTATUS MQTT_TEST_parseAndExecConnect(JSON_ContextType *pJsonCtx, ubyte4 startin
             }
 
             pCtx->bytesReceived = 0;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+            if (MQTT_WS == pCtx->transport || MQTT_WSS == pCtx->transport)
+            {
+                status = MQTT_TEST_wsRecv(pCtx, 3000);
+                if (OK != status)
+                {
+                    printf("WS_mqttTransportRecv failed with status = %d on line %d\n", status, __LINE__);
+                    goto exit;
+                }
+            }
+            else
+#endif
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             if (MQTT_SSL == pCtx->transport)
             {
@@ -2756,18 +2962,21 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
     ubyte4 sendBufSize = MQTT_ASYNC_DEFAULT_SEND_BUFFER_SIZE;
     ubyte4 recvBufSize = MQTT_ASYNC_DEFAULT_RECV_BUFFER_SIZE;
 #endif
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    WsContext *pWsCtx = NULL;
+#endif
 
     /* Given parsed JSON tokens:
      * [0] {
      * [1] "operation":
      * [2] {
-     * [3] "optype": 
+     * [3] "optype":
      * [4] "connect"
      * [5] "clientid":
      * [6] "someclientid"
-     * 
+     *
      * startingIndex coming into this function is 1. Utility functions use the
-     * input index + 1 for obtaining the value, and the start index for bounded 
+     * input index + 1 for obtaining the value, and the start index for bounded
      * searches must be an object.
      */
 
@@ -2809,7 +3018,7 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
             goto exit;
         }
     }
-    
+
     handlers.publishHandler = MQTT_TEST_publishHandler;
     handlers.disconnectHandler = MQTT_TEST_disconnectHandler;
     handlers.connAckHandler = MQTT_EXAMPLE_connAckHandler;
@@ -2826,7 +3035,7 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
         pJsonCtx, startingIndex, NULL, MQTT_PERSIST_DIR_JSTR, &pPersistDir, TRUE);
     if ( (OK != status) && (ERR_NOT_FOUND != status) )
         goto exit;
-    
+
     if (NULL != pPersistDir)
     {
         args.mode = MQTT_PERSIST_MODE_FILE;
@@ -2872,11 +3081,120 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
 #endif
 
         status = MQTT_TEST_addAsyncClient(pClientId, connInst, socket, sslConnInst, sendBufSize, recvBufSize);
+        if (OK != status)
+            goto exit;
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (MQTT_WS == gTransport || MQTT_WSS == gTransport)
+        {
+            MqttTestClient *pClient = NULL;
+
+            status = WS_createContext(&pWsCtx, WS_PAYLOAD_BUF_SIZE);
+            if (OK != status)
+            {
+                printf("WS_createContext failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+            if (MQTT_WSS == gTransport)
+            {
+                status = WS_connectSSL(pWsCtx, sslConnInst,
+                                       (const sbyte *)gpCtx->pMqttServer,
+                                       gpCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                       (const sbyte *)"/mqtt");
+            }
+            else
+#endif
+            {
+                status = WS_connect(pWsCtx, socket,
+                                    (const sbyte *)gpCtx->pMqttServer,
+                                    gpCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                    (const sbyte *)"/mqtt");
+            }
+            if (OK != status)
+            {
+                printf("WS_connect failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+
+            status = MQTT_TEST_getClient(pClientId, &pClient);
+            if (OK != status || NULL == pClient)
+                goto exit;
+
+            pClient->pWsCtx = pWsCtx;
+            pWsCtx = NULL;
+        }
+#endif /* __ENABLE_DIGICERT_WEBSOCKET_CLIENT__ */
     }
     else
 #endif
     {
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (MQTT_WS == gTransport || MQTT_WSS == gTransport)
+        {
+            MqttTestClient *pClient = NULL;
+
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+            if (MQTT_WSS == gTransport)
+            {
+                status = MQTT_TEST_initSslConnection(gpCtx, socket, &sslConnInst);
+                if (OK != status)
+                    goto exit;
+            }
+#endif
+
+            status = WS_createContext(&pWsCtx, WS_PAYLOAD_BUF_SIZE);
+            if (OK != status)
+            {
+                printf("WS_createContext failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+            if (MQTT_WSS == gTransport)
+            {
+                status = WS_connectSSL(pWsCtx, sslConnInst,
+                                       (const sbyte *)gpCtx->pMqttServer,
+                                       gpCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                       (const sbyte *)"/mqtt");
+            }
+            else
+#endif
+            {
+                status = WS_connect(pWsCtx, socket,
+                                    (const sbyte *)gpCtx->pMqttServer,
+                                    gpCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                    (const sbyte *)"/mqtt");
+            }
+            if (OK != status)
+            {
+                printf("WS_connect failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+
+            status = MQTT_setTransportWS(connInst, pWsCtx);
+            if (OK != status)
+            {
+                printf("MQTT_setTransportWS failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+
+            status = MQTT_TEST_addClient(pClientId, connInst, socket, sslConnInst);
+            if (OK != status)
+                goto exit;
+
+            status = MQTT_TEST_getClient(pClientId, &pClient);
+            if (OK != status || NULL == pClient)
+                goto exit;
+
+            pClient->pWsCtx = pWsCtx;
+            pWsCtx = NULL;
+        }
+        else
+#endif /* __ENABLE_DIGICERT_WEBSOCKET_CLIENT__ */
+        {
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         if (TRUE == gSsl)
         {
@@ -2903,9 +3221,16 @@ MSTATUS MQTT_TEST_parseAndExecCreate(JSON_ContextType *pJsonCtx, ubyte4 starting
         }
 
         status = MQTT_TEST_addClient(pClientId, connInst, socket, sslConnInst);
+        }
+
     }
 
 exit:
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (NULL != pWsCtx)
+        WS_freeContext(&pWsCtx);
+#endif
 
     if (OK != status)
     {
@@ -2998,7 +3323,7 @@ MSTATUS MQTT_TEST_parseAndExecConfig(char *pFilename)
             pJsonCtx, currentIndex, NULL, MQTT_SSL_CA_FILE_JSTR, &pCaFile, FALSE);
         if ( (OK != status) && (ERR_NOT_FOUND != status) )
             goto exit;
-        
+
         if (OK == status)
         {
             status = MQTT_EXAMPLE_addTrustPointFile(gpStore, pCaFile);
@@ -3187,7 +3512,7 @@ MSTATUS MQTT_TEST_parseAndExecConfig(char *pFilename)
 
 exit:
 
-    /* If we hit an error in the main thread, wait for the expects to time out anyways. 
+    /* If we hit an error in the main thread, wait for the expects to time out anyways.
      * This is easier than trying to maintain and kill all expect threads on error. */
     /* If there are non-blocking expects still running, loop until they complete or timeout */
     while(MQTT_TEST_expecting())
@@ -3389,7 +3714,7 @@ static MSTATUS MQTT_TEST_publishHandler(
     {
         printf("msgExpiryInterval: %d\n", pInfo->messageExpiry);
     }
-    
+
     if (NULL != pInfo->pCorrelationData)
     {
         printf("Correlation data len: %d\n", pInfo->correlationDataLen);
@@ -3422,7 +3747,7 @@ static MSTATUS MQTT_TEST_publishHandler(
         }
         printf("\n");
     }
-    
+
 
 
 exit:

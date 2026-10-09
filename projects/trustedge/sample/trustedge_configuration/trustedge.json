@@ -6,6 +6,12 @@
         "conf_dir": "projects/trustedge/sample/conf",
         "keystore_dir": "projects/trustedge/sample/Keystore"
     },
+    "configuration": {
+        "require_pqc": false,
+        "transport": "ws://",
+        "port": 80,
+        "ws_max_buffer": 16384
+    },
     "proxy": {
         "url": null
     },

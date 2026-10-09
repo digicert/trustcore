@@ -56,6 +56,9 @@
 #define OK MOC_OK
 #endif
 #endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+#include "../websocket/websocket.h"
+#endif
 #ifdef __ENABLE_DIGICERT_SCRAM_CLIENT__
 #include "../crypto/scram_client.h"
 #include "../crypto/crypto.h"
@@ -66,13 +69,15 @@
 #include "../crypto/pkcs10.h"
 #include "../trustedge/utils/trustedge_utils.h"
 #endif
- 
+
 /*----------------------------------------------------------------------------*/
 
 #define MAX_MQTT_CLIENT_CONNECTIONS     (10)
 
 #define MQTT_TCP_TRANSPORT              "TCP"
 #define MQTT_SSL_TRANSPORT              "SSL"
+#define MQTT_WS_TRANSPORT               "WS"
+#define MQTT_WSS_TRANSPORT              "WSS"
 
 #define MQTT_ASYNC_SEND_BUFFER_SIZE     (1024)
 #define MQTT_ASYNC_RECV_BUFFER_SIZE     (1024)
@@ -82,7 +87,9 @@
 typedef enum
 {
     MQTT_TCP,
-    MQTT_SSL
+    MQTT_SSL,
+    MQTT_WS,
+    MQTT_WSS
 } MqttExampleTransport;
 
 /*----------------------------------------------------------------------------*/
@@ -134,6 +141,9 @@ typedef struct
     byteBoolean sslAllowUntrusted;
     byteBoolean alertHandlerCalled;
     byteBoolean hexBytes;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    WsContext  *pWsCtx;
+#endif
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
     byteBoolean async;
     ubyte *pSendBuffer;
@@ -602,7 +612,7 @@ static MSTATUS MQTT_EXAMPLE_contextDelete(
         {
             DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pTopic);
             DIGI_FREE((void **) &((*ppCtx)->pMsgs + i)->pData);
-            
+
             for (int j = 0; (ubyte4)j < (*ppCtx)->pMsgs->pubOptions.propCount; j++)
             {
                 DIGI_FREE((void **) &(((*ppCtx)->pMsgs + i)->pubOptions.pProps + j)->data.pair.name.pData);
@@ -710,6 +720,13 @@ static MSTATUS MQTT_EXAMPLE_contextDelete(
         if (NULL != (*ppCtx)->pRecvBuffer)
         {
             DIGI_FREE((void **) &((*ppCtx)->pRecvBuffer));
+        }
+#endif
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (NULL != (*ppCtx)->pWsCtx)
+        {
+            WS_freeContext(&(*ppCtx)->pWsCtx);
         }
 #endif
 
@@ -834,16 +851,24 @@ static MSTATUS MQTT_EXAMPLE_displayHelp(
     printf("        will_delay_interval <seconds>                   Set the will delay interval in seconds\n");
     printf("        user_property <key> <value>                     Set will user property with the specified key and value\n");
     printf("                                                        Can be specified multiple times\n");
-    
 
-#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+
     printf("    --mqtt_transport <transport>                        Choose the transport used for MQTT connection\n");
     printf("                                                            TCP (default)\n");
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     printf("                                                            SSL\n");
-    printf("    --ssl_ca_file <file>                                Only applies if transport is SSL. SSL CA certificate file\n");
-    printf("    --ssl_allow_untrusted                               Only applies if transport is SSL. Allow untrusted certificates for SSL\n");
-    printf("    --ssl_key_file <file>                               Only applies if transport is SSL. SSL key file for client authentication\n");
-    printf("    --ssl_cert_file <file>                              Only applies if transport is SSL. SSL certificate file for client authentication\n");
+#endif
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    printf("                                                            WS\n");
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+    printf("                                                            WSS\n");
+#endif
+#endif
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+    printf("    --ssl_ca_file <file>                                Only applies if transport is SSL or WSS. SSL CA certificate file\n");
+    printf("    --ssl_allow_untrusted                               Only applies if transport is SSL or WSS. Allow untrusted certificates\n");
+    printf("    --ssl_key_file <file>                               Only applies if transport is SSL or WSS. SSL key file for client authentication\n");
+    printf("    --ssl_cert_file <file>                              Only applies if transport is SSL or WSS. SSL certificate file for client authentication\n");
 #if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
     printf("    --proxy <proxy>                                     Connect using proxy. Following formats allowed\n");
     printf("                                                            http://[username:password@]hostname:port\n");
@@ -1263,7 +1288,6 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             }
             pCtx->mqttPortNo = portNo;
         }
-#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_transport"))
         {
             i++;
@@ -1276,16 +1300,31 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             {
                 pCtx->transport = MQTT_TCP;
             }
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
             else if (0 == DIGI_STRCMP(ppArgv[i], MQTT_SSL_TRANSPORT))
             {
                 pCtx->transport = MQTT_SSL;
             }
+#endif
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+            else if (0 == DIGI_STRCMP(ppArgv[i], MQTT_WS_TRANSPORT))
+            {
+                pCtx->transport = MQTT_WS;
+            }
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+            else if (0 == DIGI_STRCMP(ppArgv[i], MQTT_WSS_TRANSPORT))
+            {
+                pCtx->transport = MQTT_WSS;
+            }
+#endif
+#endif
             else
             {
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Unrecognized transport %s argument", ppArgv[i]);
                 goto exit;
             }
         }
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
         else if (0 == DIGI_STRCMP(ppArgv[i], "--ssl_ca_file"))
         {
             i++;
@@ -1535,7 +1574,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 status = MQTT_EXAMPLE_displayHelp(ppArgv[0], "Must provide --mqtt_pub_message/--mqtt_pub_file before --mqtt_pub_retain argument");
                 goto exit;
             }
-            
+
             pCtx->pMsgs[pCtx->msgCount - 1].retain = TRUE;
 
         }
@@ -1574,7 +1613,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
             pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.setPayloadFormat = FALSE;
             pCtx->pMsgs[pCtx->msgCount - 1].pubOptions.msgExpiryIntervalSet = FALSE;
 
-            
+
         }
         else if (0 == DIGI_STRCMP(ppArgv[i], "--mqtt_pub_file"))
         {
@@ -2444,7 +2483,7 @@ static MSTATUS MQTT_EXAMPLE_parseArgs(
                 }
                 i++;
            }
-           i--; 
+           i--;
         }
 #if defined(__ENABLE_DIGICERT_PQC__)
         else if (0 == DIGI_STRCMP(ppArgv[i], "--require-pqc"))
@@ -2755,6 +2794,7 @@ int main(int argc, char *ppArgv[])
     MSTATUS status;
     MqttClientExampleCtx *pCtx = NULL;
     sbyte4 connInst = -1;
+    byteBoolean wsConnectFailed = FALSE;
 #if defined(__ENABLE_MQTT_ASYNC_CLIENT__)
     ubyte4 timeoutMS;
 #endif
@@ -2893,7 +2933,7 @@ int main(int argc, char *ppArgv[])
     }
 
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-    if (MQTT_SSL == pCtx->transport)
+    if (MQTT_SSL == pCtx->transport || MQTT_WSS == pCtx->transport)
     {
 #if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
         if (0 <= SSL_isSessionSSL(transportProxy))
@@ -3004,23 +3044,60 @@ int main(int argc, char *ppArgv[])
     if (TRUE != pCtx->async)
 #endif
     {
-#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
-        if (MQTT_SSL == pCtx->transport)
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (MQTT_WS == pCtx->transport || MQTT_WSS == pCtx->transport)
         {
-            status = MQTT_setTransportSSL(connInst, pCtx->sslConnInst);
+            status = WS_createContext(&pCtx->pWsCtx, WS_PAYLOAD_BUF_SIZE);
             if (OK != status)
             {
-                printf("MQTT_setTransportSSL failed with status = %d on line %d\n", status, __LINE__);
+                printf("WS_createContext failed with status = %d on line %d\n", status, __LINE__);
+                goto exit;
+            }
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+            if (MQTT_WSS == pCtx->transport)
+            {
+                status = WS_connectSSL(pCtx->pWsCtx, pCtx->sslConnInst,
+                                       (const sbyte *)pCtx->pMqttServer,
+                                       pCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                       (const sbyte *)"/mqtt");
+                if (OK != status)
+                {
+                    /* transport never established; skip MQTT_disconnect */
+                    wsConnectFailed = TRUE;
+                    printf("WS_connectSSL failed with status = %d on line %d\n", status, __LINE__);
+                    goto exit;
+                }
+                status = MQTT_setTransportWS(connInst, pCtx->pWsCtx);
+            }
+            else
+#endif
+            {
+                status = WS_connect(pCtx->pWsCtx, pCtx->socket,
+                                    (const sbyte *)pCtx->pMqttServer,
+                                    pCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                    (const sbyte *)"/mqtt");
+                if (OK != status)
+                {
+                    /* transport never established; skip MQTT_disconnect */
+                    wsConnectFailed = TRUE;
+                    printf("WS_connect failed with status = %d on line %d\n", status, __LINE__);
+                    goto exit;
+                }
+                status = MQTT_setTransportWS(connInst, pCtx->pWsCtx);
+            }
+            if (OK != status)
+            {
+                printf("MQTT WebSocket transport setup failed with status = %d on line %d\n", status, __LINE__);
                 goto exit;
             }
         }
         else
-#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
+#endif /* __ENABLE_DIGICERT_WEBSOCKET_CLIENT__ */
         {
-#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
-            if (0 <= SSL_isSessionSSL(transportProxy))
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+            if (MQTT_SSL == pCtx->transport)
             {
-                status = MQTT_setTransportSSL(connInst, transportProxy);
+                status = MQTT_setTransportSSL(connInst, pCtx->sslConnInst);
                 if (OK != status)
                 {
                     printf("MQTT_setTransportSSL failed with status = %d on line %d\n", status, __LINE__);
@@ -3028,13 +3105,27 @@ int main(int argc, char *ppArgv[])
                 }
             }
             else
-#endif
+#endif /* __ENABLE_DIGICERT_SSL_CLIENT__ */
             {
-                status = MQTT_setTransportTCP(connInst, pCtx->socket);
-                if (OK != status)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
+                if (0 <= SSL_isSessionSSL(transportProxy))
                 {
-                    printf("MQTT_setTransportTCP failed with status = %d on line %d\n", status, __LINE__);
-                    goto exit;
+                    status = MQTT_setTransportSSL(connInst, transportProxy);
+                    if (OK != status)
+                    {
+                        printf("MQTT_setTransportSSL failed with status = %d on line %d\n", status, __LINE__);
+                        goto exit;
+                    }
+                }
+                else
+#endif
+                {
+                    status = MQTT_setTransportTCP(connInst, pCtx->socket);
+                    if (OK != status)
+                    {
+                        printf("MQTT_setTransportTCP failed with status = %d on line %d\n", status, __LINE__);
+                        goto exit;
+                    }
                 }
             }
         }
@@ -3378,7 +3469,9 @@ exit:
 
     if (-1 < connInst)
     {
-        if(pCtx->alertHandlerCalled == FALSE)
+        if (TRUE == wsConnectFailed)
+            goto close;
+        else if(pCtx->alertHandlerCalled == FALSE)
             MQTT_disconnect(connInst, &pCtx->mqttDisconnectOptions);
         else
             goto close;
@@ -3390,6 +3483,14 @@ exit:
 close:
         MQTT_closeConnection(connInst);
     }
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (NULL != pCtx && NULL != pCtx->pWsCtx)
+    {
+        WS_close(pCtx->pWsCtx, WS_CLOSE_NORMAL);
+        WS_freeContext(&pCtx->pWsCtx);
+    }
+#endif
 
 #if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
     if (NULL != pCtx && -1 < pCtx->sslConnInst)

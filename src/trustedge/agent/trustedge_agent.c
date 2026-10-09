@@ -7328,6 +7328,34 @@ static MSTATUS TRUSTEDGE_agentMqttDisconnectHandler(
 
 /*----------------------------------------------------------------------------*/
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+/* Socket-level failures (blocked port, timeout) and a rejected WebSocket
+ * upgrade may retry over native MQTT. TLS, certificate and MQTT application
+ * failures must surface so a fallback never masks an authentication or trust
+ * problem. */
+static byteBoolean TRUSTEDGE_agentTransportFailureCanFallback(
+    MSTATUS status)
+{
+    switch (status)
+    {
+        case ERR_TCP_SOCKET_CLOSED:
+        case ERR_TCP_READ_ERROR:
+        case ERR_TCP_READ_BLOCK_FAIL:
+        case ERR_TCP_READ_TIMEOUT:
+        case ERR_TCP_WRITE_ERROR:
+        case ERR_TCP_WRITE_BLOCK_FAIL:
+        case ERR_TCP_CONNECT_CREATE:
+        case ERR_TCP_CONNECT_ERROR:
+        case ERR_TCP_SELECT_ERROR:
+        case ERR_WS_HANDSHAKE_FAILED:
+        case ERR_WS_SUBPROTOCOL_MISMATCH:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+#endif
+
 static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
     TrustEdgeAgentCtx *pCtx,
     URI *pURI,
@@ -7342,13 +7370,20 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
 {
     MSTATUS status;
     sbyte *pScheme = NULL;
+    sbyte *pConnScheme = NULL;
     sbyte *pHost = NULL;
     sbyte2 port = 0;
     sbyte pEndpointIp[40];
     byteBoolean closeTCP = FALSE;
     byteBoolean closeSSL = FALSE;
+#if defined(__ENABLE_DIGICERT_HTTP_PROXY__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+    byteBoolean closeProxy = FALSE;
+#endif
     sbyte4 delay = 1;
     sbyte4 attempts = 0;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    WsContext *pWsCtx = NULL;
+#endif
 
     status = URI_GetScheme(pURI, &pScheme);
     if (OK != status)
@@ -7369,6 +7404,8 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
             MERROR_lookUpErrorCode(status), pScheme);
         goto exit;
     }
+
+    pConnScheme = pScheme;
 
     status = URI_GetHost(pURI, &pHost);
     if (OK != status)
@@ -7400,6 +7437,13 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
         goto exit;
     }
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (NULL != pCtx->pConfig->pTransport)
+    {
+        port = (sbyte2) pCtx->pConfig->transportPort;
+    }
+#endif
+
     do {
 #if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
         if (NULL != pCtx->pConfig->pProxyUrl)
@@ -7411,6 +7455,13 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
             status = TRUSTEDGE_utilsProxyConnect(
                 pHost, port, pSocket, pSocketProxy, pTransportProxy,
                 pStore);
+            if (OK == status)
+            {
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+                closeProxy = (0 <= SSL_isSessionSSL(*pTransportProxy));
+#endif
+            }
+
         }
         else
 #endif
@@ -7476,6 +7527,12 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
                     MERROR_lookUpErrorCode(status), pHost, port);
                 goto exit;
             }
+
+            /* TCP and SSL proxy session stored in SSL session created by
+             * SSL_PROXY_connect. Set proxy to invalid value to avoid double close.
+             */
+            closeProxy = FALSE;
+            *pTransportProxy = -1;
         }
         else
 #endif
@@ -7489,6 +7546,20 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
                     MERROR_lookUpErrorCode(status), pHost, port);
                 goto exit;
             }
+        }
+
+        *pSSLConnInst = (sbyte4) status;
+        status = OK;
+        closeSSL = TRUE;
+
+        status = SSL_setServerNameIndication(*pSSLConnInst, pHost);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_WARNING,
+                "%s line %d status: %d = %s. Failed to set SNI for endpoint %s on port %d\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status), pHost, port);
+            goto exit;
         }
 
 #if defined(__ENABLE_DIGICERT_PQC__)
@@ -7506,10 +7577,6 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
         }
 #endif
 
-        *pSSLConnInst = (sbyte4) status;
-        status = OK;
-        closeSSL = TRUE;
-
         status = SSL_negotiateConnection(*pSSLConnInst);
         if (OK > status)
         {
@@ -7522,23 +7589,115 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
     }
 #endif
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (NULL != pCtx->pConfig->pTransport)
+    {
+        byteBoolean wantSSL = (0 == DIGI_STRCMP(pCtx->pConfig->pTransport, TRUSTEDGE_TRANSPORT_WSS_SCHEME));
+
+        pConnScheme = (TRUE == wantSSL) ? (sbyte *) TRUSTEDGE_TRANSPORT_WSS : (sbyte *) TRUSTEDGE_TRANSPORT_WS;
+
+        if (wantSSL != closeSSL)
+        {
+            status = ERR_TRUSTEDGE_AGENT_BAD_ENDPOINT;
+            MSG_LOG_print(MSG_LOG_WARNING,
+                "%s line %d status: %d = %s. Configured transport '%s' is not compatible with endpoint scheme %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status), pCtx->pConfig->pTransport, pScheme);
+            goto exit;
+        }
+
+        if (TRUE == pCtx->pConfig->chunkSupported)
+        {
+            if (pCtx->pConfig->wsMaxBuffer <= WS_BUFFER_OVERHEAD)
+            {
+                status = ERR_TRUSTEDGE_AGENT;
+                MSG_LOG_print(MSG_LOG_ERROR,
+                    "%s line %d: 'ws_max_buffer' (%u) must be greater than the WebSocket overhead (%u)\n",
+                    __func__, __LINE__, pCtx->pConfig->wsMaxBuffer,
+                    (ubyte4) WS_BUFFER_OVERHEAD);
+                goto exit;
+            }
+
+            /* Chunk payload plus overhead must stay within the buffer cap. */
+            if (pCtx->pConfig->chunkSize > pCtx->pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD)
+            {
+                MSG_LOG_print(MSG_LOG_INFO,
+                    "%s line %d: reducing 'chunk_size' from %u to %u to fit within 'ws_max_buffer' (%u)\n",
+                    __func__, __LINE__, pCtx->pConfig->chunkSize,
+                    pCtx->pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD,
+                    pCtx->pConfig->wsMaxBuffer);
+
+                pCtx->pConfig->chunkSize = pCtx->pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD;
+            }
+        }
+
+        status = WS_createContext(&pWsCtx, pCtx->pConfig->wsMaxBuffer);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_WARNING,
+                "%s line %d status: %d = %s. Failed to create WebSocket context\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+
+        if (TRUE == wantSSL)
+        {
+            status = WS_connectSSL(
+                pWsCtx, *pSSLConnInst, pHost,
+                (ubyte2) pCtx->pConfig->transportPort, TRUSTEDGE_AGENT_ENDPOINT_SCHEME_MQTT, "/"TRUSTEDGE_AGENT_ENDPOINT_SCHEME_MQTT);
+        }
+        else
+        {
+            status = WS_connect(
+                pWsCtx, *pSocket, pHost,
+                (ubyte2) pCtx->pConfig->transportPort, TRUSTEDGE_AGENT_ENDPOINT_SCHEME_MQTT, "/"TRUSTEDGE_AGENT_ENDPOINT_SCHEME_MQTT);
+        }
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_WARNING,
+                "%s line %d status: %d = %s. Failed WebSocket upgrade to endpoint %s on port %d\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status), pHost, port);
+            goto exit;
+        }
+
+        pCtx->mqttConfig.pWsCtx = pWsCtx;
+        pWsCtx = NULL;
+    }
+#endif
+
     MSG_LOG_print(
         MSG_LOG_INFO,
-        "Connected to endpoint %s://%s:%d\n", pScheme, pHost, port);
+        "Connected to endpoint %s://%s:%d\n", pConnScheme, pHost, port);
 
 exit:
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    WS_freeContext(&pWsCtx);
+#endif
 
     if (OK > status)
     {
         if (TRUE == closeSSL)
         {
             SSL_closeConnection(*pSSLConnInst);
+            *pSSLConnInst = -1;
         }
 
         if (TRUE == closeTCP)
         {
             TCP_CLOSE_SOCKET(*pSocket);
         }
+
+#if defined(__ENABLE_DIGICERT_HTTP_PROXY__) && defined(__ENABLE_DIGICERT_SSL_CLIENT__)
+        if (TRUE == closeProxy)
+        {
+            SSL_closeConnection(*pTransportProxy);
+            *pTransportProxy = -1;
+            TCP_CLOSE_SOCKET(*pSocketProxy);
+        }
+#endif
     }
 
     DIGI_FREE((void **) &pHost);
@@ -7562,6 +7721,12 @@ static MSTATUS TRUSTEDGE_agentMqttConnect(
     MSTATUS status = ERR_TRUSTEDGE_AGENT_NO_ENDPOINTS;
     URI *pEndpoint;
     ubyte4 i;
+    sbyte *pDisplayStr;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    sbyte *pDisplayBuf = NULL;
+    sbyte *pDisplayHost;
+    ubyte4 configuredChunkSize = pCtx->pConfig->chunkSize;
+#endif
 
     /* Input validation not required */
     *pSSLConnInst = -1;
@@ -7580,6 +7745,23 @@ static MSTATUS TRUSTEDGE_agentMqttConnect(
             continue;
         }
 
+        pDisplayStr = pEndpoint->uriBuf;
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        DIGI_FREE((void **) &pDisplayBuf);
+        pDisplayHost = NULL;
+        if (NULL != pCtx->pConfig->pTransport &&
+            OK == URI_GetHost(pEndpoint, &pDisplayHost) &&
+            OK == DIGI_MALLOC((void **) &pDisplayBuf, 128))
+        {
+            byteBoolean wantSSL = (0 == DIGI_STRCMP(pCtx->pConfig->pTransport, TRUSTEDGE_TRANSPORT_WSS_SCHEME));
+
+            (void) snprintf((char *) pDisplayBuf, 128, "%s://%s:%lu",
+                wantSSL ? TRUSTEDGE_TRANSPORT_WSS : TRUSTEDGE_TRANSPORT_WS, pDisplayHost, (unsigned long) pCtx->pConfig->transportPort);
+            pDisplayStr = pDisplayBuf;
+        }
+        DIGI_FREE((void **) &pDisplayHost);
+#endif
+
         status = TRUSTEDGE_agentMqttConnectEndpoint(
             pCtx, pEndpoint, pSocket, pSSLConnInst,
 #if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
@@ -7588,10 +7770,42 @@ static MSTATUS TRUSTEDGE_agentMqttConnect(
             pStore, pCtx->maxRetryCount);
         if (OK != status)
         {
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+            if (TRUE == pCtx->pConfig->enableTransportFallback &&
+                NULL != pCtx->pConfig->pTransport &&
+                TRUE == TRUSTEDGE_agentTransportFailureCanFallback(status))
+            {
+                sbyte *pConfiguredTransport = pCtx->pConfig->pTransport;
+
+                MSG_LOG_print(MSG_LOG_WARNING,
+                    "%s line %d: WebSocket transport failed; trying native MQTT transport for endpoint %s\n",
+                    __func__, __LINE__, pEndpoint->uriBuf);
+
+                pCtx->pConfig->pTransport = NULL;
+                /* Native MQTT is not bound by the WebSocket frame buffer. */
+                pCtx->pConfig->chunkSize = configuredChunkSize;
+                status = TRUSTEDGE_agentMqttConnectEndpoint(
+                    pCtx, pEndpoint, pSocket, pSSLConnInst,
+#if defined(__ENABLE_DIGICERT_HTTP_PROXY__)
+                    pSocketProxy, pTransportProxy,
+#endif
+                    pStore, pCtx->maxRetryCount);
+                pCtx->pConfig->pTransport = pConfiguredTransport;
+            }
+
+            if (OK == status)
+            {
+                pCtx->mqttConfig.connEPIdx = i;
+                MSG_LOG_print(MSG_LOG_VERBOSE, "Connected to endpoint %s at index %d using native MQTT fallback transport\n",
+                    pEndpoint->uriBuf, i);
+                break;
+            }
+#endif
+
             MSG_LOG_print(MSG_LOG_WARNING,
                 "%s line %d status: %d = %s. Failed to connect to endpoint %s at index %d\n",
                 __func__, __LINE__, status,
-                MERROR_lookUpErrorCode(status), pEndpoint->uriBuf, i);
+                MERROR_lookUpErrorCode(status), pDisplayStr, i);
             if (ERR_TRUSTEDGE_AGENT_SIGNAL_INTERRUPT == status)
             {
                 goto exit;
@@ -7601,12 +7815,16 @@ static MSTATUS TRUSTEDGE_agentMqttConnect(
         {
             pCtx->mqttConfig.connEPIdx = i;
             MSG_LOG_print(MSG_LOG_VERBOSE, "Connected to endpoint %s at index %d\n",
-                pEndpoint->uriBuf, i);
+                pDisplayStr, i);
             break;
         }
     }
 
 exit:
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    DIGI_FREE((void **) &pDisplayBuf);
+#endif
 
     if (OK != status)
     {
@@ -7965,6 +8183,21 @@ static MSTATUS TRUSTEDGE_agentConnectEndPoint(
         goto exit;
     }
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    if (NULL != pCtx->mqttConfig.pWsCtx)
+    {
+        status = MQTT_setTransportWS(pCtx->connInst, pCtx->mqttConfig.pWsCtx);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR,
+                "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status,
+                MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+    }
+    else
+#endif
     if (-1 < pCtx->mqttConfig.sslConnInst)
     {
         status = MQTT_setTransportSSL(pCtx->connInst, pCtx->mqttConfig.sslConnInst);
@@ -8373,6 +8606,13 @@ exit:
             MQTT_disconnect(pCtx->connInst, &mqttDisconnectOptions);
             MQTT_closeConnection(pCtx->connInst);
         }
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+        if (NULL != pCtx->mqttConfig.pWsCtx)
+        {
+            WS_close(pCtx->mqttConfig.pWsCtx, WS_CLOSE_NORMAL);
+            WS_freeContext(&pCtx->mqttConfig.pWsCtx);
+        }
+#endif
         if (-1 < pCtx->mqttConfig.sslConnInst)
         {
             SSL_closeConnection(pCtx->mqttConfig.sslConnInst);

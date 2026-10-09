@@ -15,7 +15,7 @@ on:
 
 jobs:
   mqtt-functional-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     services:
       emqx:
@@ -23,6 +23,8 @@ jobs:
         ports:
           - 1883:1883
           - 8883:8883
+          - 8083:8083
+          - 8084:8084
         options: >-
           --health-cmd "emqx_ctl status"
           --health-interval 10s
@@ -41,7 +43,7 @@ jobs:
 
     - name: Build NanoMQTT for Functional Tests
       run: |
-        cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_MQTT_CLIENT=ON -DENABLE_MQTT_TEST=ON -B build -S .
+        cmake -DBUILD_SAMPLES=ON -DWITH_LOGGING=ON -DENABLE_MQTT_CLIENT=ON -DENABLE_MQTT_TEST=ON -DENABLE_WEBSOCKET_SUPPORT=ON -B build -S .
         cmake --build build
 
     - name: Run NanoMQTT Functional Tests
@@ -97,16 +99,70 @@ jobs:
 
     - name: Show Job Status
       run: echo "🍏 This job's status is ${{ job.status }}."
-      
+
+    - name: Run NanoMQTT Functional Tests (Websocket transport)
+      run: |
+        export LD_LIBRARY_PATH=lib/:$LD_LIBRARY_PATH
+
+        set +e
+
+        tests=(
+          "Basic Config:src/mqtt/test/test-config-ws.json"
+          "Async Config:src/mqtt/test/test-config-async-ws.json"
+          "SSL Config:src/mqtt/test/test-config-ssl-ws.json"
+          "Publish Extended Properties:src/mqtt/test/test-pub-ext-ws.json"
+          "Publish Timeout:src/mqtt/test/test-pub-timeout-ws.json"
+          "Publish Timeout Persist Mode:src/mqtt/test/test-pub-timeout-persist-ws.json"
+          "Receive Maximum Test:src/mqtt/test/test-recv-max-ws.json"
+          "Retry Test:src/mqtt/test/test-retry-ws.json"
+          "Will Test:src/mqtt/test/test-will-ws.json"
+          "Will Test QoS2:src/mqtt/test/test-will-qos2-ws.json"
+          "Will Test Extended:src/mqtt/test/test-will-ext-ws.json"
+        )
+
+        failed=0
+
+        for test in "${tests[@]}"; do
+          name="${test%%:*}"
+          config="${test##*:}"
+
+          echo "================================================"
+          echo "Running Test: $name"
+          echo "================================================"
+
+          if ./samples/bin/mqtt_client_test --mqtt_config "$config"; then
+            echo ""
+            echo "PASSED ✅"
+            echo ""
+          else
+            echo ""
+            echo "FAILED ❌"
+            echo ""
+            ((failed++))
+          fi
+        done
+
+        echo "================================================"
+        if [ $failed -gt 0 ]; then
+          echo "Some tests FAILED ❌ ($failed out of ${#tests[@]})"
+          exit 1
+        else
+          echo "All tests PASSED ✅"
+        fi
+        echo "================================================"
+
+    - name: Show Job Status
+      run: echo "🍏 This job's status is ${{ job.status }}."
+
     - name: Get Slack User ID
       if: always()
       id: slack_map
       run: |
         GITHUB_USER="${{ github.actor }}"
         SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
-        
+
         SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
-        
+
         echo "GitHub User: $GITHUB_USER"
         echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
 
@@ -123,5 +179,5 @@ jobs:
           MESSAGE="NanoMQTT Functional Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         else
           MESSAGE="NanoMQTT Functional Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-        fi  
+        fi
         curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

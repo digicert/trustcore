@@ -1288,6 +1288,17 @@ MOC_EXTERN MSTATUS MQTT_setTransport(
 
 /*----------------------------------------------------------------------------*/
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+#include "../websocket/websocket.h"
+
+MOC_EXTERN MSTATUS MQTT_setTransportWS(
+    sbyte4     connectionInstance,
+    WsContext *pWsCtx);
+
+#endif /* __ENABLE_DIGICERT_WEBSOCKET_CLIENT__ */
+
+/*----------------------------------------------------------------------------*/
+
 /**
  * @details Set a cookie.
  *
@@ -1631,8 +1642,8 @@ MOC_EXTERN sbyte4 MQTT_resetConnectionState(
  *                 code from merrors.h
  */
 MOC_EXTERN MSTATUS MQTT_getClientIdFromConnInst(
-    sbyte4 connectionInstance, 
-    ubyte **ppClientId, 
+    sbyte4 connectionInstance,
+    ubyte **ppClientId,
     ubyte4 *pClientIdLen);
 
 /*----------------------------------------------------------------------------*/

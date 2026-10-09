@@ -1,0 +1,3 @@
+MSS_SRC_DIR/websocket/websocket.c
+MSS_SRC_DIR/websocket/websocket_frame.c
+MSS_SRC_DIR/websocket/websocket_handshake.c
