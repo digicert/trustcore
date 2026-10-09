@@ -1070,7 +1070,7 @@ MSTATUS RTOS_semTimedWait(RTOS_SEM sem, ubyte4 timeoutMS, byteBoolean *pTimeout)
 	return ERR_RTOS_SEM_CALL_INTR;
     }
 
-    if (TX_WAIT_ABORTED == txStatus)
+    if (TX_NO_INSTANCE == txStatus)
     {
         if (NULL != pTimeout)
         {
