@@ -1,0 +1,441 @@
+name: "OpenSSL Connector 3.5.0 TAP Local Extern TLS and 3rd Party Test"
+on:
+  workflow_dispatch: {}
+
+  schedule:
+    - cron: '30 9 * * 4'   # Thursday 3:00 PM IST
+    - cron: '30 9 * * 0'   # Sunday 3:00 PM IST
+
+permissions:
+  contents: read
+
+jobs:
+  openssl-connector-3-5-0-tap-local-extern-integration-tests:
+    runs-on: ubuntu-24.04
+
+    steps:
+    
+      - name: Verify build environment
+        run: |
+          cat /etc/os-release
+          gcc --version
+          g++ --version
+    
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake python3-pip valgrind expect wget curl ninja-build
+          cmake --version
+          pip3 install --upgrade pip
+          pip3 install psutil
+          pip3 install tls-client
+          pip3 install typing_extensions
+          pip3 install pexpect
+          pip3 install certifi
+          sudo apt-get install -y lcov
+          sudo apt-get install -y unzip dh-autoreconf libssl-dev libtasn1-6-dev pkg-config libtpms-dev net-tools iproute2 libjson-glib-dev libgnutls28-dev gawk socat libseccomp-dev libfuse-dev libfuse3-dev build-essential automake autoconf libtool git zlib1g-dev libncurses5-dev libreadline-dev libsqlite3-dev libgdbm-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libapr1-dev libaprutil1-dev libpcre3-dev
+          valgrind --version
+          expect -v
+
+      - name: Install and start entropy daemon
+        run: |
+          # Without this, TPM2 primary key generation (EK/SRK) can block indefinitely waiting on /dev/random
+          sudo apt-get install -y haveged
+          sudo systemctl start haveged
+          sudo systemctl status haveged --no-pager
+          cat /proc/sys/kernel/random/entropy_avail
+
+      - name: Map hostnames to runner IP
+        run: |
+          RUNNER_IP=$(hostname -I | awk '{print $1}')
+      
+          echo "Runner IP: $RUNNER_IP"
+      
+          echo "$RUNNER_IP athena.securitydemos.net ossltest.securitydemos.net" | sudo tee -a /etc/hosts
+      
+          cat /etc/hosts
+
+      - name: Build Python 3.12 from /usr/src
+        run: |
+          cd /usr/src
+
+          sudo wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz
+          sudo tar xzf Python-3.12.0.tgz
+
+          # verify directory exists
+          ls -la /usr/src
+
+          # run everything inside root context
+          sudo bash -c '
+            cd /usr/src/Python-3.12.0 &&
+            ./configure --prefix=/usr --enable-optimizations &&
+            make -j$(nproc) &&
+            make altinstall
+          '
+
+          # altinstall overwrites /usr/bin/python3.12 (the python3 symlink target) with a
+          # vanilla build whose site-packages differ from the apt build's, so modules pip
+          # installed earlier (pexpect, psutil, tls-client, typing_extensions) are no
+          # longer importable until reinstalled against this interpreter
+          #
+          # Deliberately NOT upgrading pip here: a newer pip resolver opens an extra TLS
+          # connection when resolving packages from PyPI, which breaks the fixed handshake
+          # count that 3rdparty_python.sh's "pip download setuptools" test expects
+          pip3 install psutil tls-client typing_extensions pexpect certifi
+
+      - name: Prepare thirdparty_app directory
+        run: |
+          mkdir -p ~/thirdparty_app
+          mkdir -p ~/thirdparty_app/build
+          mkdir -p ~/thirdparty_app/install
+
+      - name: Install OpenSSL 3.5.0 (system, required by libtpms/swtpm)
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-3.5.0.tar.gz
+          tar -xf openssl-3.5.0.tar.gz
+          cd openssl-3.5.0
+          # --openssldir matches Ubuntu's default (/usr/lib/ssl -> /etc/ssl) so wget/curl/git
+          # etc. still find the system CA bundle once this libssl takes precedence via ldconfig
+          ./config --prefix=/usr/local --libdir=lib --openssldir=/usr/lib/ssl shared
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+          cd ..
+
+          # pkg-config on this image does not search /usr/local by default, and the
+          # system libcrypto.pc (3.0.13) would otherwise be picked up instead of 3.5.0
+          echo "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
+          PKG_CONFIG_PATH=/usr/local/lib/pkgconfig pkg-config --modversion libcrypto
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+
+      - name: Checkout mocn-qa-m-products
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          repository: digicert/mocn-qa-m-products
+          token: ${{ secrets.MY_SECRET_TOKEN }}
+          path: mocn-qa-m-products
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup /etc/digicert folder
+        run: |
+          sudo mkdir -p /etc/digicert/
+          sudo chown -R "$USER:$USER" /etc/digicert/
+          sudo chmod 777 /etc/digicert/
+
+      - name: Setup trustedge user and group
+        run: |
+          sudo useradd -MU trustedge || true
+
+          echo "===== TRUSTEDGE USER ====="
+          getent passwd trustedge || true
+
+          echo "===== TRUSTEDGE GROUP ====="
+          getent group trustedge || true
+
+      - name: Clone the libtpms and swtpm repositories
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git clone https://github.com/stefanberger/libtpms.git
+          git clone https://github.com/stefanberger/swtpm.git
+
+      - name: Build libtpms
+        run: |
+          cd "$GITHUB_WORKSPACE/libtpms"
+          ./autogen.sh --with-openssl --with-tpm2 --prefix=/usr/local
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+
+      - name: Build swtpm
+        run: |
+          cd "$GITHUB_WORKSPACE/swtpm"
+
+          ./autogen.sh --with-openssl --with-cuse --prefix=/usr/local
+
+          make -j$(nproc)
+
+          sudo make install
+
+          sudo ldconfig
+
+      - name: Prepare TPM state
+        run: |
+          echo "===== STOP EXISTING SWTPM ====="
+
+          sudo pkill -f 'swtpm cuse -n tpm0' || true
+
+          echo "===== REMOVE OLD TPM STATE ====="
+
+          rm -rf "$HOME/tpm-state"
+
+          mkdir -p "$HOME/tpm-state"
+
+          echo "===== TPM STATE ====="
+          ls -ld "$HOME/tpm-state"
+          ls -la "$HOME/tpm-state"
+
+      - name: Run swtpm
+        run: |
+          sudo LD_LIBRARY_PATH=/usr/local/lib swtpm cuse -n tpm0 --tpm2 --tpmstate dir=$HOME/tpm-state --flags startup-clear --log file=/tmp/swtpm.log &
+          sleep 4
+
+      - name: Verify TPM device creation
+        run: |
+          echo "===== TPM DEVICE ====="
+          ls -l /dev/tpm0
+
+          echo "===== SWTPM PROCESS ====="
+          ps aux | grep '[s]wtpm' || true
+
+          echo "===== SWTPM LOG ====="
+          sudo cat /tmp/swtpm.log || true
+
+          echo "===== TPM STATE ====="
+          ls -la "$HOME/tpm-state"
+
+      - name: Grant runner TPM access
+        run: |
+          sudo setfacl -m u:runner:rw /dev/tpm0
+
+          echo "===== TPM DEVICE ====="
+          ls -l /dev/tpm0
+
+          echo "===== TPM ACL ====="
+          getfacl /dev/tpm0
+
+          echo "===== RUNNER TPM ACCESS ====="
+
+          sudo -u runner test -r /dev/tpm0
+          sudo -u runner test -w /dev/tpm0
+
+          echo "Runner TPM read/write access: OK"
+
+      - name: Clone TrustEdge and provision TPM2
+        run: |
+          cd "$GITHUB_WORKSPACE"
+
+          git clone https://github.com/digicert/trustedge.git
+
+          cd trustedge/tools/SecureElement
+
+          ls -l tpm2_tools-x86_64-24.7.2-3262.zip
+
+          unzip -o tpm2_tools-x86_64-24.7.2-3262.zip
+          unzip -o tpm2_tools-x86_64.zip
+
+          chmod +x provision_tpm2.sh
+
+          sudo bash ./provision_tpm2.sh
+
+      - name: Check DigiCert TPM files
+        run: |
+          DIR="/etc/digicert/"
+
+          echo "===== DIGICERT DIRECTORY ====="
+          ls -la "$DIR"
+
+          if [ -f "$DIR/tpm2.conf" ]; then
+            echo "tpm2.conf exists"
+          else
+            echo "ERROR: tpm2.conf NOT found"
+            exit 1
+          fi
+
+          if [ -f "$DIR/creds.tpm2" ]; then
+            echo "creds.tpm2 exists"
+          else
+            echo "ERROR: creds.tpm2 NOT found"
+            exit 1
+          fi
+          
+      - name: Copy EST Test Files
+        run: |
+          cp -r "$GITHUB_WORKSPACE/mocn-qa-m-products/estc_test/test_opensource/"* "$GITHUB_WORKSPACE/"
+          
+      - name: Generate TAP Certs and Keys using NanoCert EST
+        env:
+          CM_ENV_CODE_COVERAGE: 1
+          DEVICETRUST_DEMO_CRED: ${{ secrets.DEVICETRUST_DEMO_CRED }}
+        run: |
+          PYTHONUNBUFFERED=1 python3 tap_certs_keys.py build_client_cap_tap_local_extern.json
+
+      - name: Git Clean
+        run: |
+          git clean -fxxd
+
+      - name: Install OpenSSL 1.1.1k (fixed layout)
+        run: |
+          cd ~/thirdparty_app
+
+          wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+          tar -xf openssl-1.1.1k.tar.gz
+
+          cd openssl-1.1.1k
+
+          OPENSSL_DIR=~/thirdparty_app/install/openssl-1.1.1k
+
+          ./config --prefix=$OPENSSL_DIR --openssldir=$OPENSSL_DIR shared
+
+          make -j$(nproc)
+          make install
+          
+      - name: Install OpenSSL 1.0.2l (fixed layout)
+        run: |
+          cd ~/thirdparty_app
+
+          wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz
+          tar -xf openssl-1.0.2l.tar.gz
+
+          cd openssl-1.0.2l
+
+          OPENSSL_DIR=~/thirdparty_app/install/openssl-1.0.2l
+
+          ./config --prefix=$OPENSSL_DIR --openssldir=$OPENSSL_DIR shared
+
+          make -j$(nproc)
+          make install
+
+      - name: Install OpenSSL 3.0.7 (fixed layout)
+        run: |
+          cd ~/thirdparty_app
+
+          wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
+          tar -xf openssl-3.0.7.tar.gz
+
+          cd openssl-3.0.7
+
+          OPENSSL_DIR=~/thirdparty_app/install/openssl-3.0.7
+
+          ./config --prefix=$OPENSSL_DIR --openssldir=$OPENSSL_DIR shared
+
+          make -j$(nproc)
+          make install
+
+      - name: Prepare thirdparty directory
+        run: |
+          mkdir -p thirdparty
+
+      - name: Install OpenSSL 3.5.0
+        run: |
+          wget https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
+          tar -xzf openssl-3.5.0.tar.gz -C thirdparty/
+
+      - name: Copy SSL Test Files
+        run: |
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/qa_utils/setup_qa_reports/jenkins_auto_integration/* .
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/openssl_shim_test/test_opensource/* .
+          # test_httpd is a sibling of test_opensource; 3rdparty_httpd.py's DH-params tests
+          # (#11-13) read dhparam files from <workspace>/test_httpd, so it must be copied too
+          cp -r $GITHUB_WORKSPACE/mocn-qa-m-products/openssl_shim_test/test_httpd .
+
+      - name: List TPM2 Cert/Key Folder
+        run: |
+          echo "===== \$HOME/tpm2_cert_key CONTENTS ====="
+          ls -la "$HOME/tpm2_cert_key"
+
+      - name: Add host entries
+        run: |
+          echo "127.0.0.1 webapptap.securitydemos.net" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 athena.securitydemos.net" | sudo tee -a /etc/hosts
+
+      - name: Run OpenSSL Connector TLS Integration Test
+        env:
+          MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
+        run: |
+          PYTHONUNBUFFERED=1 python3 python_integration_test_temp.py ossl_3_5_0_cap_tap_local_extern.json
+
+      - name: Upload Valgrind Report Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: report_valgrind_tls
+          path: report_valgrind_tls.zip
+          retention-days: 5
+          
+      - name: Build Node.js v23.9.0
+        run: |
+          cd ~/thirdparty_app
+
+          wget https://nodejs.org/download/release/v23.9.0/node-v23.9.0.tar.gz
+
+          tar -xf node-v23.9.0.tar.gz
+
+          cd node-v23.9.0
+
+          export OPENSSL_DIR=$PWD/../openssl-3.5.0
+
+          ./configure --prefix=binary --ninja --shared-openssl --shared-openssl-include=$PWD/deps/openssl/openssl/include --shared-openssl-libname crypto,ssl --shared-openssl-libpath=$OPENSSL_DIR
+
+          ninja -C out/Release
+
+          # the top-level `node` symlink is normally created by Node's Makefile; invoking
+          # ninja directly skips that, so the test scripts can't find ~/thirdparty_app/node-v23.9.0/node
+          ln -sf out/Release/node node
+
+      - name: Build and install Apache HTTPD 2.4.63
+        run: |
+          cd thirdparty
+          wget https://archive.apache.org/dist/httpd/httpd-2.4.63.tar.gz
+          wget https://archive.apache.org/dist/apr/apr-1.7.0.tar.gz
+          wget https://archive.apache.org/dist/apr/apr-util-1.6.1.tar.gz
+
+          tar -zxvf httpd-2.4.63.tar.gz
+
+          cd httpd-2.4.63/srclib
+
+          tar -xzf ../../apr-1.7.0.tar.gz
+          tar -xzf ../../apr-util-1.6.1.tar.gz
+
+          cd ..
+
+          export OPENSSL_DIR=$PWD/../openssl-3.5.0
+
+          ./configure --with-openssl=$OPENSSL_DIR CFLAGS=-g --prefix=/usr/local/httpd-2.4.63/
+
+          make -j$(nproc)
+          sudo make install
+
+      - name: Run OpenSSL Connector 3rd Party Integration Test
+        env:
+          MOCN_QA_PRODUCTS_DIR: ${{ github.workspace }}/mocn-qa-m-products
+        run: |
+          PYTHONUNBUFFERED=1 python3 python_integration_test_3rd_party.py ossl_3_5_0_cap_tap_local_extern.json
+
+      - name: Cleanup mocn-qa-m-products
+        run: |
+          rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
+
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+  
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="OpenSSL Connector 3.5.0 TAP Local Extern TLS and 3rd Party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="OpenSSL Connector 3.5.0 TAP Local Extern TLS and 3rd Party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
