@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-nanomqtt:
-    runs-on: [digicert-medium]
+    runs-on: ubuntu-22.04
 
     steps:
 
