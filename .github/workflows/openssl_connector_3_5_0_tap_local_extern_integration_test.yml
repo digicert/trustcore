@@ -1,6 +1,9 @@
 name: "OpenSSL Connector 3.5.0 TAP Local Extern TLS and 3rd Party Test"
 on:
   workflow_dispatch: {}
+  
+  push:
+    branches: [ "DTM-13804-adding-github-action-for-open-ssl-connector-3-5-0-tap-local-extern-integration-tests-tls-3rd-party-using-tpm-2-emulator" ]
 
   schedule:
     - cron: '30 9 * * 4'   # Thursday 3:00 PM IST
@@ -141,8 +144,8 @@ jobs:
       - name: Clone the libtpms and swtpm repositories
         run: |
           cd "$GITHUB_WORKSPACE"
-          git clone https://github.com/stefanberger/libtpms.git
-          git clone https://github.com/stefanberger/swtpm.git
+          git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/libtpms.git
+          git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/swtpm.git
 
       - name: Build libtpms
         run: |
