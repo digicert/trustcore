@@ -121,6 +121,7 @@ jobs:
         with:
           repository: digicert/mocn-qa-m-products
           token: ${{ secrets.MY_SECRET_TOKEN }}
+          ref: DTM-13804-adding-github-action-for-open-ssl-connector-3-5-0-tap-local-extern-integration-tests-tls-3rd-party-using-tpm-2-emulator
           path: mocn-qa-m-products
           persist-credentials: false
           fetch-depth: 1
