@@ -1,9 +1,6 @@
 name: "OpenSSL Connector 3.5.0 TAP Local Extern TLS and 3rd Party Test"
 on:
   workflow_dispatch: {}
-  
-  push:
-    branches: [ "DTM-13804-adding-github-action-for-open-ssl-connector-3-5-0-tap-local-extern-integration-tests-tls-3rd-party-using-tpm-2-emulator" ]
 
   schedule:
     - cron: '30 9 * * 4'   # Thursday 3:00 PM IST
@@ -14,7 +11,7 @@ permissions:
 
 jobs:
   openssl-connector-3-5-0-tap-local-extern-integration-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     
@@ -121,7 +118,6 @@ jobs:
         with:
           repository: digicert/mocn-qa-m-products
           token: ${{ secrets.MY_SECRET_TOKEN }}
-          ref: DTM-13804-adding-github-action-for-open-ssl-connector-3-5-0-tap-local-extern-integration-tests-tls-3rd-party-using-tpm-2-emulator
           path: mocn-qa-m-products
           persist-credentials: false
           fetch-depth: 1
@@ -145,8 +141,8 @@ jobs:
       - name: Clone the libtpms and swtpm repositories
         run: |
           cd "$GITHUB_WORKSPACE"
-          git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/libtpms.git
-          git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/swtpm.git
+          git clone https://github.com/stefanberger/libtpms.git
+          git clone https://github.com/stefanberger/swtpm.git
 
       - name: Build libtpms
         run: |
@@ -414,3 +410,32 @@ jobs:
       - name: Cleanup mocn-qa-m-products
         run: |
           rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
+
+      - name: Get Slack User ID
+        if: always()
+        id: slack_map
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+          
+          SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+          
+          echo "GitHub User: $GITHUB_USER"
+          echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+  
+      - name: Send Slack notification (Failure)
+        if: always() && (failure() || cancelled()) 
+        run: |
+          SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+          if [ -n "$SLACK_USER_ID" ]; then
+            MENTION="<@$SLACK_USER_ID>"
+          else
+            MENTION="${GITHUB_ACTOR}"
+          fi
+          
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            MESSAGE="OpenSSL Connector 3.5.0 TAP Local Extern TLS and 3rd Party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          else
+            MESSAGE="OpenSSL Connector 3.5.0 TAP Local Extern TLS and 3rd Party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
