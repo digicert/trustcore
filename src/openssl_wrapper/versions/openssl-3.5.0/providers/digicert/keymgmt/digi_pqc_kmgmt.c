@@ -332,7 +332,22 @@ static const OSSL_PARAM PQC_KEY_TYPES[] =
     OSSL_PARAM_END
 };
 
-static const OSSL_PARAM *digiprov_pqc_imexport_types(int selection)
+static const OSSL_PARAM *digiprov_pqc_import_types(int selection)
+{
+    static const OSSL_PARAM importTypes[] =
+    {
+        OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PUB_KEY, NULL, 0),
+        OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PRIV_KEY, NULL, 0),
+        OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_ML_DSA_SEED, NULL, 0),
+        OSSL_PARAM_END
+    };
+
+    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0)
+        return importTypes;
+    return NULL;
+}
+
+static const OSSL_PARAM *digiprov_pqc_export_types(int selection)
 {
     if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0)
         return PQC_KEY_TYPES;
@@ -662,6 +677,7 @@ static const OSSL_PARAM pqc_settable_params[] =
 {
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PUB_KEY, NULL, 0),
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PRIV_KEY, NULL, 0),
+    OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_ML_DSA_SEED, NULL, 0),
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_ENCODED_PUBLIC_KEY, NULL, 0),
     OSSL_PARAM_utf8_string(OSSL_PKEY_PARAM_PROPERTIES, NULL, 0),
     OSSL_PARAM_END
@@ -897,9 +913,9 @@ static int digiprov_pqc_validate(const void *keydata, int selection, int checkty
         { OSSL_FUNC_KEYMGMT_MATCH,               (void (*)(void))digiprov_pqc_match }, \
         { OSSL_FUNC_KEYMGMT_VALIDATE,            (void (*)(void))digiprov_pqc_validate }, \
         { OSSL_FUNC_KEYMGMT_IMPORT,              (void (*)(void))digiprov_pqc_import }, \
-        { OSSL_FUNC_KEYMGMT_IMPORT_TYPES,        (void (*)(void))digiprov_pqc_imexport_types }, \
+        { OSSL_FUNC_KEYMGMT_IMPORT_TYPES,        (void (*)(void))digiprov_pqc_import_types }, \
         { OSSL_FUNC_KEYMGMT_EXPORT,              (void (*)(void))digiprov_pqc_export }, \
-        { OSSL_FUNC_KEYMGMT_EXPORT_TYPES,        (void (*)(void))digiprov_pqc_imexport_types }, \
+        { OSSL_FUNC_KEYMGMT_EXPORT_TYPES,        (void (*)(void))digiprov_pqc_export_types }, \
         { OSSL_FUNC_KEYMGMT_GEN_INIT,            (void (*)(void))digiprov_##alg##_gen_init }, \
         { OSSL_FUNC_KEYMGMT_GEN,                 (void (*)(void))digiprov_pqc_gen }, \
         { OSSL_FUNC_KEYMGMT_GEN_CLEANUP,         (void (*)(void))digiprov_pqc_gen_cleanup }, \

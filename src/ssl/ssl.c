@@ -9381,6 +9381,9 @@ SSL_OSSL_QSParamsToKeyBlob(OSSL_QSParams *pQParams, void **ppKeyBlob, unsigned i
 {
     MSTATUS status = ERR_NULL_POINTER;
     AsymmetricKey Akey = { 0 };
+    ubyte *pPublicKey = NULL;
+    ubyte4 publicKeyLen = 0;
+    sbyte4 cmpResult = 1;
 
     if ((NULL == pQParams) || (NULL == pQParams->pPub) || (0 >= pQParams->lenPub) ||
         (NULL == ppKeyBlob) || (NULL == pBlobLen))
@@ -9401,11 +9404,30 @@ SSL_OSSL_QSParamsToKeyBlob(OSSL_QSParams *pQParams, void **ppKeyBlob, unsigned i
     {
         if (OK > (status = CRYPTO_INTERFACE_QS_setPrivateKey(Akey.pQsCtx, pQParams->pPriv, (ubyte4) pQParams->lenPriv)))
             goto exit;
+
+        status = CRYPTO_INTERFACE_QS_getPublicKeyAlloc(Akey.pQsCtx, &pPublicKey, &publicKeyLen);
+        if (OK != status)
+            goto exit;
+
+        status = ERR_INVALID_INPUT;
+        if (NULL == pPublicKey || publicKeyLen != (ubyte4) pQParams->lenPub)
+            goto exit;
+
+        status = DIGI_CTIME_MATCH(pPublicKey, pQParams->pPub, publicKeyLen, &cmpResult);
+        if (OK != status)
+            goto exit;
+        if (0 != cmpResult)
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
     }
 
     status = KEYBLOB_makeKeyBlobEx(&Akey, (ubyte **) ppKeyBlob, (ubyte4 *) pBlobLen);
 
 exit:
+    if (NULL != pPublicKey)
+        (void) DIGI_MEMSET_FREE(&pPublicKey, publicKeyLen);
     CRYPTO_uninitAsymmetricKey(&Akey, NULL);
     return status;
 }

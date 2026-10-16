@@ -303,6 +303,9 @@ ossl_QsPkeyToBlob(EVP_PKEY *pkey, ubyte4 qsAlgId, u_int8_t **ppKeyBlob, unsigned
         goto exit;
 
     hasPrivateKey = EVP_PKEY_private_check(pCtx);
+    if (1 == hasPrivateKey && 1 != EVP_PKEY_pairwise_check(pCtx))
+        goto exit;
+
     EVP_PKEY_CTX_free(pCtx);
     pCtx = NULL;
 
