@@ -36,7 +36,7 @@ jobs:
           pip3 install pexpect
           pip3 install certifi
           sudo apt-get install -y lcov
-          sudo apt-get install -y unzip dh-autoreconf libssl-dev libtasn1-6-dev pkg-config libtpms-dev net-tools iproute2 libjson-glib-dev libgnutls28-dev gawk socat libseccomp-dev libfuse-dev libfuse3-dev build-essential automake autoconf libtool git zlib1g-dev libncurses5-dev libreadline-dev libsqlite3-dev libgdbm-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libapr1-dev libaprutil1-dev libpcre3-dev
+          sudo apt-get install -y unzip dh-autoreconf libssl-dev libtasn1-6-dev pkg-config libtpms-dev net-tools iproute2 libjson-glib-dev libgnutls28-dev gawk socat libseccomp-dev libfuse-dev build-essential automake autoconf libtool git zlib1g-dev libncurses5-dev libreadline-dev libsqlite3-dev libgdbm-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libapr1-dev libaprutil1-dev libpcre3-dev
           valgrind --version
           expect -v
 
@@ -145,11 +145,8 @@ jobs:
       - name: Clone the libtpms and swtpm repositories
         run: |
           cd "$GITHUB_WORKSPACE"
-      
           git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/libtpms.git
-
-          git clone https://github.com/stefanberger/swtpm.git
-          git -C swtpm checkout 17fc25d
+          git clone --depth 1 --branch v0.10.2 https://github.com/stefanberger/swtpm.git
 
       - name: Build libtpms
         run: |
