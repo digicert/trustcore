@@ -178,6 +178,12 @@ int ssl_cert_type(X509 *x, EVP_PKEY *pkey)
          return OSSL_EVP_PKEY_ED25519;
      }
 #endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+     else if (0 != ossl_getQsAlgId(pk))
+     {
+         return OSSL_PKEY_QS;
+     }
+#endif
 
      return -1;
 }

@@ -109,6 +109,10 @@
 
 #include "ossl_types.h"
 
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+#include <openssl/core_names.h>
+#endif
+
 #if (defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)) && defined(__ENABLE_DIGICERT_TAP__)
 void DIGI_EVP_maskCred(ubyte *pIn, ubyte4 inLen);
 static sbyte *pMaskedCredentials = NULL;
@@ -232,6 +236,101 @@ exit:
      return -1;
 }
 
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+extern ubyte4
+ossl_getQsAlgId(const EVP_PKEY *pkey)
+{
+    static const struct { const char *pName; ubyte4 cid; } qsAlgs[] =
+    {
+        { "ML-DSA-44", cid_PQC_MLDSA_44 },
+        { "ML-DSA-65", cid_PQC_MLDSA_65 },
+        { "ML-DSA-87", cid_PQC_MLDSA_87 },
+    };
+    size_t i;
+
+    if (NULL == pkey)
+        return 0;
+
+    for (i = 0; i < sizeof(qsAlgs) / sizeof(qsAlgs[0]); i++)
+    {
+        if (EVP_PKEY_is_a(pkey, qsAlgs[i].pName))
+            return qsAlgs[i].cid;
+    }
+    return 0;
+}
+
+static int
+ossl_getOctetParamAlloc(EVP_PKEY *pkey, const char *pParam, u_int8_t **ppOut, int *pOutLen)
+{
+    size_t len = 0;
+    size_t allocLen;
+
+    if (1 != EVP_PKEY_get_octet_string_param(pkey, pParam, NULL, 0, &len) || 0 == len)
+        return -1;
+
+    allocLen = len;
+    *ppOut = OSSL_MALLOC(allocLen);
+    if (NULL == *ppOut)
+        return -1;
+
+    if (1 != EVP_PKEY_get_octet_string_param(pkey, pParam, *ppOut, allocLen, &len))
+    {
+        OPENSSL_cleanse(*ppOut, allocLen);
+        OSSL_FREE(*ppOut);
+        *ppOut = NULL;
+        return -1;
+    }
+    *pOutLen = (int) len;
+    return 0;
+}
+
+static int
+ossl_QsPkeyToBlob(EVP_PKEY *pkey, ubyte4 qsAlgId, u_int8_t **ppKeyBlob, unsigned int *len)
+{
+    OSSL_QSParams OQP;
+    EVP_PKEY_CTX *pCtx = NULL;
+    int hasPrivateKey;
+    int rval = -1;
+
+    memset((void *)&OQP, 0, sizeof(OQP));
+    OQP.qsAlgId = qsAlgId;
+
+    if (0 != ossl_getOctetParamAlloc(pkey, OSSL_PKEY_PARAM_PUB_KEY, &OQP.pPub, &OQP.lenPub))
+        goto exit;
+
+    pCtx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+    if (NULL == pCtx)
+        goto exit;
+
+    hasPrivateKey = EVP_PKEY_private_check(pCtx);
+    if (1 == hasPrivateKey && 1 != EVP_PKEY_pairwise_check(pCtx))
+        goto exit;
+
+    EVP_PKEY_CTX_free(pCtx);
+    pCtx = NULL;
+
+    if (0 > hasPrivateKey ||
+        (1 == hasPrivateKey &&
+         0 != ossl_getOctetParamAlloc(pkey, OSSL_PKEY_PARAM_PRIV_KEY, &OQP.pPriv, &OQP.lenPriv)))
+        goto exit;
+
+    rval = NSSL_CHK_CALL(qsParamsToKeyBlob, &OQP, (void **) ppKeyBlob, len);
+
+exit:
+    if (NULL != pCtx)
+        EVP_PKEY_CTX_free(pCtx);
+
+    if (NULL != OQP.pPub)
+        OSSL_FREE(OQP.pPub);
+    if (NULL != OQP.pPriv)
+    {
+        OPENSSL_cleanse(OQP.pPriv, OQP.lenPriv);
+        OSSL_FREE(OQP.pPriv);
+    }
+    return rval;
+}
+#endif /* __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ && __ENABLE_DIGICERT_PQC__ */
+
 static int
 ossl_PkeyToBlob(EVP_PKEY *pkey, u_int8_t **ppKeyBlob, unsigned int *len)
 {
@@ -250,6 +349,12 @@ ossl_PkeyToBlob(EVP_PKEY *pkey, u_int8_t **ppKeyBlob, unsigned int *len)
      ECX_KEY  *pOSSLECXKey = NULL;
      size_t edKeyLen = 0;
 #endif
+#endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+     ubyte4 qsAlgId = ossl_getQsAlgId(pkey);
+
+     if (0 != qsAlgId)
+         return ossl_QsPkeyToBlob(pkey, qsAlgId, ppKeyBlob, len);
 #endif
      switch(pkey->type) {
      case EVP_PKEY_RSA:
@@ -539,8 +644,19 @@ ossl_CERT_STORE_addGenericIdentity(SSL_CTX *ctx, EVP_PKEY *pkey)
             break;
 #endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #endif /* __ENABLE_DIGICERT_ECC__ */
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+        case EVP_PKEY_ML_DSA_44:
+        case EVP_PKEY_ML_DSA_65:
+        case EVP_PKEY_ML_DSA_87:
+            break;
+#endif
         default:
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+            if (0 != ossl_getQsAlgId(pkey))
+                break;
+#endif
             /* unsupported type */
+            rval = -1;
             goto exit;
 
     } /* end switch */

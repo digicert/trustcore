@@ -403,6 +403,8 @@ static void *digiprov_hash_dupctx(void *ctx)
     MSTATUS status = OK;
     EVP_MD_CTX *pOrig = NULL;
     EVP_MD_CTX *pCopy = NULL;
+    size_t mdDataSize = sizeof(MOC_EVP_MD_CTX);
+    int isSha3 = 0;
 
     if (!digiprov_is_running())
         return NULL;
@@ -410,6 +412,14 @@ static void *digiprov_hash_dupctx(void *ctx)
     if (NULL != ctx)
     {
         pOrig = (EVP_MD_CTX *)ctx;
+        isSha3 = NID_sha3_224 == pOrig->digest->type ||
+                 NID_sha3_256 == pOrig->digest->type ||
+                 NID_sha3_384 == pOrig->digest->type ||
+                 NID_sha3_512 == pOrig->digest->type ||
+                 NID_shake128 == pOrig->digest->type ||
+                 NID_shake256 == pOrig->digest->type;
+        if (isSha3)
+            mdDataSize = sizeof(MOC_EVP_MD_SHA3_CTX);
 
         status = DIGI_CALLOC((void **)&pCopy, 1, sizeof(EVP_MD_CTX));
         if (OK != status)
@@ -427,20 +437,15 @@ static void *digiprov_hash_dupctx(void *ctx)
         if (OK != status)
             goto exit;
 
-        status = DIGI_CALLOC((void **)&pCopy->md_data, 1, sizeof(MOC_EVP_MD_CTX));
+        status = DIGI_CALLOC((void **)&pCopy->md_data, 1, mdDataSize);
         if (OK != status)
             goto exit;
 
-        status = DIGI_MEMCPY(pCopy->md_data, pOrig->md_data, sizeof(MOC_EVP_MD_CTX));
+        status = DIGI_MEMCPY(pCopy->md_data, pOrig->md_data, mdDataSize);
         if (OK != status)
             goto exit;
    
-        if (NID_sha3_224 == pOrig->digest->type || 
-            NID_sha3_256 == pOrig->digest->type ||
-            NID_sha3_384 == pOrig->digest->type || 
-            NID_sha3_512 == pOrig->digest->type || 
-            NID_shake128 == pOrig->digest->type || 
-            NID_shake256 == pOrig->digest->type )
+        if (isSha3)
         {
             if(1 != moc_sha3_copy(pCopy, (EVP_MD_CTX *)ctx))
             {
@@ -793,6 +798,63 @@ static int digiprov_shake_256_digest(void *provctx, const void *data, size_t len
 static int digiprov_shake_256_get_params(OSSL_PARAM params[])
 {
     return digiprov_common_digest_default_get_params(params, SHAKE256_BLOCK_SIZE, SHAKE256_RESULT_SIZE, PROV_DIGEST_FLAG_ALGID_ABSENT | PROV_DIGEST_FLAG_XOF);
+}
+
+static int digiprov_shake_squeeze(void *ctx, unsigned char *out, size_t *outl, size_t outsz)
+{
+    MSTATUS status = OK;
+    EVP_MD_CTX *pMdCtx = (EVP_MD_CTX *)ctx;
+    MOC_EVP_MD_SHA3_CTX *pMoc = NULL;
+    SHA3_CTX *pClone = NULL;
+    ubyte *pBuf = NULL;
+    ubyte4 total = 0;
+    int ret = 0;
+
+    if (!digiprov_is_running() || NULL == pMdCtx || NULL == outl || (NULL == out && 0 != outsz))
+        return 0;
+
+    pMoc = (MOC_EVP_MD_SHA3_CTX *)pMdCtx->md_data;
+    if (NULL == pMoc || NULL == pMoc->pCtx)
+        return 0;
+
+    *outl = 0;
+    if (0 == outsz)
+        return 1;
+
+    if (outsz > (size_t)(0xFFFFFFFFU - pMoc->squeezedLen))
+        return 0;
+    total = pMoc->squeezedLen + (ubyte4)outsz;
+
+    status = CRYPTO_INTERFACE_SHA3_allocDigest((BulkCtx *)&pClone);
+    if (OK != status)
+        goto exit;
+
+    status = CRYPTO_INTERFACE_SHA3_cloneCtx(pClone, pMoc->pCtx);
+    if (OK != status)
+        goto exit;
+
+    status = DIGI_MALLOC((void **)&pBuf, total);
+    if (OK != status)
+        goto exit;
+
+    status = CRYPTO_INTERFACE_SHA3_finalDigest(pClone, pBuf, total);
+    if (OK != status)
+        goto exit;
+
+    status = DIGI_MEMCPY(out, pBuf + pMoc->squeezedLen, (ubyte4)outsz);
+    if (OK != status)
+        goto exit;
+
+    pMoc->squeezedLen = total;
+    *outl = outsz;
+    ret = 1;
+
+exit:
+    if (NULL != pBuf)
+        (void)DIGI_MEMSET_FREE(&pBuf, total);
+    if (NULL != pClone)
+        (void)CRYPTO_INTERFACE_SHA3_freeDigest((BulkCtx *)&pClone);
+    return ret;
 }
 
 /*------------------------------------------------ BLAKE 2S ------------------------------------------------*/
@@ -1311,6 +1373,7 @@ const OSSL_DISPATCH digiprov_shake_128_functions[] = {
     { OSSL_FUNC_DIGEST_INIT,       (void (*)(void)) digiprov_shake_128_init },
     { OSSL_FUNC_DIGEST_UPDATE,     (void (*)(void)) digiprov_sha3_update },
     { OSSL_FUNC_DIGEST_FINAL,      (void (*)(void)) digiprov_sha3_final },
+    { OSSL_FUNC_DIGEST_SQUEEZE,    (void (*)(void)) digiprov_shake_squeeze },
     { OSSL_FUNC_DIGEST_DIGEST,     (void (*)(void)) digiprov_shake_128_digest },
     { OSSL_FUNC_DIGEST_FREECTX,    (void (*)(void)) digiprov_sha3_freectx },
     { OSSL_FUNC_DIGEST_DUPCTX,     (void (*)(void)) digiprov_hash_dupctx },
@@ -1325,6 +1388,7 @@ const OSSL_DISPATCH digiprov_shake_256_functions[] = {
     { OSSL_FUNC_DIGEST_INIT,       (void (*)(void)) digiprov_shake_256_init },
     { OSSL_FUNC_DIGEST_UPDATE,     (void (*)(void)) digiprov_sha3_update },
     { OSSL_FUNC_DIGEST_FINAL,      (void (*)(void)) digiprov_sha3_final },
+    { OSSL_FUNC_DIGEST_SQUEEZE,    (void (*)(void)) digiprov_shake_squeeze },
     { OSSL_FUNC_DIGEST_DIGEST,     (void (*)(void)) digiprov_shake_256_digest },
     { OSSL_FUNC_DIGEST_FREECTX,    (void (*)(void)) digiprov_sha3_freectx },
     { OSSL_FUNC_DIGEST_DUPCTX,     (void (*)(void)) digiprov_hash_dupctx },
