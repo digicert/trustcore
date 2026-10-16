@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   openssl-connector-3-5-0-tap-local-extern-integration-tests:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     steps:
     
@@ -36,7 +36,7 @@ jobs:
           pip3 install pexpect
           pip3 install certifi
           sudo apt-get install -y lcov
-          sudo apt-get install -y unzip dh-autoreconf libssl-dev libtasn1-6-dev pkg-config libtpms-dev net-tools iproute2 libjson-glib-dev libgnutls28-dev gawk socat libseccomp-dev libfuse-dev build-essential automake autoconf libtool git zlib1g-dev libncurses5-dev libreadline-dev libsqlite3-dev libgdbm-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libapr1-dev libaprutil1-dev libpcre3-dev
+          sudo apt-get install -y unzip dh-autoreconf libssl-dev libtasn1-6-dev pkg-config libtpms-dev net-tools iproute2 libjson-glib-dev libgnutls28-dev gawk socat libseccomp-dev libfuse-dev libfuse3-dev build-essential automake autoconf libtool git zlib1g-dev libncurses5-dev libreadline-dev libsqlite3-dev libgdbm-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libapr1-dev libaprutil1-dev libpcre3-dev
           valgrind --version
           expect -v
 
