@@ -290,6 +290,7 @@ ossl_QsPkeyToBlob(EVP_PKEY *pkey, ubyte4 qsAlgId, u_int8_t **ppKeyBlob, unsigned
     OSSL_QSParams OQP;
     EVP_PKEY_CTX *pCtx = NULL;
     int hasPrivateKey;
+    int i;
     int rval = -1;
 
     memset((void *)&OQP, 0, sizeof(OQP));
@@ -310,6 +311,18 @@ ossl_QsPkeyToBlob(EVP_PKEY *pkey, ubyte4 qsAlgId, u_int8_t **ppKeyBlob, unsigned
         (1 == hasPrivateKey &&
          0 != ossl_getOctetParamAlloc(pkey, OSSL_PKEY_PARAM_PRIV_KEY, &OQP.pPriv, &OQP.lenPriv)))
         goto exit;
+
+    if (NULL != OQP.pPriv &&
+        (cid_PQC_MLDSA_44 == qsAlgId || cid_PQC_MLDSA_65 == qsAlgId || cid_PQC_MLDSA_87 == qsAlgId))
+    {
+        u_int8_t seedBytes = 0;
+
+        /* Expanded-only ML-DSA keys have no recoverable seed. */
+        for (i = 0; i < OQP.lenPriv; i++)
+            seedBytes |= OQP.pPriv[i];
+        if (0 == seedBytes)
+            goto exit;
+    }
 
     rval = NSSL_CHK_CALL(qsParamsToKeyBlob, &OQP, (void **) ppKeyBlob, len);
 
