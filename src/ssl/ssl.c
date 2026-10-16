@@ -119,6 +119,9 @@ Whether the following flags are defined determines which functions are enabled:
 #include "../crypto_interface/crypto_interface_dsa.h"
 #include "../crypto_interface/crypto_interface_sha1.h"
 #endif
+#ifdef __ENABLE_DIGICERT_PQC__
+#include "../crypto_interface/crypto_interface_qs.h"
+#endif
 #include "../ssl/ssl_priv.h"
 
 #if defined(__ENABLE_DIGICERT_DEFER_CLIENT_CERT_VERIFY_ENCODING__) && \
@@ -9372,6 +9375,42 @@ exit:
      return status;
 }
 
+#ifdef __ENABLE_DIGICERT_PQC__
+extern sbyte4
+SSL_OSSL_QSParamsToKeyBlob(OSSL_QSParams *pQParams, void **ppKeyBlob, unsigned int *pBlobLen)
+{
+    MSTATUS status = ERR_NULL_POINTER;
+    AsymmetricKey Akey = { 0 };
+
+    if ((NULL == pQParams) || (NULL == pQParams->pPub) || (0 >= pQParams->lenPub) ||
+        (NULL == ppKeyBlob) || (NULL == pBlobLen))
+        goto exit;
+
+    status = ERR_CRYPTO_QS_UNSUPPORTED_CIPHER;
+    if ((pQParams->qsAlgId < cid_PQC_MLDSA_44) || (pQParams->qsAlgId > cid_PQC_SLHDSA_SHAKE_256F))
+        goto exit;
+
+    Akey.type = akt_qs;
+    if (OK > (status = CRYPTO_INTERFACE_QS_newCtx(MOC_HASH(0) &Akey.pQsCtx, pQParams->qsAlgId)))
+        goto exit;
+
+    if (OK > (status = CRYPTO_INTERFACE_QS_setPublicKey(Akey.pQsCtx, pQParams->pPub, (ubyte4) pQParams->lenPub)))
+        goto exit;
+
+    if ((NULL != pQParams->pPriv) && (0 < pQParams->lenPriv))
+    {
+        if (OK > (status = CRYPTO_INTERFACE_QS_setPrivateKey(Akey.pQsCtx, pQParams->pPriv, (ubyte4) pQParams->lenPriv)))
+            goto exit;
+    }
+
+    status = KEYBLOB_makeKeyBlobEx(&Akey, (ubyte **) ppKeyBlob, (ubyte4 *) pBlobLen);
+
+exit:
+    CRYPTO_uninitAsymmetricKey(&Akey, NULL);
+    return status;
+}
+#endif /* __ENABLE_DIGICERT_PQC__ */
+
 extern MSTATUS SSL_extractEcKeyData(
     AsymmetricKey *pAsymKey,
     MEccKeyTemplate **ppTemplate
@@ -10566,6 +10605,9 @@ SSL_bindShimMethods(nssl_methods_t *pMeth)
      defined(__ENABLE_DIGICERT_TLS13__))
      pMeth->getKEGroupId         = SSL_getKEGroupId;
 #endif
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+     pMeth->qsParamsToKeyBlob    = SSL_OSSL_QSParamsToKeyBlob;
 #endif
      pMeth->getPreparedSslRec    = SSL_ASYNC_getSendBuffer;
      pMeth->getPreparedSslRecZC  = SSL_ASYNC_getSendBufferZeroCopy;

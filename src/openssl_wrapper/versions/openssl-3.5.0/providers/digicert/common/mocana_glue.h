@@ -299,6 +299,7 @@ typedef struct MOC_EVP_MD_SHA3_CTX_s
 {
     SHA3_CTX *pCtx;
     int mdSize;
+    ubyte4 squeezedLen;
 } MOC_EVP_MD_SHA3_CTX;
 
 #endif

@@ -4864,6 +4864,11 @@ Additionally, the following flag must be defined in moptions.h:
 MOC_EXTERN sbyte4 SSL_OSSL_ECCParamsToKeyBlob(OSSL_ECCParams *pEParams, void *ppKeyBlob, unsigned int *pBlobLen);
 #endif /* __ENABLE_DIGICERT_ECC__ */
 
+#ifdef __ENABLE_DIGICERT_PQC__
+/* Converts raw ML-DSA/SLH-DSA key material from the OpenSSL shim into a NanoSSL key blob. */
+MOC_EXTERN sbyte4 SSL_OSSL_QSParamsToKeyBlob(OSSL_QSParams *pQParams, void **ppKeyBlob, unsigned int *pBlobLen);
+#endif /* __ENABLE_DIGICERT_PQC__ */
+
 /**
 @brief      Add a trust point to a Mocana SoT Platform certificate store.
 

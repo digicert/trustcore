@@ -297,6 +297,10 @@ enum OSSL_TLS_SignatureAlgorithm
     OSSL_TLS_RSA             = 1,
     OSSL_TLS_DSA             = 2,
     OSSL_TLS_ECDSA           = 3,
+    /* Combined with TLS_QS as the high byte: 0x0904..0x0906 */
+    OSSL_TLS_MLDSA_44        = 4,
+    OSSL_TLS_MLDSA_65        = 5,
+    OSSL_TLS_MLDSA_87        = 6,
     OSSL_TLS_EDDSA25519      = 7,
     OSSL_TLS_EDDSA448        = 8,
     OSSL_TLS_SIGNATURE_MAX   = 255
@@ -18453,6 +18457,21 @@ void SSL_set_verify_result(SSL *ssl, long arg)
 }
 
 /*-----------------------------------------------------------------*/
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+static int
+getMlDsaNid(ubyte sigAlg)
+{
+    switch (sigAlg)
+    {
+        case OSSL_TLS_MLDSA_44: return NID_ML_DSA_44;
+        case OSSL_TLS_MLDSA_65: return NID_ML_DSA_65;
+        case OSSL_TLS_MLDSA_87: return NID_ML_DSA_87;
+        default:                return NID_undef;
+    }
+}
+#endif
+
+/*-----------------------------------------------------------------*/
 static int
 getSharedSignatureAlgorithms(SSL *pSsl, int idx,
                              int *psign, int *phash, int *psignhash,
@@ -18482,6 +18501,22 @@ getSharedSignatureAlgorithms(SSL *pSsl, int idx,
     {
         *rhash = (sigAlgo >> 8) & 0xFF;
     }
+
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+    /* ML-DSA high byte (TLS_QS) would otherwise hit the RSA-PSS case below. */
+    if ((sigAlgo >> 8) == TLS_QS)
+    {
+        int nid = getMlDsaNid(sigAlgo & 0xFF);
+
+        if (psign != NULL)
+            *psign = nid;
+        if (phash != NULL)
+            *phash = NID_undef;
+        if (psignhash != NULL)
+            *psignhash = nid;
+        return status;
+    }
+#endif
 
     switch((sigAlgo >> 8) & 0xFF)
     {
@@ -25218,6 +25253,26 @@ static void parseSignAndHashString(ubyte *pSig, ubyte *pHash, char *str)
             parseHash = 0;
         }
 #endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+        else if (strcmp(pStr, "mldsa44") == 0 || strcmp(pStr, "MLDSA44") == 0)
+        {
+            *pHash = TLS_QS;
+            *pSig = OSSL_TLS_MLDSA_44;
+            parseHash = 0;
+        }
+        else if (strcmp(pStr, "mldsa65") == 0 || strcmp(pStr, "MLDSA65") == 0)
+        {
+            *pHash = TLS_QS;
+            *pSig = OSSL_TLS_MLDSA_65;
+            parseHash = 0;
+        }
+        else if (strcmp(pStr, "mldsa87") == 0 || strcmp(pStr, "MLDSA87") == 0)
+        {
+            *pHash = TLS_QS;
+            *pSig = OSSL_TLS_MLDSA_87;
+            parseHash = 0;
+        }
+#endif
 
         /* Hash */
         if (parseHash)
@@ -25302,6 +25357,15 @@ static void parseSignAndHash(ubyte *pSig, ubyte *pHash, int pInHash, int pInSig)
     {
         *pHash = TLS_INTRINSIC;
         *pSig = OSSL_TLS_EDDSA448;
+        parseHash = 0;
+    }
+#endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+    else if (NID_ML_DSA_44 == pInSig || NID_ML_DSA_65 == pInSig || NID_ML_DSA_87 == pInSig)
+    {
+        *pHash = TLS_QS;
+        *pSig = (NID_ML_DSA_44 == pInSig) ? OSSL_TLS_MLDSA_44 :
+                (NID_ML_DSA_65 == pInSig) ? OSSL_TLS_MLDSA_65 : OSSL_TLS_MLDSA_87;
         parseHash = 0;
     }
 #endif

@@ -188,7 +188,8 @@ typedef struct
 #define OSSL_PKEY_EC	2
 #define OSSL_EVP_PKEY_ED448   3
 #define OSSL_EVP_PKEY_ED25519 4
-#define OSSL_PKEY_MAX	5
+#define OSSL_PKEY_QS	5
+#define OSSL_PKEY_MAX	6
 
 #define SSL_MAX_SID_CTX_LENGTH	32
 #define SSL3_SSL_SESSION_ID_LENGTH 32

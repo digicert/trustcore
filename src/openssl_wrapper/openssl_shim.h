@@ -114,6 +114,16 @@ typedef struct OSSL_ECCParams_t {
 
 #endif
 
+#ifdef __ENABLE_DIGICERT_PQC__
+typedef struct OSSL_QSParams_t {
+     ubyte4             qsAlgId; /* cid_PQC_* from ca_mgmt.h */
+     u_int8_t         * pPub;
+     int                lenPub;
+     u_int8_t         * pPriv;
+     int                lenPriv;
+} OSSL_QSParams;
+#endif
+
 typedef struct OSSL_KeyBlobInfo_t {
     ubyte *pKeyBlob;
     ubyte4 keyBlobLength;
@@ -417,6 +427,9 @@ typedef MSTATUS (*NSSLextractEcKeyData)(AsymmetricKey *pAsymKey, MEccKeyTemplate
 typedef MSTATUS (*NSSLfreeEcKeyData)(AsymmetricKey *pAsymKey, MEccKeyTemplate **ppTemplate);
 typedef MSTATUS (*NSSLgetEcCurveId)(AsymmetricKey *pAsymKey, ubyte4 *pCurveId);
 typedef MSTATUS (*NSSLgetKEGroupId)(sbyte4 connectionInstance, ubyte2 *pGroupId);
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+typedef sbyte4  (*NSSLqsParamsToKeyBlob)(OSSL_QSParams *pQ, void **ppKeyBlob, unsigned int *pBlobLen);
 #endif
 #ifdef __ENABLE_DIGICERT_SERIALIZE__
 #if defined(__ENABLE_DIGICERT_TAP__)
@@ -774,6 +787,9 @@ typedef struct nssl_methods {
      NSSLsetClientRetrieveTicketCb        setClientRetrieveTicketCb;          /* SSL_setClientRetrieveTicketCallback */
      NSSLdeserializeTicket                deserializeTicket;                  /* SSL_deserializeSessionTicket */
      NSSLfreeTicket                       freeTicket;                         /* SSL_freeSessionTicket */
+#endif
+#ifdef __ENABLE_DIGICERT_PQC__
+     NSSLqsParamsToKeyBlob                qsParamsToKeyBlob;                  /* SSL_OSSL_QSParamsToKeyBlob */
 #endif
 } nssl_methods_t;
 

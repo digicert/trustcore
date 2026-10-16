@@ -75,7 +75,7 @@
 #define DP_PQC_KEM_MAX_CID  cid_PQC_MLKEM_1024
 #define MLKEM_PRIV_SEED_LEN 32
 
-struct dp_pqc_gen_ctx 
+struct dp_pqc_gen_ctx
 {
     OSSL_LIB_CTX *libctx;
     size_t cid;
@@ -107,7 +107,7 @@ static DP_PQC_KEY *digiprov_pqc_new_key(OSSL_LIB_CTX *libctx, size_t cid, size_t
 
     if (!digiprov_is_running())
         return NULL;
- 
+
     status = DIGI_CALLOC((void **) &pRet, 1, sizeof(DP_PQC_KEY));
     if (OK != status)
         return NULL;
@@ -120,11 +120,11 @@ static DP_PQC_KEY *digiprov_pqc_new_key(OSSL_LIB_CTX *libctx, size_t cid, size_t
     pRet->cid = cid;
     pRet->secSize = secSize;
     pRet->libctx = libctx;
-    
+
     if (!CRYPTO_NEW_REF(&pRet->references, 1))
         goto err;
 
-    if (propq != NULL) 
+    if (propq != NULL)
     {
         status = digiprov_strdup((void **) &pRet->propq, propq);
         if (OK != status)
@@ -212,15 +212,15 @@ static int digiprov_pqc_match(const void *keydata1, const void *keydata2, int se
 
     if ((selection & OSSL_KEYMGMT_SELECT_DOMAIN_PARAMETERS) != 0)
         ok = ok && (pKey1->cid == pKey2->cid);
-     
-    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0) 
+
+    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0)
     {
         ubyte4 keyType = MOC_ASYM_KEY_TYPE_PUBLIC;
         byteBoolean isEqual = TRUE;
 
         if (1 != pKey1->hasPubKey || 1 != pKey2->hasPubKey)
             return 0;
-        
+
         if ((selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY) != 0)
         {
             if (1 != pKey1->hasPrivKey || 1 != pKey2->hasPrivKey)
@@ -245,7 +245,7 @@ static int digiprov_pqc_import(void *keydata, int selection, const OSSL_PARAM pa
 
     if (!digiprov_is_running())
         return 0;
-    
+
     if (pKey == NULL)
         return 0;
 
@@ -269,7 +269,7 @@ static int digiprov_pqc_export(void *keydata, int selection, OSSL_CALLBACK *para
 
     if (!digiprov_is_running())
         return 0;
-    
+
     if (pKey == NULL)
         return 0;
 
@@ -277,8 +277,8 @@ static int digiprov_pqc_export(void *keydata, int selection, OSSL_CALLBACK *para
     if (tmpl == NULL)
         return 0;
 
-    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0) 
-    {  
+    if ((selection & OSSL_KEYMGMT_SELECT_KEYPAIR) != 0)
+    {
         if ((selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY))
         {
             status = CRYPTO_INTERFACE_QS_getPrivateKeyAlloc((QS_CTX *) pKey->pKeyData, &pPri, &priLen);
@@ -311,7 +311,7 @@ static int digiprov_pqc_export(void *keydata, int selection, OSSL_CALLBACK *para
 exit:
 
     OSSL_PARAM_BLD_free(tmpl);
-    
+
     if (NULL != pPub)
     {
         (void) DIGI_MEMSET_FREE(&pPub, pubLen);
@@ -325,7 +325,7 @@ exit:
     return ret;
 }
 
-static const OSSL_PARAM PQC_KEY_TYPES[] = 
+static const OSSL_PARAM PQC_KEY_TYPES[] =
 {
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PUB_KEY, NULL, 0),
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PRIV_KEY, NULL, 0),
@@ -352,10 +352,10 @@ static int digiprov_pqc_get_params(void *key, OSSL_PARAM params[])
 
     if (!digiprov_is_running())
         return 0;
-    
+
     if (pKey == NULL)
         return 0;
-    
+
     if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_SECURITY_BITS)) != NULL
         && !OSSL_PARAM_set_int(p, pKey->secSize))
         return 0;
@@ -364,7 +364,7 @@ static int digiprov_pqc_get_params(void *key, OSSL_PARAM params[])
     if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_MAX_SIZE)) != NULL)
     {
         ubyte4 len = 0;
-        
+
         if (pKey->cid >= DP_PQC_SIGN_MIN_CID || pKey->cid <= DP_PQC_SIGN_MAX_CID)
         {
             /* For ML-DSA the largest size is the private key, but for now signature len is ok
@@ -373,7 +373,7 @@ static int digiprov_pqc_get_params(void *key, OSSL_PARAM params[])
         }
         else if (pKey->cid >= DP_PQC_KEM_MIN_CID || pKey->cid <= DP_PQC_KEM_MAX_CID)
         {
-            /* For ML-KEM the largest size is the private key, which is twice that of 
+            /* For ML-KEM the largest size is the private key, which is twice that of
                the public key plus another 32 byte seed */
             status = CRYPTO_INTERFACE_QS_getPublicKeyLen((QS_CTX *) pKey->pKeyData, &len);
             len = len * 2 + MLKEM_PRIV_SEED_LEN;
@@ -384,13 +384,13 @@ static int digiprov_pqc_get_params(void *key, OSSL_PARAM params[])
         if(!OSSL_PARAM_set_int(p, (int) len))
             return 0;
     }
-    
-    if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_PUB_KEY)) != NULL) 
+
+    if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_PUB_KEY)) != NULL)
     {
         status = CRYPTO_INTERFACE_QS_getPublicKeyAlloc((QS_CTX *) pKey->pKeyData, &pPub, &pubLen);
         if (OK != status)
             return 0;
-        
+
         /* from here on pPub is allocated so goto exit on error */
         if (!OSSL_PARAM_set_octet_string(p, (void *) pPub, (size_t) pubLen))
         {
@@ -399,7 +399,7 @@ static int digiprov_pqc_get_params(void *key, OSSL_PARAM params[])
         }
     }
 
-    if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_PRIV_KEY)) != NULL) 
+    if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_PRIV_KEY)) != NULL)
     {
         status = CRYPTO_INTERFACE_QS_getPrivateKeyAlloc((QS_CTX *) pKey->pKeyData, &pPri, &priLen);
         if (OK != status)
@@ -407,7 +407,7 @@ static int digiprov_pqc_get_params(void *key, OSSL_PARAM params[])
             ret = 0;
             goto exit;
         }
-        
+
         /* from here on pPub is allocated so goto exit on error */
         if (!OSSL_PARAM_set_octet_string(p, (void *) pPri, (size_t) priLen))
         {
@@ -417,7 +417,7 @@ static int digiprov_pqc_get_params(void *key, OSSL_PARAM params[])
     }
 
     /* For now treat an encoded public key the same, once the encoding specs are standardized we can change this */
-    if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_ENCODED_PUBLIC_KEY)) != NULL) 
+    if ((p = OSSL_PARAM_locate(params, OSSL_PKEY_PARAM_ENCODED_PUBLIC_KEY)) != NULL)
     {
         if (NULL == pPub)
         {
@@ -451,7 +451,7 @@ exit:
     return ret;
 }
 
-static const OSSL_PARAM digiprov_pqc_gettable_params[] = 
+static const OSSL_PARAM digiprov_pqc_gettable_params[] =
 {
     OSSL_PARAM_int(OSSL_PKEY_PARAM_SECURITY_BITS, NULL),
     OSSL_PARAM_int(OSSL_PKEY_PARAM_MAX_SIZE, NULL),
@@ -460,6 +460,32 @@ static const OSSL_PARAM digiprov_pqc_gettable_params[] =
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_ENCODED_PUBLIC_KEY, NULL, 0),
     OSSL_PARAM_END
 };
+
+static int digiprov_pqc_match_public_param(DP_PQC_KEY *pKey, const OSSL_PARAM *pParam)
+{
+    MSTATUS status = OK;
+    ubyte *pKeyBytes = NULL;
+    ubyte4 keyLen = 0;
+    sbyte4 cmpResult = 1;
+    int ret = 0;
+
+    if (NULL == pParam || OSSL_PARAM_OCTET_STRING != pParam->data_type || NULL == pParam->data)
+        return 0;
+
+    status = CRYPTO_INTERFACE_QS_getPublicKeyAlloc((QS_CTX *) pKey->pKeyData, &pKeyBytes, &keyLen);
+
+    if (OK == status && NULL != pKeyBytes && 0 != keyLen &&
+        pParam->data_size == (size_t) keyLen &&
+        OK == DIGI_CTIME_MATCH(pKeyBytes, pParam->data, keyLen, &cmpResult) && 0 == cmpResult)
+    {
+        ret = 1;
+    }
+
+    if (NULL != pKeyBytes)
+        (void) DIGI_MEMSET_FREE(&pKeyBytes, keyLen);
+
+    return ret;
+}
 
 
 static int digiprov_set_property_query(DP_PQC_KEY *pKey, const char *propq)
@@ -476,7 +502,7 @@ static int digiprov_set_property_query(DP_PQC_KEY *pKey, const char *propq)
             return 0;
     }
 
-    if (propq != NULL) 
+    if (propq != NULL)
     {
         status = digiprov_strdup((void **) &pKey->propq, propq);
         if (OK != status)
@@ -493,19 +519,21 @@ static int digiprov_pqc_set_params_internal(void *key, const OSSL_PARAM params[]
     MSTATUS status = OK;
     DP_PQC_KEY *pKey = key;
     const OSSL_PARAM *p = NULL;
+    const OSSL_PARAM *pPubParam = NULL;
     byteBoolean pubSet = FALSE;
+    byteBoolean seedSet = FALSE;
 
     if (params == NULL)
         return 1;
 
     if (!digiprov_is_running())
         return 0;
-    
+
     if (pKey == NULL)
         return 0;
 
     p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_PUB_KEY);
-    if (p != NULL) 
+    if (p != NULL)
     {
         if (p->data_type != OSSL_PARAM_OCTET_STRING)
             return 0;
@@ -516,30 +544,56 @@ static int digiprov_pqc_set_params_internal(void *key, const OSSL_PARAM params[]
             status = CRYPTO_INTERFACE_QS_setPublicKey((QS_CTX *) pKey->pKeyData, (ubyte *) p->data, (ubyte4) p->data_size);
             if (OK != status)
                 return 0;
-            
+
             pKey->hasPubKey = 1;
             pubSet = TRUE;
+            pPubParam = p;
         }
         else if (!allowEmptyPub) /* error if not allowed */
         {
             return 0;
         } /* else continue and ignore the empty public key */
     }
-    
+
+    /*
+     * OpenSSL's ML-DSA/ML-KEM decoders export a private key as seed and/or
+     * expanded private key, without the public key. Prefer the seed since
+     * expanding it yields both the private and public key.
+     */
+    p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_ML_DSA_SEED);
+    if (p != NULL && p->data != NULL && p->data_size)
+    {
+        if (p->data_type != OSSL_PARAM_OCTET_STRING)
+            return 0;
+
+        status = CRYPTO_INTERFACE_QS_setPrivateKey((QS_CTX *) pKey->pKeyData, (ubyte *) p->data, (ubyte4) p->data_size);
+        if (OK == status)
+        {
+            pKey->hasPrivKey = 1;
+            seedSet = TRUE;
+        }
+        /* else not supported for this algorithm, fall back to the private key below */
+    }
+
     p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_PRIV_KEY);
-    if (p != NULL) 
+    if (p != NULL)
     {
         if (p->data_type != OSSL_PARAM_OCTET_STRING)
             return 0;
 
         if (p->data != NULL && p->data_size)
         {
-            /* this call will validate the length (p->data_size) is correct */
-            status = CRYPTO_INTERFACE_QS_setPrivateKey((QS_CTX *) pKey->pKeyData, (ubyte *) p->data, (ubyte4) p->data_size);
-            if (OK != status)
-                return 0;
-            
-            pKey->hasPrivKey = 1;
+            /* The expanded private key is not checked against the seed-derived key
+             * because no crypto interface API exposes the expanded private key. */
+            if (!seedSet)
+            {
+                /* this call will validate the length (p->data_size) is correct */
+                status = CRYPTO_INTERFACE_QS_setPrivateKey((QS_CTX *) pKey->pKeyData, (ubyte *) p->data, (ubyte4) p->data_size);
+                if (OK != status)
+                    return 0;
+
+                pKey->hasPrivKey = 1;
+            }
         }
         else
         {
@@ -547,9 +601,12 @@ static int digiprov_pqc_set_params_internal(void *key, const OSSL_PARAM params[]
         }
     }
 
+    if (seedSet && pubSet && !digiprov_pqc_match_public_param(pKey, pPubParam))
+        return 0;
+
     /* For now also do the same with an encoded public key, but error if user entered both pub and encoded pub */
     p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_ENCODED_PUBLIC_KEY);
-    if (p != NULL) 
+    if (p != NULL)
     {
         if (pubSet)
             return 0;
@@ -557,19 +614,40 @@ static int digiprov_pqc_set_params_internal(void *key, const OSSL_PARAM params[]
         if (p->data_type != OSSL_PARAM_OCTET_STRING)
             return 0;
 
-        /* this call will validate the length (p->data_size) is correct */
-        status = CRYPTO_INTERFACE_QS_setPublicKey((QS_CTX *) pKey->pKeyData, (ubyte *) p->data, (ubyte4) p->data_size);
-        if (OK != status)
-            return 0;
-        
-        pKey->hasPubKey = 1;
+        if (seedSet)
+        {
+            if (!digiprov_pqc_match_public_param(pKey, p))
+                return 0;
+        }
+        else
+        {
+            /* this call will validate the length (p->data_size) is correct */
+            status = CRYPTO_INTERFACE_QS_setPublicKey((QS_CTX *) pKey->pKeyData, (ubyte *) p->data, (ubyte4) p->data_size);
+            if (OK != status)
+                return 0;
+
+            pKey->hasPubKey = 1;
+        }
     }
 
     p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_PROPERTIES);
-    if (p != NULL) 
+    if (p != NULL)
     {
         if (p->data_type != OSSL_PARAM_UTF8_STRING || !digiprov_set_property_query(pKey, p->data))
             return 0;
+    }
+
+    /* If the underlying key derived the public key (e.g. from a seed), mark it as present */
+    if (pKey->hasPrivKey && !pKey->hasPubKey)
+    {
+        ubyte *pPub = NULL;
+        ubyte4 pubLen = 0;
+
+        if (OK == CRYPTO_INTERFACE_QS_getPublicKeyAlloc((QS_CTX *) pKey->pKeyData, &pPub, &pubLen))
+            pKey->hasPubKey = 1;
+
+        if (NULL != pPub)
+            (void) DIGI_MEMSET_FREE(&pPub, pubLen);
     }
 
     return 1;
@@ -580,7 +658,7 @@ static int digiprov_pqc_set_params(void *key, const OSSL_PARAM params[])
     return digiprov_pqc_set_params_internal(key, params, FALSE);
 }
 
-static const OSSL_PARAM pqc_settable_params[] = 
+static const OSSL_PARAM pqc_settable_params[] =
 {
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PUB_KEY, NULL, 0),
     OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PRIV_KEY, NULL, 0),
@@ -603,7 +681,7 @@ static void *digiprov_pqc_gen_init(void *provctx, int selection, size_t cid, siz
 
     if (!digiprov_is_running())
         return NULL;
-    
+
     if ((selection & (PQC_POSSIBLE_SELECTIONS)) == 0)
         return NULL;
 
@@ -615,7 +693,7 @@ static void *digiprov_pqc_gen_init(void *provctx, int selection, size_t cid, siz
     pGenCtx->selection = selection;
     pGenCtx->cid = cid;
     pGenCtx->secSize = secSize;
-    
+
     return pGenCtx;
 }
 
@@ -627,7 +705,7 @@ static void *digiprov_pqc_gen(void *genctx, OSSL_CALLBACK *osslcb, void *cbarg)
 
     if (!digiprov_is_running())
         return NULL;
-    
+
     if (NULL == pGenCtx)
         return NULL;
 
@@ -644,7 +722,7 @@ static void *digiprov_pqc_gen(void *genctx, OSSL_CALLBACK *osslcb, void *cbarg)
         pKey->hasPubKey = 1;
         pKey->hasPrivKey = 1;
     }
-    
+
     return pKey;
 
 err:
@@ -690,7 +768,7 @@ static void *digiprov_pqc_dup(const void *keydata_from, int selection)
 
     if (!digiprov_is_running())
         return NULL;
-    
+
     status = DIGI_CALLOC((void **) &pRet, 1, sizeof(DP_PQC_KEY));
     if (OK != status)
         goto exit;
@@ -707,7 +785,7 @@ static void *digiprov_pqc_dup(const void *keydata_from, int selection)
         goto exit;
     }
 
-    if (NULL != pKey->propq) 
+    if (NULL != pKey->propq)
     {
         status = digiprov_strdup((void **) &pRet->propq, pKey->propq);
         if (OK != status)
@@ -716,13 +794,13 @@ static void *digiprov_pqc_dup(const void *keydata_from, int selection)
 
     if (NULL != pKey->pKeyData)
     {
-        status = CRYPTO_INTERFACE_QS_cloneCtx((QS_CTX **) &pRet->pKeyData, (QS_CTX *) pKey->pKeyData); 
+        status = CRYPTO_INTERFACE_QS_cloneCtx((QS_CTX **) &pRet->pKeyData, (QS_CTX *) pKey->pKeyData);
         if (OK != status)
             goto exit;
     }
 
 exit:
-    
+
     if (OK != status && NULL != pRet)
     {
         CRYPTO_FREE_REF(&pRet->references);
@@ -743,7 +821,7 @@ extern int digiprov_pqc_validate_key_for_op(DP_PQC_KEY *pKey, int operation)
             if (pKey->hasPrivKey && pKey->cid >= DP_PQC_SIGN_MIN_CID && pKey->cid <= DP_PQC_SIGN_MAX_CID)
                 return 1;
             break;
-        
+
         case EVP_PKEY_OP_VERIFY:
 
             /* make sure it's a public verify key */
@@ -779,7 +857,7 @@ static int digiprov_pqc_validate(const void *keydata, int selection, int checkty
 
     if (!digiprov_is_running())
         return 0;
-    
+
     if ((selection & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) != 0)
         ok = ok && pKey->hasPubKey;
 
