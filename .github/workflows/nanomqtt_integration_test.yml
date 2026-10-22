@@ -3,7 +3,7 @@ name: "NanoMQTT Integration Tests"
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '30 3 * * 5'   # Friday 9am IST (3:30 UTC)
+    - cron: '30 3 * * 4'   # Thursday 9am IST (3:30 UTC)
 
 jobs:
   mqtt-integration-tests:
@@ -19,21 +19,22 @@ jobs:
         sudo apt install -y cmake
         cmake --version
         sudo apt-get install -y python3-pip
-        pip3 install paho-mqtt
-        pip3 install psutil
-        sudo apt-get install -y lcov
-        lcov --version
+        pip3 install paho-mqtt==2.1.0
+        pip3 install psutil==7.2.2
  
     - name: Create /etc/digicert/keystore/ca folder 
       run: |
         sudo mkdir -p /etc/digicert/keystore/ca
         sudo chown -R $(whoami):$(whoami) /etc/digicert
 
-    - name: Clone mocn-qa-m-products
-      env:
-        MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
-      run: |
-        git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git
+    - name: Checkout mocn-qa-m-products
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      with:
+        repository: digicert/mocn-qa-m-products
+        token: ${{ secrets.MY_SECRET_TOKEN }}
+        path: mocn-qa-m-products
+        persist-credentials: false
+        fetch-depth: 1
 
     - name: Copy MQTT Test Files
       run: |
@@ -44,31 +45,9 @@ jobs:
 
     - name: Run MQTT Integration Test
       env:
-        CM_ENV_CODE_COVERAGE: 1
+        MQTT_VERSION: "5"
       run: |
         ./run_nanomqtt_client.sh
-
-    - name: Baseline Coverage
-      run: |
-        lcov --no-external --capture --initial --directory . --output-file /tmp/mqtt_base.info
-
-    - name: Capture Coverage
-      run: |
-        lcov --no-external --capture --directory . --output-file /tmp/mqtt_test.info
-        lcov --add-tracefile /tmp/mqtt_base.info --add-tracefile /tmp/mqtt_test.info --output-file /tmp/mqtt_total.info
-
-    - name: Print Coverage Summary
-      run: |
-        echo "Coverage Summary:"
-        lcov --extract /tmp/mqtt_total.info '*/mqtt/*' --output-file /tmp/mqtt_filtered.info
-        lcov --list /tmp/mqtt_filtered.info | tee coverage_summary.log
-
-    - name: Upload Coverage Summary
-      if: always()
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: nanomqtt_integration_test_coverage_summary
-        path: coverage_summary.log
 
     - name: Cleanup mocn-qa-m-products
       if: always()
@@ -88,7 +67,7 @@ jobs:
         echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
 
     - name: Send Slack notification (Failure)
-      if: always() && (failure() || cancelled())
+      if: always() && (failure() || cancelled()) 
       run: |
         SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
         if [ -n "$SLACK_USER_ID" ]; then
@@ -97,8 +76,8 @@ jobs:
           MENTION="${GITHUB_ACTOR}"
         fi
         if [ "$GITHUB_REF_NAME" = "main" ]; then
-          MESSAGE="NanoMQTT Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="NanoMQTT Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         else
-          MESSAGE="NanoMQTT Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="NanoMQTT Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         fi  
         curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

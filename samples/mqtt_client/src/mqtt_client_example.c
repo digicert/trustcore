@@ -3072,16 +3072,37 @@ int main(int argc, char *ppArgv[])
             else
 #endif
             {
-                status = WS_connect(pCtx->pWsCtx, pCtx->socket,
-                                    (const sbyte *)pCtx->pMqttServer,
-                                    pCtx->mqttPortNo, (const sbyte *)"mqtt",
-                                    (const sbyte *)"/mqtt");
-                if (OK != status)
+#if defined(__ENABLE_DIGICERT_SSL_CLIENT__) && defined(__ENABLE_DIGICERT_HTTP_PROXY__)
+                /* HTTPS proxy: the CONNECT tunnel was negotiated over transportProxy,
+                 * not pCtx->socket, so plain WS traffic must ride that TLS session too. */
+                if (0 <= SSL_isSessionSSL(transportProxy))
                 {
-                    /* transport never established; skip MQTT_disconnect */
-                    wsConnectFailed = TRUE;
-                    printf("WS_connect failed with status = %d on line %d\n", status, __LINE__);
-                    goto exit;
+                    status = WS_connectSSL(pCtx->pWsCtx, transportProxy,
+                                           (const sbyte *)pCtx->pMqttServer,
+                                           pCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                           (const sbyte *)"/mqtt");
+                    if (OK != status)
+                    {
+                        /* transport never established; skip MQTT_disconnect */
+                        wsConnectFailed = TRUE;
+                        printf("WS_connectSSL failed with status = %d on line %d\n", status, __LINE__);
+                        goto exit;
+                    }
+                }
+                else
+#endif
+                {
+                    status = WS_connect(pCtx->pWsCtx, pCtx->socket,
+                                        (const sbyte *)pCtx->pMqttServer,
+                                        pCtx->mqttPortNo, (const sbyte *)"mqtt",
+                                        (const sbyte *)"/mqtt");
+                    if (OK != status)
+                    {
+                        /* transport never established; skip MQTT_disconnect */
+                        wsConnectFailed = TRUE;
+                        printf("WS_connect failed with status = %d on line %d\n", status, __LINE__);
+                        goto exit;
+                    }
                 }
                 status = MQTT_setTransportWS(connInst, pCtx->pWsCtx);
             }
