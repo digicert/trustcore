@@ -2,7 +2,7 @@ name: "NanoMQTT WebSocket Integration Tests"
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '30 3 * * 3'   # Wednesday 9am IST (3:30 UTC)
+    - cron: '30 3 * * 5'   # Friday 9am IST (3:30 UTC)
 
 jobs:
   mqtt-websocket-integration-tests:

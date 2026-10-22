@@ -3,7 +3,7 @@ name: "NanoMQTT Integration Tests"
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '30 3 * * 1'   # Monday 9am IST (3:30 UTC)
+    - cron: '30 3 * * 4'   # Thursday 9am IST (3:30 UTC)
 
 jobs:
   mqtt-integration-tests:
