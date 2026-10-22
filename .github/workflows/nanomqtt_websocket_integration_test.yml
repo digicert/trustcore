@@ -1,0 +1,84 @@
+name: "NanoMQTT WebSocket Integration Tests"
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 3 * * 3'   # Wednesday 9am IST (3:30 UTC)
+
+jobs:
+  mqtt-websocket-integration-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake
+        cmake --version
+        sudo apt-get install -y python3-pip
+        pip3 install paho-mqtt
+        pip3 install psutil
+
+    - name: Create /etc/digicert/keystore/ca folder
+      run: |
+        sudo mkdir -p /etc/digicert/keystore/ca
+        sudo chown -R $(whoami):$(whoami) /etc/digicert
+
+    - name: Checkout mocn-qa-m-products
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      with:
+        repository: digicert/mocn-qa-m-products
+        token: ${{ secrets.MY_SECRET_TOKEN }}
+        path: mocn-qa-m-products
+        persist-credentials: false
+        fetch-depth: 1
+
+    - name: Copy MQTT Test Files
+      run: |
+        cp -r mocn-qa-m-products/mqttc_test/test_open_source/* .
+
+    - name: Make run_nanomqtt_client.sh executable
+      run: chmod +x run_nanomqtt_client.sh
+
+    - name: Run MQTT WebSocket Integration Test
+      env:
+        # ws mode builds with -DENABLE_WEBSOCKET_SUPPORT=ON and uses WS/WSS ports
+        MQTT_MODE: ws
+        MQTT_VERSION: "5"
+      run: |
+        ./run_nanomqtt_client.sh --mode ws
+
+    - name: Cleanup mocn-qa-m-products
+      if: always()
+      run: |
+        rm -rf mocn-qa-m-products
+        
+    - name: Get Slack User ID
+      if: always()
+      id: slack_map
+      run: |
+        GITHUB_USER="${{ github.actor }}"
+        SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
+        
+        SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
+        
+        echo "GitHub User: $GITHUB_USER"
+        echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
+  
+    - name: Send Slack notification (Failure)
+      if: always() && (failure() || cancelled()) 
+      run: |
+        SLACK_USER_ID="${{ steps.slack_map.outputs.slack_user_id }}"
+        if [ -n "$SLACK_USER_ID" ]; then
+          MENTION="<@$SLACK_USER_ID>"
+        else
+          MENTION="${GITHUB_ACTOR}"
+        fi
+        if [ "$GITHUB_REF_NAME" = "main" ]; then
+          MESSAGE="NanoMQTT WebSocket Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        else
+          MESSAGE="NanoMQTT WebSocket Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        fi  
+        curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
