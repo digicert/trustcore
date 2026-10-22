@@ -19,8 +19,8 @@ jobs:
         sudo apt install -y cmake
         cmake --version
         sudo apt-get install -y python3-pip
-        pip3 install paho-mqtt
-        pip3 install psutil
+        pip3 install paho-mqtt==2.1.0
+        pip3 install psutil==7.2.2
  
     - name: Create /etc/digicert/keystore/ca folder 
       run: |
