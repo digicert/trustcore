@@ -278,7 +278,7 @@ intBoolean TRUSTEDGE_utilsInValidTimeWindowStr(
  * TRUE, otherwise it returns FALSE.
  *
  * @param pTimeStr          String in format YYYYMMDDHHMMSSZ
- * @param timeWindowSeconds Window, in seconds, that pTimeStr needs to be within
+ * @param timeWindow        Window, in seconds, that pTimeStr needs to be within
  *
  * @return         TRUE if time is beyond window, otherwise FALSE
  */
@@ -345,10 +345,40 @@ MOC_EXTERN MSTATUS TRUSTEDGE_utilsLoadKey(
     sbyte *pKeyPath,
     AsymmetricKey **ppKey);
 
+/**
+ * @brief Extract a zip archive into an existing directory.
+ *
+ * @details Entries with absolute paths, drive prefixes or ".." components are
+ *          rejected. Equivalent to TRUSTEDGE_utilsExtractInlineZip() with an
+ *          offset and length of 0.
+ *
+ * @param pZ        NULL terminated path to the zip file.
+ * @param pDst      NULL terminated path of an existing destination directory.
+ *
+ * @return          \c OK (0) if successful, \c ERR_NULL_POINTER if an
+ *                  argument is NULL, otherwise a negative number error code
+ *                  from merrors.h
+ */
 MOC_EXTERN MSTATUS TRUSTEDGE_utilsExtractZip(
     sbyte *pZ,
     sbyte *pDst);
 
+/**
+ * @brief Extract a zip archive embedded within a file into an existing
+ *        directory.
+ *
+ * @details Entries with absolute paths, drive prefixes or ".." components are
+ *          rejected.
+ *
+ * @param pZ        NULL terminated path to the file containing the zip data.
+ * @param offset    Byte offset of the zip data within the file.
+ * @param length    Length in bytes of the zip data.
+ * @param pDst      NULL terminated path of an existing destination directory.
+ *
+ * @return          \c OK (0) if successful, \c ERR_NULL_POINTER if \p pZ or
+ *                  \p pDst is NULL, \c ERR_TRUSTEDGE_ZIP_ERROR if the file or
+ *                  directory is invalid or extraction fails.
+ */
 MOC_EXTERN MSTATUS TRUSTEDGE_utilsExtractInlineZip(
     sbyte *pZ,
     ubyte4 offset,
@@ -466,7 +496,8 @@ MOC_EXTERN MSTATUS TRUSTEDGE_utilsGetSigAlgStr(
  *
  * @param pCMCData          CMC response data
  * @param cmcDataLen        Length of CMC response data
- * @param pCertStore        Certificate store to validate CMC response
+ * @param pAsymKey          Key associated with the request; used to detect
+ *                          TAP attestation keys when TAP is enabled
  * @param ppCertDesc        Location where array of issued certificates is stored
  * @param pCertDescArrayLen Location where number of issued certificates is stored
  *
@@ -505,6 +536,21 @@ MOC_EXTERN MSTATUS TRUSTEDGE_agentGetKeyHashAlgorithm(
     CertEnrollAlg keyAlgorithm,
     ubyte4 *pHashId);
 
+/**
+ * @brief Resolve a host name to an IP address string.
+ *
+ * @details Uses the application callback registered with
+ *          TRUSTEDGE_registerDNSLookupCallback() if present; if it returns -1
+ *          (or none is registered) the system resolver is used.
+ *
+ * @param pName     NULL terminated host name.
+ * @param pIpStr    Buffer that receives the NULL terminated IP address; must be
+ *                  large enough for the address string.
+ *
+ * @return          \c OK (0) if successful, \c ERR_NULL_POINTER if an
+ *                  argument is NULL, otherwise a negative number error code
+ *                  from merrors.h
+ */
 MOC_EXTERN MSTATUS TRUSTEDGE_utilsGetHostByName(
     sbyte *pName,
     sbyte *pIpStr);

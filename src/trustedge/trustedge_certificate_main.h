@@ -1,5 +1,6 @@
-/*
- * trustedge_certificate_main.h
+/**
+ * @file trustedge_certificate_main.h
+ * @brief TrustEdge certificate command entry points.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

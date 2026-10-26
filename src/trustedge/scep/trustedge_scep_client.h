@@ -674,9 +674,8 @@ MOC_EXTERN MSTATUS
 SCEP_CLIENT_getFailInfo(scepContext *pScepContext, SCEP_failInfo *pFailInfo);
 
 /* returns an ID for a message sent in a SCEP context */
-/**
- * @dont_show
- * @internal
+/*
+ * internal
  *
  * Doc Note: This function is for Mocana internal code use only, and
  * should not be included in the API documentation.

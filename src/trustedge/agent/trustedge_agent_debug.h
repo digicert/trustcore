@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_debug.h
+/**
+ * @file trustedge_agent_debug.h
+ * @brief TrustEdge agent debug support.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

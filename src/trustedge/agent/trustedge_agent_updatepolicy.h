@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_updatepolicy.h
+/**
+ * @file trustedge_agent_updatepolicy.h
+ * @brief TrustEdge agent policy update handling.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

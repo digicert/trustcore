@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_certificate.h
+/**
+ * @file trustedge_agent_certificate.h
+ * @brief TrustEdge agent certificate handling.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

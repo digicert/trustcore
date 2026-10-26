@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_artifact.h
+/**
+ * @file trustedge_agent_artifact.h
+ * @brief TrustEdge agent artifact handling.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

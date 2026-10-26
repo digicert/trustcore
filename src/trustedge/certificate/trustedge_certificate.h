@@ -1,5 +1,6 @@
-/*
- * trustedge_certificate.h
+/**
+ * @file trustedge_certificate.h
+ * @brief TrustEdge certificate management.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

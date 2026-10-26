@@ -1,5 +1,6 @@
-/*
- * trustedge_state.h
+/**
+ * @file trustedge_state.h
+ * @brief TrustEdge state definitions.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

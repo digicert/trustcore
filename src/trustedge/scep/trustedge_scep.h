@@ -1,7 +1,5 @@
 /**
- * trustedge_scep.h
- *
- * @brief Trustedge scep tool
+ * @file trustedge_scep.h
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

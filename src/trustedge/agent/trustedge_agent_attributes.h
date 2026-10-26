@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_attributes.h
+/**
+ * @file trustedge_agent_attributes.h
+ * @brief TrustEdge agent attributes.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
