@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_actionhandler.h
+/**
+ * @file trustedge_agent_actionhandler.h
+ * @brief TrustEdge agent action handlers.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

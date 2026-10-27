@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_protobuf.h
+/**
+ * @file trustedge_agent_protobuf.h
+ * @brief TrustEdge agent protobuf message handling.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_priv.h
+/**
+ * @file trustedge_agent_priv.h
+ * @brief TrustEdge agent private definitions.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

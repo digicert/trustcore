@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_policy_data_types.h
+/**
+ * @file trustedge_agent_policy_data_types.h
+ * @brief TrustEdge agent policy data types.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
@@ -22,6 +23,9 @@
 extern "C" {
 #endif
 
+/**
+ * @brief JSON Web Signature algorithms used to sign update artifacts.
+ */
 typedef enum
 {
     JWS_ALG_NONE,
@@ -51,38 +55,53 @@ typedef enum
     JWS_ALG_SLHDSA_SHAKE_256S
 } JWSAlg;
 
+/**
+ * @brief Encoding of an artifact signature.
+ */
 typedef enum
 {
-   TE_ARTIFACT_SIG_FORMAT_UNKNOWN = -1,
-   TE_ARTIFACT_SIG_FORMAT_PEM,
+   TE_ARTIFACT_SIG_FORMAT_UNKNOWN = -1, /**< Unrecognized format. */
+   TE_ARTIFACT_SIG_FORMAT_PEM,          /**< PEM encoded. */
 } TrustEdgeAgentSignatureFormat;
 
+/**
+ * @brief Kind of update artifact.
+ */
 typedef enum 
 {
-   TE_ARTIFACT_TYPE_UNKNOWN = -1,
-   TE_ARTIFACT_CONFIG,
-   TE_ARTIFACT_APP,
-   TE_ARTIFACT_OS,
-   TE_ARTIFACT_FW
+   TE_ARTIFACT_TYPE_UNKNOWN = -1, /**< Unrecognized type. */
+   TE_ARTIFACT_CONFIG,            /**< Configuration. */
+   TE_ARTIFACT_APP,               /**< Application. */
+   TE_ARTIFACT_OS,                /**< Operating system. */
+   TE_ARTIFACT_FW                 /**< Firmware. */
 } TrustEdgeAgentArtifactType;
 
+/**
+ * @brief Stage of artifact deployment an action applies to.
+ */
 typedef enum 
 {
    TE_ACTION_UNKNOWN = -1,
-   TE_ACTION_PREINSTALL,
-   TE_ACTION_INSTALL,
-   TE_ACTION_POSTINSTALL,
-   TE_ACTION_ROLLBACK      /* Add any new action type after this */
+   TE_ACTION_PREINSTALL,   /**< Run before installation. */
+   TE_ACTION_INSTALL,      /**< Install the artifact. */
+   TE_ACTION_POSTINSTALL,  /**< Run after installation. */
+   TE_ACTION_ROLLBACK      /**< Roll back the artifact. Add any new action type after this. */
 } TrustEdgeAgentActionType;
 
+/**
+ * @brief Kind of program that executes an action.
+ */
 typedef enum
 {
    TE_ACTION_HANDLER_UNKNOWN = -1, 
-   TE_ACTION_HANDLER_SCRIPT,
-   TE_ACTION_HANDLER_EXE,
-   TE_ACTION_HANDLER_PKG_MGR_TYPE
+   TE_ACTION_HANDLER_SCRIPT,       /**< Script run by an interpreter. */
+   TE_ACTION_HANDLER_EXE,          /**< Executable. */
+   TE_ACTION_HANDLER_PKG_MGR_TYPE  /**< Package manager package. */
 } TrustEdgeAgentActionHandlerType;
 
+/**
+ * @brief Interpreter or package format of an action handler.
+ */
 typedef enum
 {
    TE_ACTION_HANDLER_SUBTYPE_UNKNOWN = -1,
@@ -95,30 +114,57 @@ typedef enum
    TE_ACTION_HANDLER_SUBTYPE_BATCH
 } TrustEdgeAgentActionHandlerSubType;
 
+/**
+ * @brief Signature and signing certificate of an artifact.
+ */
 typedef struct
 {
-   JWSAlg signatureAlgorithm;
-   TrustEdgeAgentSignatureFormat signatureFormat;
-   ubyte *pSignature;
-   ubyte4 signatureLength;
-   ubyte *pCertificate;
-   ubyte4 certificateLength; 
+   JWSAlg signatureAlgorithm;                /**< Signature algorithm. */
+   TrustEdgeAgentSignatureFormat signatureFormat; /**< Signature encoding. */
+   ubyte *pSignature;                        /**< Signature bytes. */
+   ubyte4 signatureLength;                   /**< Length of \c pSignature. */
+   ubyte *pCertificate;                      /**< Signing certificate. */
+   ubyte4 certificateLength;                 /**< Length of \c pCertificate. */
 } TrustEdgeArtifactSignature;
 
+/**
+ * @brief Program used to execute an artifact action.
+ */
 typedef struct {
-   TrustEdgeAgentActionHandlerType type;
-   TrustEdgeAgentActionHandlerSubType subtype;
+   TrustEdgeAgentActionHandlerType type;       /**< Handler kind. */
+   TrustEdgeAgentActionHandlerSubType subtype; /**< Interpreter or package format. */
 } TrustEdgeAgentActionHandler;
 
+/**
+ * @brief An action to perform when deploying an artifact.
+ */
 typedef struct TrustEdgeArtifactAction {
-   TrustEdgeAgentActionType type;
-   TrustEdgeAgentActionHandler handler;
-   sbyte *pActionPath;
-   sbyte *pActionArgument;
-   sbyte **ppActionArgs;
+   TrustEdgeAgentActionType type;       /**< Deployment stage. */
+   TrustEdgeAgentActionHandler handler; /**< Program that executes the action. */
+   sbyte *pActionPath;                  /**< Path of the script/executable/package. */
+   sbyte *pActionArgument;              /**< Argument string from the manifest. */
+   sbyte **ppActionArgs;                /**< Argument vector for the handler. */
 } TrustEdgeArtifactAction;
 
+/**
+ * @brief Application callback that executes an artifact action instead of the
+ *        built-in action handler.
+ *
+ * @param pAction   Action to execute.
+ * @param pFile     Path of the artifact directory.
+ *
+ * @return          \c OK (0) if successful, otherwise a negative number error
+ *                  code from merrors.h
+ */
 typedef int (*funcPtrActionHandlerCallback)(struct TrustEdgeArtifactAction *pAction, char *pFile);
+
+/**
+ * @brief Application callback that resolves a host name.
+ *
+ * @details The first argument is the NULL terminated host name; the second is
+ *          the buffer that receives the IP address string. Return 0 on
+ *          success; return -1 to fall back to the system resolver.
+ */
 typedef int (*funcPtrDNSLookupCallback)(char*, char*);
 
 #ifdef __cplusplus

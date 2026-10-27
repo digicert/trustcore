@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_persist.h
+/**
+ * @file trustedge_agent_persist.h
+ * @brief TrustEdge agent persistent storage.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *

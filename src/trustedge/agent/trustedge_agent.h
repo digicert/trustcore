@@ -1,5 +1,6 @@
-/*
- * trustedge_agent.h
+/**
+ * @file trustedge_agent.h
+ * @brief TrustEdge agent API.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
@@ -39,29 +40,42 @@ extern "C" {
 
 #define TRUSTEDGE_AGENT_BOOTSTRAP_SIGNATURE_ENV   "TE_VERIFY_BOOTSTRAP_SIGNATURE"
 
+/**
+ * @brief Settings used to start a TrustEdge agent.
+ */
 typedef struct
 {
-    sbyte *pBootstrapConfig;
-    sbyte *pWorkspaceDir;
-    sbyte *pDebugDir;
+    sbyte *pBootstrapConfig; /**< Path to the bootstrap configuration. */
+    sbyte *pWorkspaceDir;    /**< Path to the agent workspace directory. */
+    sbyte *pDebugDir;        /**< Path to the debug output directory. */
 } TrustEdgeAgentSettings;
 
 typedef void TrustEdgeAgentContext;
 
 typedef int (*funcPtrSafeToExitCallback)(sbyte4);
 
+/**
+ * @brief Result of a TrustEdge agent operation.
+ */
 typedef struct
 {
-    MSTATUS statusCode;
+    MSTATUS statusCode; /**< \c OK (0) or a negative error code from merrors.h */
 } TrustEdgeAgentResult;
 
+/**
+ * @brief Check whether a TrustEdge service instance is running.
+ *
+ * @details Looks for the TrustEdge PID file (current or legacy location).
+ *
+ * @return  \c TRUE if a PID file exists, otherwise \c FALSE.
+ */
 byteBoolean TRUSTEDGE_isServiceRunning();
 
 /**
  * Create TrustEdge agent context
  *
  * @param ppCtx         Location where context is stored
- * @param pSettings     Settings for agent mode to run with
+ * @param ppConfig      Settings for agent mode to run with
  *
  * @return         \c OK (0) if successful, otherwise a negative number error
  *                 code from merrors.h
@@ -97,8 +111,7 @@ MOC_EXTERN MSTATUS TRUSTEDGE_agentContextRelease(
 /**
  * Launch TrustEdge agent in service mode
  *
- * @param pSettings     Settings for agent mode to run with
- * @param cb            Function pointer to callback to register
+ * @param ppConfig      Settings for agent mode to run with
  * @param ppResult      Result of TrustEdge agent operation
  *
  * @return         \c OK (0) if successful, otherwise a negative number error

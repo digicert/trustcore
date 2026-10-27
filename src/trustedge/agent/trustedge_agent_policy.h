@@ -1,5 +1,6 @@
-/*
- * trustedge_agent_policy.h
+/**
+ * @file trustedge_agent_policy.h
+ * @brief TrustEdge agent policy processing.
  *
  * Copyright 2026 DigiCert, Inc. All Rights Reserved.
  *
