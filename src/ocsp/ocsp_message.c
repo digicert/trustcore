@@ -2024,6 +2024,7 @@ OCSP_MESSAGE_verifySignature(ocspContext *pOcspContext, ASN1_ITEMPTR pResponseRo
     sbyte4            bytesToHash;
     const ubyte*      buffer            = NULL;
     void*             pComputedHash     = NULL;
+    intBoolean        freeComputedHash  = FALSE;
     sbyte4            computedHashLen;
     ubyte             decryptedHash[CERT_MAXDIGESTSIZE];
     ubyte4            decryptedHashType;
@@ -2065,14 +2066,31 @@ OCSP_MESSAGE_verifySignature(ocspContext *pOcspContext, ASN1_ITEMPTR pResponseRo
         goto exit;
     }
 
-    if (OK > (status = CRYPTO_ALLOC(pOcspContext->hwAccelCtx, CERT_MAXDIGESTSIZE, TRUE, &pComputedHash)))
-        goto exit;
-
-    if (OK > (status = CRYPTO_computeBufferHash(MOC_HASH(pOcspContext->hwAccelCtx) (ubyte*)buffer,
-                                    bytesToHash, pComputedHash,
-                                    &computedHashLen, hashType)))
+    if (ht_none == hashType)
     {
-        goto exit;
+        /* ML-DSA (and other pure PQC algorithms) verify over the raw
+         * tbsResponseData bytes, the same way X509_verifySignature() does
+         * for certificates -- reference the buffer directly instead of
+         * digesting it. tbsResponseData can be far larger than
+         * CERT_MAXDIGESTSIZE so it must not be copied into a digest-sized
+         * buffer. */
+        freeComputedHash = FALSE;
+        pComputedHash = (void *) buffer;
+        computedHashLen = bytesToHash;
+    }
+    else
+    {
+        freeComputedHash = TRUE;
+
+        if (OK > (status = CRYPTO_ALLOC(pOcspContext->hwAccelCtx, CERT_MAXDIGESTSIZE, TRUE, &pComputedHash)))
+            goto exit;
+
+        if (OK > (status = CRYPTO_computeBufferHash(MOC_HASH(pOcspContext->hwAccelCtx) (ubyte*)buffer,
+                                        bytesToHash, pComputedHash,
+                                        &computedHashLen, hashType)))
+        {
+            goto exit;
+        }
     }
 
     /* decrypt the signature to get hash */
@@ -2083,7 +2101,11 @@ OCSP_MESSAGE_verifySignature(ocspContext *pOcspContext, ASN1_ITEMPTR pResponseRo
         goto exit;
     }
 
-    if (buffer)
+    /* ht_none (ML-DSA) aliases pComputedHash directly to buffer, which must
+     * stay valid through signature verification below -- release it at exit
+     * instead. For the digested case, the hash is already copied out, so it's
+     * safe to release buffer now. */
+    if (buffer && freeComputedHash)
     {
         CS_stopaccess(cs, buffer);
     }
@@ -2482,6 +2504,23 @@ OCSP_MESSAGE_verifySignature(ocspContext *pOcspContext, ASN1_ITEMPTR pResponseRo
             break;
         }
 #endif
+#if (defined(__ENABLE_DIGICERT_PQC__))
+        case akt_qs:
+        {
+            if (OK > (status = X509_extractQsKey(MOC_ASYM(pOcspContext->hwAccelCtx) pResponderPubKey, responderCs, pResponderKey)))
+                goto exit;
+
+            /* ML-DSA verifies over the raw tbsResponseData bytes computed
+             * above (pComputedHash holds those raw bytes when ht_none) */
+            if (OK > (status = X509_verifyQsSignature(MOC_ASYM(pOcspContext->hwAccelCtx) pSignature, cs,
+                                                      pResponderKey->pQsCtx, computedHashLen, pComputedHash)))
+            {
+                status = ERR_OCSP_INVALID_SIGNATURE;
+                goto exit;
+            }
+            break;
+        }
+#endif
         default:
         {
             status = ERR_CERT_UNSUPPORTED_SIGNATURE_ALGO;
@@ -2510,9 +2549,14 @@ exit:
         FREE(pResponderId);
     }
 
-    if (pComputedHash)
+    if (TRUE == freeComputedHash && pComputedHash)
     {
         CRYPTO_FREE(pOcspContext->hwAccelCtx, TRUE, &pComputedHash);
+    }
+
+    if (FALSE == freeComputedHash && buffer)
+    {
+        CS_stopaccess(cs, buffer);
     }
 
     if (signatureBuf)

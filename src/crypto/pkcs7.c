@@ -1536,18 +1536,43 @@ static MSTATUS PKCS7_VerifyQsSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) CStream
                                        ubyte4 hashType)
 {
     MSTATUS status;
-    ASN1_ITEMPTR pSequence;
+    const ubyte *pSigBuffer = NULL;
+    ubyte4 qsFail = 1;
 
-    pSequence = ASN1_FIRST_CHILD( pEncryptedDigest);
-    if ( OK > ( status = ASN1_VerifyType( pSequence, SEQUENCE)))
+    MOC_UNUSED(hashType);
+
+    /* Per RFC, the ML-DSA signature is the raw signature bytes placed
+     * directly in the SignerInfo.signature OCTET STRING -- there is no
+     * SEQUENCE/BIT STRING wrapping as there would be for a classical algo */
+    if (0 == pEncryptedDigest->length)
     {
-        status = ERR_CERT_INVALID_STRUCT;
+        status = ERR_PKCS7_INVALID_STRUCT;
         goto exit;
     }
 
-    status = X509_verifyQsSignature( MOC_ASYM(hwAccelCtx) ASN1_FIRST_CHILD(pSequence), s, pCtx, hashLen, (ubyte *) hash);
+    pSigBuffer = (const ubyte *) CS_memaccess(s, pEncryptedDigest->dataOffset, pEncryptedDigest->length);
+    if (NULL == pSigBuffer)
+    {
+        status = ERR_MEM_ALLOC_FAIL;
+        goto exit;
+    }
+
+    status = CRYPTO_INTERFACE_QS_SIG_verify(MOC_HASH(hwAccelCtx) pCtx, (ubyte *) hash, hashLen,
+                                            (ubyte *) pSigBuffer, pEncryptedDigest->length, &qsFail);
+    if (OK != status)
+        goto exit;
+
+    if (qsFail)
+    {
+        status = ERR_PKCS7_INVALID_SIGNATURE;
+    }
 
 exit:
+
+    if (NULL != pSigBuffer)
+    {
+        CS_stopaccess(s, pSigBuffer);
+    }
 
     return status;
 }
@@ -2044,11 +2069,23 @@ PKCS7_ProcessSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx) CStream s,
 #ifdef __ENABLE_DIGICERT_PQC__
     else if ( akt_qs == (certKey.type & 0xff))
     {
+        /* ML-DSA verifies over the full DER-encoded signed attributes (attr),
+         * not a hash of them; fall back to the content hash when there are
+         * no signed attributes */
+        const ubyte *pQsMsg = pHashResult;
+        ubyte4 qsMsgLen = pHashInfo->hashAlgo->digestSize;
+
+        if (pAuthenticatedAttributes)
+        {
+            pQsMsg = attr;
+            qsMsgLen = attrLen;
+        }
+
         if ( OK > ( status = PKCS7_VerifyQsSignature(MOC_ASYM(hwAccelCtx) s,
                                                      pEncryptedDigest,
                                                      certKey.pQsCtx,
-                                                     pHashResult,
-                                                     pHashInfo->hashAlgo->digestSize,
+                                                     pQsMsg,
+                                                     qsMsgLen,
                                                      pHashInfo->hashType)))
 
         {
@@ -6295,70 +6332,48 @@ PKCS7_AddQsSignature(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfoIt
                      const ubyte* hash, ubyte4 hashLen,
                      ubyte** ppSignature, ubyte4* pSignatureLen)
 {
-    DER_ITEMPTR pTempSeq = NULL;
-    DER_ITEMPTR pTempItem = NULL;
     ubyte* pSig = 0;
     ubyte4 sigLen = 0;
     MSTATUS status;
 
-    /* Allocate memory to hold the signature.
-     */
+    /* Allocate memory to hold the signature. */
     status = CRYPTO_INTERFACE_QS_SIG_getSignatureLen(pCtx, &sigLen);
     if (OK != status)
         goto exit;
 
-    /* Add an initial 0x00 byte for the BITSTRING type */
-    status = DIGI_MALLOC((void **) &pSig, sigLen + 1);
+    status = DIGI_MALLOC((void **) &pSig, sigLen);
     if (OK != status)
         goto exit;
 
-    pSig[0] = 0;
     if (NULL == signCallback)
     {
         status = CRYPTO_INTERFACE_QS_SIG_sign(MOC_HASH(hwAccelCtx) pCtx, rngFun, rngArg, (ubyte *) hash, hashLen,
-                                              pSig + 1, sigLen, &sigLen);
+                                              pSig, sigLen, &sigLen);
         if (OK != status)
             goto exit;
     }
     else
     {
-        status = signCallback(pCbInfo, NULL, hash, hashLen, pSig + 1, sigLen);
+        status = signCallback(pCbInfo, NULL, hash, hashLen, pSig, sigLen);
         if (OK != status)
-            goto exit;                      
+            goto exit;
     }
 
-    /* create a sequence with the bit string */
-    status = DER_AddSequence( NULL, &pTempSeq);
+    /* Per RFC, place the raw ML-DSA signature bytes directly in the OCTET
+     * STRING -- no SEQUENCE/BIT STRING wrapping */
+    status = DER_AddItem( pSignerInfoItem, OCTETSTRING, sigLen, pSig, NULL);
     if (OK != status)
         goto exit;
 
-    /* use AddItem so unneeded zero bits are kept and bits are not reversed */
-    status = DER_AddItem (pTempSeq, BITSTRING, sigLen + 1, pSig, NULL);
-    if (OK != status)
-        goto exit;
-    
-    /* serialize the sequence */
-    status = DER_Serialize( pTempSeq, ppSignature, pSignatureLen);
-    if (OK != status)
-        goto exit;
-
-    /* add the DER encoded buffer -- signature -- as an octet string */
-    status = DER_AddItem( pSignerInfoItem, OCTETSTRING, 0, NULL, &pTempItem);
-    if (OK != status)
-        goto exit;
-
-    status = DER_AddDERBuffer( pTempItem, *pSignatureLen, *ppSignature, NULL);
+    *ppSignature = pSig;
+    *pSignatureLen = sigLen;
+    pSig = NULL;
 
 exit:
 
     if (NULL != pSig)
     {
-        (void) DIGI_MEMSET_FREE(&pSig, sigLen + 1);
-    }
-
-    if (NULL != pTempSeq)
-    {
-        (void) TREE_DeleteTreeItem( (TreeItem*) pTempSeq);
+        (void) DIGI_MEMSET_FREE(&pSig, sigLen);
     }
 
     return status;
@@ -6973,25 +6988,30 @@ CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfosI
 #ifdef __ENABLE_DIGICERT_PQC__
    else if (pCmcSignerInfo->pSignerInfo->pKey->type == akt_qs)
    {
-        /* if authenticated attributes is present, use second hash; else use pHash->hashData */
+        /* ML-DSA signs over the full DER-encoded signed attributes, not a
+         * hash of them; fall back to the content hash when there are no
+         * signed attributes */
         const ubyte* toSign;
+        ubyte4 toSignLen;
         ubyte4 dummy;
 
         if (pCmcSignerInfo->pSignerInfo->authAttrsLen > 0 ||
             (pkcs7_data_OID[pkcs7_data_OID[0]] != payLoadType[payLoadType[0]]))
         {
-            toSign = pTempBuf + derAttributesLen;
+            toSign = pDerAttributes;
+            toSignLen = derAttributesLen;
         }
         else
         {
             toSign = pHash->hashData;
+            toSignLen = pHash->hashAlgo->digestSize;
         }
 
         if (OK > ( status = PKCS7_AddQsSignature( MOC_ASYM(hwAccelCtx) pSignerInfoItem,
                                                   pCmcSignerInfo->pSignerInfo->pKey->pQsCtx,
                                                   NULL, NULL,
                                                   rngFun, rngArg,
-                                                  toSign, pHash->hashAlgo->digestSize,
+                                                  toSign, toSignLen,
                                                   ppDataBuffer, &dummy)))
         {
             goto exit;
@@ -7344,25 +7364,30 @@ PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfo
 #ifdef __ENABLE_DIGICERT_PQC__
    else if (pSignerInfo->pKey->type == akt_qs)
    {
-        /* if authenticated attributes is present, use second hash; else use pHash->hashData */
+        /* ML-DSA signs over the full DER-encoded signed attributes, not a
+         * hash of them; fall back to the content hash when there are no
+         * signed attributes */
         const ubyte* toSign;
+        ubyte4 toSignLen;
         ubyte4 dummy;
 
         if (pSignerInfo->authAttrsLen > 0 ||
             (pkcs7_data_OID[pkcs7_data_OID[0]] != payLoadType[payLoadType[0]]))
         {
-            toSign = pTempBuf + derAttributesLen;
+            toSign = pDerAttributes;
+            toSignLen = derAttributesLen;
         }
         else
         {
             toSign = pHash->hashData;
+            toSignLen = pHash->hashAlgo->digestSize;
         }
 
         if (OK > ( status = PKCS7_AddQsSignature( MOC_ASYM(hwAccelCtx) pSignerInfoItem,
                                                   pSignerInfo->pKey->pQsCtx,
                                                   NULL, NULL,
                                                   rngFun, rngArg,
-                                                  toSign, pHash->hashAlgo->digestSize,
+                                                  toSign, toSignLen,
                                                   ppDataBuffer, &dummy)))
         {
             goto exit;

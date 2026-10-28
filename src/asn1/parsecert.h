@@ -130,16 +130,6 @@ X509_verifyECDSASignature( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pS
                           sbyte4 computedHashLen,
                           const ubyte computedHash[/*computedHashLen*/]);
 
-#ifdef __ENABLE_DIGICERT_PQC__
-MOC_EXTERN MSTATUS
-X509_verifyQsSignature(MOC_ASYM(hwAccelDescr hwAccelCtx)
-                       ASN1_ITEMPTR pBitString,
-                       CStream cs,
-                       QS_CTX *pCtx,
-                       sbyte4 computedHashLen,
-                       ubyte *pComputedHash);
-#endif
-
 MOC_EXTERN MSTATUS
 X509_extractECCKey( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSubjectKeyInfo, CStream s,
                    struct AsymmetricKey* pKey);
@@ -153,6 +143,22 @@ X509_extractECCEdKey( MOC_ECC(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSubjec
 MOC_EXTERN MSTATUS
 X509_extractHybridKey( MOC_ASYM(hwAccelDescr hwAccelCtx) struct ASN1_ITEM* pSubjectKeyInfo, CStream s, struct AsymmetricKey* pKey);
 #endif /* __ENABLE_DIGICERT_ECC__ */
+
+/* Declared outside the ECC guard: defined under __ENABLE_DIGICERT_PQC__ alone in parsecert.c */
+#ifdef __ENABLE_DIGICERT_PQC__
+MOC_EXTERN MSTATUS
+X509_verifyQsSignature(MOC_ASYM(hwAccelDescr hwAccelCtx)
+                       ASN1_ITEMPTR pBitString,
+                       CStream cs,
+                       QS_CTX *pCtx,
+                       sbyte4 computedHashLen,
+                       ubyte *pComputedHash);
+
+MOC_EXTERN MSTATUS
+X509_extractQsKey(MOC_ASYM(hwAccelDescr hwAccelCtx)
+                  struct ASN1_ITEM* pSubjectKeyInfo, CStream s,
+                  struct AsymmetricKey* pKey);
+#endif
 
 MOC_EXTERN MSTATUS
 X509_setKeyFromSubjectPublicKeyInfo(MOC_ASYM(hwAccelDescr hwAccelCtx)
