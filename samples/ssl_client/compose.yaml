@@ -1,0 +1,69 @@
+services:
+  server:
+    image: trustcore-nanossl-server:local
+    build:
+      context: ../ssl_server
+      dockerfile: Dockerfile
+    ports:
+      - "1440:1440"
+    volumes:
+      - server-keystore:/opt/trustcore/keystore
+    networks:
+      nanossl-net:
+        ipv4_address: 172.28.240.2
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import pathlib, sys; sys.exit(not any(line.split()[1].endswith(':05A0') and line.split()[3] == '0A' for line in pathlib.Path('/proc/net/tcp').read_text().splitlines()[1:]))"
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  certificate-exporter:
+    image: trustcore-nanossl-client:local
+    depends_on:
+      server:
+        condition: service_healthy
+    volumes:
+      - server-keystore:/server-keystore:ro
+      - client-certificate:/client-certificate
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["install -m 0444 /server-keystore/RSACertCA.der /client-certificate/RSACertCA.der"]
+
+  client:
+    image: trustcore-nanossl-client:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      certificate-exporter:
+        condition: service_completed_successfully
+    volumes:
+      - client-certificate:/opt/trustcore/keystore:ro
+    networks:
+      - nanossl-net
+    command:
+      - ./samples/bin/ssl_client
+      - -ssl_ip
+      - 172.28.240.2
+      - -ssl_port
+      - "1440"
+      - -ssl_servername
+      - webapptap.securitydemos.net
+      - -ssl_certpath
+      - /opt/trustcore/keystore
+      - -ssl_server_cert
+      - RSACertCA.der
+
+volumes:
+  server-keystore:
+  client-certificate:
+
+networks:
+  nanossl-net:
+    ipam:
+      config:
+        - subnet: 172.28.240.0/24
