@@ -114,6 +114,7 @@ static int AddCertToSequence(int hint, const char* fileName,
                                  DER_ITEMPTR pRoot)
 {
     ubyte* buffer = 0;
+    const ubyte* ownedBuffer = 0;
     ubyte4 bufferLen;
     MSTATUS status;
     int retVal = 0;
@@ -124,13 +125,15 @@ static int AddCertToSequence(int hint, const char* fileName,
         goto exit;
     }
 
-    if (OK > ( status = DER_AddDERBufferOwn( pRoot, bufferLen, &buffer, NULL)))
+    ownedBuffer = buffer;
+    if (OK > ( status = DER_AddDERBufferOwn( pRoot, bufferLen, &ownedBuffer, NULL)))
     {
         retVal += UNITTEST_STATUS( hint, status);
         goto exit;
     }
 
-    retVal += UNITTEST_TRUE( hint, buffer == 0);
+    buffer = 0;
+    retVal += UNITTEST_TRUE( hint, ownedBuffer == 0);
         
 exit:
 

@@ -24,6 +24,13 @@ jobs:
         sudo apt install -y cmake
         sudo apt install -y python3 python3-pip
 
+    - name: Check GCC/Toolchain Version
+      run: |
+        gcc --version
+        cc --version
+        cmake --version
+        lsb_release -a || cat /etc/os-release
+
     # ------------------------------------------------------------------
     # Clone & prepare mocn-qa-m-products
     # ------------------------------------------------------------------
