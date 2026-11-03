@@ -835,7 +835,7 @@ int testGenKeyAlloc(ubyte4 curveId)
 exit:
     if(NULL != pSignature)
     {
-        DIGI_FREE(&pSignature);
+        DIGI_FREE((void **) &pSignature);
     }
 
     EC_deleteKey(&pKey);

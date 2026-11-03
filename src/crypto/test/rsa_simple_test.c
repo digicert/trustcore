@@ -437,7 +437,7 @@ int rsa_simple_signature_sign_blind(MOC_RSA(hwAccelDescr hwAccelCtx) int hint,
 
         for (i = 0; ALARM_OFF; ++i)
         {
-            RSA_SIMPLE_sign_blind(n, signature, msg, msgLen,
+            RSA_SIMPLE_sign_blind(n, (ubyte*) signature, msg, msgLen,
                     p, p_mu, dp, q, q_mu, dq, qinv, modulus, modulus_mu, re, r1);
         }
 
@@ -456,7 +456,7 @@ int rsa_simple_signature_sign_blind(MOC_RSA(hwAccelDescr hwAccelCtx) int hint,
                hint, i/diffTime);
 
         /* verify again */
-        cmpSignature = signature;
+        cmpSignature = (ubyte*) signature;
         while ( 0 == *cmpSignature)
         {
             ++cmpSignature;
