@@ -13,12 +13,6 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Clone mocn-qa-m-products
-        env:
-          MY_SECRET_TOKEN: ${{ secrets.MY_SECRET_TOKEN }}
-        run: |
-          git clone https://${MY_SECRET_TOKEN}@github.com/digicert/mocn-qa-m-products.git ~/mocn-qa-m-products
-
       - name: Install Dependencies
         run: |
           sudo apt update
@@ -27,6 +21,15 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        
+      - name: Checkout mocn-qa-m-products
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          repository: digicert/mocn-qa-m-products
+          token: ${{ secrets.MY_SECRET_TOKEN }}
+          path: mocn-qa-m-products
+          persist-credentials: false
+          fetch-depth: 1
 
       - name: Prepare thirdparty directory
         run: |
@@ -49,7 +52,7 @@ jobs:
 
       - name: Copy Build script 
         run: |
-          cp ~/mocn-qa-m-products/openssl_shim_test/Opensource_OSSL_BUILD_ALL.sh .
+          cp -r mocn-qa-m-products/openssl_shim_test/Opensource_OSSL_BUILD_ALL.sh .
 
       # ---------------- OpenSSL Connector BUILDS ----------------
 
@@ -116,7 +119,7 @@ jobs:
             echo ""
             echo "All builds passed."
           fi
-          
+      
       - name: Get Slack User ID
         if: always()
         id: slack_map
@@ -128,7 +131,7 @@ jobs:
           
           echo "GitHub User: $GITHUB_USER"
           echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
-
+  
       - name: Send Slack notification (Failure)
         if: always() && (failure() || cancelled())
         run: |
@@ -139,11 +142,12 @@ jobs:
             MENTION="${GITHUB_ACTOR}"
           fi
           if [ "$GITHUB_REF_NAME" = "main" ]; then
-            MESSAGE="Build OpenSSL Connector failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            MESSAGE="Build_OpenSSLConnector failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
-            MESSAGE="Build OpenSSL Connector failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            MESSAGE="Build_OpenSSLConnector failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           fi  
           curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
 
 
