@@ -108,6 +108,7 @@
 #include "../crypto/hw_accel.h"
 
 #include "ossl_types.h"
+#include "ossl_cert_convert.h"
 
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
 #include <openssl/core_names.h>
@@ -237,15 +238,16 @@ exit:
 }
 
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+static const OSSL_QS_ALG_INFO qsAlgs[] =
+{
+    { "ML-DSA-44", "mldsa44", "MLDSA44", cid_PQC_MLDSA_44, NID_ML_DSA_44, OSSL_TLS_MLDSA_44 },
+    { "ML-DSA-65", "mldsa65", "MLDSA65", cid_PQC_MLDSA_65, NID_ML_DSA_65, OSSL_TLS_MLDSA_65 },
+    { "ML-DSA-87", "mldsa87", "MLDSA87", cid_PQC_MLDSA_87, NID_ML_DSA_87, OSSL_TLS_MLDSA_87 },
+};
+
 extern ubyte4
 ossl_getQsAlgId(const EVP_PKEY *pkey)
 {
-    static const struct { const char *pName; ubyte4 cid; } qsAlgs[] =
-    {
-        { "ML-DSA-44", cid_PQC_MLDSA_44 },
-        { "ML-DSA-65", cid_PQC_MLDSA_65 },
-        { "ML-DSA-87", cid_PQC_MLDSA_87 },
-    };
     size_t i;
 
     if (NULL == pkey)
@@ -253,10 +255,53 @@ ossl_getQsAlgId(const EVP_PKEY *pkey)
 
     for (i = 0; i < sizeof(qsAlgs) / sizeof(qsAlgs[0]); i++)
     {
-        if (EVP_PKEY_is_a(pkey, qsAlgs[i].pName))
-            return qsAlgs[i].cid;
+        if (EVP_PKEY_is_a(pkey, qsAlgs[i].pKeyName))
+            return qsAlgs[i].algId;
     }
     return 0;
+}
+
+extern const OSSL_QS_ALG_INFO *
+ossl_getQsAlgInfoBySignatureName(const char *pName)
+{
+    size_t i;
+
+    if (NULL == pName)
+        return NULL;
+
+    for (i = 0; i < sizeof(qsAlgs) / sizeof(qsAlgs[0]); i++)
+    {
+        if (0 == strcmp(pName, qsAlgs[i].pSignatureName) ||
+            0 == strcmp(pName, qsAlgs[i].pSignatureNameUpper))
+            return &qsAlgs[i];
+    }
+    return NULL;
+}
+
+extern const OSSL_QS_ALG_INFO *
+ossl_getQsAlgInfoByNid(int nid)
+{
+    size_t i;
+
+    for (i = 0; i < sizeof(qsAlgs) / sizeof(qsAlgs[0]); i++)
+    {
+        if (nid == qsAlgs[i].nid)
+            return &qsAlgs[i];
+    }
+    return NULL;
+}
+
+extern const OSSL_QS_ALG_INFO *
+ossl_getQsAlgInfoByTlsSigAlg(ubyte tlsSigAlg)
+{
+    size_t i;
+
+    for (i = 0; i < sizeof(qsAlgs) / sizeof(qsAlgs[0]); i++)
+    {
+        if (tlsSigAlg == qsAlgs[i].tlsSigAlg)
+            return &qsAlgs[i];
+    }
+    return NULL;
 }
 
 static int
@@ -759,6 +804,7 @@ exit:
 
     if (NULL != pRetKeyBlob)
     {
+        OPENSSL_cleanse(pRetKeyBlob, retKeyLength);
         NSSL_CHK_CALL(mocFree, (void **) &pRetKeyBlob);
     }
 

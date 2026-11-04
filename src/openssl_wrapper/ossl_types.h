@@ -188,8 +188,25 @@ typedef struct
 #define OSSL_PKEY_EC	2
 #define OSSL_EVP_PKEY_ED448   3
 #define OSSL_EVP_PKEY_ED25519 4
-#define OSSL_PKEY_QS	5
+#define OSSL_PKEY_MLDSA	5
 #define OSSL_PKEY_MAX	6
+
+enum OSSL_TLS_SignatureAlgorithm
+{
+    OSSL_TLS_ANONYMOUS       = 0,
+    OSSL_TLS_RSA             = 1,
+    OSSL_TLS_DSA             = 2,
+    OSSL_TLS_ECDSA           = 3,
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+    /* Combined with TLS_QS as the high byte: 0x0904..0x0906 */
+    OSSL_TLS_MLDSA_44        = 4,
+    OSSL_TLS_MLDSA_65        = 5,
+    OSSL_TLS_MLDSA_87        = 6,
+#endif
+    OSSL_TLS_EDDSA25519      = 7,
+    OSSL_TLS_EDDSA448        = 8,
+    OSSL_TLS_SIGNATURE_MAX   = 255
+};
 
 #define SSL_MAX_SID_CTX_LENGTH	32
 #define SSL3_SSL_SESSION_ID_LENGTH 32

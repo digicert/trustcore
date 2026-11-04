@@ -153,11 +153,18 @@ int ssl_cert_type(X509 *x, EVP_PKEY *pkey)
 {
      EVP_PKEY * pk;
      int 	i;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+     ubyte4 qsAlgId;
+#endif
+
      if (pkey == NULL)
 	  pk = X509_get_pubkey(x);
      else
 	  pk = pkey;
      i = pk->type;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+     qsAlgId = ossl_getQsAlgId(pk);
+#endif
      if (i == EVP_PKEY_RSA)
      {
 	  return OSSL_PKEY_RSA;
@@ -179,9 +186,9 @@ int ssl_cert_type(X509 *x, EVP_PKEY *pkey)
      }
 #endif /* __ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_0__ || __ENABLE_DIGICERT_OPENSSL_LIB_3_5__ */
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
-     else if (0 != ossl_getQsAlgId(pk))
+     else if (cid_PQC_MLDSA_44 <= qsAlgId && cid_PQC_MLDSA_87 >= qsAlgId)
      {
-         return OSSL_PKEY_QS;
+         return OSSL_PKEY_MLDSA;
      }
 #endif
 
@@ -192,6 +199,11 @@ static int ssl_set_cert(SSL_CTX *ctx, X509 *x)
 {
     EVP_PKEY *pkey;
     int i;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__) && !defined(__ENABLE_DIGICERT_TAP__)
+    EVP_PKEY *identityKey = NULL;
+    ubyte4 certAlgId;
+    ubyte4 identityAlgId;
+#endif
 
     pkey = X509_get_pubkey(x);
     if (pkey == NULL) {
@@ -205,6 +217,37 @@ static int ssl_set_cert(SSL_CTX *ctx, X509 *x)
         EVP_PKEY_free(pkey);
         return (0);
     }
+
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__) && !defined(__ENABLE_DIGICERT_TAP__)
+    {
+        certAlgId = ossl_getQsAlgId(pkey);
+
+        if (1 == ctx->privateKeyPending)
+            identityKey = ctx->privatekey[OSSL_PKEY_MAX];
+        else
+            identityKey = ctx->privatekey[i];
+
+        identityAlgId = ossl_getQsAlgId(identityKey);
+        /* Check pairing when either the certificate or stored key is ML-DSA. */
+        if (NULL != identityKey &&
+            (0 != certAlgId || 0 != identityAlgId) &&
+            1 != X509_check_private_key(x, identityKey))
+        {
+           /* Stricter than OpenSSL: reject a certificate that does not match the
+            * pending key, and keep the key so a matching certificate can be retried. */
+            if (1 == ctx->privateKeyPending)
+            {
+                SSLerr(SSL_F_SSL_SET_CERT, SSL_R_PRIVATE_KEY_MISMATCH);
+                EVP_PKEY_free(pkey);
+                return 0;
+            }
+            /* As in OpenSSL, a new certificate drops a stale key of its type. */
+            EVP_PKEY_free(ctx->privatekey[i]);
+            ctx->privatekey[i] = NULL;
+            ERR_clear_error();
+        }
+    }
+#endif
 
     if (ctx->privatekey[i] != NULL) {
         /*
@@ -487,6 +530,19 @@ SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey)
      if (!ctx || !pkey)
 	  return 0;
      i = ctx->ossl_pkey_idx;
+    /* OSSL_PKEY_MAX is a valid slot for a key loaded before its certificate. */
+     if (i < 0 || i > OSSL_PKEY_MAX)
+     {
+        return 0;
+     }
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__) && !defined(__ENABLE_DIGICERT_TAP__)
+     if (NULL != ctx->cert_x509 &&
+         (OSSL_PKEY_MLDSA == i || 0 != ossl_getQsAlgId(pkey)) &&
+         1 != X509_check_private_key(ctx->cert_x509, pkey))
+     {
+        return 0;
+     }
+#endif
      if (OSSL_PKEY_MAX == i)
      {
         ctx->privateKeyPending = 1;

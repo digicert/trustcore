@@ -291,21 +291,6 @@ typedef struct
     unsigned int value_type;
 } ssl_conf_cmd_tbl;
 
-enum OSSL_TLS_SignatureAlgorithm
-{
-    OSSL_TLS_ANONYMOUS       = 0,
-    OSSL_TLS_RSA             = 1,
-    OSSL_TLS_DSA             = 2,
-    OSSL_TLS_ECDSA           = 3,
-    /* Combined with TLS_QS as the high byte: 0x0904..0x0906 */
-    OSSL_TLS_MLDSA_44        = 4,
-    OSSL_TLS_MLDSA_65        = 5,
-    OSSL_TLS_MLDSA_87        = 6,
-    OSSL_TLS_EDDSA25519      = 7,
-    OSSL_TLS_EDDSA448        = 8,
-    OSSL_TLS_SIGNATURE_MAX   = 255
-};
-
 enum OSSL_TLS13_SignatureAlgorithm
 {
     OSSL_TLS_13_RSA_PSS_RSAE_SHA256 = 0x04,
@@ -11580,7 +11565,7 @@ SSL_CTX_clear(SSL_CTX *ctx)
      if (NULL != ctx->peerCertChain)
       sk_X509_pop_free(ctx->peerCertChain, X509_free);
 
-     for (i = 0; i < OSSL_PKEY_MAX; ++i) {
+    for (i = 0; i <= OSSL_PKEY_MAX; ++i) {
       if (NULL != ctx->privatekey[i])
       {
            void *exData = NULL;
@@ -18457,21 +18442,6 @@ void SSL_set_verify_result(SSL *ssl, long arg)
 }
 
 /*-----------------------------------------------------------------*/
-#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
-static int
-getMlDsaNid(ubyte sigAlg)
-{
-    switch (sigAlg)
-    {
-        case OSSL_TLS_MLDSA_44: return NID_ML_DSA_44;
-        case OSSL_TLS_MLDSA_65: return NID_ML_DSA_65;
-        case OSSL_TLS_MLDSA_87: return NID_ML_DSA_87;
-        default:                return NID_undef;
-    }
-}
-#endif
-
-/*-----------------------------------------------------------------*/
 static int
 getSharedSignatureAlgorithms(SSL *pSsl, int idx,
                              int *psign, int *phash, int *psignhash,
@@ -18480,6 +18450,10 @@ getSharedSignatureAlgorithms(SSL *pSsl, int idx,
 {
     ubyte2 sigAlgo;
     sbyte4 status;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+    const OSSL_QS_ALG_INFO *pAlgInfo = NULL;
+    int nid;
+#endif
 
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
     SSL_CONNECTION *pS = (SSL_CONNECTION *)pSsl;
@@ -18506,7 +18480,8 @@ getSharedSignatureAlgorithms(SSL *pSsl, int idx,
     /* ML-DSA high byte (TLS_QS) would otherwise hit the RSA-PSS case below. */
     if ((sigAlgo >> 8) == TLS_QS)
     {
-        int nid = getMlDsaNid(sigAlgo & 0xFF);
+        pAlgInfo = ossl_getQsAlgInfoByTlsSigAlg(sigAlgo & 0xFF);
+        nid = (NULL != pAlgInfo) ? pAlgInfo->nid : NID_undef;
 
         if (psign != NULL)
             *psign = nid;
@@ -25043,6 +25018,10 @@ static int getCurveIdFromNID(int nid)
         case NID_ffdhe8192:       /* ffdhe8192 (260) */
             return 260;
 #endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+        case NID_ML_KEM_1024:
+            return 0x0202;
+#endif
         default:
             return 0;
     }
@@ -25069,6 +25048,7 @@ static const char *getGroupNameFromGroupId(ubyte2 groupId)
         case 260: return "ffdhe8192";
 #endif
 #ifdef __ENABLE_DIGICERT_PQC__
+        case 0x0202: return "MLKEM1024";
         case 0x11eb: return "SecP256r1MLKEM768";
         case 0x11ec: return "X25519MLKEM768";
 #endif
@@ -25078,56 +25058,62 @@ static const char *getGroupNameFromGroupId(ubyte2 groupId)
 
 static int getCurveNIDFromCurveName(const char *name)
 {
-    if (!strcmp("P-192", name))
+    if (!STR_CASE_CMP("P-192", name))
     {
         return NID_X9_62_prime192v1;
     }
-    else if (!strcmp("P-224", name))
+    else if (!STR_CASE_CMP("P-224", name))
     {
         return NID_secp224r1;
     }
-    else if (!strcmp("P-256", name))
+    else if (!STR_CASE_CMP("P-256", name))
     {
         return NID_X9_62_prime256v1;
     }
-    else if (!strcmp("P-384", name))
+    else if (!STR_CASE_CMP("P-384", name))
     {
         return NID_secp384r1;
     }
-    else if (!strcmp("P-521", name))
+    else if (!STR_CASE_CMP("P-521", name))
     {
         return NID_secp521r1;
     }
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-    else if (!strcmp("X25519", name))
+    else if (!STR_CASE_CMP("X25519", name))
     {
         return NID_X25519;
     }
-    else if (!strcmp("X448", name))
+    else if (!STR_CASE_CMP("X448", name))
     {
         return NID_X448;
     }
 #endif
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-    else if (!strcmp("ffdhe2048", name))
+    else if (!STR_CASE_CMP("ffdhe2048", name))
     {
         return NID_ffdhe2048;
     }
-    else if (!strcmp("ffdhe3072", name))
+    else if (!STR_CASE_CMP("ffdhe3072", name))
     {
         return NID_ffdhe3072;
     }
-    else if (!strcmp("ffdhe4096", name))
+    else if (!STR_CASE_CMP("ffdhe4096", name))
     {
         return NID_ffdhe4096;
     }
-    else if (!strcmp("ffdhe6144", name))
+    else if (!STR_CASE_CMP("ffdhe6144", name))
     {
         return NID_ffdhe6144;
     }
-    else if (!strcmp("ffdhe8192", name))
+    else if (!STR_CASE_CMP("ffdhe8192", name))
     {
         return NID_ffdhe8192;
+    }
+#endif
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+    else if (!STR_CASE_CMP("MLKEM1024", name))
+    {
+        return NID_ML_KEM_1024;
     }
 #endif
     else
@@ -25136,57 +25122,121 @@ static int getCurveNIDFromCurveName(const char *name)
     }
 }
 
+/* Resolve hybrid groups directly by name; OpenSSL's legacy NID mapping
+ * does not include these groups. */
+static ubyte2 getGroupIdFromName(const char *name)
+{
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+#if !defined(__DISABLE_DIGICERT_ECC_P256__)
+    if (!STR_CASE_CMP("SecP256r1MLKEM768", name))
+        return 0x11eb;
+#endif
+#if defined(__ENABLE_DIGICERT_ECC_EDDH_25519__)
+    if (!STR_CASE_CMP("X25519MLKEM768", name))
+        return 0x11ec;
+#endif
+#endif
+    return (ubyte2) getCurveIdFromNID(getCurveNIDFromCurveName(name));
+}
+
+static int storeGroupIds(ubyte2 **ppEccCurves, ubyte4 *pNumEccCurves,
+                         const ubyte2 *pGroupIds, size_t numGroupIds)
+{
+    ubyte2 *pNewCurves;
+
+    if (0 == numGroupIds)
+        return 0;
+
+    pNewCurves = OSSL_MALLOC(numGroupIds * sizeof(ubyte2));
+    if (NULL == pNewCurves)
+        return 0;
+
+    memcpy(pNewCurves, pGroupIds, numGroupIds * sizeof(ubyte2));
+    OSSL_FREE(*ppEccCurves);
+    *ppEccCurves = pNewCurves;
+    *pNumEccCurves = (ubyte4) numGroupIds;
+    return 1;
+}
+
 static int setEccCurves(ubyte2 **ppEccCurves, ubyte4 *pNumEccCurves,
                            int *pCurves, size_t numCurves)
 {
     ubyte4 i;
-    ubyte4 count = 0;
+    int groupId;
     ubyte2 eccCurves[MAX_NUM_ECCCURVES] = { 0 };
 
-    if (ppEccCurves == NULL)
+    if (NULL == ppEccCurves || NULL == pNumEccCurves ||
+        NULL == pCurves || MAX_NUM_ECCCURVES < numCurves)
         return 0;
 
-    if (*ppEccCurves != NULL)
-    {
-        OSSL_FREE(*ppEccCurves);
-    }
-
-    *ppEccCurves = OSSL_MALLOC(numCurves * sizeof(ubyte2));
-    if (NULL == *ppEccCurves)
-    {
-        return 0;
-    }
     for (i = 0; i < numCurves; i++)
     {
-        int id;
-        id = getCurveIdFromNID(pCurves[i]);
-        eccCurves[count++] = id;
+        groupId = getCurveIdFromNID(pCurves[i]);
+        if (0 != groupId)
+            eccCurves[i] = (ubyte2) groupId;
     }
 
-    memcpy(*ppEccCurves, eccCurves, count * sizeof(ubyte2));
-    *pNumEccCurves = count;
-    return 1;
+    return storeGroupIds(ppEccCurves, pNumEccCurves, eccCurves, numCurves);
 }
 
 static int setEccCurvesFromString(ubyte2 **ppEccCurves, ubyte4 *pNumEccCurves,
                                   const char *pEccCurvesStr)
 {
     const char separator[2] = ":";
-    int curves[MAX_NUM_ECCCURVES] = {0};
-    int numCurves = 0;
-    char *pCurveName = NULL;
+    ubyte2 groupIds[MAX_NUM_ECCCURVES] = {0};
+    size_t numGroupIds = 0;
+    size_t inputLen;
+    int ret = 0;
+    char *pCopy;
+    char *pToken;
+    char *pScan;
+    char *pSavedPointer = NULL;
+    ubyte2 groupId;
 
-    pCurveName = (char *)strtok((char *) pEccCurvesStr, separator);
+    if (NULL == ppEccCurves || NULL == pNumEccCurves || NULL == pEccCurvesStr)
+        return 0;
 
-    while (pCurveName != NULL)
+    inputLen = strlen(pEccCurvesStr);
+    if (0 == inputLen)
+        return 0;
+
+    pCopy = OSSL_MALLOC(inputLen + 1);
+    if (NULL == pCopy)
+        return 0;
+    memcpy(pCopy, pEccCurvesStr, inputLen + 1);
+
+    if (':' == pCopy[0] || ':' == pCopy[inputLen - 1])
+        goto exit;
+    for (pScan = pCopy; '\0' != *pScan; pScan++)
     {
-        curves[numCurves] = getCurveNIDFromCurveName(pCurveName);
-        numCurves++;
-
-        pCurveName = strtok(NULL, separator);
+        if (':' == *pScan && ':' == pScan[1])
+            goto exit;
     }
 
-    return setEccCurves(ppEccCurves, pNumEccCurves, curves, numCurves);
+#if defined(__RTOS_WIN32__)
+    pToken = strtok_s(pCopy, separator, &pSavedPointer);
+#else
+    pToken = strtok_r(pCopy, separator, &pSavedPointer);
+#endif
+    while (NULL != pToken)
+    {
+        if (MAX_NUM_ECCCURVES <= numGroupIds)
+            goto exit;
+        groupId = getGroupIdFromName(pToken);
+        if (0 != groupId)
+            groupIds[numGroupIds++] = groupId;
+
+#if defined(__RTOS_WIN32__)
+        pToken = strtok_s(NULL, separator, &pSavedPointer);
+#else
+        pToken = strtok_r(NULL, separator, &pSavedPointer);
+#endif
+    }
+
+    ret = storeGroupIds(ppEccCurves, pNumEccCurves, groupIds, numGroupIds);
+exit:
+    OSSL_FREE(pCopy);
+    return ret;
 }
 
 static void parseSignAndHashString(ubyte *pSig, ubyte *pHash, char *str)
@@ -25194,6 +25244,9 @@ static void parseSignAndHashString(ubyte *pSig, ubyte *pHash, char *str)
     ubyte parseHash = 1;
     char *pStr = NULL;
     char *pSavedPointer = NULL;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+    const OSSL_QS_ALG_INFO *pQsAlgInfo = NULL;
+#endif
 #if defined(__RTOS_WIN32__)
     pStr = strtok_s(str, "+", &pSavedPointer);
 #else
@@ -25254,22 +25307,10 @@ static void parseSignAndHashString(ubyte *pSig, ubyte *pHash, char *str)
         }
 #endif
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
-        else if (strcmp(pStr, "mldsa44") == 0 || strcmp(pStr, "MLDSA44") == 0)
+        else if (NULL != (pQsAlgInfo = ossl_getQsAlgInfoBySignatureName(pStr)))
         {
             *pHash = TLS_QS;
-            *pSig = OSSL_TLS_MLDSA_44;
-            parseHash = 0;
-        }
-        else if (strcmp(pStr, "mldsa65") == 0 || strcmp(pStr, "MLDSA65") == 0)
-        {
-            *pHash = TLS_QS;
-            *pSig = OSSL_TLS_MLDSA_65;
-            parseHash = 0;
-        }
-        else if (strcmp(pStr, "mldsa87") == 0 || strcmp(pStr, "MLDSA87") == 0)
-        {
-            *pHash = TLS_QS;
-            *pSig = OSSL_TLS_MLDSA_87;
+            *pSig = pQsAlgInfo->tlsSigAlg;
             parseHash = 0;
         }
 #endif
@@ -25312,6 +25353,9 @@ static void parseSignAndHashString(ubyte *pSig, ubyte *pHash, char *str)
 static void parseSignAndHash(ubyte *pSig, ubyte *pHash, int pInHash, int pInSig)
 {
     ubyte parseHash = 1;
+#if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+    const OSSL_QS_ALG_INFO *pQsAlgInfo = NULL;
+#endif
 
     if (EVP_PKEY_RSA == pInSig)
     {
@@ -25361,11 +25405,10 @@ static void parseSignAndHash(ubyte *pSig, ubyte *pHash, int pInHash, int pInSig)
     }
 #endif
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
-    else if (NID_ML_DSA_44 == pInSig || NID_ML_DSA_65 == pInSig || NID_ML_DSA_87 == pInSig)
+    else if (NULL != (pQsAlgInfo = ossl_getQsAlgInfoByNid(pInSig)))
     {
         *pHash = TLS_QS;
-        *pSig = (NID_ML_DSA_44 == pInSig) ? OSSL_TLS_MLDSA_44 :
-                (NID_ML_DSA_65 == pInSig) ? OSSL_TLS_MLDSA_65 : OSSL_TLS_MLDSA_87;
+        *pSig = pQsAlgInfo->tlsSigAlg;
         parseHash = 0;
     }
 #endif
@@ -26174,13 +26217,6 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
             return 1;
         /* break */
         }
-     case SSL_CTRL_SET_CURVES:
-        rval = setEccCurves(&ctx->pEccCurves, &ctx->numEccCurves, parg, larg);
-        break;
-     case SSL_CTRL_SET_CURVES_LIST:
-     case SSL_CTRL_SET_GROUPS_LIST:
-         rval = setEccCurvesFromString(&ctx->pEccCurves, &ctx->numEccCurves, parg);
-         break;
      case SSL_CTRL_SET_ECDH_AUTO:
         {
             if (1 == larg)
@@ -26192,6 +26228,13 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
             break;
         }
 #endif
+     case SSL_CTRL_SET_CURVES:
+        rval = setEccCurves(&ctx->pEccCurves, &ctx->numEccCurves, parg, larg);
+        break;
+     case SSL_CTRL_SET_CURVES_LIST:
+     case SSL_CTRL_SET_GROUPS_LIST:
+         rval = setEccCurvesFromString(&ctx->pEccCurves, &ctx->numEccCurves, parg);
+         break;
     case SSL_CTRL_SET_MSG_CALLBACK_ARG:
         ctx->msg_callback_arg = parg;
         break;
@@ -26423,13 +26466,11 @@ long SSL_ctrl(SSL *s, int cmd, long larg, void *parg)
         break;
      }
      case SSL_CTRL_SET_CURVES:
-        setEccCurves(&pS->pEccCurves, &pS->numEccCurves, parg, larg);
-        break;
+        return setEccCurves(&pS->pEccCurves, &pS->numEccCurves, parg, larg);
 
      case SSL_CTRL_SET_CURVES_LIST:
      case SSL_CTRL_SET_GROUPS_LIST:
-        setEccCurvesFromString(&pS->pEccCurves, &pS->numEccCurves, parg);
-        break;
+        return setEccCurvesFromString(&pS->pEccCurves, &pS->numEccCurves, parg);
 
     case SSL_CTRL_MODE:
         return (pS->orig_s.mode |= larg);
@@ -29058,6 +29099,7 @@ SSL_use_RSAPrivateKey(SSL *ssl, RSA *pRsaKey)
      * application then the latter call will have the key that is actually used.
      */
     ret = SSL_CTX_use_PrivateKey(pS->ssl_ctx, pEvpKey);
+    EVP_PKEY_free(pEvpKey);
     return ret;
 }
 
@@ -29163,6 +29205,7 @@ SSL_use_PrivateKey_ASN1(
      * application then the latter call will have the key that is actually used.
      */
     ret = SSL_CTX_use_PrivateKey(pS->ssl_ctx, pEvpKey);
+    EVP_PKEY_free(pEvpKey);
     return ret;
 }
 
@@ -29494,6 +29537,12 @@ int SSL_CTX_use_PrivateKey_ASN1(int type, SSL_CTX *ctx,
     int ret;
     const unsigned char *p;
     EVP_PKEY *pkey;
+
+    if (NULL == ctx || NULL == d || len <= 0)
+    {
+        SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_ASN1, ERR_R_PASSED_NULL_PARAMETER);
+        return 0;
+    }
 
     p = d;
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)

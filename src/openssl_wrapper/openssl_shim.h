@@ -151,7 +151,16 @@ typedef enum OSSL_tlsExtNamedCurves
     OSSL_tlsExtNamedCurves_secp224r1 = 21,
     OSSL_tlsExtNamedCurves_secp256r1 = 23,
     OSSL_tlsExtNamedCurves_secp384r1 = 24,
-    OSSL_tlsExtNamedCurves_secp521r1 = 25
+    OSSL_tlsExtNamedCurves_secp521r1 = 25,
+#ifdef __ENABLE_DIGICERT_PQC__
+    OSSL_tlsExtPqc_MLKEM1024 = 0x0202,
+#ifndef __DISABLE_DIGICERT_ECC_P256__
+    OSSL_tlsExtHybrid_SecP256r1MLKEM768 = 0x11eb,
+#endif
+#ifdef __ENABLE_DIGICERT_ECC_EDDH_25519__
+    OSSL_tlsExtHybrid_X25519MLKEM768 = 0x11ec,
+#endif
+#endif
 } OSSL_tlsExtNamedCurves;
 
 typedef struct OSSL_SrtpProfileInfo

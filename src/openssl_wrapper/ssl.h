@@ -292,6 +292,9 @@ enum
 #define SSL_F_SSL_CIPHER_DESCRIPTION                     626
 #define SSL_R_STILL_IN_INIT                              121
 #define SSL_R_CERTIFICATE_VERIFY_FAILED                  134
+#ifndef SSL_R_PRIVATE_KEY_MISMATCH
+#define SSL_R_PRIVATE_KEY_MISMATCH                       288
+#endif
 #define SSL_R_NOT_SERVER                                 284
 #define SSL_R_WRONG_SSL_VERSION                          266
 #define SSL_F_SSL_READ_EARLY_DATA                        529
