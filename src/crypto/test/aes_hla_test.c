@@ -63,8 +63,8 @@ doTest (MOC_SYM(hwAccelDescr hwAccelCtx) ubyte *keyMaterial, sbyte4 keySize, uby
     ubyte encryptIV[16];
     ubyte decryptIV[16];
     int errors = 0;
-    aesCipherContext* pAesCtxEncrypt = CreateAESCtx(MOC_SYM(hwAccelCtx) keyMaterial, keySize, 1);
-    aesCipherContext* pAesCtxDecrypt = CreateAESCtx(MOC_SYM(hwAccelCtx) keyMaterial, keySize, 0);
+    BulkCtx pAesCtxEncrypt = CreateAESCtx(MOC_SYM(hwAccelCtx) keyMaterial, keySize, 1);
+    BulkCtx pAesCtxDecrypt = CreateAESCtx(MOC_SYM(hwAccelCtx) keyMaterial, keySize, 0);
 
     pTemp = MALLOC(inputLength);
 

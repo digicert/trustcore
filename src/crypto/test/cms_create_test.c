@@ -233,13 +233,14 @@ static int cms_create_test_signed_1(int hint, ubyte4 flags, const char* outFile,
 
     if (pRCInfo)
     {
+        CMS_TEST_RC_Info* pRCInfoMutable = (CMS_TEST_RC_Info*) pRCInfo;
         UNITTEST_STATUS_GOTO( hint, CMS_signedGetRequestInfo( myCtx, mySigner,
-                                                            &pRCInfo->messageId,
-                                                            &pRCInfo->messageIdLen,
-                                                            &pRCInfo->digest,
-                                                            &pRCInfo->digestLen,
-                                                            &pRCInfo->signature,
-                                                            &pRCInfo->signatureLen),
+                                                            &pRCInfoMutable->messageId,
+                                                            &pRCInfoMutable->messageIdLen,
+                                                            &pRCInfoMutable->digest,
+                                                            &pRCInfoMutable->digestLen,
+                                                            &pRCInfoMutable->signature,
+                                                            &pRCInfoMutable->signatureLen),
                             retVal, exit);
     }
 
@@ -558,13 +559,14 @@ static int cms_create_test_signed_w_cb(int hint, ubyte4 flags, const char* outFi
 
     if (pRCInfo)
     {
+        CMS_TEST_RC_Info* pRCInfoMutable = (CMS_TEST_RC_Info*) pRCInfo;
         UNITTEST_STATUS_GOTO( hint, CMS_signedGetRequestInfo( myCtx, mySigner,
-                                                            &pRCInfo->messageId,
-                                                            &pRCInfo->messageIdLen,
-                                                            &pRCInfo->digest,
-                                                            &pRCInfo->digestLen,
-                                                            &pRCInfo->signature,
-                                                            &pRCInfo->signatureLen),
+                                                            &pRCInfoMutable->messageId,
+                                                            &pRCInfoMutable->messageIdLen,
+                                                            &pRCInfoMutable->digest,
+                                                            &pRCInfoMutable->digestLen,
+                                                            &pRCInfoMutable->signature,
+                                                            &pRCInfoMutable->signatureLen),
                             retVal, exit);
     }
 

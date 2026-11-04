@@ -190,7 +190,7 @@ int pkcs_test_PKCS7_envelopWithCertificates()
                          retVal, exit);
 
 
-    UNITTEST_STATUS_GOTO( 0, PKCS7_EnvelopWithCertificates(2, certs, certlens, aes256CBC_OID,
+    UNITTEST_STATUS_GOTO( 0, PKCS7_EnvelopWithCertificates(2, (const ubyte**) certs, certlens, aes256CBC_OID,
                                   kPayload, DIGI_STRLEN(kPayload),
                                   &enveloped, &envelopedLen),
                          retVal, exit);

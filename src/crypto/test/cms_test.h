@@ -50,11 +50,11 @@ typedef struct CMS_TEST_RC_Info
     ubyte*          signerCert;
     ubyte4          signerCertLen;
     AsymmetricKey   key;
-    ubyte*          messageId;
+    const ubyte*    messageId;
     ubyte4          messageIdLen;
-    ubyte*          digest;
+    const ubyte*    digest;
     ubyte4          digestLen;
-    ubyte*          signature;
+    const ubyte*    signature;
     ubyte4          signatureLen;
 } CMS_TEST_RC_Info;
 

@@ -51,6 +51,8 @@
 
 #include "../../../unit_tests/unittest.h"
 
+#include <stdio.h>
+
 static int testKeyFile(char *pFile)
 {
     int ret = 0;

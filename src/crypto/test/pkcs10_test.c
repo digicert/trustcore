@@ -306,7 +306,7 @@ static int GenerateCertReqEx (
       { GoFirstChild, 0, 0},
       { VerifyOID, 0, (ubyte *)pkcs9_extensionRequest_OID}, /* second attribute is extReq */
       { GoNextSibling, 0, 0},
-      { VerifyType, MOC_SET, 1},
+      { VerifyType, MOC_SET, 0},
       { Complete, 0, 0}
   };
 

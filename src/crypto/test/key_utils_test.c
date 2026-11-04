@@ -506,7 +506,7 @@ int KEY_UTILS_test_PEMKeyIsValid()
     ubyte4 retVal;
     ubyte* pPrivKey;
 
-    if (OK != (status = DIGI_MALLOC(&pPrivKey, sizeof(keyout))))
+    if (OK != (status = DIGI_MALLOC((void **) &pPrivKey, sizeof(keyout))))
         goto exit;
 
     if( OK > (status = DIGI_MEMCPY(pPrivKey, keyout, sizeof(keyout))) )
@@ -518,9 +518,9 @@ int KEY_UTILS_test_PEMKeyIsValid()
     i++;
 
     if( NULL != pPrivKey )
-        DIGI_FREE(&pPrivKey);
+        DIGI_FREE((void **) &pPrivKey);
 
-    if( OK != (status = DIGI_MALLOC(&pPrivKey, sizeof(key))))
+    if( OK != (status = DIGI_MALLOC((void **) &pPrivKey, sizeof(key))))
         goto exit;
 
     if( OK > (status = DIGI_MEMCPY(pPrivKey, key, sizeof(key))) )
@@ -532,9 +532,9 @@ int KEY_UTILS_test_PEMKeyIsValid()
     i++;
 
     if( NULL != pPrivKey )
-        DIGI_FREE(&pPrivKey);
+        DIGI_FREE((void **) &pPrivKey);
 
-    if( OK != (status = DIGI_MALLOC(&pPrivKey, sizeof(cert3))))
+    if( OK != (status = DIGI_MALLOC((void **) &pPrivKey, sizeof(cert3))))
         goto exit;
 
     DIGI_MEMCPY(pPrivKey, cert3, sizeof(cert3));
@@ -545,9 +545,9 @@ int KEY_UTILS_test_PEMKeyIsValid()
     i++;
 
     if( NULL != pPrivKey )
-        DIGI_FREE(&pPrivKey);
+        DIGI_FREE((void **) &pPrivKey);
 
-    if( OK != (status = DIGI_MALLOC(&pPrivKey, sizeof(key_512))))
+    if( OK != (status = DIGI_MALLOC((void **) &pPrivKey, sizeof(key_512))))
         goto exit;
 
     DIGI_MEMCPY(pPrivKey, key_512, sizeof(key_512));
@@ -557,11 +557,11 @@ int KEY_UTILS_test_PEMKeyIsValid()
     i++;
 
     if( NULL != pPrivKey )
-        DIGI_FREE(&pPrivKey);
+        DIGI_FREE((void **) &pPrivKey);
 
 exit:
     if( NULL != pPrivKey )
-        DIGI_FREE(&pPrivKey);
+        DIGI_FREE((void **) &pPrivKey);
 
     return errors;
 }
@@ -577,7 +577,7 @@ int KEY_UTILS_test_CreateKeyBlobFromPEM()
     ubyte4 keyBlobLen;
     ubyte4 retVal;
 
-    if (OK != (status = DIGI_MALLOC(&privKey, sizeof(keyout))))
+    if (OK != (status = DIGI_MALLOC((void **) &privKey, sizeof(keyout))))
         goto exit;
 
     if( OK > (status = DIGI_MEMCPY(privKey, keyout, sizeof(keyout))) )
@@ -589,7 +589,7 @@ int KEY_UTILS_test_CreateKeyBlobFromPEM()
     i++;
 
     if( NULL != keyBlob)
-        DIGI_FREE(&keyBlob);
+        DIGI_FREE((void **) &keyBlob);
 
     status = KEY_UTILS_CreateKeyBlobFromPEM(passphrase2, privKey, sizeof(keyout), &keyBlob, &keyBlobLen, &retVal);
     status *= -1;
@@ -597,11 +597,11 @@ int KEY_UTILS_test_CreateKeyBlobFromPEM()
     i++;
 
     if( NULL != privKey )
-        DIGI_FREE(&privKey);
+        DIGI_FREE((void **) &privKey);
     if( NULL != keyBlob )
-        DIGI_FREE(&keyBlob);
+        DIGI_FREE((void **) &keyBlob);
 
-    if (OK != (status = DIGI_MALLOC(&privKey, sizeof(key))))
+    if (OK != (status = DIGI_MALLOC((void **) &privKey, sizeof(key))))
         goto exit;
 
     if( OK > (status = DIGI_MEMCPY(privKey, key, sizeof(key))) )
@@ -613,7 +613,7 @@ int KEY_UTILS_test_CreateKeyBlobFromPEM()
     i++;
 
     if( NULL != keyBlob )
-        DIGI_FREE(&keyBlob);
+        DIGI_FREE((void **) &keyBlob);
 
     KEY_UTILS_CreateKeyBlobFromPEM(passphrase, privKey, sizeof(key), &keyBlob, &keyBlobLen, &retVal);
 
@@ -622,9 +622,9 @@ int KEY_UTILS_test_CreateKeyBlobFromPEM()
 
 exit:
     if( NULL != privKey )
-        DIGI_FREE(&privKey);
+        DIGI_FREE((void **) &privKey);
     if( NULL != keyBlob )
-        DIGI_FREE(&keyBlob);
+        DIGI_FREE((void **) &keyBlob);
 
     return errors;
 }
@@ -637,13 +637,13 @@ int KEY_UTILS_test_PEMKeyIsEncrypted()
     MSTATUS status = OK;
     sbyte4 errors = 0;
 
-    if (OK != (status = DIGI_MALLOC(&key1, sizeof(cert4))))
+    if (OK != (status = DIGI_MALLOC((void **) &key1, sizeof(cert4))))
         goto exit;
 
     if( OK > (status = DIGI_MEMCPY(key1, cert4, sizeof(cert4))) )
         goto exit;
 
-    if (OK != (status = DIGI_MALLOC(&key2, sizeof(cert3))))
+    if (OK != (status = DIGI_MALLOC((void **) &key2, sizeof(cert3))))
         goto exit;
 
     if( OK > (status = DIGI_MEMCPY(key2, cert3, sizeof(cert3))) )
@@ -661,9 +661,9 @@ int KEY_UTILS_test_PEMKeyIsEncrypted()
     
 exit:
     if( NULL != key1 )
-	    DIGI_FREE(&key1);
+	    DIGI_FREE((void **) &key1);
     if( NULL != key2 )
-	    DIGI_FREE(&key2);
+	    DIGI_FREE((void **) &key2);
 
     return errors;
 }

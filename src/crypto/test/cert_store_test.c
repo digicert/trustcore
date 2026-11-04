@@ -698,7 +698,7 @@ int load_certificateInfoAlias( int hint, certStorePtr pCertStore,
     /* conditionally add to certStore; some certificates are just created or loaded */
     UNITTEST_STATUS_GOTO(hint,
                          CERT_STORE_addIdentityWithCertificateChainEx(pCertStore,
-                                                                      pCI->certFileName, DIGI_STRLEN(pCI->certFileName),
+                                                                      (ubyte *) pCI->certFileName, DIGI_STRLEN(pCI->certFileName),
                                                                       certificates, numCertificate,
                                                                       certDesc.pKeyBlob,
                                                                       certDesc.keyBlobLength),
@@ -717,7 +717,7 @@ int load_certificateInfoAlias( int hint, certStorePtr pCertStore,
     /* update alias with additional certificates */
     UNITTEST_STATUS_GOTO(hint,
                          CERT_STORE_updateIdentityByAlias(pCertStore,
-                                                         pCI->certFileName, DIGI_STRLEN(pCI->certFileName),
+                                                         (ubyte *) pCI->certFileName, DIGI_STRLEN(pCI->certFileName),
                                                          certificates, numCertificate,
                                                          certDesc.pKeyBlob,
                                                          certDesc.keyBlobLength),
@@ -1044,7 +1044,7 @@ int cert_store_test_get_by_alias()
     certStorePtr pCertStore = 0;
     certDescriptor certDesc = {0};
     struct AsymmetricKey *pRetKey = NULL;
-    const SizedBuffer *pRetCerts = NULL;
+    SizedBuffer *pRetCerts = NULL;
     ubyte4 numRetCerts = 0;
     void *pRetHint = NULL;
     sbyte4 cmp = -1;

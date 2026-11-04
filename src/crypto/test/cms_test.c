@@ -253,7 +253,7 @@ int CMSEnvTest( int hint, const char* pkcs7FileName,
     sbyte4 i, v;
     sbyte4 resCmp;
     CStream cs;
-    ASN1_ITEMPTR pRecipientInfo;
+    const ASN1_ITEM* pRecipientInfo;
     ubyte* encryptionAlgoOID = 0;
     const char* encryptionAlgoName;
     ubyte* ecType = 0;
@@ -406,7 +406,7 @@ int CMSEnvStreamTest( int hint, const char* pkcs7FileName,
     sbyte4 i,v;
     sbyte4 resCmp;
     CStream cs;
-    ASN1_ITEMPTR pRecipientInfo;
+    const ASN1_ITEM* pRecipientInfo;
     ubyte* encryptionAlgoOID = 0;
     const char* encryptionAlgoName;
     ubyte* ecType = 0;
@@ -676,7 +676,7 @@ CMSRequestInfoTest( int hint, const CMS_TEST_RR_Info* pRRInfo,
                    ASN1_ITEMPTR pReceiptRequest, CStream cs)
 {
     int retVal = 0;
-    ubyte** res = 0;
+    const ubyte** res = 0;
     sbyte4 num;
 
     /* from */
@@ -778,6 +778,7 @@ int CMSSignedTestReceipt( int hint, CMS_signedDataContext myCtx,
     ubyte4 digestLen;
     sbyte4 resCmp;
     ASN1_ITEMPTR pSignerInfo;
+    const ASN1_ITEM* pSignerInfoConst = 0;
     CStream cs;
     ubyte* attrContent = 0;
     ubyte4 attrContentLen;
@@ -835,8 +836,9 @@ int CMSSignedTestReceipt( int hint, CMS_signedDataContext myCtx,
     retVal += UNITTEST_INT( hint, resCmp, 0);
 
     UNITTEST_STATUS_GOTO( hint, CMS_getSignerInfo( receiptCtx, 0,
-                                            &pSignerInfo, &cs),
+                                            &pSignerInfoConst, &cs),
                            retVal, exit);
+    pSignerInfo = (ASN1_ITEMPTR) pSignerInfoConst;
 
     /* look at the message digest --
         this is basically what CMS_getReceiptMsgDigest does */
@@ -964,7 +966,9 @@ int CMSSignedStreamTest( int hint, const char* pkcs7FileName,
     sbyte4 i, numSigners, numCerts;
     sbyte4 resCmp;
     CStream cs;
-    ASN1_ITEMPTR pSignerInfo, pCertificate;
+    ASN1_ITEMPTR pSignerInfo;
+    const ASN1_ITEM* pSignerInfoConst = 0;
+    const ASN1_ITEM* pCertificate;
     ubyte * ecType = 0;
     ubyte4 bytesLeft = 0;
 
@@ -1078,7 +1082,8 @@ int CMSSignedStreamTest( int hint, const char* pkcs7FileName,
             ubyte signerHashType, signerPubKeyType;
 
             retVal += UNITTEST_STATUS((hint | (inputSize << 16)),
-                          CMS_getSignerInfo( myCtx, i, &pSignerInfo, &cs));
+                          CMS_getSignerInfo( myCtx, i, &pSignerInfoConst, &cs));
+            pSignerInfo = (ASN1_ITEMPTR) pSignerInfoConst;
 
             retVal += UNITTEST_VALIDPTR((hint | (inputSize << 16)),
                                             pSignerInfo);
@@ -1126,10 +1131,12 @@ int CMSSignedStreamTest( int hint, const char* pkcs7FileName,
             }
 
 
-            status = CMS_getSignerInfo( myCtx, numSigners, &pSignerInfo, &cs);
+            status = CMS_getSignerInfo( myCtx, numSigners, &pSignerInfoConst, &cs);
+            pSignerInfo = (ASN1_ITEMPTR) pSignerInfoConst;
             retVal += UNITTEST_TRUE( (hint | (inputSize << 16)), (ERR_INDEX_OOB == status));
 
-            status = CMS_getSignerInfo( myCtx, -1, &pSignerInfo, &cs);
+            status = CMS_getSignerInfo( myCtx, -1, &pSignerInfoConst, &cs);
+            pSignerInfo = (ASN1_ITEMPTR) pSignerInfoConst;
             retVal += UNITTEST_TRUE( (hint | (inputSize << 16)), (ERR_INDEX_OOB == status));
         }
 
