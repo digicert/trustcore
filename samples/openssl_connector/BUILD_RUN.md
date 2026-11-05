@@ -73,7 +73,6 @@ Before running the examples, set up the OpenSSL s_server and s_client as follows
    ```bash
    ./config
    make
-   sudo make install
    cd ../../
    ```
 

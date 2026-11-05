@@ -20,8 +20,21 @@
 
 extern MSTATUS ossl_CERT_STORE_addGenericIdentity(SSL_CTX *ctx, EVP_PKEY *pkey);
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__) && defined(__ENABLE_DIGICERT_PQC__)
+typedef struct
+{
+    const char *pKeyName;
+    const char *pSignatureName;
+    const char *pSignatureNameUpper;
+    ubyte4 algId;
+    int nid;
+    ubyte tlsSigAlg;
+} OSSL_QS_ALG_INFO;
+
 /* Returns the cid_PQC_* id for an ML-DSA EVP_PKEY, or 0 if not a supported QS key. */
 extern ubyte4 ossl_getQsAlgId(const EVP_PKEY *pkey);
+extern const OSSL_QS_ALG_INFO *ossl_getQsAlgInfoBySignatureName(const char *pName);
+extern const OSSL_QS_ALG_INFO *ossl_getQsAlgInfoByNid(int nid);
+extern const OSSL_QS_ALG_INFO *ossl_getQsAlgInfoByTlsSigAlg(ubyte tlsSigAlg);
 #endif
 #if ((defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)) && defined(__ENABLE_DIGICERT_TAP__))
 extern void ossl_clearCredentials(void);
