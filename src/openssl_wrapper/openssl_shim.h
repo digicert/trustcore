@@ -378,11 +378,11 @@ typedef sbyte4  (*NSSLdsaParamsToKeyBlob)(OSSL_DSAParams *pD, void **ppKeyBlob, 
 typedef sbyte4  (*NSSLsslIoctl)(sbyte4 connectionInstance, ubyte4 setting, void *value);
 typedef sbyte4  (*NSSLsslSettingsIoctl)(ubyte4 setting, void *value);
 typedef sbyte4  (*NSSLsslSetMinVersion)(ubyte4 version);
-typedef ubyte4  (*NSSLsslGetMinVersion)();
+typedef ubyte4  (*NSSLsslGetMinVersion)(void);
 typedef sbyte4  (*NSSLsslSetMaxVersion)(ubyte4 version);
-typedef ubyte4  (*NSSLsslGetMaxVersion)();
+typedef ubyte4  (*NSSLsslGetMaxVersion)(void);
 typedef sbyte4  (*NSSLsslGetVersion)(sbyte4 connectionInstance);
-typedef sbyte4  (*NSSLsslInitializeVersion)();
+typedef sbyte4  (*NSSLsslInitializeVersion)(void);
 typedef MSTATUS (*NSSLsslClearAllSessionCache)(void *pPtr);
 typedef MSTATUS (*NSSLgetSharedSignatureAlgorithm)(sbyte4 connectionInstance, ubyte4 algoListIndex,
                                                    ubyte2 *pSigAlgo, ubyte isPeer);
@@ -588,7 +588,7 @@ typedef MSTATUS (*NSSLasn1DecodeSslSession)(
 typedef sbyte4 (*NSSLsetMinRSAKeySize)(ubyte4 keySize);
 typedef sbyte4 (*NSSLsetSha1SigAlg)(intBoolean setting);
 typedef sbyte4 (*NSSLsetFIPSEnabled)(ubyte isFIPSEnabled);
-typedef sbyte4 (*NSSLsslCheckFIPS)();
+typedef sbyte4 (*NSSLsslCheckFIPS)(void);
 typedef sbyte4 (*NSSLsetDSACiphers)(sbyte4 connectionInstance, ubyte setDSACiphers);
 typedef sbyte4 (*NSSLsetCertifcateStatusRequestExtensions)(
      sbyte4 connectionInstance, char **ppTrustedResponderCertPath,
@@ -806,6 +806,7 @@ extern int gNsslMethodsValid;
 extern nssl_methods_t gNsslMethods;
 MOC_EXTERN sbyte4 SSL_bindShimMethods(nssl_methods_t *pMeth);
 #define NSSL_CHK_CALL(fld, arg1, ...)	( (gNsslMethodsValid && (NULL != gNsslMethods.fld)) ? (MSTATUS) (*gNsslMethods.fld)(arg1, ## __VA_ARGS__) : (MSTATUS) -1)
+#define NSSL_CHK_CALL_NOARGS(fld)	( (gNsslMethodsValid && (NULL != gNsslMethods.fld)) ? (MSTATUS) (*gNsslMethods.fld)() : (MSTATUS) -1)
 
 #define OSSL_MALLOC 	malloc
 #define OSSL_CALLOC 	calloc

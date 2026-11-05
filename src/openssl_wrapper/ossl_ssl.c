@@ -12103,8 +12103,8 @@ static int setMinAndMaxVersion(int maxVersion, int minVersion)
     int maxVersionCheckFlag = -1;
 
     /* Get current values set */
-    currMaxVersion = NSSL_CHK_CALL(sslGetMaxVersion, " ");
-    currMinVersion = NSSL_CHK_CALL(sslGetMinVersion, " ");
+    currMaxVersion = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
+    currMinVersion = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
 
     /* Verify the new values */
     minVersionCheckFlag = OSSL_verify_proto_version(minVersion);
@@ -13109,7 +13109,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
         goto exit;
     }
 
-    status1 = NSSL_CHK_CALL(sslInitializeVersion, "");
+    status1 = NSSL_CHK_CALL_NOARGS(sslInitializeVersion);
 
     if (OK > (status = moc_mutexRelease(m_connectionCountMutex)))
     {
@@ -15235,7 +15235,7 @@ int SSL_get_min_proto_version(SSL *s)
       if (NULL == s)
          return 0;
 
-      version = NSSL_CHK_CALL(sslGetMinVersion, " ");
+      version = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
       osslVersion = OSSL_convert_minor_version_to_ossl(version);
       if (-1 == osslVersion)
         return 0;
@@ -15286,7 +15286,7 @@ int SSL_get_max_proto_version(SSL *s)
       if (NULL == s)
          return 0;
 
-      version = NSSL_CHK_CALL(sslGetMaxVersion, " ");
+      version = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
       osslVersion = OSSL_convert_minor_version_to_ossl(version);
       osslVersion = (OSSL_get_major_proto_version(osslVersion) << 8 ) + osslVersion;
       return osslVersion;
@@ -25679,8 +25679,8 @@ static int computeAndSetVersion(long option, unsigned long *pVersionOptions)
     int maxVersionIndex = -1, minVersionIndex = -1;
     ubyte4 minVersion = 0, maxVersion = 0;
 
-    minVersion  = NSSL_CHK_CALL(sslGetMinVersion, " ");
-    maxVersion  = NSSL_CHK_CALL(sslGetMaxVersion, " ");
+    minVersion  = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
+    maxVersion  = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
     /* Map the min version in NanoSSL stack to the indeices in list above */
     getVersionIndex(minVersion, &minVersionIndex);
 
@@ -25969,7 +25969,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
      {
          ubyte4 minVersion;
          int version = -1;
-         minVersion = NSSL_CHK_CALL(sslGetMinVersion, " ");
+         minVersion = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
          switch(minVersion)
          {
             case SSL3_MINORVERSION:
@@ -26035,7 +26035,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
      {
          ubyte4 maxVersion;
          int version = -1;
-         maxVersion = NSSL_CHK_CALL(sslGetMaxVersion, " ");
+         maxVersion = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
          switch(maxVersion)
          {
             case SSL3_MINORVERSION:
@@ -27605,7 +27605,7 @@ static int OSSL_init(void)
   } while (0);
 
 #if defined(__ENABLE_DIGICERT_SSL_FIPS__)
-  if (OK > (status = NSSL_CHK_CALL(sslCheckFIPS, "")))
+  if (OK > (status = NSSL_CHK_CALL_NOARGS(sslCheckFIPS)))
   {
     PRINT("sslCheckFIPS failed with status = %d\n", (int)status);
   }
