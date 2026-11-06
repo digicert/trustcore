@@ -7354,6 +7354,47 @@ static byteBoolean TRUSTEDGE_agentTransportFailureCanFallback(
             return FALSE;
     }
 }
+
+static MSTATUS TRUSTEDGE_agentLimitWebSocketChunkSize(
+    TrustEdgeConfig *pConfig)
+{
+    MSTATUS status = OK;
+    if (NULL == pConfig)
+    {
+        status = ERR_NULL_POINTER;
+        goto exit;
+    }
+
+    if (FALSE == pConfig->chunkSupported)
+    {
+        goto exit;
+    }
+
+    if (pConfig->wsMaxBuffer <= WS_BUFFER_OVERHEAD)
+    {
+        MSG_LOG_print(MSG_LOG_ERROR,
+            "%s line %d: 'ws_max_buffer' (%u) must be greater than the WebSocket overhead (%u)\n",
+            __func__, __LINE__, pConfig->wsMaxBuffer,
+            (ubyte4) WS_BUFFER_OVERHEAD);
+        status = ERR_TRUSTEDGE_AGENT;
+        goto exit;
+    }
+
+    /* Chunk payload plus overhead must stay within the buffer cap */
+    if (pConfig->chunkSize > pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD)
+    {
+        MSG_LOG_print(MSG_LOG_INFO,
+            "%s line %d: reducing 'chunk_size' from %u to %u to fit within 'ws_max_buffer' (%u)\n",
+            __func__, __LINE__, pConfig->chunkSize,
+            pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD,
+            pConfig->wsMaxBuffer);
+
+        pConfig->chunkSize = pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD;
+    }
+
+exit:
+    return status;
+}
 #endif
 
 static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
@@ -7606,29 +7647,10 @@ static MSTATUS TRUSTEDGE_agentMqttConnectEndpoint(
             goto exit;
         }
 
-        if (TRUE == pCtx->pConfig->chunkSupported)
+        status = TRUSTEDGE_agentLimitWebSocketChunkSize(pCtx->pConfig);
+        if (OK != status)
         {
-            if (pCtx->pConfig->wsMaxBuffer <= WS_BUFFER_OVERHEAD)
-            {
-                status = ERR_TRUSTEDGE_AGENT;
-                MSG_LOG_print(MSG_LOG_ERROR,
-                    "%s line %d: 'ws_max_buffer' (%u) must be greater than the WebSocket overhead (%u)\n",
-                    __func__, __LINE__, pCtx->pConfig->wsMaxBuffer,
-                    (ubyte4) WS_BUFFER_OVERHEAD);
-                goto exit;
-            }
-
-            /* Chunk payload plus overhead must stay within the buffer cap. */
-            if (pCtx->pConfig->chunkSize > pCtx->pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD)
-            {
-                MSG_LOG_print(MSG_LOG_INFO,
-                    "%s line %d: reducing 'chunk_size' from %u to %u to fit within 'ws_max_buffer' (%u)\n",
-                    __func__, __LINE__, pCtx->pConfig->chunkSize,
-                    pCtx->pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD,
-                    pCtx->pConfig->wsMaxBuffer);
-
-                pCtx->pConfig->chunkSize = pCtx->pConfig->wsMaxBuffer - WS_BUFFER_OVERHEAD;
-            }
+            goto exit;
         }
 
         status = WS_createContext(&pWsCtx, pCtx->pConfig->wsMaxBuffer);

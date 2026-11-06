@@ -1,0 +1,29 @@
+{
+    "directory_paths": {
+        "bin_dir": "bin",
+        "lib_dir": "bin",
+        "root_dir": "projects/trustedge/sample",
+        "conf_dir": "projects/trustedge/sample/conf",
+        "keystore_dir": "projects/trustedge/sample/Keystore"
+    },
+    "configuration": {
+        "require_pqc": false,
+        "transport": "wss://"
+    },
+    "proxy": {
+        "url": null
+    },
+    "agent": {
+        "bootstrap": null,
+        "workspace_dir": "projects/trustedge/sample/workspace",
+        "enforce_token": false,
+        "chunk_supported": true,
+        "chunk_size": 65536
+    },
+    "cloud_provider": {
+        "provider_creds_dir": "cloudprovider"
+    },
+    "log": {
+        "loglevel": "VERBOSE"
+    }
+}

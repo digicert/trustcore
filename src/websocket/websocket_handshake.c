@@ -137,6 +137,7 @@ static byteBoolean WS_connectionHasUpgrade(const sbyte *pVal, ubyte4 valLen)
 extern MSTATUS WS_generateKey(ubyte *pRawKey16, sbyte *pBase64Key)
 {
     MSTATUS status     = OK;
+    MSTATUS freeStatus = OK;
     ubyte   *pEncoded  = NULL;
     ubyte4  encodedLen = 0;
 
@@ -163,7 +164,11 @@ extern MSTATUS WS_generateKey(ubyte *pRawKey16, sbyte *pBase64Key)
 exit:
     if (NULL != pEncoded)
     {
-        status = BASE64_freeMessage(&pEncoded);
+        freeStatus = BASE64_freeMessage(&pEncoded);
+        if (OK == status)
+        {
+            status = freeStatus;
+        }
     }
 
     return status;
@@ -174,6 +179,7 @@ exit:
 extern MSTATUS WS_computeAccept(const sbyte *pBase64Key, sbyte *pAcceptOut)
 {
     MSTATUS status = OK;
+    MSTATUS freeStatus = OK;
     /* pBase64Key (24) + WS_GUID (36) = 60 bytes */
     ubyte  concat[60];
     ubyte  digest[SHA1_RESULT_SIZE];
@@ -220,7 +226,11 @@ extern MSTATUS WS_computeAccept(const sbyte *pBase64Key, sbyte *pAcceptOut)
 exit:
     if (NULL != pEncoded)
     {
-        status = BASE64_freeMessage(&pEncoded);
+        freeStatus = BASE64_freeMessage(&pEncoded);
+        if (OK == status)
+        {
+            status = freeStatus;
+        }
     }
 
     return status;
@@ -472,6 +482,12 @@ extern MSTATUS WS_parseUpgradeResponse(
         }
         else if (WS_strCaseEq(pName, nameLen, "Sec-WebSocket-Accept", 20))
         {
+            /* Check the length before comparing to avoid reading past pVal */
+            if (28 != valLen)
+            {
+                goto exit;
+            }
+
             status = WS_computeAccept(pBase64Key, expectedAccept);
             if (OK != status)
             {
@@ -485,9 +501,11 @@ extern MSTATUS WS_parseUpgradeResponse(
                 goto exit;
             }
 
-            if (28 != valLen || 0 != cmpResult)
+            /* Restore the failure status so later early exits cannot return OK */
+            status = ERR_WS_HANDSHAKE_FAILED;
+
+            if (0 != cmpResult)
             {
-                status = ERR_WS_HANDSHAKE_FAILED;
                 goto exit;
             }
 
@@ -587,6 +605,11 @@ extern MSTATUS WS_performHandshake(
         status = TCP_WRITE(pCtx->socket, pReqBuf, reqLen, &written);
         if (OK != status)
         {
+            goto exit;
+        }
+        if (written != reqLen)
+        {
+            status = ERR_WS_HANDSHAKE_FAILED;
             goto exit;
         }
     }

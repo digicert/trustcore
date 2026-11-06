@@ -440,10 +440,14 @@ drain_ring_buffer:
         /* Read a chunk of raw bytes from the transport */
         bytesRead = 0;
 
-        status = DIGI_MALLOC((void **)&pRawBuf, WS_RAW_BUF_SIZE);
-        if (OK != status)
+        /* Reused across iterations of control-only reads */
+        if (NULL == pRawBuf)
         {
-            goto exit;
+            status = DIGI_MALLOC((void **)&pRawBuf, WS_RAW_BUF_SIZE);
+            if (OK != status)
+            {
+                goto exit;
+            }
         }
 
         if (WS_TRANSPORT_TCP == pCtx->transportType)
