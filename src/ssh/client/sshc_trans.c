@@ -117,6 +117,7 @@
 #include "../../crypto_interface/crypto_interface_blowfish.h"
 #include "../../crypto_interface/crypto_interface_chacha20.h"
 #include "../../crypto_interface/crypto_interface_rsa.h"
+#include "../../crypto_interface/crypto_interface_pkcs1.h"
 #include "../crypto_interface/crypto_interface_dh.h"
 #ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto_interface/crypto_interface_ecc.h"
@@ -162,7 +163,7 @@ static MSTATUS SSHC_TRANS_freeGroupDH(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_sendServerDHGRequest(struct sshClientContext *pContextSSH);
 #endif
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS SSHC_TRANS_allocRSA(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_freeRSA(struct sshClientContext *pContextSSH);
 static MSTATUS SSHC_TRANS_sendKexRsaSecret(sshClientContext *pContextSSH);
@@ -277,7 +278,7 @@ static sshcKeyExMethods dhClassicMethods = { SSHC_TRANS_allocClassicDH, SSHC_TRA
 static sshcKeyExMethods dhGroupMethods   = { SSHC_TRANS_allocGroupDH,   SSHC_TRANS_freeGroupDH,   SSHC_TRANS_sendServerDHGRequest };
 #endif
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static sshcKeyExMethods rsaMethods       = { SSHC_TRANS_allocRSA,       SSHC_TRANS_freeRSA,       NULL };
 #endif
 
@@ -958,7 +959,7 @@ SSHC_TRANS_freeGroupDH(struct sshClientContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS
 SSHC_TRANS_allocRSA(struct sshClientContext *pContextSSH)
 {
@@ -975,7 +976,7 @@ SSHC_TRANS_allocRSA(struct sshClientContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS
 SSHC_TRANS_freeRSA(struct sshClientContext *pContextSSH)
 {
@@ -3159,7 +3160,7 @@ SSHC_TRANS_parseCertRSA(struct sshClientContext *pContextSSH, const sshStringBuf
         goto exit;
 
         /* key usage: flags depend on the key exchange.*/
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
         if (&rsaMethods == pContextSSH->pKeyExSuiteInfo->pKeyExMethods)
         {
             keyUsage |= (1 << keyEncipherment);
@@ -4412,7 +4413,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 
 static MSTATUS
 SSHC_TRANS_receiveServerKexRsaPubKey(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
@@ -4543,14 +4544,8 @@ exit:
 
 } /* SSHC_TRANS_receiveServerKexRsaPubKey */
 
-#endif /* (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) */
-
-
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
-
-#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 SSHC_TRANS_sendKexRsaSecret(sshClientContext *pContextSSH)
 {
@@ -4583,9 +4578,15 @@ SSHC_TRANS_sendKexRsaSecret(sshClientContext *pContextSSH)
 
     DEBUG_RELABEL_MEMORY(pSecret);
 
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
+    if (OK > (status = CRYPTO_INTERFACE_PKCS1_rsaOaepEncrypt(MOC_RSA(pContextSSH->hwAccelCookie) g_pRandomContext,
+                                              pContextSSH->sshKeyExCtx.transientKey.key.pRSA, H_rsaAlgoId, MOC_PKCS1_ALG_MGF1,
+                                              H_rsaAlgoId, pSecret, (ubyte4)secretLength, NULL, 0, &pEncryptedSecret, &encryptedLen)))
+#else
     if (OK > (status = PKCS1_rsaesOaepEncrypt(MOC_RSA(pContextSSH->hwAccelCookie) g_pRandomContext,
                                               pContextSSH->sshKeyExCtx.transientKey.key.pRSA, H_rsaAlgoId, PKCS1_MGF1_FUNC, pSecret,
                                               (ubyte4)secretLength, NULL, 0, &pEncryptedSecret, &encryptedLen)))
+#endif
     {
         goto exit;
     }
@@ -4611,6 +4612,10 @@ SSHC_TRANS_sendKexRsaSecret(sshClientContext *pContextSSH)
     DUMP("update:", 1 + pPayload, 4 + encryptedLen);
 
     /* add K (random shared secret) to hash */
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
+    if (OK > (status = digestMpintFromByteString(pContextSSH, pContextSSH->sshKeyExCtx.pKeyExHash, pSecret + 4, (ubyte4)secretLength - 4)))
+        goto exit;
+#else
     if (OK > (status = digestMpint(pContextSSH, pContextSSH->sshKeyExCtx.pKeyExHash, pRandomValue)))
         goto exit;
 
@@ -4619,6 +4624,16 @@ SSHC_TRANS_sendKexRsaSecret(sshClientContext *pContextSSH)
         goto exit;
 
     DEBUG_RELABEL_MEMORY(SSH_K(pContextSSH));
+#endif
+
+    if (OK > (status = DIGI_MALLOC((void **)&pContextSSH->sshKeyExCtx.pBytesSharedSecret, (ubyte4)secretLength - 4)))
+        goto exit;
+
+    pContextSSH->sshKeyExCtx.bytesSharedSecretLen = (ubyte4)secretLength - 4;
+    if (OK > (status = DIGI_MEMCPY(pContextSSH->sshKeyExCtx.pBytesSharedSecret, pSecret + 4, pContextSSH->sshKeyExCtx.bytesSharedSecretLen)))
+        goto exit;
+
+    DEBUG_RELABEL_MEMORY(pContextSSH->sshKeyExCtx.pBytesSharedSecret);
 
     status = SSHC_OUT_MESG_sendMessage(pContextSSH, pPayload, payloadLength, &numBytesWritten);
 
@@ -4629,20 +4644,17 @@ exit:
         FREE(pEncryptedSecret);
 
     if (NULL != pSecret)
+    {
+        (void) DIGI_MEMSET(pSecret, 0x00, secretLength);
         FREE(pSecret);
+    }
 
     VLONG_freeVlong(&pRandomValue, NULL);
 
     return status;
 }
-#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
-
-#endif /* (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) */
-
 
 /*------------------------------------------------------------------*/
-
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 
 static MSTATUS
 SSHC_TRANS_receiveServerKexRsaDone(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
@@ -4763,7 +4775,7 @@ exit:
 
 } /* SSHC_TRANS_receiveServerKexRsaDone */
 
-#endif /* (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) */
+#endif /* (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) */
 
 /*------------------------------------------------------------------*/
 
@@ -4782,9 +4794,9 @@ SSHC_TRANS_receiveServerHybridReply(sshClientContext *pContextSSH,
     vlong*              pVlongQueue = NULL;
     ubyte*              pCertClone = NULL;
     ubyte*              pEccSharedSecret = NULL;
-    sbyte4              eccSharedSecretLen;
+    ubyte4              eccSharedSecretLen = 0;
     ubyte*              pQsSharedSecret = NULL;
-    sbyte4              qsSharedSecretLen;
+    ubyte4              qsSharedSecretLen = 0;
     ECCKey*             pECCKey = NULL;
     ECCKey*             pECCPubKey = NULL;
     QS_CTX*             pQsCtx = NULL;
@@ -4899,7 +4911,7 @@ SSHC_TRANS_receiveServerHybridReply(sshClientContext *pContextSSH,
     if (OK != status)
         goto exit;
 
-    status = CRYPTO_INTERFACE_ECDH_generateSharedSecretFromKeysAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pECCPubKey, &pEccSharedSecret, (sbyte4*)&eccSharedSecretLen, 1, NULL); 
+    status = CRYPTO_INTERFACE_ECDH_generateSharedSecretFromKeysAux(MOC_ECC(pContextSSH->hwAccelCookie) pECCKey, pECCPubKey, &pEccSharedSecret, &eccSharedSecretLen, 1, NULL); 
     if (OK != status)
         goto exit;
 
@@ -5766,7 +5778,7 @@ SSHC_TRANS_doProtocol(sshClientContext *pContextSSH, ubyte *pNewMesg, ubyte4 new
         }
 #endif
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
         case kTransReceiveRSA:
         case kReduxTransReceiveRSA:
         {
