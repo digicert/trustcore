@@ -1,0 +1,74 @@
+name: "NanoWS Unit Tests"
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - .github/workflows/nanows_unit_test.yml
+      - CMakeLists.txt
+      - projects/websocket/**
+      - projects/websocket_testunit/**
+      - src/websocket/**
+
+jobs:
+  nanows-unit-tests:
+    runs-on: [digicert-medium]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake libcmocka-dev lcov pkg-config valgrind
+        cmake --version
+
+    - name: Build NanoWS with Unit Tests
+      env:
+        CM_ENV_CODE_COVERAGE: 1
+      run: |
+        cmake -DENABLE_WEBSOCKET_SUPPORT=ON -DENABLE_WEBSOCKET_UNITTEST=ON -B build -S .
+        cmake --build build
+
+    - name: Baseline Coverage
+      run: |
+        lcov --no-external --capture --initial --directory . --output-file /tmp/nanows_base.info
+
+    - name: Run NanoWS Unit Tests
+      run: |
+        ./projects/websocket_testunit/run.sh
+
+    - name: Run NanoWS Unit Tests Under Valgrind
+      run: |
+        cd src/websocket/testunit
+        for t in test_websocket_frame test_websocket_handshake test_websocket_websocket; do
+          valgrind --leak-check=full --error-exitcode=9 -q "./${t}"
+        done
+
+    - name: Capture Coverage
+      run: |
+        lcov --no-external --capture --directory . --output-file /tmp/nanows_test.info
+
+    - name: Combine All Coverage
+      run: |
+        lcov --add-tracefile /tmp/nanows_base.info \
+             --add-tracefile /tmp/nanows_test.info \
+             --output-file /tmp/nanows_combined.info
+
+    - name: Print Combined Coverage Summary
+      run: |
+        echo "Combined NanoWS Coverage Summary:"
+        lcov --extract /tmp/nanows_combined.info \
+          '*/src/websocket/websocket.c' \
+          '*/src/websocket/websocket_frame.c' \
+          '*/src/websocket/websocket_handshake.c' \
+          --output-file /tmp/nanows_filtered.info
+        lcov --list /tmp/nanows_filtered.info | tee coverage_summary.log
+
+    - name: Upload Coverage Summary Artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: nanows_unit_test_coverage_summary
+        path: coverage_summary.log

@@ -160,6 +160,176 @@ int trustedge_agent_unittest_parse_config()
     return retVal;
 }
 
+typedef struct
+{
+    char *pConfigEnv;
+    sbyte *pTransport;
+    ubyte4 transportPort;
+    ubyte4 wsMaxBuffer;
+    intBoolean chunkSupported;
+    ubyte4 chunkSize;
+    intBoolean enableTransportFallback;
+    MSTATUS expectedStatus;
+} TrustEdgeTransportConfigTest;
+
+static int trustedge_agent_unittest_transport_config(
+    TrustEdgeTransportConfigTest *pTest)
+{
+    int retVal = 0;
+    MSTATUS status;
+    TrustEdgeConfig *pConfig = NULL;
+    static char defaultConfigEnv[] = "TRUSTEDGE_CONFIG=./projects/trustedge/sample/trustedge_configuration/trustedge.json";
+
+    if (0 != putenv(pTest->pConfigEnv))
+    {
+        return 1;
+    }
+
+    status = TRUSTEDGE_utilsReadConfig(&pConfig);
+    retVal += UNITTEST_INT(__MOC_LINE__, status, pTest->expectedStatus);
+    if (OK == status)
+    {
+        retVal += UNITTEST_INT(
+            __MOC_LINE__, NULL != pConfig->pTransport,
+            NULL != pTest->pTransport);
+        if (NULL != pConfig->pTransport && NULL != pTest->pTransport)
+        {
+            retVal += UNITTEST_INT(
+                __MOC_LINE__, DIGI_STRCMP(pConfig->pTransport, pTest->pTransport), 0);
+        }
+        retVal += UNITTEST_INT(__MOC_LINE__, pConfig->transportPort, pTest->transportPort);
+        retVal += UNITTEST_INT(__MOC_LINE__, pConfig->wsMaxBuffer, pTest->wsMaxBuffer);
+        retVal += UNITTEST_INT(__MOC_LINE__, pConfig->chunkSupported, pTest->chunkSupported);
+        retVal += UNITTEST_INT(__MOC_LINE__, pConfig->chunkSize, pTest->chunkSize);
+        retVal += UNITTEST_INT(
+            __MOC_LINE__, pConfig->enableTransportFallback,
+            pTest->enableTransportFallback);
+    }
+
+    retVal += UNITTEST_STATUS(__MOC_LINE__, TRUSTEDGE_utilsDeleteConfig(&pConfig));
+    if (0 != putenv(defaultConfigEnv))
+    {
+        retVal++;
+    }
+
+    return retVal;
+}
+
+int trustedge_agent_unittest_websocket_config()
+{
+    int retVal = 0;
+    ubyte4 i;
+    static char websocketConfigEnv[] = "TRUSTEDGE_CONFIG=./src/trustedge/test/data/trustedge_websocket.json";
+    static char websocketDefaultsConfigEnv[] = "TRUSTEDGE_CONFIG=./src/trustedge/test/data/trustedge_websocket_defaults.json";
+    static char websocketWsDefaultsConfigEnv[] = "TRUSTEDGE_CONFIG=./src/trustedge/test/data/trustedge_websocket_ws_defaults.json";
+    static char websocketChunkedDefaultsConfigEnv[] = "TRUSTEDGE_CONFIG=./src/trustedge/test/data/trustedge_websocket_chunked_defaults.json";
+    static char nativeMqttConfigEnv[] = "TRUSTEDGE_CONFIG=./src/trustedge/test/data/trustedge_native_mqtt.json";
+    static char invalidTransportConfigEnv[] = "TRUSTEDGE_CONFIG=./src/trustedge/test/data/trustedge_invalid_transport.json";
+    TrustEdgeTransportConfigTest tests[] = {
+        {
+            websocketConfigEnv,
+            (sbyte *) "wss://", 9443, 32768, TRUE, 131072, TRUE, OK
+        },
+        {
+            websocketDefaultsConfigEnv,
+            (sbyte *) "wss://", TRUSTEDGE_TRANSPORT_WSS_PORT,
+            TRUSTEDGE_TRANSPORT_WS_MAX_BUFFER, FALSE, 131072, FALSE, OK
+        },
+        {
+            websocketWsDefaultsConfigEnv,
+            (sbyte *) "ws://", TRUSTEDGE_TRANSPORT_WS_PORT,
+            TRUSTEDGE_TRANSPORT_WS_MAX_BUFFER, FALSE, 131072, FALSE, OK
+        },
+        {
+            websocketChunkedDefaultsConfigEnv,
+            (sbyte *) "wss://", TRUSTEDGE_TRANSPORT_WSS_PORT,
+            65536, TRUE, 65536, FALSE, OK
+        },
+        {
+            nativeMqttConfigEnv,
+            NULL, 0, TRUSTEDGE_TRANSPORT_WS_MAX_BUFFER, FALSE, 131072, FALSE, OK
+        },
+        {
+            invalidTransportConfigEnv,
+            NULL, 0, 0, FALSE, 131072, FALSE, ERR_TRUSTEDGE_AGENT
+        }
+    };
+
+    for (i = 0; i < COUNTOF(tests); i++)
+    {
+        retVal += trustedge_agent_unittest_transport_config(tests + i);
+    }
+
+    return retVal;
+}
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+int trustedge_agent_unittest_websocket_chunk_limit()
+{
+    int retVal = 0;
+    MSTATUS status;
+    TrustEdgeConfig config = { 0 };
+
+    config.chunkSupported = TRUE;
+    config.chunkSize = 131072;
+    config.wsMaxBuffer = 32768;
+    status = TRUSTEDGE_agentLimitWebSocketChunkSize_unit(&config);
+    retVal += UNITTEST_STATUS(__MOC_LINE__, status);
+    retVal += UNITTEST_INT(__MOC_LINE__, config.chunkSize, 28672);
+
+    config.chunkSize = 65536;
+    config.wsMaxBuffer = 131072;
+    status = TRUSTEDGE_agentLimitWebSocketChunkSize_unit(&config);
+    retVal += UNITTEST_STATUS(__MOC_LINE__, status);
+    retVal += UNITTEST_INT(__MOC_LINE__, config.chunkSize, 65536);
+
+    config.wsMaxBuffer = WS_BUFFER_OVERHEAD;
+    status = TRUSTEDGE_agentLimitWebSocketChunkSize_unit(&config);
+    retVal += UNITTEST_INT(__MOC_LINE__, status, ERR_TRUSTEDGE_AGENT);
+
+    config.wsMaxBuffer = WS_BUFFER_OVERHEAD - 1;
+    status = TRUSTEDGE_agentLimitWebSocketChunkSize_unit(&config);
+    retVal += UNITTEST_INT(__MOC_LINE__, status, ERR_TRUSTEDGE_AGENT);
+
+    config.chunkSupported = FALSE;
+    config.chunkSize = 131072;
+    status = TRUSTEDGE_agentLimitWebSocketChunkSize_unit(&config);
+    retVal += UNITTEST_STATUS(__MOC_LINE__, status);
+    retVal += UNITTEST_INT(__MOC_LINE__, config.chunkSize, 131072);
+
+    return retVal;
+}
+
+int trustedge_agent_unittest_websocket_fallback()
+{
+    int retVal = 0;
+    ubyte4 i;
+    struct
+    {
+        MSTATUS status;
+        byteBoolean canFallback;
+    } tests[] = {
+        { ERR_TCP_CONNECT_ERROR, TRUE },
+        { ERR_WS_HANDSHAKE_FAILED, TRUE },
+        { ERR_WS_SUBPROTOCOL_MISMATCH, TRUE },
+        { ERR_HTTP_RESPONSE, FALSE },
+        { ERR_SSL_CERT_VALIDATION_FAILED, FALSE },
+        { ERR_MQTT_AUTH_METHOD_MISMATCH, FALSE },
+        { ERR_GENERAL, FALSE }
+    };
+
+    for (i = 0; i < COUNTOF(tests); i++)
+    {
+        retVal += UNITTEST_INT(
+            __MOC_LINE__,
+            TRUSTEDGE_agentTransportFailureCanFallback_unit(tests[i].status),
+            tests[i].canFallback);
+    }
+
+    return retVal;
+}
+#endif
+
 int trustedge_agent_unittest_nbirth_body()
 {
     int retVal = 0;
@@ -561,14 +731,20 @@ static int trustedge_agent_unittest_persist_cert_spec_all()
 int main()
 {
     int retVal = 0;
+    static char defaultConfigEnv[] = "TRUSTEDGE_CONFIG=./projects/trustedge/sample/trustedge_configuration/trustedge.json";
 
     DIGICERT_initDigicert();
     MSG_LOG_init(MSG_LOG_ERROR);
 
-    putenv("TRUSTEDGE_CONFIG=./projects/trustedge/sample/trustedge_configuration/trustedge.json");
+    putenv(defaultConfigEnv);
 
     retVal += trustedge_utils_unittest_valid_window_test();
     retVal += trustedge_agent_unittest_parse_config();
+    retVal += trustedge_agent_unittest_websocket_config();
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+    retVal += trustedge_agent_unittest_websocket_chunk_limit();
+    retVal += trustedge_agent_unittest_websocket_fallback();
+#endif
     retVal += trustedge_agent_unittest_nbirth_body();
     retVal += trustedge_agent_unittest_pending_policies();
     retVal += trustedge_agent_unittest_cert_template();

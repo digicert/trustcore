@@ -47,3 +47,11 @@ MOC_EXTERN MSTATUS TRUSTEDGE_agentParseIssuedCertificate_unit(
     TrustEdgeAgentCtx *pCtx,
     ubyte *pBody,
     ubyte4 bodyLen);
+
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+MOC_EXTERN byteBoolean TRUSTEDGE_agentTransportFailureCanFallback_unit(
+    MSTATUS status);
+
+MOC_EXTERN MSTATUS TRUSTEDGE_agentLimitWebSocketChunkSize_unit(
+    TrustEdgeConfig *pConfig);
+#endif

@@ -48,6 +48,7 @@ option(ENABLE_MQTT_CLIENT "Build MQTT Client." OFF)
 option(ENABLE_MQTT_TEST "Enable MQTT Client Test" OFF)
 option(ENABLE_MQTT_UNITTEST "Enable MQTT Client Unit Test" OFF)
 option(ENABLE_MQTT_STREAMING "Enable Streaming Support" OFF)
+option(ENABLE_WEBSOCKET_UNITTEST "Enable NanoWS Unit Tests" OFF)
 
 if (ENABLE_MQTT_CLIENT)
     set(CM_ENABLE_PROXY ON CACHE BOOL "Build with proxy support." FORCE)
@@ -400,6 +401,14 @@ if(ENABLE_WEBSOCKET_SUPPORT)
   endif()
   set(CM_BUILD_NANOWS ON CACHE BOOL "Build NanoWS library" FORCE)
   add_subdirectory(projects/websocket)
+endif()
+
+# NanoWS unit tests
+if(ENABLE_WEBSOCKET_UNITTEST)
+  if(NOT ENABLE_WEBSOCKET_SUPPORT)
+    message(FATAL_ERROR "ENABLE_WEBSOCKET_UNITTEST requires ENABLE_WEBSOCKET_SUPPORT=ON")
+  endif()
+  add_subdirectory(projects/websocket_testunit)
 endif()
 
 # MQTT client library

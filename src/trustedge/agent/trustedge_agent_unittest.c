@@ -18,6 +18,20 @@
 #include "trustedge_agent.c"
 #include "trustedge_agent_unittest.h"
 
+#if defined(__ENABLE_DIGICERT_WEBSOCKET_CLIENT__)
+extern byteBoolean TRUSTEDGE_agentTransportFailureCanFallback_unit(
+    MSTATUS status)
+{
+    return TRUSTEDGE_agentTransportFailureCanFallback(status);
+}
+
+extern MSTATUS TRUSTEDGE_agentLimitWebSocketChunkSize_unit(
+    TrustEdgeConfig *pConfig)
+{
+    return TRUSTEDGE_agentLimitWebSocketChunkSize(pConfig);
+}
+#endif
+
 extern MSTATUS TRUSTEDGE_agentParseCertificateSpecification_unit(
     TrustEdgeAgentCtx *pCtx,
     ubyte *pJson,
