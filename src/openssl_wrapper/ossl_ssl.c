@@ -11574,7 +11574,9 @@ SSL_CTX_clear(SSL_CTX *ctx)
            if (ctx->privatekey[i]->type == EVP_PKEY_RSA)
            {
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-               exData = RSA_get_ex_data(pkey->keydata, moc_get_rsa_ex_app_data());
+               RSA *pRsa = (NULL != pkey->keydata) ? (RSA *)pkey->keydata : pkey->pkey.rsa;
+               if (NULL != pRsa)
+                   exData = RSA_get_ex_data(pRsa, moc_get_rsa_ex_app_data());
 #else
                exData = RSA_get_ex_data(pkey->pkey.rsa, rsaExAppDataIndex);
 #endif
@@ -11583,7 +11585,9 @@ SSL_CTX_clear(SSL_CTX *ctx)
            else if (ctx->privatekey[i]->type == EVP_PKEY_EC)
            {
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-               exData = EC_KEY_get_ex_data(pkey->keydata, moc_get_ecc_ex_app_data());
+               EC_KEY *pEc = (NULL != pkey->keydata) ? (EC_KEY *)pkey->keydata : pkey->pkey.ec;
+               if (NULL != pEc)
+                   exData = EC_KEY_get_ex_data(pEc, moc_get_ecc_ex_app_data());
 #elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__)
                exData = EC_KEY_get_ex_data(pkey->pkey.ec, eccExAppDataIndex);
 #else
@@ -12103,8 +12107,8 @@ static int setMinAndMaxVersion(int maxVersion, int minVersion)
     int maxVersionCheckFlag = -1;
 
     /* Get current values set */
-    currMaxVersion = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
-    currMinVersion = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
+    currMaxVersion = NSSL_CHK_CALL(sslGetMaxVersion, " ");
+    currMinVersion = NSSL_CHK_CALL(sslGetMinVersion, " ");
 
     /* Verify the new values */
     minVersionCheckFlag = OSSL_verify_proto_version(minVersion);
@@ -13109,7 +13113,7 @@ SSL_CTX_new(const SSL_METHOD *meth)
         goto exit;
     }
 
-    status1 = NSSL_CHK_CALL_NOARGS(sslInitializeVersion);
+    status1 = NSSL_CHK_CALL(sslInitializeVersion, "");
 
     if (OK > (status = moc_mutexRelease(m_connectionCountMutex)))
     {
@@ -15235,7 +15239,7 @@ int SSL_get_min_proto_version(SSL *s)
       if (NULL == s)
          return 0;
 
-      version = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
+      version = NSSL_CHK_CALL(sslGetMinVersion, " ");
       osslVersion = OSSL_convert_minor_version_to_ossl(version);
       if (-1 == osslVersion)
         return 0;
@@ -15286,7 +15290,7 @@ int SSL_get_max_proto_version(SSL *s)
       if (NULL == s)
          return 0;
 
-      version = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
+      version = NSSL_CHK_CALL(sslGetMaxVersion, " ");
       osslVersion = OSSL_convert_minor_version_to_ossl(version);
       osslVersion = (OSSL_get_major_proto_version(osslVersion) << 8 ) + osslVersion;
       return osslVersion;
@@ -23987,6 +23991,9 @@ read_packet:
         }
      }
 
+     if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
+         return retCount;
+
      if (NULL != pFirstUnusedByte) { /* 1 full record was extracted and processed */
       if (0 == bytesRemaining)
         {
@@ -25679,8 +25686,8 @@ static int computeAndSetVersion(long option, unsigned long *pVersionOptions)
     int maxVersionIndex = -1, minVersionIndex = -1;
     ubyte4 minVersion = 0, maxVersion = 0;
 
-    minVersion  = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
-    maxVersion  = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
+    minVersion  = NSSL_CHK_CALL(sslGetMinVersion, " ");
+    maxVersion  = NSSL_CHK_CALL(sslGetMaxVersion, " ");
     /* Map the min version in NanoSSL stack to the indeices in list above */
     getVersionIndex(minVersion, &minVersionIndex);
 
@@ -25969,7 +25976,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
      {
          ubyte4 minVersion;
          int version = -1;
-         minVersion = NSSL_CHK_CALL_NOARGS(sslGetMinVersion);
+         minVersion = NSSL_CHK_CALL(sslGetMinVersion, " ");
          switch(minVersion)
          {
             case SSL3_MINORVERSION:
@@ -26035,7 +26042,7 @@ extern long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
      {
          ubyte4 maxVersion;
          int version = -1;
-         maxVersion = NSSL_CHK_CALL_NOARGS(sslGetMaxVersion);
+         maxVersion = NSSL_CHK_CALL(sslGetMaxVersion, " ");
          switch(maxVersion)
          {
             case SSL3_MINORVERSION:
@@ -27605,7 +27612,7 @@ static int OSSL_init(void)
   } while (0);
 
 #if defined(__ENABLE_DIGICERT_SSL_FIPS__)
-  if (OK > (status = NSSL_CHK_CALL_NOARGS(sslCheckFIPS)))
+  if (OK > (status = NSSL_CHK_CALL(sslCheckFIPS, "")))
   {
     PRINT("sslCheckFIPS failed with status = %d\n", (int)status);
   }
@@ -27857,6 +27864,9 @@ SSL_peek(SSL *s, void *buf, int num)
       convertMocStatusToSslErr(s, status, SSL_F_SSL3_PEEK, ERR_R_INTERNAL_ERROR);
       return -1;
     }
+    if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
+        return retCount;
+
     if (NULL != pFirstUnusedByte)
     { /* 1 full record was extracted and processed */
       if (0 == bytesRemaining) {
@@ -31914,10 +31924,10 @@ int SSL_CTX_set0_tmp_dh_pkey(SSL_CTX *ctx, EVP_PKEY *dhpkey)
         return 0;
     }
 
-    pKey = (DH*)(dhpkey->keydata);
+    pKey = (NULL != dhpkey->keydata) ? (DH*)dhpkey->keydata : dhpkey->pkey.dh;
 
     /* check parameters are present */
-    if ((NULL == pKey->params.p) || (NULL == pKey->params.g))
+    if ((NULL == pKey) || (NULL == pKey->params.p) || (NULL == pKey->params.g))
     {
         SSLerr(SSL_F_SSL3_CTX_CTRL, ERR_R_DH_LIB);
         return 0;

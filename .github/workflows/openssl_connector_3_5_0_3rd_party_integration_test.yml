@@ -33,7 +33,7 @@ jobs:
       
           echo "Runner IP: $RUNNER_IP"
       
-          echo "$RUNNER_IP athena.securitydemos.net ossltest.securitydemos.net" | sudo tee -a /etc/hosts
+          echo "$RUNNER_IP athena.securitydemos.net ossltest.securitydemos.net mosquitto-service-01" | sudo tee -a /etc/hosts
       
           cat /etc/hosts
       
@@ -180,7 +180,7 @@ jobs:
       - name: Cleanup mocn-qa-m-products
         run: |
           rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
-      
+          
       - name: Get Slack User ID
         if: always()
         id: slack_map
@@ -204,8 +204,8 @@ jobs:
           fi
           
           if [ "$GITHUB_REF_NAME" = "main" ]; then
-            MESSAGE="OpenSSL Connector 3.5.0 3rd party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            MESSAGE="OpenSSL Connector 3.5.0 3rd Party Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
-            MESSAGE="OpenSSL Connector 3.5.0 3rd party Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            MESSAGE="OpenSSL Connector 3.5.0 3rd Party Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           fi
           curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -379,6 +379,9 @@ static int digiprov_pqc_digest_signverify_init(void *vctx, const char *mdname, v
 
     pCtx->flag_allow_md = 0;
 
+    if (ht_none == pCtx->mdCid)
+        return 1;
+
     if (pCtx->mdctx == NULL) 
     {
         pCtx->mdctx = EVP_MD_CTX_new();
@@ -411,7 +414,7 @@ static int digiprov_pqc_digest_signverify_update(void *vctx, const unsigned char
 {
     DP_PQCSIG_CTX *pCtx = (DP_PQCSIG_CTX *) vctx;
 
-    if (pCtx == NULL || pCtx->mdctx == NULL)
+    if (pCtx == NULL || ht_none == pCtx->mdCid || pCtx->mdctx == NULL)
         return 0;
 
     return EVP_DigestUpdate(pCtx->mdctx, data, datalen);
@@ -426,7 +429,7 @@ static int digiprov_pqc_digest_sign_final(void *vctx, unsigned char *sig, size_t
     if (!digiprov_is_running())
         return 0;
 
-    if (pCtx == NULL || pCtx->mdctx == NULL)
+    if (pCtx == NULL || ht_none == pCtx->mdCid || pCtx->mdctx == NULL)
         return 0;
 
     /*
@@ -450,7 +453,7 @@ static int digiprov_pqc_digest_verify_final(void *vctx, const unsigned char *sig
     if (!digiprov_is_running())
         return 0;
 
-    if (pCtx == NULL || pCtx->mdctx == NULL)
+    if (pCtx == NULL || ht_none == pCtx->mdCid || pCtx->mdctx == NULL)
         return 0;
 
     /*
@@ -463,6 +466,23 @@ static int digiprov_pqc_digest_verify_final(void *vctx, const unsigned char *sig
     pCtx->flag_allow_md = 1;
 
     return digiprov_pqc_verify(vctx, sig, siglen, digest, (size_t)dlen);
+}
+
+static int digiprov_pqc_digest_verify(void *vctx, const unsigned char *sig, size_t siglen,
+                                      const unsigned char *tbs, size_t tbslen)
+{
+    DP_PQCSIG_CTX *pCtx = (DP_PQCSIG_CTX *) vctx;
+
+    if (pCtx == NULL)
+        return 0;
+
+    if (ht_none == pCtx->mdCid)
+        return digiprov_pqc_verify(vctx, sig, siglen, tbs, tbslen);
+
+    if (!digiprov_pqc_digest_signverify_update(vctx, tbs, tbslen))
+        return 0;
+
+    return digiprov_pqc_digest_verify_final(vctx, sig, siglen);
 }
 
 static void digiprov_pqc_sig_freectx(void *vctx)
@@ -669,6 +689,7 @@ const OSSL_DISPATCH digiprov_pqc_signature_functions[] =
     { OSSL_FUNC_SIGNATURE_DIGEST_VERIFY_INIT,  (void (*)(void))digiprov_pqc_digest_verify_init },
     { OSSL_FUNC_SIGNATURE_DIGEST_VERIFY_UPDATE,(void (*)(void))digiprov_pqc_digest_signverify_update },
     { OSSL_FUNC_SIGNATURE_DIGEST_VERIFY_FINAL, (void (*)(void))digiprov_pqc_digest_verify_final },
+    { OSSL_FUNC_SIGNATURE_DIGEST_VERIFY,       (void (*)(void))digiprov_pqc_digest_verify },
     { OSSL_FUNC_SIGNATURE_FREECTX,             (void (*)(void))digiprov_pqc_sig_freectx },
     { OSSL_FUNC_SIGNATURE_DUPCTX,              (void (*)(void))digiprov_pqc_sig_dupctx },
     { OSSL_FUNC_SIGNATURE_GET_CTX_PARAMS,      (void (*)(void))digiprov_pqc_sig_get_ctx_params },
