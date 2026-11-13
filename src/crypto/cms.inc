@@ -225,6 +225,11 @@ typedef struct CMS_SignedDataCtx
     PKCS7_SignatureInfo *pSigners; /* [numSigners] */
     ubyte4              numAlgos;
     SignedDataHash      *pHashes; /* [numAlgos] */
+    ubyte               *pRawContent; /* retained content bytes, for ML-DSA
+                                          verification without signed
+                                          attributes (RFC 9882) */
+    ubyte4              rawContentLen;
+    intBoolean          hasRawContent;
 } CMS_SignedDataCtx;
 
 /*
@@ -538,6 +543,10 @@ CMS_deleteContext( CMS_context* pContext)
             if (pSigCtx->pSigners)
             {
                 FREE(pSigCtx->pSigners);
+            }
+            if (pSigCtx->pRawContent)
+            {
+                FREE(pSigCtx->pRawContent);
             }
         }
         break;
@@ -1456,6 +1465,8 @@ CMS_Sig_HashData( CMS_CTX* pCtx, ubyte** pOutput, ubyte4* pOutputLen)
         return OK;
     }
 
+    pSigCtx->hasRawContent = TRUE;
+
     if (!pSigCtx->pEContent)
     {
         return ERR_INTERNAL_ERROR;
@@ -1511,6 +1522,28 @@ CMS_Sig_HashData( CMS_CTX* pCtx, ubyte** pOutput, ubyte4* pOutputLen)
             pHash->hashAlgo->updateFunc(MOC_HASH(pCtx->hwAccelCtx)
                                         pHash->bulkCtx,
                                         buff, copySize);
+        }
+
+        /* retain a copy of the content bytes too, for ML-DSA verification
+         * when there are no signed attributes (RFC 9882) */
+        {
+            ubyte* pGrown = MALLOC(pSigCtx->rawContentLen + copySize);
+            if (!pGrown)
+            {
+                status = ERR_MEM_ALLOC_FAIL;
+                goto exit;
+            }
+            if (pSigCtx->rawContentLen > 0)
+            {
+                DIGI_MEMCPY(pGrown, pSigCtx->pRawContent, pSigCtx->rawContentLen);
+            }
+            DIGI_MEMCPY(pGrown + pSigCtx->rawContentLen, buff, copySize);
+            if (pSigCtx->pRawContent)
+            {
+                FREE(pSigCtx->pRawContent);
+            }
+            pSigCtx->pRawContent = pGrown;
+            pSigCtx->rawContentLen += copySize;
         }
     }
 
@@ -1579,7 +1612,8 @@ CMS_Sig_VerifySignatures( CMS_CTX* pCtx)
     status = PKCS7_VerifySignatures(MOC_ASYM(pCtx->hwAccelCtx) pCtx->pContent, pContentInfo,
                        pCtx->cs, pSigCtx->numAlgos, pSigCtx->pHashes,
                        pCtx->cbArg, pCtx->cb.getCertFun, pCtx->cb.getCertFunV3, (void *) pCtx->cb.valCertFun, TRUE,
-                       &pSigCtx->numSigners, &pSigCtx->pSigners, pCtx->pResData);
+                       &pSigCtx->numSigners, &pSigCtx->pSigners, pCtx->pResData,
+                       pSigCtx->pRawContent, pSigCtx->rawContentLen, pSigCtx->hasRawContent);
 
     if ((OK == status) && (0 == pSigCtx->numSigners))
     {
@@ -1680,6 +1714,29 @@ CMS_setDetachedSignatureData( CMS_context context, const ubyte* payload,
         return ERR_PKCS7_DETACHED_DATA_ALREADY_SET;
     }
 
+    pSigCtx->hasRawContent = TRUE;
+
+    /* retain a copy of the payload too, for ML-DSA verification when there
+     * are no signed attributes (RFC 9882) */
+    if (payloadLen > 0)
+    {
+        ubyte* pGrown = MALLOC(pSigCtx->rawContentLen + payloadLen);
+        if (!pGrown)
+        {
+            return ERR_MEM_ALLOC_FAIL;
+        }
+        if (pSigCtx->rawContentLen > 0)
+        {
+            DIGI_MEMCPY(pGrown, pSigCtx->pRawContent, pSigCtx->rawContentLen);
+        }
+        DIGI_MEMCPY(pGrown + pSigCtx->rawContentLen, payload, payloadLen);
+        if (pSigCtx->pRawContent)
+        {
+            FREE(pSigCtx->pRawContent);
+        }
+        pSigCtx->pRawContent = pGrown;
+        pSigCtx->rawContentLen += payloadLen;
+    }
 
     /* 1 hash the data */
     /* feed the data to all the hashes */
@@ -1717,7 +1774,8 @@ CMS_setDetachedSignatureData( CMS_context context, const ubyte* payload,
         status = PKCS7_VerifySignatures(MOC_ASYM(pCtx->hwAccelCtx) pCtx->pContent, pContentInfo,
                        pCtx->cs, pSigCtx->numAlgos, pSigCtx->pHashes,
                        pCtx->cbArg, pCtx->cb.getCertFun, pCtx->cb.getCertFunV3, (void *) pCtx->cb.valCertFun, TRUE,
-                       &pSigCtx->numSigners, &pSigCtx->pSigners, pCtx->pResData);
+                       &pSigCtx->numSigners, &pSigCtx->pSigners, pCtx->pResData,
+                       pSigCtx->pRawContent, pSigCtx->rawContentLen, pSigCtx->hasRawContent);
     }
 
     return status;

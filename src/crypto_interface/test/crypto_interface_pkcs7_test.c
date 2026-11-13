@@ -173,7 +173,7 @@ static MSTATUS myGetCertFunV3(const void* arg, CStream cs,
 }
 
 /* sign some data and then verify */
-static int SignAndVerifyData(int hint, const char* selfCertFile, const char* keyblobFile, byteBoolean isDer)
+static int SignAndVerifyData(int hint, const char* selfCertFile, const char* keyblobFile, byteBoolean isDer, byteBoolean useAuthAttrs)
 {
     MSTATUS status = OK;
     ubyte* payLoad = (ubyte*) "This is signed data content.";
@@ -234,25 +234,34 @@ static int SignAndVerifyData(int hint, const char* selfCertFile, const char* key
     mySignerInfo.pKey = &key;
     mySignerInfo.pUnauthAttrs = NULL;
     mySignerInfo.unauthAttrsLen = 0;
-    /* gather together authenticated Attributes, including transaction attributes */
-    pAuthAttributes = (Attribute *)MALLOC(sizeof(Attribute)*authAttributeLen);
 
-    if (!pAuthAttributes)
+    if (useAuthAttrs)
     {
-        status = ERR_MEM_ALLOC_FAIL;
-        goto exit;
+        /* gather together authenticated Attributes, including transaction attributes */
+        pAuthAttributes = (Attribute *)MALLOC(sizeof(Attribute)*authAttributeLen);
+
+        if (!pAuthAttributes)
+        {
+            status = ERR_MEM_ALLOC_FAIL;
+            goto exit;
+        }
+
+        /* manditory attributes like contentType and messageDigest are
+           added automatically in pkcs7 signedData */
+
+        pAuthAttributes->typeOID = pkcs9_emailAddress_OID;
+        pAuthAttributes->type = PRINTABLESTRING;
+        pAuthAttributes->value = (ubyte*) "nobody@mocana.com";
+        pAuthAttributes->valueLen = 17;
+
+        mySignerInfo.pAuthAttrs = pAuthAttributes;
+        mySignerInfo.authAttrsLen = authAttributeLen;
     }
-
-    /* manditory attributes like contentType and messageDigest are
-       added automatically in pkcs7 signedData */
-
-    pAuthAttributes->typeOID = pkcs9_emailAddress_OID;
-    pAuthAttributes->type = PRINTABLESTRING;
-    pAuthAttributes->value = (ubyte*) "nobody@mocana.com";
-    pAuthAttributes->valueLen = 17;
-
-    mySignerInfo.pAuthAttrs = pAuthAttributes;
-    mySignerInfo.authAttrsLen = authAttributeLen;
+    else
+    {
+        mySignerInfo.pAuthAttrs = NULL;
+        mySignerInfo.authAttrsLen = 0;
+    }
     mySignerInfoPtr[0] = &mySignerInfo;
 
     /* wrap inside a ContentInfo */
@@ -1373,11 +1382,19 @@ int crypto_interface_pkcs7_test_all()
 
 /* RSA tests that use a 1024 bit key are not supported by mbedtls */
 #ifndef __ENABLE_DIGICERT_RSA_MBED__
-    retVal += SignAndVerifyData(1, FILE_PATH("selfcert.der"), FILE_PATH("keyblobFile.dat"), FALSE);
+    retVal += SignAndVerifyData(1, FILE_PATH("selfcert.der"), FILE_PATH("keyblobFile.dat"), FALSE, TRUE);
 #endif
-    retVal += SignAndVerifyData(2, FILE_PATH("ecc_selfcert.der"), FILE_PATH("ecc_keyblobFile.dat"), FALSE);
+    retVal += SignAndVerifyData(2, FILE_PATH("ecc_selfcert.der"), FILE_PATH("ecc_keyblobFile.dat"), FALSE, TRUE);
 #ifdef __ENABLE_DIGICERT_PQC__
-    retVal += SignAndVerifyData(3, FILE_PATH("mldsa44_cert.der"), FILE_PATH("mldsa44_key.der"), TRUE);
+    retVal += SignAndVerifyData(3, FILE_PATH("mldsa44_cert.der"), FILE_PATH("mldsa44_key.der"), TRUE, TRUE);
+    retVal += SignAndVerifyData(4, FILE_PATH("mldsa_87_cert.der"), FILE_PATH("mldsa_87_key.der"), TRUE, TRUE);
+    retVal += SignAndVerifyData(5, FILE_PATH("mldsa_65_cert.der"), FILE_PATH("mldsa_65_key.der"), TRUE, TRUE);
+
+    /* RFC 9882: without signed attributes, ML-DSA signs/verifies the raw
+     * content bytes, not their hash */
+    retVal += SignAndVerifyData(9, FILE_PATH("mldsa44_cert.der"), FILE_PATH("mldsa44_key.der"), TRUE, FALSE);
+    retVal += SignAndVerifyData(10, FILE_PATH("mldsa_87_cert.der"), FILE_PATH("mldsa_87_key.der"), TRUE, FALSE);
+    retVal += SignAndVerifyData(11, FILE_PATH("mldsa_65_cert.der"), FILE_PATH("mldsa_65_key.der"), TRUE, FALSE);
 #endif
 
 #ifndef __ENABLE_DIGICERT_RSA_MBED__
