@@ -63,6 +63,17 @@ jobs:
           make -j$(nproc)
           sudo make install
           cd ..
+
+      - name: Install OpenSSL 3.5.0
+        run: |
+          cd ~/thirdparty_app
+          wget https://www.openssl.org/source/openssl-3.5.0.tar.gz
+          tar -xf openssl-3.5.0.tar.gz
+          cd openssl-3.5.0
+          ./config
+          make -j$(nproc)
+          sudo make install
+          cd ..
           
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -103,11 +114,7 @@ jobs:
           name: report_valgrind_tls
           path: report_valgrind_tls.zip
           retention-days: 5
-          
-      - name: Cleanup mocn-qa-m-products
-        run: |
-          rm -rf $GITHUB_WORKSPACE/mocn-qa-m-products
-          
+      
       - name: Get Slack User ID
         if: always()
         id: slack_map
@@ -131,9 +138,8 @@ jobs:
           fi
           
           if [ "$GITHUB_REF_NAME" = "main" ]; then
-            MESSAGE="OpenSSL Connector 3.5.0 Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            MESSAGE="OpenSSL Connector 3.5.0 Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
-            MESSAGE="OpenSSL Connector 3.5.0 Integration Test failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            MESSAGE="OpenSSL Connector 3.5.0 Integration Tests failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           fi
           curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-      

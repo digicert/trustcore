@@ -11574,7 +11574,9 @@ SSL_CTX_clear(SSL_CTX *ctx)
            if (ctx->privatekey[i]->type == EVP_PKEY_RSA)
            {
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-               exData = RSA_get_ex_data(pkey->keydata, moc_get_rsa_ex_app_data());
+               RSA *pRsa = (NULL != pkey->keydata) ? (RSA *)pkey->keydata : pkey->pkey.rsa;
+               if (NULL != pRsa)
+                   exData = RSA_get_ex_data(pRsa, moc_get_rsa_ex_app_data());
 #else
                exData = RSA_get_ex_data(pkey->pkey.rsa, rsaExAppDataIndex);
 #endif
@@ -11583,7 +11585,9 @@ SSL_CTX_clear(SSL_CTX *ctx)
            else if (ctx->privatekey[i]->type == EVP_PKEY_EC)
            {
 #if defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-               exData = EC_KEY_get_ex_data(pkey->keydata, moc_get_ecc_ex_app_data());
+               EC_KEY *pEc = (NULL != pkey->keydata) ? (EC_KEY *)pkey->keydata : pkey->pkey.ec;
+               if (NULL != pEc)
+                   exData = EC_KEY_get_ex_data(pEc, moc_get_ecc_ex_app_data());
 #elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__)
                exData = EC_KEY_get_ex_data(pkey->pkey.ec, eccExAppDataIndex);
 #else
@@ -23987,6 +23991,9 @@ read_packet:
         }
      }
 
+     if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
+         return retCount;
+
      if (NULL != pFirstUnusedByte) { /* 1 full record was extracted and processed */
       if (0 == bytesRemaining)
         {
@@ -27812,6 +27819,10 @@ SSL_peek(SSL *s, void *buf, int num)
     memcpy(buf, pS->pRxDataBuf + pS->rxDataBufOffset, toCopy);
     return toCopy;
   }
+
+  if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
+      return retCount;
+
    do {
    if (0 == pS->bytesRcvdRemaining) {
         pS->io_state    = OSSL_IN_READ;
@@ -27857,6 +27868,9 @@ SSL_peek(SSL *s, void *buf, int num)
       convertMocStatusToSslErr(s, status, SSL_F_SSL3_PEEK, ERR_R_INTERNAL_ERROR);
       return -1;
     }
+    if (SSL_RECEIVED_SHUTDOWN & pS->orig_s.shutdown)
+        return retCount;
+
     if (NULL != pFirstUnusedByte)
     { /* 1 full record was extracted and processed */
       if (0 == bytesRemaining) {
@@ -31914,10 +31928,10 @@ int SSL_CTX_set0_tmp_dh_pkey(SSL_CTX *ctx, EVP_PKEY *dhpkey)
         return 0;
     }
 
-    pKey = (DH*)(dhpkey->keydata);
+    pKey = (NULL != dhpkey->keydata) ? (DH*)dhpkey->keydata : dhpkey->pkey.dh;
 
     /* check parameters are present */
-    if ((NULL == pKey->params.p) || (NULL == pKey->params.g))
+    if ((NULL == pKey) || (NULL == pKey->params.p) || (NULL == pKey->params.g))
     {
         SSLerr(SSL_F_SSL3_CTX_CTRL, ERR_R_DH_LIB);
         return 0;
