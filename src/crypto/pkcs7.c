@@ -51,6 +51,7 @@ To enable the SoT Platform PKCS&nbsp;\#7 convenience API functions, the followin
 
 #include "../common/mdefs.h"
 #include "../common/merrors.h"
+#include "../common/mlimits.h"
 #include "../crypto/secmod.h"
 #include "../common/mstdlib.h"
 #include "../common/mrtos.h"
@@ -2702,10 +2703,16 @@ PKCS7_VerifySignedDataV3(MOC_ASYM(hwAccelDescr hwAccelCtx)
                      * (RFC 9882); grow the buffer's capacity (not just its
                      * exact size) so many small fragments don't copy the
                      * whole prefix on every append */
+                    if (pTemp->length > UBYTE4_MAX - retainedContentLen)
+                    {
+                        status = ERR_PKCS7_INVALID_STRUCT;
+                        goto exit;
+                    }
                     if (retainedContentLen + pTemp->length > retainedContentCap)
                     {
                         ubyte* pGrown = NULL;
-                        ubyte4 newCap = retainedContentCap * 2;
+                        ubyte4 newCap = (retainedContentCap > UBYTE4_MAX / 2) ?
+                                        UBYTE4_MAX : retainedContentCap * 2;
                         if (newCap < retainedContentLen + pTemp->length)
                             newCap = retainedContentLen + pTemp->length;
 

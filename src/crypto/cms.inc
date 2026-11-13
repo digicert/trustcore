@@ -229,6 +229,7 @@ typedef struct CMS_SignedDataCtx
                                           verification without signed
                                           attributes (RFC 9882) */
     ubyte4              rawContentLen;
+    ubyte4              rawContentCap;
     intBoolean          hasRawContent;
 } CMS_SignedDataCtx;
 
@@ -1525,9 +1526,23 @@ CMS_Sig_HashData( CMS_CTX* pCtx, ubyte** pOutput, ubyte4* pOutputLen)
         }
 
         /* retain a copy of the content bytes too, for ML-DSA verification
-         * when there are no signed attributes (RFC 9882) */
+         * when there are no signed attributes (RFC 9882); grow the buffer's
+         * capacity (not just its exact size) so many small chunks don't
+         * copy the whole prefix on every append */
+        if (copySize > UBYTE4_MAX - pSigCtx->rawContentLen)
         {
-            ubyte* pGrown = MALLOC(pSigCtx->rawContentLen + copySize);
+            status = ERR_MEM_ALLOC_FAIL;
+            goto exit;
+        }
+        if (pSigCtx->rawContentLen + copySize > pSigCtx->rawContentCap)
+        {
+            ubyte* pGrown = NULL;
+            ubyte4 newCap = (pSigCtx->rawContentCap > UBYTE4_MAX / 2) ?
+                            UBYTE4_MAX : pSigCtx->rawContentCap * 2;
+            if (newCap < pSigCtx->rawContentLen + copySize)
+                newCap = pSigCtx->rawContentLen + copySize;
+
+            pGrown = MALLOC(newCap);
             if (!pGrown)
             {
                 status = ERR_MEM_ALLOC_FAIL;
@@ -1537,14 +1552,15 @@ CMS_Sig_HashData( CMS_CTX* pCtx, ubyte** pOutput, ubyte4* pOutputLen)
             {
                 DIGI_MEMCPY(pGrown, pSigCtx->pRawContent, pSigCtx->rawContentLen);
             }
-            DIGI_MEMCPY(pGrown + pSigCtx->rawContentLen, buff, copySize);
             if (pSigCtx->pRawContent)
             {
                 FREE(pSigCtx->pRawContent);
             }
             pSigCtx->pRawContent = pGrown;
-            pSigCtx->rawContentLen += copySize;
+            pSigCtx->rawContentCap = newCap;
         }
+        DIGI_MEMCPY(pSigCtx->pRawContent + pSigCtx->rawContentLen, buff, copySize);
+        pSigCtx->rawContentLen += copySize;
     }
 
     /* call finalFunc if we are done */
@@ -1717,24 +1733,40 @@ CMS_setDetachedSignatureData( CMS_context context, const ubyte* payload,
     pSigCtx->hasRawContent = TRUE;
 
     /* retain a copy of the payload too, for ML-DSA verification when there
-     * are no signed attributes (RFC 9882) */
+     * are no signed attributes (RFC 9882); grow the buffer's capacity (not
+     * just its exact size) so many small chunks don't copy the whole
+     * prefix on every append */
     if (payloadLen > 0)
     {
-        ubyte* pGrown = MALLOC(pSigCtx->rawContentLen + payloadLen);
-        if (!pGrown)
+        if (payloadLen > UBYTE4_MAX - pSigCtx->rawContentLen)
         {
             return ERR_MEM_ALLOC_FAIL;
         }
-        if (pSigCtx->rawContentLen > 0)
+        if (pSigCtx->rawContentLen + payloadLen > pSigCtx->rawContentCap)
         {
-            DIGI_MEMCPY(pGrown, pSigCtx->pRawContent, pSigCtx->rawContentLen);
+            ubyte* pGrown = NULL;
+            ubyte4 newCap = (pSigCtx->rawContentCap > UBYTE4_MAX / 2) ?
+                            UBYTE4_MAX : pSigCtx->rawContentCap * 2;
+            if (newCap < pSigCtx->rawContentLen + payloadLen)
+                newCap = pSigCtx->rawContentLen + payloadLen;
+
+            pGrown = MALLOC(newCap);
+            if (!pGrown)
+            {
+                return ERR_MEM_ALLOC_FAIL;
+            }
+            if (pSigCtx->rawContentLen > 0)
+            {
+                DIGI_MEMCPY(pGrown, pSigCtx->pRawContent, pSigCtx->rawContentLen);
+            }
+            if (pSigCtx->pRawContent)
+            {
+                FREE(pSigCtx->pRawContent);
+            }
+            pSigCtx->pRawContent = pGrown;
+            pSigCtx->rawContentCap = newCap;
         }
-        DIGI_MEMCPY(pGrown + pSigCtx->rawContentLen, payload, payloadLen);
-        if (pSigCtx->pRawContent)
-        {
-            FREE(pSigCtx->pRawContent);
-        }
-        pSigCtx->pRawContent = pGrown;
+        DIGI_MEMCPY(pSigCtx->pRawContent + pSigCtx->rawContentLen, payload, payloadLen);
         pSigCtx->rawContentLen += payloadLen;
     }
 
