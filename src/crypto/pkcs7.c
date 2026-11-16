@@ -51,6 +51,7 @@ To enable the SoT Platform PKCS&nbsp;\#7 convenience API functions, the followin
 
 #include "../common/mdefs.h"
 #include "../common/merrors.h"
+#include "../common/mlimits.h"
 #include "../crypto/secmod.h"
 #include "../common/mstdlib.h"
 #include "../common/mrtos.h"
@@ -244,7 +245,9 @@ static MSTATUS PKCS7_ProcessSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                                ASN1_ITEMPTR pContentType,
                                                sbyte4 numHashes,
                                                SignedDataHash hashes[/*numHashes*/],
-                                               PKCS7_SignatureInfo* pSigInfo);
+                                               PKCS7_SignatureInfo* pSigInfo,
+                                               const ubyte* pRawContent, ubyte4 rawContentLen,
+                                               byteBoolean hasRawContent);
 
 /* figure out the certificate that corresponds to the signer info */
 static MSTATUS PKCS7_GetSignerInfoCertificate( CStream s,
@@ -350,7 +353,6 @@ PKCS7_AddIssuerAndSerialNumber(DER_ITEMPTR pParent,
  * payLoadType is provided for adding contentType attribute value if appropriate;
  * pDataBuffer is used to keep track of the allocated buffers that needs to be deallocated later.
 */
-#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pParent,
                        signerInfoPtr pSignerInfo,
@@ -359,15 +361,6 @@ PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pParent,
                         RNGFun rngFun, void* rngFunArg,
                         ubyte* payLoadType,
                         ubyte** ppDataBuffer );
-#else
-static MSTATUS
-PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pParent,
-                       signerInfoPtr pSignerInfo,
-                        SignedDataHash* pDataHash,
-                        RNGFun rngFun, void* rngFunArg,
-                        ubyte* payLoadType,
-                        ubyte** ppDataBuffer );
-#endif
 
 #if defined(__ENABLE_DIGICERT_CMS__) && defined(__ENABLE_DIGICERT_CMC__)
 
@@ -377,7 +370,6 @@ PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pParent,
  * payLoadType is provided for adding contentType attribute value if appropriate;
  * pDataBuffer is used to keep track of the allocated buffers that needs to be deallocated later.
 */
-#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pParent,
                        cmcSignerInfoPtr pCmcSignerInfo,
@@ -386,15 +378,6 @@ CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pParent,
                         RNGFun rngFun, void* rngFunArg,
                         ubyte* payLoadType,
                         ubyte** pDataBuffer );
-#else
-static MSTATUS
-CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pParent,
-                       cmcSignerInfoPtr pCmcSignerInfo,
-                        SignedDataHash* pDataHash,
-                        RNGFun rngFun, void* rngFunArg,
-                        ubyte* payLoadType,
-                        ubyte** pDataBuffer );
-#endif
 
 static MSTATUS
 CMC_AddSubjectKeyIdentifier(DER_ITEMPTR pParent,
@@ -1694,7 +1677,9 @@ PKCS7_ProcessSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx) CStream s,
                                 ASN1_ITEMPTR pCertificate,
                                 ASN1_ITEMPTR pContentType,
                                 sbyte4 numHashes, SignedDataHash hashes[/*numHashes*/],
-                                PKCS7_SignatureInfo* pSigInfo)
+                                PKCS7_SignatureInfo* pSigInfo,
+                                const ubyte* pRawContent, ubyte4 rawContentLen,
+                                byteBoolean hasRawContent)
 {
     ASN1_ITEMPTR pDigestAlgoOID, pDigestAlgo;
     ASN1_ITEMPTR pAuthenticatedAttributes;
@@ -2070,8 +2055,8 @@ PKCS7_ProcessSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx) CStream s,
     else if ( akt_qs == (certKey.type & 0xff))
     {
         /* ML-DSA verifies over the full DER-encoded signed attributes (attr),
-         * not a hash of them; fall back to the content hash when there are
-         * no signed attributes */
+         * not a hash of them; per RFC 9882, when there are no signed
+         * attributes ML-DSA verifies the raw content bytes, not their hash */
         const ubyte *pQsMsg = pHashResult;
         ubyte4 qsMsgLen = pHashInfo->hashAlgo->digestSize;
 
@@ -2079,6 +2064,11 @@ PKCS7_ProcessSignerInfoWithCert(MOC_ASYM(hwAccelDescr hwAccelCtx) CStream s,
         {
             pQsMsg = attr;
             qsMsgLen = attrLen;
+        }
+        else if (hasRawContent)
+        {
+            pQsMsg = pRawContent;
+            qsMsgLen = rawContentLen;
         }
 
         if ( OK > ( status = PKCS7_VerifyQsSignature(MOC_ASYM(hwAccelCtx) s,
@@ -2217,7 +2207,9 @@ PKCS7_ProcessSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx)
                         PKCS7_GetCertificate getCertFun,
                         PKCS7_GetCertificateVersion3 getCertFunV3,
                         void *valCertFun,
-                        byteBoolean isCmsValCert)
+                        byteBoolean isCmsValCert,
+                        const ubyte* pRawContent, ubyte4 rawContentLen,
+                        byteBoolean hasRawContent)
 {
     MSTATUS status = ERR_NOT_FOUND;
     CStream certCS = s; /* CStream for pSignerInfoCertificate */
@@ -2327,7 +2319,8 @@ PKCS7_ProcessSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                                    pSignerInfoCertificate,
                                                    ASN1_FIRST_CHILD(pContentInfo),
                                                    numHashes, pSignedDataHash,
-                                                   pSigInfo)))
+                                                   pSigInfo, pRawContent, rawContentLen,
+                                                   hasRawContent)))
         {
             goto exit;
         }
@@ -2376,7 +2369,9 @@ PKCS7_VerifySignatures(MOC_ASYM(hwAccelDescr hwAccelCtx)
                        void *valCertFun,
                        byteBoolean isCmsValCert,
                        ubyte4* pNumSigners, PKCS7_SignatureInfo **ppSigInfos,
-                       const void *pResignData)
+                       const void *pResignData,
+                       const ubyte* pRawContent, ubyte4 rawContentLen,
+                       byteBoolean hasRawContent)
 {
     MSTATUS status;
     ASN1_ITEMPTR pCertificates;
@@ -2519,7 +2514,8 @@ PKCS7_VerifySignatures(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                              pCertificates, s,
                                              numHashes, pSignedDataHash,
                                              (pSigInfos) ? pSigInfos + numValidSigners : NULL,
-                                             callbackArg, getCertFun, getCertFunV3, valCertFun, isCmsValCert);
+                                             callbackArg, getCertFun, getCertFunV3, valCertFun, isCmsValCert,
+                                             pRawContent, rawContentLen, hasRawContent);
             if (OK == status)
             {
                 ++numValidSigners;
@@ -2635,6 +2631,11 @@ PKCS7_VerifySignedDataV3(MOC_ASYM(hwAccelDescr hwAccelCtx)
     ubyte4 i, numHashes = 0;
     SignedDataHash* pSignedDataHash = 0;
     ubyte *pTempBuf = 0;
+    ubyte* pRetainedContent = NULL;
+    ubyte4 retainedContentLen = 0;
+    ubyte4 retainedContentCap = 0;
+    intBoolean freeRetainedContent = FALSE;
+    byteBoolean hasRawContent = FALSE;
     MSTATUS status = OK;
 
     *numKnownSigners = 0;
@@ -2696,6 +2697,39 @@ PKCS7_VerifySignedDataV3(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                                             pSignedDataHash[i].bulkCtx,
                                                             pTempBuf, pTemp->length);
                     }
+
+                    /* retain the raw content bytes too, for ML-DSA
+                     * verification when there are no signed attributes
+                     * (RFC 9882); grow the buffer's capacity (not just its
+                     * exact size) so many small fragments don't copy the
+                     * whole prefix on every append */
+                    if (pTemp->length > UBYTE4_MAX - retainedContentLen)
+                    {
+                        status = ERR_PKCS7_INVALID_STRUCT;
+                        goto exit;
+                    }
+                    if (retainedContentLen + pTemp->length > retainedContentCap)
+                    {
+                        ubyte* pGrown = NULL;
+                        ubyte4 newCap = (retainedContentCap > UBYTE4_MAX / 2) ?
+                                        UBYTE4_MAX : retainedContentCap * 2;
+                        if (newCap < retainedContentLen + pTemp->length)
+                            newCap = retainedContentLen + pTemp->length;
+
+                        if (OK > (status = CRYPTO_ALLOC(hwAccelCtx, newCap, TRUE, &pGrown)))
+                            goto exit;
+                        if (retainedContentLen > 0)
+                            DIGI_MEMCPY(pGrown, pRetainedContent, retainedContentLen);
+                        if (pRetainedContent)
+                            CRYPTO_FREE(hwAccelCtx, TRUE, &pRetainedContent);
+                        pRetainedContent = pGrown;
+                        retainedContentCap = newCap;
+                    }
+                    DIGI_MEMCPY(pRetainedContent + retainedContentLen, pTempBuf, pTemp->length);
+                    retainedContentLen += pTemp->length;
+                    freeRetainedContent = TRUE;
+                    hasRawContent = TRUE;
+
                     CRYPTO_FREE(hwAccelCtx, TRUE, &pTempBuf);
                     pTempBuf = NULL;
                     pTemp = ASN1_NEXT_SIBLING(pTemp);
@@ -2719,7 +2753,12 @@ PKCS7_VerifySignedDataV3(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                                            pTempBuf, pContent->length);
                 }
 
-                CRYPTO_FREE(hwAccelCtx, TRUE, &pTempBuf);
+                /* retain the raw content bytes for ML-DSA verification when
+                 * there are no signed attributes (RFC 9882) */
+                pRetainedContent = pTempBuf;
+                retainedContentLen = pContent->length;
+                freeRetainedContent = TRUE;
+                hasRawContent = TRUE;
                 pTempBuf = NULL;
                 CS_stopaccess( s, toHash);
             }
@@ -2748,6 +2787,13 @@ PKCS7_VerifySignedDataV3(MOC_ASYM(hwAccelDescr hwAccelCtx)
                 CRYPTO_FREE(hwAccelCtx, TRUE, &pTempBuf);
 #endif
                 pTempBuf = NULL;
+
+                /* the caller-supplied payLoad already outlives this call, so
+                 * reference it directly for ML-DSA verification without
+                 * signed attributes (RFC 9882) */
+                pRetainedContent = (ubyte*) payLoad;
+                retainedContentLen = payLoadLen;
+                hasRawContent = TRUE;
             } else
             {
                 status = ERR_PKCS7_NO_CONTENT;
@@ -2775,7 +2821,8 @@ PKCS7_VerifySignedDataV3(MOC_ASYM(hwAccelDescr hwAccelCtx)
                                               numHashes, pSignedDataHash,
                                               callbackArg,
                                               getCertFun, getCertFunV3, (void *) valCertFun, FALSE,
-                                              (ubyte4*)numKnownSigners, NULL, NULL)))
+                                              (ubyte4*)numKnownSigners, NULL, NULL,
+                                              pRetainedContent, retainedContentLen, hasRawContent)))
     {
         goto exit;
     }
@@ -2783,6 +2830,9 @@ PKCS7_VerifySignedDataV3(MOC_ASYM(hwAccelDescr hwAccelCtx)
 exit:
     if (pTempBuf)
         CRYPTO_FREE(hwAccelCtx, TRUE, &pTempBuf);
+
+    if (pRetainedContent && freeRetainedContent)
+        CRYPTO_FREE(hwAccelCtx, TRUE, &pRetainedContent);
 
     if (numHashes)
         PKCS7_DestructHashes(MOC_HASH(hwAccelCtx) numHashes, &pSignedDataHash);
@@ -6647,20 +6697,12 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfosItem,
                         cmcSignerInfoPtr pCmcSignerInfo, SignedDataHash* pHash,
                         ubyte *plainData, ubyte4 plainDataLen,
                         RNGFun rngFun, void* rngArg,
                         ubyte* payLoadType, ubyte** ppDataBuffer )
-#else
-static MSTATUS
-CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfosItem,
-                        cmcSignerInfoPtr pCmcSignerInfo, SignedDataHash* pHash,
-                        RNGFun rngFun, void* rngArg,
-                        ubyte* payLoadType, ubyte** ppDataBuffer )
-#endif
 {
     MSTATUS         status;
     DER_ITEMPTR     pSignerInfoItem, pAttributeItem;
@@ -6989,8 +7031,8 @@ CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfosI
    else if (pCmcSignerInfo->pSignerInfo->pKey->type == akt_qs)
    {
         /* ML-DSA signs over the full DER-encoded signed attributes, not a
-         * hash of them; fall back to the content hash when there are no
-         * signed attributes */
+         * hash of them; per RFC 9882, when there are no signed attributes
+         * ML-DSA signs the raw content bytes, not their hash */
         const ubyte* toSign;
         ubyte4 toSignLen;
         ubyte4 dummy;
@@ -7003,8 +7045,8 @@ CMC_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfosI
         }
         else
         {
-            toSign = pHash->hashData;
-            toSignLen = pHash->hashAlgo->digestSize;
+            toSign = plainData;
+            toSignLen = plainDataLen;
         }
 
         if (OK > ( status = PKCS7_AddQsSignature( MOC_ASYM(hwAccelCtx) pSignerInfoItem,
@@ -7052,20 +7094,12 @@ exit:
 
 
 /*------------------------------------------------------------------*/
-#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfosItem,
                         signerInfoPtr pSignerInfo, SignedDataHash* pHash,
                         ubyte *plainData, ubyte4 plainDataLen,
                         RNGFun rngFun, void* rngArg,
                         ubyte* payLoadType, ubyte** ppDataBuffer )
-#else
-static MSTATUS
-PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfosItem,
-                        signerInfoPtr pSignerInfo, SignedDataHash* pHash,
-                        RNGFun rngFun, void* rngArg,
-                        ubyte* payLoadType, ubyte** ppDataBuffer )
-#endif
 {
     MSTATUS         status;
     DER_ITEMPTR     pSignerInfoItem, pAttributeItem;
@@ -7365,8 +7399,8 @@ PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfo
    else if (pSignerInfo->pKey->type == akt_qs)
    {
         /* ML-DSA signs over the full DER-encoded signed attributes, not a
-         * hash of them; fall back to the content hash when there are no
-         * signed attributes */
+         * hash of them; per RFC 9882, when there are no signed attributes
+         * ML-DSA signs the raw content bytes, not their hash */
         const ubyte* toSign;
         ubyte4 toSignLen;
         ubyte4 dummy;
@@ -7379,8 +7413,8 @@ PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelDescr hwAccelCtx) DER_ITEMPTR pSignerInfo
         }
         else
         {
-            toSign = pHash->hashData;
-            toSignLen = pHash->hashAlgo->digestSize;
+            toSign = plainData;
+            toSignLen = plainDataLen;
         }
 
         if (OK > ( status = PKCS7_AddQsSignature( MOC_ASYM(hwAccelCtx) pSignerInfoItem,
@@ -9282,21 +9316,12 @@ CMC_SignData( MOC_ASYM(hwAccelDescr hwAccelCtx)
                 goto exit;
             }
 
-#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
             if (OK > (status = CMC_AddPerSignerInfo(MOC_ASYM(hwAccelCtx) pSignerInfosItem,
                         pCmcSignerInfos[i], pHash, (ubyte *)pPayLoad, payLoadLen, rngFun,  rngFunArg,
                         (ubyte*)payLoadType, &(pDataBuffers[i]) )))
             {
                 goto exit;
             }
-#else
-            if (OK > (status = CMC_AddPerSignerInfo(MOC_ASYM(hwAccelCtx) pSignerInfosItem,
-                        pCmcSignerInfos[i], pHash, rngFun,  rngFunArg,
-                        (ubyte*)payLoadType, &(pDataBuffers[i]) )))
-            {
-                goto exit;
-            }
-#endif
         }
     }
 
@@ -9520,7 +9545,6 @@ PKCS7_SignData( MOC_ASYM(hwAccelDescr hwAccelCtx)
                 goto exit;
             }
 
-#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
             if (OK > (status = PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelCtx) pSignerInfosItem,
                         pSignerInfos[i], pHash, (ubyte *)pPayLoad, payLoadLen,
                         rngFun,  rngFunArg,
@@ -9528,14 +9552,6 @@ PKCS7_SignData( MOC_ASYM(hwAccelDescr hwAccelCtx)
             {
                 goto exit;
             }
-#else
-            if (OK > (status = PKCS7_AddPerSignerInfo(MOC_ASYM(hwAccelCtx) pSignerInfosItem,
-                        pSignerInfos[i], pHash, rngFun,  rngFunArg,
-                        (ubyte*)payLoadType, &(pDataBuffers[i]) )))
-            {
-                goto exit;
-            }
-#endif
         }
     }
 
