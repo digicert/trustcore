@@ -405,7 +405,8 @@ ossl_PkeyToBlob(EVP_PKEY *pkey, u_int8_t **ppKeyBlob, unsigned int *len)
      case EVP_PKEY_RSA:
 	  memset((void *)&ORP, 0, sizeof(ORP));
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-	  ossl_rsa	= (RSA*)pkey->keydata; /* Pointer to OpenSSL RSA struc */
+	  /* Provider keys hold the RSA in keydata; legacy keys hold it in pkey.rsa. */
+	  ossl_rsa	= (NULL != pkey->keydata) ? (RSA*)pkey->keydata : pkey->pkey.rsa;
 #else
 	  ossl_rsa	= pkey->pkey.rsa; /* Pointer to OpenSSL RSA struc */
 #endif
@@ -439,7 +440,7 @@ ossl_PkeyToBlob(EVP_PKEY *pkey, u_int8_t **ppKeyBlob, unsigned int *len)
      case EVP_PKEY_DSA:
 	  memset((void *)&ODP, 0, sizeof(ODP));
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-	  ossl_dsa	= (DSA*)pkey->keydata; /* Pointer to OpenSSL DSA struc */
+	  ossl_dsa	= (NULL != pkey->keydata) ? (DSA*)pkey->keydata : pkey->pkey.dsa;
 #else
 	  ossl_dsa	= pkey->pkey.dsa; /* Pointer to OpenSSL DSA struc */
 #endif
@@ -499,7 +500,7 @@ ossl_PkeyToBlob(EVP_PKEY *pkey, u_int8_t **ppKeyBlob, unsigned int *len)
      case EVP_PKEY_EC:
 	  memset((void *)&OEP, 0, sizeof(OEP));
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-	  ossl_eckey 	= (EC_KEY*)pkey->keydata;
+	  ossl_eckey 	= (NULL != pkey->keydata) ? (EC_KEY*)pkey->keydata : pkey->pkey.ec;
 #else
 	  ossl_eckey 	= pkey->pkey.ec;
 #endif
@@ -546,7 +547,7 @@ ossl_PkeyToBlob(EVP_PKEY *pkey, u_int8_t **ppKeyBlob, unsigned int *len)
     case EVP_PKEY_ED25519:
         memset((void *)&OEP, 0, sizeof(OEP));
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-        pOSSLECXKey = (ECX_KEY*)pkey->keydata;
+        pOSSLECXKey = (NULL != pkey->keydata) ? (ECX_KEY*)pkey->keydata : pkey->pkey.ecx;
 #else
         pOSSLECXKey = pkey->pkey.ecx;
 #endif
@@ -581,7 +582,7 @@ ossl_PkeyToBlob(EVP_PKEY *pkey, u_int8_t **ppKeyBlob, unsigned int *len)
     case EVP_PKEY_ED448:
         memset((void *)&OEP, 0, sizeof(OEP));
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-        pOSSLECXKey = (ECX_KEY*)pkey->keydata;
+        pOSSLECXKey = (NULL != pkey->keydata) ? (ECX_KEY*)pkey->keydata : pkey->pkey.ecx;
 #else
         pOSSLECXKey = pkey->pkey.ecx;
 #endif
@@ -660,14 +661,24 @@ ossl_CERT_STORE_addGenericIdentity(SSL_CTX *ctx, EVP_PKEY *pkey)
     {
         case EVP_PKEY_DSA:
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-            pkbi = DSA_get_ex_data(pkey->keydata, dsaExAppDataIndex);
+            /* Provider keys carry the underlying key in keydata; legacy keys
+             * (e.g. loaded via the d2i fallback path) carry it in pkey.dsa. */
+            {
+                DSA *pDsa = (NULL != pkey->keydata) ? (DSA *)pkey->keydata : pkey->pkey.dsa;
+                if (NULL != pDsa)
+                    pkbi = DSA_get_ex_data(pDsa, dsaExAppDataIndex);
+            }
 #else
             pkbi = DSA_get_ex_data(pkey->pkey.dsa, dsaExAppDataIndex);
 #endif
             break;
         case EVP_PKEY_RSA:
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-            pkbi = RSA_get_ex_data(pkey->keydata, moc_get_rsa_ex_app_data());
+            {
+                RSA *pRsa = (NULL != pkey->keydata) ? (RSA *)pkey->keydata : pkey->pkey.rsa;
+                if (NULL != pRsa)
+                    pkbi = RSA_get_ex_data(pRsa, moc_get_rsa_ex_app_data());
+            }
 #else
             pkbi = RSA_get_ex_data(pkey->pkey.rsa, rsaExAppDataIndex);
 #endif
@@ -675,7 +686,11 @@ ossl_CERT_STORE_addGenericIdentity(SSL_CTX *ctx, EVP_PKEY *pkey)
 #if (defined(__ENABLE_DIGICERT_ECC__))
         case EVP_PKEY_EC:
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-            pkbi = EC_KEY_get_ex_data(pkey->keydata, moc_get_ecc_ex_app_data());
+            {
+                EC_KEY *pEc = (NULL != pkey->keydata) ? (EC_KEY *)pkey->keydata : pkey->pkey.ec;
+                if (NULL != pEc)
+                    pkbi = EC_KEY_get_ex_data(pEc, moc_get_ecc_ex_app_data());
+            }
 #elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__)
             pkbi = EC_KEY_get_ex_data(pkey->pkey.ec, eccExAppDataIndex);
 #else
@@ -815,21 +830,21 @@ exit:
         {
             case EVP_PKEY_DSA:
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-                DSA_set_ex_data(pkey->keydata, dsaExAppDataIndex, NULL);
+                DSA_set_ex_data((NULL != pkey->keydata) ? (DSA *)pkey->keydata : pkey->pkey.dsa, dsaExAppDataIndex, NULL);
 #else
                 DSA_set_ex_data(pkey->pkey.dsa, dsaExAppDataIndex, NULL);
 #endif
                 break;
             case EVP_PKEY_RSA:
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-                RSA_set_ex_data(pkey->keydata, moc_get_rsa_ex_app_data(), NULL);
+                RSA_set_ex_data((NULL != pkey->keydata) ? (RSA *)pkey->keydata : pkey->pkey.rsa, moc_get_rsa_ex_app_data(), NULL);
 #else
                 RSA_set_ex_data(pkey->pkey.rsa, rsaExAppDataIndex, NULL);
 #endif
                 break;
             case EVP_PKEY_EC:
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
-                EC_KEY_set_ex_data(pkey->keydata, moc_get_ecc_ex_app_data(), NULL);
+                EC_KEY_set_ex_data((NULL != pkey->keydata) ? (EC_KEY *)pkey->keydata : pkey->pkey.ec, moc_get_ecc_ex_app_data(), NULL);
 #elif defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_0__) || defined (__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__)
                 EC_KEY_set_ex_data(pkey->pkey.ec, eccExAppDataIndex, NULL);
 #else
