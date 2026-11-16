@@ -107,6 +107,7 @@
 #include "../crypto_interface/crypto_interface_chacha20.h"
 #include "../crypto_interface/crypto_interface_dh.h"
 #include "../crypto_interface/crypto_interface_rsa.h"
+#include "../crypto_interface/crypto_interface_pkcs1.h"
 #include "../crypto_interface/crypto_interface_dsa.h"
 #ifdef __ENABLE_DIGICERT_ECC__
 #include "../crypto_interface/crypto_interface_ecc.h"
@@ -134,7 +135,7 @@ static MSTATUS SSH_TRANS_allocGroupDH(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_freeGroupDH(struct sshContext *pContextSSH);
 #endif
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS SSH_TRANS_allocRSA(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_freeRSA(struct sshContext *pContextSSH);
 static MSTATUS SSH_TRANS_sendKexRsaPubKey(struct sshContext *pContextSSH);
@@ -220,7 +221,7 @@ static sshKeyExCtxMethods dhClassicMethods = { SSH_TRANS_allocClassicDH, SSH_TRA
 static sshKeyExCtxMethods dhGroupMethods   = { SSH_TRANS_allocGroupDH,   SSH_TRANS_freeGroupDH,   NULL };
 #endif
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static sshKeyExCtxMethods rsaMethods       = { SSH_TRANS_allocRSA,       SSH_TRANS_freeRSA,       SSH_TRANS_sendKexRsaPubKey };
 #endif
 
@@ -794,7 +795,7 @@ static vlong *mp_dhSafePrimes[SSH_DHG_ARRAY_SIZE];
 
 #endif /* (!defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) */
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 #ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
 static AsymmetricKey m_transientRsaKey1024;
 #endif
@@ -875,7 +876,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 extern MSTATUS
 SSH_TRANS_initRsaKeyExchange(hwAccelDescr hwAccelCtx)
 {
@@ -941,7 +942,7 @@ SSH_TRANS_releaseStaticKeys(void)
     ubyte4  index;
 #endif
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 #ifdef __ENABLE_DIGICERT_RSA_ALL_KEYSIZE__
     CRYPTO_uninitAsymmetricKey(&m_transientRsaKey1024, 0);
 #endif
@@ -1337,7 +1338,7 @@ SSH_TRANS_freeGroupDH(struct sshContext *pContextSSH)
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS
 SSH_TRANS_allocRSA(struct sshContext *pContextSSH)
 {
@@ -1364,19 +1365,15 @@ SSH_TRANS_allocRSA(struct sshContext *pContextSSH)
 
     return status;
 }
-#endif
-
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 static MSTATUS
 SSH_TRANS_freeRSA(struct sshContext *pContextSSH)
 {
     return CRYPTO_uninitAsymmetricKey(&pContextSSH->sshKeyExCtx.transientKey, NULL);
 }
-#endif
-
+#endif /* (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))*/
 
 /*------------------------------------------------------------------*/
 
@@ -2146,18 +2143,18 @@ static sbyte4
 handleGcmAtOpenssh(sbyte4 cipherIndex, sbyte4 macIndex, ubyte *pOptionsSelected)
 {
     MSTATUS status;
-    sbyte4 wordIndex = 0;
+    ubyte4 wordIndex = 0;
     intBoolean inString = FALSE;
 
     if (0 >= pOptionsSelected[cipherIndex])
         return 0;
 
-    if (0 == DIGI_STRCMP("aes128-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName) ||
-        0 == DIGI_STRCMP("aes256-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName))
+    if (0 == DIGI_STRCMP((const sbyte *)"aes128-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName) ||
+        0 == DIGI_STRCMP((const sbyte *)"aes256-gcm@openssh.com", mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName))
     {
         /* corresponding mac algorithm list for selected cipher is always 2 entries ahead. */
         status = SSH_STR_findOption(ssh_algorithmMethods[macIndex],
-            mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName,
+            (ubyte *)mCipherSuites[pOptionsSelected[cipherIndex] - 1].pCipherName,
             mCipherSuites[pOptionsSelected[cipherIndex] - 1].cipherNameLength,
             &inString, &wordIndex);
         if (OK > status)
@@ -2182,7 +2179,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
     ubyte4                              index, i, count;
     MSTATUS                             status = OK;
     intBoolean                          firstKexPacketFollows = FALSE;
-    sbyte4                              wordIndex;
+    ubyte4                              wordIndex;
     intBoolean                          inString = FALSE;
 
     /* init array of pointers */
@@ -2302,7 +2299,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
                         if (1 == optionIndex)
                         {
                             status = SSH_STR_findOption(pClientAlgorithm[i],
-                            mKeyExSuites[optionIndex - 1].pKeyExName,
+                            (ubyte *)mKeyExSuites[optionIndex - 1].pKeyExName,
                             mKeyExSuites[optionIndex - 1].keyExNameLength,
                             &inString, &wordIndex);
                             if (OK != status)
@@ -2321,7 +2318,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
 
 #ifndef __DISABLE_DIGICERT_RFC_8308__
                     status = SSH_STR_findOption(pClientAlgorithm[i],
-                        "ext-info-s", DIGI_STRLEN("ext-info-s"), &inString, &wordIndex);
+                        (ubyte *)"ext-info-s", sizeof("ext-info-s") - 1, &inString, &wordIndex);
                     if (OK != status)
                         goto exit;
 
@@ -2345,7 +2342,7 @@ receiveClientAlgorithms(sshContext *pContextSSH, ubyte *pOptionsSelected,
                       required to do so.
                     */
                     status = SSH_STR_findOption(pClientAlgorithm[i],
-                        "ext-info-c", DIGI_STRLEN("ext-info-c"), &inString, &wordIndex);
+                        (ubyte *)"ext-info-c", sizeof("ext-info-c") - 1, &inString, &wordIndex);
                     if (OK != status)
                         goto exit;
 
@@ -2884,7 +2881,7 @@ exit:
 
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 
 static MSTATUS
 SSH_TRANS_sendKexRsaPubKey(struct sshContext *pContextSSH)
@@ -2952,25 +2949,32 @@ exit:
 
 } /* SSH_TRANS_sendKexRsaPubKey */
 
-#endif
-
-
 /*------------------------------------------------------------------*/
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
-
-#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 static MSTATUS
 SSH_TRANS_receiveKexRsaSecret(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen)
 {
     sshStringBuffer*    pEncryptedSecret = NULL;
     ubyte*              pSecret = NULL;
-    ubyte4              secretLength;
+    ubyte4              secretLength = 0;
+    ubyte*              pSharedSecret = NULL;
+    ubyte4              sharedSecretLen = 0;
     ubyte4              index;
-    ubyte4              bytesUsed;
     ubyte               H_rsaAlgoId;
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
+    ubyte4              bytesUsed;
     vlong*              pVlongQueue = NULL;
+#endif
     MSTATUS             status;
+
+    if ((NULL == pContextSSH) || (NULL == pNewMesg))
+        return ERR_NULL_POINTER;
+
+    if (5 > newMesgLen)
+    {
+        status = ERR_BAD_LENGTH;
+        goto exit;
+    }
 
     if (SSH_MSG_KEXRSA_SECRET != *pNewMesg)
     {
@@ -3001,11 +3005,26 @@ SSH_TRANS_receiveKexRsaSecret(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 n
         goto exit;
     DUMP((ubyte *)"update:", 1 + pNewMesg, newMesgLen - 1);
 
-    /*!!!! hack: need to check length field and properly extract */
+#ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
+    if (OK > (status = CRYPTO_INTERFACE_PKCS1_rsaOaepDecrypt(MOC_RSA(pContextSSH->hwAccelCookie) pContextSSH->sshKeyExCtx.transientKey.key.pRSA,
+                                                         H_rsaAlgoId, MOC_PKCS1_ALG_MGF1, H_rsaAlgoId, 5 + pNewMesg, newMesgLen - 5,
+                                                         NULL, 0, &pSecret, &secretLength)))
+#else
     if (OK > (status = PKCS1_rsaesOaepDecrypt(MOC_RSA(pContextSSH->hwAccelCookie) pContextSSH->sshKeyExCtx.transientKey.key.pRSA, H_rsaAlgoId, PKCS1_MGF1_FUNC, 5 + pNewMesg, newMesgLen - 5, NULL, 0, &pSecret, &secretLength)))
+#endif
         goto exit;
 
     DEBUG_RELABEL_MEMORY(pSecret);
+
+    if (OK > (status = SSH_getByteStringFromMpintBytes(pSecret, secretLength, &pSharedSecret, &sharedSecretLen)))
+        goto exit;
+
+    if ((sharedSecretLen != secretLength - 4) ||
+        ((0 < sharedSecretLen) && (0 != (pSharedSecret[0] & 0x80))))
+    {
+        status = ERR_SSH_KEYEX_MESG_FORMAT;
+        goto exit;
+    }
 
     /* add secret to the hash */
     /*!!!!! clone secret */
@@ -3013,8 +3032,7 @@ SSH_TRANS_receiveKexRsaSecret(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 n
         goto exit;
     DUMP((ubyte *)"update:", pSecret, secretLength);
 
-    /*!!!!! since pSecret is really an encoding for mpint, we need to test here to make sure the length is okay */
-
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     if (OK > (status = VLONG_newFromMpintBytes(pSecret, secretLength, &(SSH_K(pContextSSH)), &bytesUsed, &pVlongQueue)))
         goto exit;
 
@@ -3025,26 +3043,45 @@ SSH_TRANS_receiveKexRsaSecret(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 n
         status = ERR_SSH_KEYEX_MESG_FORMAT;
         goto exit;
     }
+#endif
+
+    if (0 == sharedSecretLen)
+    {
+        if (OK > (status = DIGI_MALLOC((void **)&pSharedSecret, 1)))
+            goto exit;
+        pSharedSecret[0] = 0;
+        sharedSecretLen = 1;
+    }
+
+    pContextSSH->sshKeyExCtx.pBytesSharedSecret = pSharedSecret;
+    pContextSSH->sshKeyExCtx.bytesSharedSecretLen = sharedSecretLen;
+    pSharedSecret = NULL;
 
 exit:
     SSH_STR_freeStringBuffer(&pEncryptedSecret);
 
     if (NULL != pSecret)
+    {
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
+        (void) DIGI_MEMSET(pSecret, 0x00, secretLength);
         FREE(pSecret);
+#else
+        DIGI_MEMSET_FREE(&pSecret, secretLength);
+#endif
+    }
 
+    if (NULL != pSharedSecret)
+        DIGI_MEMSET_FREE(&pSharedSecret, sharedSecretLen);
+
+#ifndef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
     VLONG_freeVlongQueue(&pVlongQueue);
+#endif
 
     return status;
 
 } /* SSH_TRANS_receiveKexRsaSecret */
-#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
-
-#endif
-
 
 /*------------------------------------------------------------------*/
-
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
 
 static MSTATUS
 SSH_TRANS_sendKexRsaDone(sshContext *pContextSSH)
@@ -3149,7 +3186,7 @@ exit:
 
 } /* SSH_TRANS_sendKexRsaDone */
 
-#endif
+#endif /* (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) */
 
 /*------------------------------------------------------------------*/
 
@@ -4872,7 +4909,7 @@ static MSTATUS sendMsgExtInfo(sshContext *pContextSSH)
 {
     MSTATUS             status;
     ubyte*              pPayload = NULL;
-    sbyte*              pTmp;
+    ubyte*              pTmp;
     ubyte4              length;
     sbyte4              payloadLen;
     sshStringBuffer*    pAlgorithms = NULL;
@@ -4881,7 +4918,7 @@ static MSTATUS sendMsgExtInfo(sshContext *pContextSSH)
     pAlgorithms = getPubKeyAuthAlgorithms();
     /* type byte + extension count + length of extension name */
     payloadLen = 1 + sizeof(ubyte4) + sizeof(ubyte4);
-    payloadLen += DIGI_STRLEN("server-sig-algs") + pAlgorithms->stringLen;
+    payloadLen += sizeof("server-sig-algs") - 1 + pAlgorithms->stringLen;
 
     status = DIGI_MALLOC((void **) &pPayload, payloadLen);
     if (OK != status)
@@ -4893,7 +4930,7 @@ static MSTATUS sendMsgExtInfo(sshContext *pContextSSH)
     pPayload[3] = 0;
     pPayload[4] = 1;
 
-    extNameLen = DIGI_STRLEN("server-sig-algs");
+    extNameLen = sizeof("server-sig-algs") - 1;
 
     pPayload[5] = 0;
     pPayload[6] = 0;
@@ -5134,7 +5171,7 @@ SSH_TRANS_doProtocol(sshContext *pContextSSH, ubyte *pNewMesg, ubyte4 newMesgLen
         }
 #endif
 
-#if (defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
+#if (!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__))
         case kTransReceiveRSA:
         case kReduxTransReceiveRSA:
         {

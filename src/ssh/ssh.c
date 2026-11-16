@@ -276,7 +276,7 @@ SSH_init(sbyte4 sshMaxConnections)
         goto exit;
 #endif
 
-#if ((defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) || \
+#if ((!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) || \
      (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) )
     if (OK > (status = (MSTATUS)HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSH, &hwAccelCookie)))
         goto exit;
@@ -1730,7 +1730,7 @@ SSH_ASYNC_init(sbyte4 sshMaxConnections)
     gMocanaAppsRunning++;
 #endif
 
-#if ((defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) || \
+#if ((!defined(__DISABLE_DIGICERT_SSH_RSA_KEY_EXCHANGE__) && defined(__ENABLE_DIGICERT_SSH_RSA_SUPPORT__) && defined(__ENABLE_DIGICERT_SSH_RSA_PKCS1_SUPPORT__) && defined(__ENABLE_DIGICERT_PKCS1__)) || \
      (defined(__ENABLE_DIGICERT_DHG_KEY_EXCHANGE__)) )
     if (OK > (status = (MSTATUS)HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSH, &hwAccelCookie)))
         goto exit;
