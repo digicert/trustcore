@@ -121,7 +121,6 @@ jobs:
           repository: digicert/mocn-qa-m-products
           token: ${{ secrets.MY_SECRET_TOKEN }}
           path: mocn-qa-m-products
-          ref: fips_pqc_testcases_failure_fix
           persist-credentials: false
           fetch-depth: 1
       
