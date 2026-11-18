@@ -717,6 +717,7 @@ cd scripts/nanossl/openssl_connector/
 ## Additional Notes
 
 - **Supported Versions:** OpenSSL 1.1.1i, 3.0.7, 3.0.12, 3.5.0. Build other versions by updating the version in the download, patch, and build script commands.
+- **OpenSSL patches:** Regenerate patches only when you change upstream OpenSSL files; this is not part of every build. Make changes in the patched `thirdparty/openssl-<version>` tree, keep a clean extraction of the same version, and run `./scripts/openssl/create-patch.sh --openssl /path/to/clean-source --version 3.5.0` (replace `3.5.0` with the OpenSSL version). The clean source directory can have any name. DigiCert files under `src/openssl_wrapper/versions/` are maintained directly.
 - **Scripts Location:** Build scripts are located in `scripts/nanossl/openssl_connector/` (e.g., `build_openssl_connector_cap.sh`/`build_openssl_connector_cap.bat`, `build_openssl_connector_tap_local.sh`/`build_openssl_connector_tap_local.bat`, `build_openssl_connector_tap_remote.sh`, `build_openssl_connector_tap_local_extern.sh`, `build_openssl_connector_tap_remote_extern.sh`). Run any script with `--help` flag for more build options (e.g., `./scripts/nanossl/openssl_connector/build_openssl_connector_cap.sh --help` on Linux, `scripts\nanossl\openssl_connector\build_openssl_connector_cap.bat --help` on Windows).
 - **Keystore:** Ensure keystore files exist in `keystore/openssl_connector/`.
 - **Troubleshooting:**
