@@ -51,7 +51,7 @@ jobs:
       
           echo "Runner IP: $RUNNER_IP"
       
-          echo "$RUNNER_IP athena.securitydemos.net ossltest.securitydemos.net" | sudo tee -a /etc/hosts
+          echo "$RUNNER_IP athena.securitydemos.net ossltest.securitydemos.net mosquitto-service-01" | sudo tee -a /etc/hosts
       
           cat /etc/hosts
 
@@ -119,6 +119,7 @@ jobs:
           repository: digicert/mocn-qa-m-products
           token: ${{ secrets.MY_SECRET_TOKEN }}
           path: mocn-qa-m-products
+          ref: fips_pqc_testcases_failure_fix
           persist-credentials: false
           fetch-depth: 1
 

@@ -163,8 +163,6 @@ do
             FIPS_OPTION=" $1"
             FIPS_MAKE_OPTION=" fips=true"
             FIPS_MAKE30_OPTION="enable-mocana-fips"
-            DISABLE_PQC_OPT=" --disable-pqc"
-            OSSL_PQC_OPTION=""
             # Use the 4K AES-GCM variant: the FIPS binary (libmss.so)
             FIPS_GCM_OPTION=" --aes-gcm-4k"
             # Pass the matching define to OpenSSL Configure so the Mocana provider
@@ -174,6 +172,9 @@ do
         --fips-700-compat)
             echo "Build with backward compatibility with FIPS REL_700_U1 binary."
             FIPS_700_COMPAT_OPTION=" $1"
+            # The REL_700_U1 binary predates ML-DSA FIPS support; disable PQC.
+            DISABLE_PQC_OPT=" --disable-pqc"
+            OSSL_PQC_OPTION=""
             ;;
         --disable-pqc)
             echo "Building without PQC support"
