@@ -307,7 +307,7 @@ static void test_keyboard_interactive_invalid_msg_type(void **ppState)
 
     status = SSHC_AUTH_doProtocol(&context, payload, index);
 
-    assert_int_equal(ERR_PAYLOAD_EMPTY, status);
+    assert_int_equal(ERR_SSH_STRING_TOO_LONG, status);
 }
 
 static void test_keyboard_interactive_oversized_prompt_count(void **ppState)

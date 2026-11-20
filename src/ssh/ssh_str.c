@@ -254,37 +254,30 @@ extern MSTATUS
 SSH_STR_walkStringInPayload(const ubyte *pBuffer, ubyte4 bufSize, ubyte4 *pBufIndex)
 {
     ubyte4  stringLen;
-    MSTATUS status = OK;
+    MSTATUS status = ERR_NULL_POINTER;
 
     if ((NULL == pBufIndex) || (NULL == pBuffer))
-    {
-        status = ERR_NULL_POINTER;
         goto exit;
-    }
 
+    status = ERR_PAYLOAD_EMPTY;
     if (*pBufIndex == bufSize)
-    {
-        status = ERR_PAYLOAD_EMPTY;
         goto exit;
-    }
 
-    if (bufSize < ((*pBufIndex) + 4))
-    {
-        status = ERR_SSH_STRING_TOO_LONG;
+    status = ERR_INVALID_INPUT;
+    if (*pBufIndex > bufSize || bufSize - *pBufIndex < 4 )
         goto exit;
-    }
 
     stringLen  = (ubyte4)pBuffer[(*pBufIndex)];   stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[(*pBufIndex)+1]; stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[(*pBufIndex)+2]; stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[(*pBufIndex)+3];
 
-    if ((MAX_SSH_STRING_SIZE < stringLen) || (bufSize < ((*pBufIndex) + stringLen)))
-    {
-        status = ERR_SSH_STRING_TOO_LONG;
+    /* MAX_SSH_STRING_SIZE < 0xFFFFFFFFu - 4u so no chance of overflow when adding 4 */
+    status = ERR_SSH_STRING_TOO_LONG;
+    if ((MAX_SSH_STRING_SIZE < stringLen) || stringLen + 4 > bufSize - *pBufIndex)
         goto exit;
-    }
 
+    status = OK;
     (*pBufIndex) += stringLen + 4;
 
 exit:
@@ -299,44 +292,41 @@ SSH_STR_copyStringFromPayload(ubyte *pBuffer, ubyte4 bufSize,
                               ubyte4 *pBufIndex, sshStringBuffer **ppRetString)
 {
     ubyte4  stringLen;
-    MSTATUS status;
+    MSTATUS status = ERR_NULL_POINTER;
 
     if ((NULL == pBufIndex) || (NULL == pBuffer) || (NULL == ppRetString))
-    {
-        status = ERR_NULL_POINTER;
         goto exit;
-    }
 
+    status = ERR_PAYLOAD_EMPTY;
     if (*pBufIndex == bufSize)
-    {
-        status = ERR_PAYLOAD_EMPTY;
         goto exit;
-    }
+
+    status = ERR_INVALID_INPUT;
+    if (*pBufIndex > bufSize || bufSize - *pBufIndex < 4 )
+        goto exit;
 
     stringLen  = (ubyte4)pBuffer[(*pBufIndex)];   stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[(*pBufIndex)+1]; stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[(*pBufIndex)+2]; stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[(*pBufIndex)+3];
 
-    if ((MAX_SSH_STRING_SIZE < stringLen) || (bufSize < ((*pBufIndex) + stringLen)))
-    {
-        status = ERR_SSH_STRING_TOO_LONG;
+    /* MAX_SSH_STRING_SIZE < 0xFFFFFFFFu - 4u so no chance of overflow when adding 4 */
+    status = ERR_SSH_STRING_TOO_LONG;
+    if (stringLen > MAX_SSH_STRING_SIZE || stringLen + 4 > bufSize - *pBufIndex)
         goto exit;
-    }
 
-    status = SSH_STR_makeStringBuffer(ppRetString, stringLen+4);
+    status = SSH_STR_makeStringBuffer(ppRetString, stringLen + 4);
+    if (OK != status)
+        goto exit;
 
-    if(NULL != ppRetString)
+    if (NULL != *ppRetString)
     {
         DEBUG_RELABEL_MEMORY(*ppRetString);
         DEBUG_RELABEL_MEMORY((*ppRetString)->pString);
     }
 
-    if (OK <= status)
-    {
-        DIGI_MEMCPY((*ppRetString)->pString, &(pBuffer[*pBufIndex]), stringLen+4);
-        (*ppRetString)->stringLen = stringLen + 4;
-    }
+    DIGI_MEMCPY((*ppRetString)->pString, &(pBuffer[*pBufIndex]), stringLen + 4);
+    (*ppRetString)->stringLen = stringLen + 4;
 
     (*pBufIndex) += stringLen + 4;
 
@@ -353,19 +343,18 @@ SSH_STR_copyStringFromPayload2(ubyte *pBuffer, ubyte4 bufSize,
 {
     /* copies a ssh string from a payload, without the inband four-byte length field */
     ubyte4  stringLen;
-    MSTATUS status;
+    MSTATUS status = ERR_NULL_POINTER;
 
     if ((NULL == pBufIndex) || (NULL == pBuffer) || (NULL == ppRetString))
-    {
-        status = ERR_NULL_POINTER;
         goto exit;
-    }
 
+    status = ERR_PAYLOAD_EMPTY;
     if (*pBufIndex == bufSize)
-    {
-        status = ERR_PAYLOAD_EMPTY;
         goto exit;
-    }
+
+    status = ERR_INVALID_INPUT;
+    if (*pBufIndex > bufSize || bufSize - *pBufIndex < 4)
+        goto exit;
 
     pBuffer += *pBufIndex;
 
@@ -374,15 +363,16 @@ SSH_STR_copyStringFromPayload2(ubyte *pBuffer, ubyte4 bufSize,
     stringLen |= (ubyte4)pBuffer[2]; stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[3];
 
-    if ((MAX_SSH_STRING_SIZE < stringLen) || (bufSize < ((*pBufIndex) + stringLen)))
-    {
-        status = ERR_SSH_STRING_TOO_LONG;
+    /* MAX_SSH_STRING_SIZE < 0xFFFFFFFFu - 4u so no chance of overflow when adding 4 */
+    status = ERR_SSH_STRING_TOO_LONG;
+    if ((MAX_SSH_STRING_SIZE < stringLen) || stringLen + 4 > bufSize - *pBufIndex)
         goto exit;
-    }
 
     status = SSH_STR_makeStringBuffer(ppRetString, stringLen);
-   
-    if(NULL != ppRetString)
+    if (OK != status)
+        goto exit;
+
+    if (NULL != *ppRetString)
     {
         DEBUG_RELABEL_MEMORY(*ppRetString);
         DEBUG_RELABEL_MEMORY((*ppRetString)->pString);
@@ -406,21 +396,17 @@ SSH_STR_copyStringFromPayload3(ubyte *pBuffer, ubyte4 bufSize,
 {
     /* copies a ssh string from a payload, into a C string */
     ubyte4  stringLen;
-    MSTATUS status;
+    MSTATUS status = ERR_NULL_POINTER;
 
     if ((NULL == pBufIndex) || (NULL == pBuffer) || (NULL == ppRetString))
-    {
-        status = ERR_NULL_POINTER;
         goto exit;
-    }
 
-    if (*pBufIndex >= bufSize)
-    {
-        status = ERR_PAYLOAD_EMPTY;
+    status = ERR_PAYLOAD_EMPTY;
+    if (*pBufIndex == bufSize)
         goto exit;
-    }
 
-    if (4 > (bufSize - *pBufIndex))
+    status = ERR_INVALID_INPUT;
+    if (*pBufIndex > bufSize || bufSize - *pBufIndex < 4)
     {
         status = ERR_SSH_UNEXPECTED_END_MESSAGE;
         goto exit;
@@ -433,11 +419,10 @@ SSH_STR_copyStringFromPayload3(ubyte *pBuffer, ubyte4 bufSize,
     stringLen |= (ubyte4)pBuffer[2]; stringLen <<= 8;
     stringLen |= (ubyte4)pBuffer[3];
 
-    if ((MAX_SSH_STRING_SIZE < stringLen) || (bufSize < ((*pBufIndex) + stringLen)))
-    {
-        status = ERR_SSH_STRING_TOO_LONG;
+    /* MAX_SSH_STRING_SIZE < 0xFFFFFFFFu - 4u so no chance of overflow when adding 4 */
+    status = ERR_SSH_STRING_TOO_LONG;
+    if ((MAX_SSH_STRING_SIZE < stringLen) || stringLen + 4 > bufSize - *pBufIndex)
         goto exit;
-    }
 
     if (NULL == (*ppRetString = MALLOC(1 + stringLen)))
     {
