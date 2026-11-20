@@ -57,6 +57,16 @@ MSTATUS DeserializeDsaKey (
     { MASN1_TYPE_INTEGER, 0 },
   };
 
+  if ((NULL == pSerializedKey) || (NULL == pAsymKey))
+  {
+    return ERR_NULL_POINTER;
+  }
+
+  if (serializedKeyLen == 0)
+  {
+    return ERR_INVALID_INPUT;
+  }
+
   /* If the first byte is 0, this should be a blob.
    */
   if (0 == pSerializedKey[0])
@@ -223,7 +233,7 @@ MSTATUS ReadDsaKeyBlob (
    *  priKey: 00 00 00 00  00 00 00 01  00 00 00 03
    */
   status = ERR_INVALID_INPUT;
-  if (MOC_DSA_BLOB_START_LEN > serializedKeyLen)
+  if ((NULL == pSerializedKey) || (NULL == ppKey) || (MOC_DSA_BLOB_START_LEN > serializedKeyLen))
     goto exit;
 
   status = DIGI_MEMCMP (
@@ -277,6 +287,11 @@ MSTATUS DecodeDsaAlternate (
       { MASN1_TYPE_INTEGER, 0 },
   };
 
+  if ((NULL == pKeyData) || (NULL == ppKey) || (0 == keyDataLen))
+  {
+    return ERR_INVALID_INPUT;
+  }
+
   status = DSA_createKey (&pNewKey);
   if (OK != status)
     goto exit;
@@ -299,12 +314,12 @@ MSTATUS DecodeDsaAlternate (
 
       /* These integer values may have a full leading zero on the encoding,
        * we dont want to count that byte when validating the input */
-      if ( (0 == pArray[1].value.pValue[0]) && (pLen > 0) )
+      if ( (pLen > 0) && (0 == pArray[1].value.pValue[0]) )
       {
         pLen--;
       }
 
-      if ( (0 == pArray[2].value.pValue[0]) && (qLen > 0) )
+      if ( (qLen > 0) && (0 == pArray[2].value.pValue[0]) )
       {
         qLen--;
       }
@@ -360,13 +375,13 @@ MSTATUS DecodeDsaAlternate (
   /* These integer values may have a full leading zero on the encoding,
    * we dont want to count that byte when validating the input */
   pLen = pArray[2].valueLen;
-  if ( (0 == pArray[2].value.pValue[0]) && (pLen > 0) )
+  if ( (pLen > 0) && (0 == pArray[2].value.pValue[0]) )
   {
     pLen--;
   }
 
   qLen = pArray[3].valueLen;
-  if ( (0 == pArray[3].value.pValue[0]) && (qLen > 0) )
+  if ( (qLen > 0) && (0 == pArray[3].value.pValue[0]) )
   {
     qLen--;
   }

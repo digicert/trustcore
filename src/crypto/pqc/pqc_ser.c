@@ -151,6 +151,7 @@ MOC_EXTERN MSTATUS MLKEM_deserializeKey(MLKEMCtx *ctx, bool pubOnly, ubyte *serK
     ubyte *pPriv = NULL;
     byteBoolean isPrivate = FALSE;
     ubyte4 keyLen = 0;
+    ubyte4 remainingLen = 0;
 
     if (ctx == NULL || serKey == NULL)
         goto exit;
@@ -159,9 +160,18 @@ MOC_EXTERN MSTATUS MLKEM_deserializeKey(MLKEMCtx *ctx, bool pubOnly, ubyte *serK
         return ERR_PREVIOUSLY_EXISTING_ITEM;
     }
 
+    if (serKeyLen < 4)
+    {
+        return ERR_INVALID_INPUT;
+    }
+
     /* validate the public keyLen */
     keyLen = ((ubyte4) serKey[0] << 24) | ((ubyte4) serKey[1] << 16) |
              ((ubyte4) serKey[2] << 8) | (ubyte4) serKey[3];
+    if (keyLen > serKeyLen - 4)
+    {
+        return ERR_INVALID_INPUT;
+    }
 
     if (keyLen > 0)
     {
@@ -197,6 +207,13 @@ MOC_EXTERN MSTATUS MLKEM_deserializeKey(MLKEMCtx *ctx, bool pubOnly, ubyte *serK
     if (isPrivate && !pubOnly)
     {
         /* skip over to the private key, we don't validate the pub and pri match */
+        remainingLen = serKeyLen - 4 - keyLen;
+        if (remainingLen < 4)
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
+
         pDataPtr += keyLen;
 
         /* validate the private key len */
@@ -204,7 +221,7 @@ MOC_EXTERN MSTATUS MLKEM_deserializeKey(MLKEMCtx *ctx, bool pubOnly, ubyte *serK
                  ((ubyte4) pDataPtr[2] << 8) | (ubyte4) pDataPtr[3];
         pDataPtr += 4;
 
-        if (keyLen != MLKEM_getPrivKeyLen(ctx->type)) 
+        if (keyLen > remainingLen - 4 || keyLen != MLKEM_getPrivKeyLen(ctx->type))
         {
             status = ERR_INVALID_INPUT;
             goto exit;
@@ -511,6 +528,7 @@ MOC_EXTERN MSTATUS MLDSA_deserializeKey(MLDSACtx *ctx, bool pubOnly, ubyte *serK
     byteBoolean isPrivate = FALSE;
     ubyte4 pubKeyLen = 0;
     ubyte4 privKeyLen = 0;
+    ubyte4 remainingLen = 0;
     ubyte *pPubKeyPtr = NULL;
 
     if (ctx == NULL || serKey == NULL)
@@ -520,9 +538,19 @@ MOC_EXTERN MSTATUS MLDSA_deserializeKey(MLDSACtx *ctx, bool pubOnly, ubyte *serK
         return ERR_PREVIOUSLY_EXISTING_ITEM;
     }
 
+    if (serKeyLen < 4)
+    {
+        return ERR_INVALID_INPUT;
+    }
+
     /* is there a public key? */
     pubKeyLen = ((ubyte4) serKey[0] << 24) | ((ubyte4) serKey[1] << 16) |
                 ((ubyte4) serKey[2] << 8) | (ubyte4) serKey[3];
+
+    if (pubKeyLen > serKeyLen - 4)
+    {
+        return ERR_INVALID_INPUT;
+    }
 
     if (0 != pubKeyLen)
     {
@@ -549,6 +577,13 @@ MOC_EXTERN MSTATUS MLDSA_deserializeKey(MLDSACtx *ctx, bool pubOnly, ubyte *serK
     if (isPrivate && !pubOnly)
     {
         /* skip over the public key for now */
+        remainingLen = serKeyLen - 4 - pubKeyLen;
+        if (remainingLen < 4)
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
+
         ubyte *pDataPtr = pPubKeyPtr + pubKeyLen;
 
 #ifdef __ENABLE_MLDSA_LONG_FORM_PRIV_KEY_SER__
@@ -563,6 +598,12 @@ MOC_EXTERN MSTATUS MLDSA_deserializeKey(MLDSACtx *ctx, bool pubOnly, ubyte *serK
         privKeyLen = ((ubyte4) pDataPtr[0] << 24) | ((ubyte4) pDataPtr[1] << 16) |
                      ((ubyte4) pDataPtr[2] << 8) | (ubyte4) pDataPtr[3];
         pDataPtr += 4;
+
+        if (privKeyLen > remainingLen - 4)
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
 
         if ((ubyte4)(2 + MLDSA_SEED_LEN) == privKeyLen) /* we have just the [0] tag and seed, call method that will set and expand */
         {
@@ -603,7 +644,7 @@ MOC_EXTERN MSTATUS MLDSA_deserializeKey(MLDSACtx *ctx, bool pubOnly, ubyte *serK
             if (tempLen != expPrivLen)
                 goto exit;
 
-            status = DIGI_MALLOC_MEMCPY((void **) &ctx->privKey, privKeyLen, (void *) pDataPtr, privKeyLen);
+            status = DIGI_MALLOC_MEMCPY((void **) &ctx->privKey, expPrivLen, (void *) pDataPtr, expPrivLen);
             if (OK != status)
                 goto exit;
 
@@ -714,6 +755,7 @@ MOC_EXTERN MSTATUS SLHDSA_deserializeKey(SLHDSACtx *ctx, bool pubOnly, uint8_t *
     ubyte *pPriv = NULL;
     byteBoolean isPrivate = FALSE;
     ubyte4 keyLen = 0;
+    ubyte4 remainingLen = 0;
 
     if (ctx == NULL || serKey == NULL)
         goto exit;
@@ -722,9 +764,19 @@ MOC_EXTERN MSTATUS SLHDSA_deserializeKey(SLHDSACtx *ctx, bool pubOnly, uint8_t *
         return ERR_PREVIOUSLY_EXISTING_ITEM;
     }
 
+    if (serKeyLen < 4)
+    {
+        return ERR_INVALID_INPUT;
+    }
+
     /* validate the public keyLen */
     keyLen = ((ubyte4) serKey[0] << 24) | ((ubyte4) serKey[1] << 16) |
              ((ubyte4) serKey[2] << 8) | (ubyte4) serKey[3];
+
+    if ((size_t)keyLen > serKeyLen - 4)
+    {
+        return ERR_INVALID_INPUT;
+    }
 
     if (keyLen > 0)
     {
@@ -760,6 +812,13 @@ MOC_EXTERN MSTATUS SLHDSA_deserializeKey(SLHDSACtx *ctx, bool pubOnly, uint8_t *
     if (isPrivate && !pubOnly)
     {
         /* skip over to the private key, we don't validate the pub and pri match */
+        remainingLen = serKeyLen - 4 - keyLen;
+        if (remainingLen < 4)
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
+
         pDataPtr += keyLen;
 
         /* validate the private key len */
@@ -768,6 +827,12 @@ MOC_EXTERN MSTATUS SLHDSA_deserializeKey(SLHDSACtx *ctx, bool pubOnly, uint8_t *
         pDataPtr += 4;
 
         if (keyLen != SLHDSA_getPrivKeyLen(ctx->type)) 
+        {
+            status = ERR_INVALID_INPUT;
+            goto exit;
+        }
+
+        if (keyLen > remainingLen - 4)
         {
             status = ERR_INVALID_INPUT;
             goto exit;

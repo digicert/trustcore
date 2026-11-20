@@ -358,14 +358,32 @@ static MSTATUS DeserializeHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) ubyte *pSe
     pPubBuff = pArray[pubIndex].value.pValue;
     pubBuffLen = pArray[pubIndex].valueLen;
 
+    status = ERR_INVALID_INPUT;
+    if (NULL == pPrivBuff || privBuffLen < 4)
+        goto exit;
+
     /* check the initial length of qs keys */
     qsPrivLen = ((ubyte4) pPrivBuff[0]) | (((ubyte4)pPrivBuff[1]) << 8) | 
                (((ubyte4)pPrivBuff[2]) << 16) | (((ubyte4)pPrivBuff[3]) << 24);
 
-    if (NULL != pPubBuff && pubBuffLen >= 5)
+    if (qsPrivLen > privBuffLen - 4)
+        goto exit;
+
+    if (NULL != pPubBuff && pubBuffLen < 5)
+        goto exit;
+
+    if (NULL != pPubBuff)
     {
+        /* skip past 0x00 byte for bitstring non-compat format */
         qsPubLen = ((ubyte4) pPubBuff[1]) | (((ubyte4)pPubBuff[2]) << 8) | 
                    (((ubyte4)pPubBuff[3]) << 16) | (((ubyte4)pPubBuff[4]) << 24);
+
+        if (qsPubLen > pubBuffLen - 5)
+            goto exit; /* still status = ERR_INVALID_INPUT */
+
+        /* Guard the ubyte4 length calculation before allocating the combined buffer. */
+        if (qsPrivLen > 0xFFFFFFFFu - 8u || qsPubLen > 0xFFFFFFFFu - 8u - qsPrivLen)
+            goto exit;
 
         qsBuffLen = 4 + qsPubLen + 4 + qsPrivLen;
     
@@ -383,7 +401,6 @@ static MSTATUS DeserializeHybridKey(MOC_ASYM(hwAccelDescr hwAccelCtx) ubyte *pSe
     
         if (qsPubLen > 0)
         {
-            /* skip past 0x00 byte for bitstring non-compat format */
             status = DIGI_MEMCPY(pQsTmpBuff, pPubBuff + 5, qsPubLen);
             if (OK != status)
                 goto exit;
