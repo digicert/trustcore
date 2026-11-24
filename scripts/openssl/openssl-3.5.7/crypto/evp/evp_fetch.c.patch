@@ -1,0 +1,7 @@
+23a24,29
+> #ifdef __ENABLE_DIGICERT_OSSL_V3_TEST__
+> #include "../../test/digitest_cnf.h"
+> #include <stdio.h>
+> #include <stdlib.h>
+> #endif
+> 

@@ -1,0 +1,12 @@
+183a184,192
+> #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
+> const DH_METHOD *DIGI_DH_get_default_method(void);
+> const DH_METHOD *DH_get_default_method(void)
+> {
+>     /* redefine default DH methods to point
+>        to DigiCert implementations */
+>     return DIGI_DH_get_default_method();
+> }
+> #else
+187a197
+> #endif /* __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__ */

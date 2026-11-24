@@ -531,6 +531,14 @@ EXIT /B %ERRORLEVEL%
         set OSSL_VER=3
         set OPENSSL_ENGINE_TYPE=
         goto next
+    ) else if "%~1"=="--openssl_3_5_7" (
+        echo Building for OpenSSL 3.5.7...
+        set OPENSSL_OPTION=%~1
+        set OPENSSL_LIB_OPTION=openssl-3.5.7
+        set OPENSSL_VER=3
+        set OSSL_VER=3
+        set OPENSSL_ENGINE_TYPE=
+        goto next
     ) else if "%~1"=="--mbed-path" (
         echo Building with mbed...
         set "OPENSSL_CONFIG_OPTION=!OPENSSL_CONFIG_OPTION! enable-mocana-export"
@@ -888,6 +896,7 @@ EXIT /B %ERRORLEVEL%
     echo    --openssl_3_0_7    - Build for OpenSSL 3.0.7.
     echo    --openssl_3_0_12   - Build for OpenSSL 3.0.12.
     echo    --openssl_3_5_0    - Build for OpenSSL 3.5.0.
+    echo    --openssl_3_5_7    - Build for OpenSSL 3.5.7.
     echo    --tap-local        - Build with TAP-Local
     echo    --fips             - Build w/ libmss
     echo    --custom-entropy   - Build with custom entropy.

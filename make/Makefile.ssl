@@ -139,6 +139,14 @@ ifeq ($(openssl_3_5_0), true)
 	OPENSSL_DIR = openssl-3.5.0
 endif
 
+ifeq ($(openssl_3_5_7), true)
+	OSSL_VERSION = --openssl_3_5_7
+	OSSL_V_SUFF = 3
+	OSSL_LINK_FLAGS_VERSION_SCRIPT = ${LINK_FLAG_PREFIX}--version-script=src/openssl_wrapper/openssl-3.5.7.ld
+	OSSL_LINK_FLAGS_EXTRA = ${LINK_FLAG_PREFIX}-znodelete
+	OPENSSL_DIR = openssl-3.5.7
+endif
+
 ifeq ($(rsa1024), true)
 	ARGS += --rsa1024
 endif

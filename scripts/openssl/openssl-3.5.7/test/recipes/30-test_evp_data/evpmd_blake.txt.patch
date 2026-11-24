@@ -1,0 +1,60 @@
+57,70c57,70
+< Digest = BLAKE2s256
+< Input =
+< OutputSize = 16
+< Output = 64550d6ffe2c0a01a14aba1eade0200c
+< 
+< Digest = BLAKE2s256
+< Input = 61
+< OutputSize = 10
+< Output = b60d322755eebca92b5e
+< 
+< Digest = BLAKE2s256
+< Input = 61
+< OutputSize = 33
+< Result = DIGESTINIT_ERROR
+---
+> #Digest = BLAKE2s256
+> #Input =
+> #OutputSize = 16
+> #Output = 64550d6ffe2c0a01a14aba1eade0200c
+> 
+> #Digest = BLAKE2s256
+> #Input = 61
+> #OutputSize = 10
+> #Output = b60d322755eebca92b5e
+> 
+> #Digest = BLAKE2s256
+> #Input = 61
+> #OutputSize = 33
+> #Result = DIGESTINIT_ERROR
+108,121c108,121
+< Digest = BLAKE2b512
+< Input =
+< OutputSize = 32
+< Output = 0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8
+< 
+< Digest = BLAKE2b512
+< Input = 61
+< OutputSize = 32
+< Output = 8928aae63c84d87ea098564d1e03ad813f107add474e56aedd286349c0c03ea4
+< 
+< Digest = BLAKE2b512
+< Input = 61
+< OutputSize = 65
+< Result = DIGESTINIT_ERROR
+---
+> #Digest = BLAKE2b512
+> #Input =
+> #OutputSize = 32
+> #Output = 0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8
+> 
+> #Digest = BLAKE2b512
+> #Input = 61
+> #OutputSize = 32
+> #Output = 8928aae63c84d87ea098564d1e03ad813f107add474e56aedd286349c0c03ea4
+> 
+> #Digest = BLAKE2b512
+> #Input = 61
+> #OutputSize = 65
+> #Result = DIGESTINIT_ERROR

@@ -1,0 +1,10 @@
+165,168c165,168
+< DigestVerify = SHA256
+< Key = B-163
+< Input = "Hello World"
+< Output = 302e0215027bb891747468b4b59ca2a2bf8f42d29d08866cf5021502cc311b25e9a2168e42240b07a6071070f687eb3b
+---
+> #DigestVerify = SHA256
+> #Key = B-163
+> #Input = "Hello World"
+> #Output = 302e0215027bb891747468b4b59ca2a2bf8f42d29d08866cf5021502cc311b25e9a2168e42240b07a6071070f687eb3b
