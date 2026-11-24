@@ -20,6 +20,7 @@ option(CM_ENABLE_DEBUG        "Enable Debug logs."        OFF)
 option(CM_ENABLE_FIPS         "Build with FIPS enabled."  OFF)
 option(CM_ENABLE_TAP          "Enable TAP "               OFF)
 option(CM_ENABLE_TAP_EXTERN   "Enable TAP extern"         OFF)
+option(CM_ENABLE_ID_CALLBACK  "Enable the ID serialization callback" OFF)
 option(CM_ENABLE_CERT_BLOB_EXTRACT "Enable with certificate blob extract support" OFF)
 option(CM_ENABLE_DATA_PROTECT "Enable data protect support" OFF)
 option(CM_DISABLE_PQC         "Disable PQC support"       OFF)
@@ -277,6 +278,10 @@ endif()
 ########################################################################
 
 file(STRINGS ${MOCANA_FLAGS_FILE} mocana_flags)
+
+if(CM_ENABLE_ID_CALLBACK)
+    set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_ID_CALLBACK__" "-D__ENABLE_DIGICERT_ASYM_KEY__")
+endif()
 
 if (NOT CM_DISABLE_HTTP)
     set(mocana_flags ${mocana_flags} "-D__ENABLE_DIGICERT_HTTP_CLIENT__")

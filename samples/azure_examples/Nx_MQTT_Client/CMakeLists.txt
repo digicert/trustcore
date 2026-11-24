@@ -1519,6 +1519,8 @@ set(TrustCore_Crypto_Src
     ${TRUSTCORE_SRC}/crypto/mocasymkeys/mocsw/dsaswdeserial.c
     ${TRUSTCORE_SRC}/crypto/mocasymkeys/mocsw/eccswserial.c
     ${TRUSTCORE_SRC}/crypto/mocasymkeys/mocsw/eccswdeserial.c
+    ${TRUSTCORE_SRC}/crypto/mocasymkeys/mocsw/keyid.c
+    ${TRUSTCORE_SRC}/crypto/mocasymkeys/mocsw/id.c
     ${TRUSTCORE_SRC}/crypto/crypto_utils.c
     ${TRUSTCORE_SRC}/crypto/malgo_id.c
     ${TRUSTCORE_SRC}/crypto/cvcert.c

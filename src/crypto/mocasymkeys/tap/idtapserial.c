@@ -18,120 +18,12 @@
  */
 
 #include "../../../crypto/mocasymkeys/tap/idtap.h"
+#include "../../../crypto/mocasymkeys/mocsw/id.h"
 #include "../../../asn1/mocasn1.h"
 
 #if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_ASYM_KEY__) && defined(__ENABLE_DIGICERT_SERIALIZE__)
 
 #include "../../../crypto_interface/cryptointerface.h"
-
-MSTATUS IdTapCreateAsn1(ubyte4 provider, ubyte4 moduleId, ubyte4 tokenId, ubyte *pOid, ubyte4 oidLen,
-                        ubyte *pId, ubyte4 idLen, ubyte **ppOut, ubyte4 *pOutLen)
-{
-  MSTATUS status = OK;
-  ubyte4 encodingLen;
-  ubyte *pNewBuf = NULL;
-  MAsn1Element *pArray = NULL;
-
-  /* For the Key Id, the privateKeyData is defined as follows:
-  * SEQ {
-  *   Version version,
-  *   Provider provider,
-  *   Module moduleId,
-  *   Token tokenId,
-  *   ObjectId objectId 
-  * }
-  *
-  * where:
-  * Version ::= INTEGER { v1(0) } (v1,...)
-  * Provider ::= INTEGER
-  * Moduke ::= INTEGER
-  * Token ::= INTEGER
-  * ObjectId ::= OCTET STRING
-  */
-  MAsn1TypeAndCount pTemplate[6] =
-  {
-    { MASN1_TYPE_SEQUENCE, 5 },
-      { MASN1_TYPE_INTEGER, 0 },
-      { MASN1_TYPE_INTEGER, 0 },
-      { MASN1_TYPE_INTEGER, 0 },
-      { MASN1_TYPE_INTEGER, 0 },
-      { MASN1_TYPE_OCTET_STRING, 0 }
-  };
-
-  /* internal method, null checks not necc */
-
-  status = MAsn1CreateElementArray (
-    pTemplate, 6, MASN1_FNCT_ENCODE, NULL, &pArray);
-  if (OK != status)
-    goto exit;
-
-  /* Set the Version */
-  status = MAsn1SetInteger (
-    pArray + 1, NULL, 0, TRUE, 0);
-  if (OK != status)
-    goto exit;
-
-  /* Set the provider */
-  status = MAsn1SetInteger (
-    pArray + 2, NULL, 0, TRUE, provider);
-  if (OK != status)
-    goto exit;
-
-  /* Set the module Id */
-  status = MAsn1SetInteger (
-    pArray + 3, NULL, 0, TRUE, moduleId);
-  if (OK != status)
-    goto exit;
-
-  /* Set the token Id */
-  status = MAsn1SetInteger (
-    pArray + 4, NULL, 0, TRUE, tokenId);
-  if (OK != status)
-    goto exit;
-
-  /* Set the object id */
-  status = MAsn1SetValue (
-    pArray + 5, pId, idLen);
-  if (OK != status)
-    goto exit;
-
-  /* Get the encoding length */
-  status = MAsn1Encode (pArray, NULL, 0, &encodingLen);
-  if (OK == status)
-    status = ERR_INVALID_INPUT;
-  if (ERR_BUFFER_TOO_SMALL != status)
-    goto exit;
-
-  /* Allocate space for the encoding */
-  status = DIGI_MALLOC ((void **)&pNewBuf, encodingLen);
-  if (OK != status)
-    goto exit;
-
-  /* Get the ASN1 encoding */
-  status = MAsn1Encode (pArray, pNewBuf, encodingLen, &encodingLen);
-  if (OK != status)
-    goto exit;
-
-  /* Use this new encoding to build a new key info */
-  status = CRYPTO_makeKeyInfo (
-    TRUE, pOid, oidLen,
-    pNewBuf, encodingLen, ppOut, pOutLen);
-
-exit:
-
-  if (NULL != pArray)
-  {
-    MAsn1FreeElementArray (&pArray);
-  }
-  if (NULL != pNewBuf)
-  {
-    DIGI_FREE ((void **)&pNewBuf);
-  }
-
-  return status;
-}
-
-/*----------------------------------------------------------------------------*/
 
 MSTATUS IdTapSerializeKey (
   MKeyOperatorData *pInput,
@@ -190,8 +82,8 @@ MSTATUS IdTapSerializeKey (
   if (pObjInfo->moduleId && pObjInfo->moduleId != moduleId)
     goto release_tap;
 
-  status = IdTapCreateAsn1(provider, moduleId, pObjInfo->tokenId, pOid, sizeof(pOid),
-                           id.pBuffer, id.bufferLen, pOutput->ppData, pOutput->pLength);
+  status = IdCreateAsn1(provider, moduleId, pObjInfo->tokenId, pOid, sizeof(pOid),
+                        id.pBuffer, id.bufferLen, pOutput->ppData, pOutput->pLength);
 
 release_tap:
 

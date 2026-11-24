@@ -133,6 +133,9 @@ extern "C" {
 #define MOC_LOCAL_TYPE_ID_TAP \
     (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_TYPE_TAP)
 
+#define MOC_LOCAL_TYPE_ID \
+    (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_KEY_SW)
+
 #define MOC_LOCAL_KEY_RSA_PUB_OPERATOR \
     (MOC_LOCAL_KEY_MOCANA | MOC_LOCAL_KEY_SW | MOC_LOCAL_KEY_ASYM | \
     MOC_LOCAL_KEY_RSA )
@@ -336,6 +339,22 @@ MOC_EXTERN MSTATUS KeyOperatorSSTap (
  * obtained through a TAP identifier (ID).
  */
 MOC_EXTERN MSTATUS KeyOperatorIdTap (
+  MocAsymKey pMocAsymKey,
+  MocCtx pMocCtx,
+  keyOperation keyOp,
+  void *pInputInfo,
+  void *pOutputInfo,
+  struct vlong **ppVlongQueue
+  );
+
+/** Implements MKeyOperator for ID-based keys without requiring TAP.
+ * Requires __ENABLE_DIGICERT_ASYM_KEY__. With __ENABLE_DIGICERT_SERIALIZE__,
+ * GET_PARAMS reads provider and module information from an encoded key ID.
+ * Serialization encodes key identifiers. For deserialization, pOutputInfo is
+ * an MKeyObjectInfo receiving the allocated ID, its length, and the provider;
+ * the caller must free the ID.
+ */
+MOC_EXTERN MSTATUS KeyOperatorId (
   MocAsymKey pMocAsymKey,
   MocCtx pMocCtx,
   keyOperation keyOp,

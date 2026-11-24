@@ -79,6 +79,76 @@ typedef struct HybridKey
 	
 } HybridKey;
 
+/** Callbacks use caller-owned output buffers. On a sizing call, the output
+ * buffer is NULL and the callback sets the required length without side
+ * effects, returning OK or ERR_BUFFER_TOO_SMALL. On the second call, the
+ * length is the buffer capacity on input and the actual length on output.
+ * Return OK on success or an MSTATUS error code on failure.
+ * The input buffers are borrowed for the duration of the call; the key buffer
+ * can contain private key material and must be protected by the callback.
+ */
+typedef int (*IdSerializationCallback)(
+  ubyte *pInId, ubyte4 inIdLen,
+  ubyte *pKeyBuffer, ubyte4 keyBufferLen,
+  ubyte *pOutId, ubyte4 *pOutIdLen);
+
+typedef int (*IdDeserializationCallback)(
+  ubyte *pId, ubyte4 idLen,
+  ubyte *pKeyBufferOut, ubyte4 *pKeyBufferOutLen
+);
+
+#ifndef ID_CALLBACK_PROVIDER
+#define ID_CALLBACK_PROVIDER 999
+#endif
+
+/**
+ * @brief Set or clear the process-wide ID serialization callback.
+ * @note  Callback access is not synchronized. Configure the callback before
+ *        concurrent serialization operations.
+ *
+ * @flags
+ * To enable this function, the following flag must be defined:
+ * + \c \__ENABLE_DIGICERT_ID_CALLBACK__
+ *
+ * @param callback Callback to register, or \c NULL to clear it.
+ */
+MOC_EXTERN void CRYPTO_setIdSerializationCallback(IdSerializationCallback callback);
+
+/**
+ * @brief Get the process-wide ID serialization callback.
+ *
+ * @flags
+ * To enable this function, the following flag must be defined:
+ * + \c \__ENABLE_DIGICERT_ID_CALLBACK__
+ *
+ * @return The registered callback, or \c NULL if none is registered.
+ */
+MOC_EXTERN IdSerializationCallback CRYPTO_getIdSerializationCallback(void);
+
+/**
+ * @brief Set or clear the process-wide ID deserialization callback.
+ * @note  Callback access is not synchronized. Configure the callback before
+ *        concurrent deserialization operations.
+ *
+ * @flags
+ * To enable this function, the following flag must be defined:
+ * + \c \__ENABLE_DIGICERT_ID_CALLBACK__
+ *
+ * @param callback Callback to register, or \c NULL to clear it.
+ */
+MOC_EXTERN void CRYPTO_setIdDeserializationCallback(IdDeserializationCallback callback);
+
+/**
+ * @brief Get the process-wide ID deserialization callback.
+ *
+ * @flags
+ * To enable this function, the following flag must be defined:
+ * + \c \__ENABLE_DIGICERT_ID_CALLBACK__
+ *
+ * @return The registered callback, or \c NULL if none is registered.
+ */
+MOC_EXTERN IdDeserializationCallback CRYPTO_getIdDeserializationCallback(void);
+
 /**
  * @brief Initialize a caller allocated AsymmetricKey. CRYPTO_uninitAsymmetricKey
  *        should be called once the key is no longer needed.
@@ -573,6 +643,9 @@ MOC_EXTERN MSTATUS CRYPTO_serializeKey (
 
 /** Deserialize a key, building an AsymmetricKey from the byte array that is the
  * key data.
+ * With __ENABLE_DIGICERT_ID_CALLBACK__, a registered deserialization callback
+ * takes precedence over TAP for encoded key IDs. Its returned key buffer is
+ * processed by CRYPTO_deserializeKey.
  * <p>The caller supplies the serialized key and an initialized AsymmetricKey.
  * The function will determine the format of the serialized key (Mocana blob,
  * DER, etc.), then find the appropriate MKeySerialize from the supplied array
@@ -729,8 +802,12 @@ MOC_EXTERN MSTATUS CRYPTO_serializeKeyId(
   ubyte4 *pSerializedKeyLen
 );
 
-/** Serialize an asymmetric key to secure storage with a given token 
- * and identifier.
+/** Serialize an asymmetric key to storage with a given token and identifier.
+ * Requires serialization and asymmetric key support, and either TAP or
+ * __ENABLE_DIGICERT_ID_CALLBACK__. When both are
+ * available, a registered ID callback selects KeyOperatorId; otherwise TAP
+ * secure storage is used. Callback-backed IDs encode
+ * \c ID_CALLBACK_PROVIDER as the provider.
  *
  * @param pKeyToSerialize The AsymmetricKey you want serialized.
  * @param format  The format into which you want the key's outer identifier to be serialized.
@@ -770,6 +847,8 @@ MOC_EXTERN MSTATUS CRYPTO_serializeAsymKeyToStorage(
  * core will be used.
  * <p>If you are deserializing into a MocAsym Key, you can pass NULL for the
  * pMocCtx.
+ * <p>When an ID deserialization callback is registered, an ID-backed key must
+ * have provider \c ID_CALLBACK_PROVIDER or deserialization fails.
  *
  * @param pSerializedKey The byte array that is the serialized key.
  * @param serializedKeyLen The length, in bytes, of the serialized key.

@@ -34,6 +34,7 @@ MSS_TEST_DIR/ecdsa_test.c
 MSS_TEST_DIR/ffc_test.c
 MSS_TEST_DIR/gcm_test.c
 MSS_TEST_DIR/key_utils_test.c
+MSS_TEST_DIR/keyid_test.c
 MSS_TEST_DIR/malgo_id_test.c
 MSS_TEST_DIR/mldsa_test.c
 MSS_TEST_DIR/mlkem_test.c

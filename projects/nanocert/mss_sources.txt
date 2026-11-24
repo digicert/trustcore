@@ -19,6 +19,8 @@ MSS_SRC_DIR/crypto/mocasymkeys/mocsw/dsaswserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/mocsw/dsaswdeserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/mocsw/eccswserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/mocsw/eccswdeserial.c
+MSS_SRC_DIR/crypto/mocasymkeys/mocsw/keyid.c
+MSS_SRC_DIR/crypto/mocasymkeys/mocsw/id.c
 MSS_SRC_DIR/crypto/crypto_utils.c
 MSS_SRC_DIR/crypto/malgo_id.c
 MSS_SRC_DIR/crypto/cvcert.c

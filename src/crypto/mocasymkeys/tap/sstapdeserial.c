@@ -18,7 +18,7 @@
  */
 
 #include "../../../crypto/mocasymkeys/tap/sstap.h"
-#include "../../../crypto/mocasymkeys/tap/idtap.h"
+#include "../../../crypto/mocasymkeys/mocsw/id.h"
 
 #if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_ASYM_KEY__) && defined(__ENABLE_DIGICERT_SERIALIZE__)
 
@@ -55,8 +55,8 @@ MSTATUS SSTapDeserializeKey (
   if (NULL == pInput || NULL == pOutput || NULL == pInput->pData)
     goto exit;
 
-  status = IdTapParseAsn1(pInput->pData, pInput->length, pOid, sizeof(pOid),
-                          &id, &tokenId, &provider, &moduleId);
+  status = IdParseAsn1(pInput->pData, pInput->length, pOid, sizeof(pOid),
+                       &id.pBuffer, &id.bufferLen, &tokenId, &provider, &moduleId);
   if (OK != status)
     goto exit;
 

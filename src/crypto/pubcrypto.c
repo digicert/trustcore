@@ -115,6 +115,31 @@
 
 /*------------------------------------------------------------------*/
 
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__)
+static IdSerializationCallback g_idSerializationCallback = NULL;
+static IdDeserializationCallback g_idDeserializationCallback = NULL;
+
+MOC_EXTERN void CRYPTO_setIdSerializationCallback(IdSerializationCallback callback)
+{
+    g_idSerializationCallback = callback;
+}
+
+MOC_EXTERN IdSerializationCallback CRYPTO_getIdSerializationCallback(void)
+{
+    return g_idSerializationCallback;
+}
+
+MOC_EXTERN void CRYPTO_setIdDeserializationCallback(IdDeserializationCallback callback)
+{
+    g_idDeserializationCallback = callback;
+}
+
+MOC_EXTERN IdDeserializationCallback CRYPTO_getIdDeserializationCallback(void)
+{
+    return g_idDeserializationCallback;
+}
+#endif
+
 MOC_EXTERN MSTATUS
 CRYPTO_initAsymmetricKey(AsymmetricKey* pKey)
 {
@@ -1055,6 +1080,11 @@ exit:
   return status;
 }
 
+#endif /* __ENABLE_DIGICERT_TAP__ && __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
+
+#if defined(__ENABLE_DIGICERT_ASYM_KEY__) && \
+    (defined(__ENABLE_DIGICERT_TAP__) || defined(__ENABLE_DIGICERT_ID_CALLBACK__))
+
 extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
   MOC_ASYM(hwAccelDescr hwAccelCtx)
   AsymmetricKey *pKeyToSerialize,
@@ -1075,6 +1105,12 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
   serializedKeyFormat innerFormat = format; /* default */
   ubyte *pInnerKey = NULL;
   ubyte4 innerKeyLen = 0;
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__)
+  IdSerializationCallback idCallback = CRYPTO_getIdSerializationCallback();
+  ubyte *pCallbackId = NULL;
+  ubyte4 callbackIdLen = 0;
+  ubyte4 callbackIdCapacity = 0;
+#endif
 
   MSerializeInfo serialInfo = {
     .ppSerializedKey = ppSerializedKey,
@@ -1122,8 +1158,54 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
   outputInfo.ppData = serialInfo.dataToReturn.ppData;
   outputInfo.pLength = serialInfo.dataToReturn.pLength;
 
-  /* Call the operator directly */
+  /* A configured ID callback takes precedence over TAP secure storage. */
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__)
+#if defined(__ENABLE_DIGICERT_TAP__)
+  if (NULL != idCallback)
+#else
+  if (NULL == idCallback)
+  {
+    status = ERR_NOT_IMPLEMENTED;
+    goto exit;
+  }
+#endif
+  {
+    status = idCallback(pId, idLen, pInnerKey, innerKeyLen, NULL, &callbackIdLen);
+    if (OK != status && ERR_BUFFER_TOO_SMALL != status)
+      goto exit;
+
+    status = ERR_INVALID_INPUT;
+    if (0 == callbackIdLen)
+      goto exit;
+
+    callbackIdCapacity = callbackIdLen;
+    status = DIGI_MALLOC((void **) &pCallbackId, callbackIdCapacity);
+    if (OK != status)
+      goto exit;
+
+    status = idCallback(pId, idLen, pInnerKey, innerKeyLen,
+                        pCallbackId, &callbackIdLen);
+    if (OK != status)
+      goto exit;
+
+    status = ERR_INVALID_INPUT;
+    if (0 == callbackIdLen || callbackIdLen > callbackIdCapacity)
+      goto exit;
+
+    inputInfo.pData = pCallbackId;
+    inputInfo.length = callbackIdLen;
+    objInfo.pId = pCallbackId;
+    objInfo.idLen = callbackIdLen;
+    objInfo.provider = ID_CALLBACK_PROVIDER;
+    status = KeyOperatorId (NULL, NULL, MOC_ASYM_OP_SERIALIZE, &inputInfo, &outputInfo, NULL);
+  }
+#if defined(__ENABLE_DIGICERT_TAP__)
+  else
+#endif
+#endif
+#if defined(__ENABLE_DIGICERT_TAP__)
   status = KeyOperatorSSTap (NULL, NULL, MOC_ASYM_OP_SERIALIZE, &inputInfo, &outputInfo, NULL);
+#endif
   if (OK != status)
     goto exit;
 
@@ -1135,6 +1217,12 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
 
 exit:
 
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__)
+  if (NULL != pCallbackId)
+  {
+    (void) DIGI_MEMSET_FREE(&pCallbackId, callbackIdCapacity);
+  }
+#endif
   if (NULL != pInnerKey)
   {
     (void) DIGI_MEMSET_FREE (&pInnerKey, innerKeyLen);
@@ -1147,7 +1235,7 @@ exit:
 
   return status;
 }
-#endif /* __ENABLE_DIGICERT_TAP__ */
+#endif /* TAP or ID callback */
 
 extern MSTATUS CRYPTO_deserializeAsymKey (
   MOC_ASYM(hwAccelDescr hwAccelCtx)
@@ -1179,6 +1267,15 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
 #endif
 #endif /* __ENABLE_DIGICERT_ECC__ */
   };
+
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__) && defined(__ENABLE_DIGICERT_ASYM_KEY__)
+  IdDeserializationCallback idCallback = CRYPTO_getIdDeserializationCallback();
+#endif
+
+  if (NULL == pSerializedKey || NULL == pDeserializedKey)
+    return ERR_NULL_POINTER;
+  if (0 == serializedKeyLen)
+    return ERR_INVALID_INPUT;
 
   /* First attempt to have any loaded TAP operators deserialize this key blob */
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
@@ -1227,16 +1324,34 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
     status = CRYPTO_INTERFACE_loadAsymmetricKey (
       pDeserializedKey, keyType, (void **)&pNewKey);
   }
-#ifdef __ENABLE_DIGICERT_TAP__  
   else
+#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
   {
+#if (defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)) || \
+    (defined(__ENABLE_DIGICERT_ID_CALLBACK__) && defined(__ENABLE_DIGICERT_ASYM_KEY__))
     ubyte *pInnerKey = NULL;
     ubyte4 innerKeyLen = 0;
     ubyte *pKeyDer = NULL;
     ubyte4 keyDerLen = 0;
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__) && defined(__ENABLE_DIGICERT_ASYM_KEY__)
+    ubyte *pCallbackKey = NULL;
+    ubyte4 callbackKeyLen = 0;
+    ubyte4 callbackKeyCapacity = 0;
+    MKeyObjectInfo idInfo = {0};
+#endif
 
     MKeyOperatorData inputInfo = {0};
     MKeyOperatorDataReturn outputInfo = {0};
+
+#if !defined(__ENABLE_DIGICERT_TAP__) || !defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+    if (NULL == idCallback)
+    {
+      status = CRYPTO_deserializeKey (MOC_ASYM(hwAccelCtx)
+        pSerializedKey, serializedKeyLen, pSupportedAlgorithms,
+        supportedAlgorithmCount, pDeserializedKey);
+      goto storage_deserialize_exit;
+    }
+#endif
 
     /* check if it's PEM first */
     if ('-' == pSerializedKey[0])
@@ -1245,13 +1360,13 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
       status = CA_MGMT_decodeCertificate (
         pSerializedKey, serializedKeyLen, &pKeyDer, &keyDerLen);
       if (OK != status)
-        goto exit;
+        goto storage_deserialize_exit;
 
       inputInfo.pData = pKeyDer;
       inputInfo.length = keyDerLen;
 #else
       status = ERR_NOT_IMPLEMENTED;
-      goto exit;
+      goto storage_deserialize_exit;
 #endif
     }
     else
@@ -1263,57 +1378,92 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
     outputInfo.ppData = &pInnerKey;
     outputInfo.pLength = &innerKeyLen;
 
-    /* Call the operator for a TAP ID directly to see if it's that kind of key */
-    status = KeyOperatorIdTap (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &outputInfo, NULL);
-    if (OK == status)
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__) && defined(__ENABLE_DIGICERT_ASYM_KEY__)
+    if (NULL != idCallback)
     {
-      if (NULL != pKeyDer)
-      {
-        (void) DIGI_MEMSET_FREE(&pKeyDer, keyDerLen);
-      }
-      
-      /* pInnerKey now has the id of the inner key */
-      status = CRYPTO_INTERFACE_TAP_getKeyById(pInnerKey, innerKeyLen, pDeserializedKey);
-      (void) DIGI_MEMSET_FREE(&pInnerKey, innerKeyLen);
-    }
-    else
-    {
-      /* Call the operator for a TAP Secure Storage directly to see if it's that kind of key */
-      status = KeyOperatorSSTap (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &outputInfo, NULL);
-      
-      /* Regardless of status free der key if needbe */
-      if (NULL != pKeyDer)
-      {
-        (void) DIGI_MEMSET_FREE(&pKeyDer, keyDerLen);
-      }
-
+      status = KeyOperatorId (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &idInfo, NULL);
       if (OK == status)
       {
-        /* recursive call to this method for the inner key */
-        status = CRYPTO_deserializeAsymKey (MOC_ASYM(hwAccelCtx) pInnerKey, innerKeyLen, pMocCtx, pDeserializedKey);
-        (void) DIGI_MEMSET_FREE(&pInnerKey, innerKeyLen);
+        pInnerKey = idInfo.pId;
+        innerKeyLen = idInfo.idLen;
+        if (ID_CALLBACK_PROVIDER != idInfo.provider)
+        {
+          status = ERR_INVALID_INPUT;
+          goto storage_deserialize_exit;
+        }
+        status = idCallback(pInnerKey, innerKeyLen, NULL, &callbackKeyLen);
+        if (OK != status && ERR_BUFFER_TOO_SMALL != status)
+          goto storage_deserialize_exit;
+
+        status = ERR_INVALID_INPUT;
+        if (0 == callbackKeyLen)
+          goto storage_deserialize_exit;
+
+        callbackKeyCapacity = callbackKeyLen;
+        status = DIGI_MALLOC((void **) &pCallbackKey, callbackKeyCapacity);
+        if (OK != status)
+          goto storage_deserialize_exit;
+
+        status = idCallback(pInnerKey, innerKeyLen, pCallbackKey, &callbackKeyLen);
+        if (OK != status)
+          goto storage_deserialize_exit;
+
+        status = ERR_INVALID_INPUT;
+        if (0 == callbackKeyLen || callbackKeyLen > callbackKeyCapacity)
+          goto storage_deserialize_exit;
+
+        status = CRYPTO_deserializeKey (MOC_ASYM(hwAccelCtx)
+          pCallbackKey, callbackKeyLen, pSupportedAlgorithms,
+          supportedAlgorithmCount, pDeserializedKey);
+        goto storage_deserialize_exit;
       }
-      else
+      if (ERR_MEM_ALLOC_FAIL == status || ERR_MEM_PART_ALLOC_FAIL == status)
+        goto storage_deserialize_exit;
+    }
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+    else
+#endif
+#endif
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+    {
+      /* Call the operator for a TAP ID directly to see if it's that kind of key */
+      status = KeyOperatorIdTap (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &outputInfo, NULL);
+      if (OK == status)
       {
-        /* Try for a software only deserialization */
-        status = CRYPTO_deserializeKey ( MOC_ASYM(hwAccelCtx)
-          pSerializedKey, serializedKeyLen, pSupportedAlgorithms,
-          supportedAlgorithmCount, pDeserializedKey);     
+        status = CRYPTO_INTERFACE_TAP_getKeyById(pInnerKey, innerKeyLen, pDeserializedKey);
+        goto storage_deserialize_exit;
+      }
+      /* Call the operator for TAP Secure Storage if it is not a TAP ID. */
+      status = KeyOperatorSSTap (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &outputInfo, NULL);
+      if (OK == status)
+      {
+        status = CRYPTO_deserializeAsymKey (MOC_ASYM(hwAccelCtx) pInnerKey, innerKeyLen, pMocCtx, pDeserializedKey);
+        goto storage_deserialize_exit;
       }
     }
-  }
-#else
-  else
-#endif /* __ENABLE_DIGICERT_TAP__ */
-#endif /* __ENABLE_DIGICERT_CRYPTO_INTERFACE__ */
-#ifndef __ENABLE_DIGICERT_TAP__
-  {
-    /* Try for a software only deserialization */
-    status = CRYPTO_deserializeKey ( MOC_ASYM(hwAccelCtx)
+#endif
+
+    /* The input was not a supported stored-key identifier. */
+    status = CRYPTO_deserializeKey (MOC_ASYM(hwAccelCtx)
       pSerializedKey, serializedKeyLen, pSupportedAlgorithms,
       supportedAlgorithmCount, pDeserializedKey);
-  }
+
+storage_deserialize_exit:
+
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__) && defined(__ENABLE_DIGICERT_ASYM_KEY__)
+    if (NULL != pCallbackKey)
+      (void) DIGI_MEMSET_FREE(&pCallbackKey, callbackKeyCapacity);
 #endif
+    if (NULL != pInnerKey)
+      (void) DIGI_MEMSET_FREE(&pInnerKey, innerKeyLen);
+    if (NULL != pKeyDer)
+      (void) DIGI_MEMSET_FREE(&pKeyDer, keyDerLen);
+#else
+    status = CRYPTO_deserializeKey (MOC_ASYM(hwAccelCtx)
+      pSerializedKey, serializedKeyLen, pSupportedAlgorithms,
+      supportedAlgorithmCount, pDeserializedKey);
+#endif
+  }
 
 #ifdef __ENABLE_DIGICERT_CRYPTO_INTERFACE__
 exit:
