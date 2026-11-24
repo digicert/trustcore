@@ -1382,15 +1382,10 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
     if (NULL != idCallback)
     {
       status = KeyOperatorId (NULL, pMocCtx, MOC_ASYM_OP_DESERIALIZE, &inputInfo, &idInfo, NULL);
-      if (OK == status)
+      if (OK == status && ID_CALLBACK_PROVIDER == idInfo.provider)
       {
         pInnerKey = idInfo.pId;
         innerKeyLen = idInfo.idLen;
-        if (ID_CALLBACK_PROVIDER != idInfo.provider)
-        {
-          status = ERR_INVALID_INPUT;
-          goto storage_deserialize_exit;
-        }
         status = idCallback(pInnerKey, innerKeyLen, NULL, &callbackKeyLen);
         if (OK != status && ERR_BUFFER_TOO_SMALL != status)
           goto storage_deserialize_exit;
@@ -1419,10 +1414,9 @@ extern MSTATUS CRYPTO_deserializeAsymKey (
       }
       if (ERR_MEM_ALLOC_FAIL == status || ERR_MEM_PART_ALLOC_FAIL == status)
         goto storage_deserialize_exit;
+      if (NULL != idInfo.pId)
+        (void) DIGI_MEMSET_FREE(&idInfo.pId, idInfo.idLen);
     }
-#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
-    else
-#endif
 #endif
 #if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
     {
