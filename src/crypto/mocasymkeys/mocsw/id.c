@@ -22,6 +22,36 @@
 
 #if defined(__ENABLE_DIGICERT_ASYM_KEY__) && defined(__ENABLE_DIGICERT_SERIALIZE__)
 
+static MSTATUS IdParseUbyte4(MAsn1Element *pElement, ubyte4 *pValue)
+{
+  ubyte4 i = 0;
+  ubyte4 value = 0;
+
+  if (0 == pElement->valueLen || pElement->valueLen > 5 ||
+      0 != (pElement->value.pValue[0] & 0x80))
+    return ERR_INVALID_INPUT;
+
+  if (5 == pElement->valueLen)
+  {
+    if (0 != pElement->value.pValue[0] ||
+        0 == (pElement->value.pValue[1] & 0x80))
+      return ERR_INVALID_INPUT;
+    i = 1;
+  }
+  else if (pElement->valueLen > 1 &&
+           0 == pElement->value.pValue[0] &&
+           0 == (pElement->value.pValue[1] & 0x80))
+  {
+    return ERR_INVALID_INPUT;
+  }
+
+  for (; i < pElement->valueLen; ++i)
+    value = (value << 8) | pElement->value.pValue[i];
+
+  *pValue = value;
+  return OK;
+}
+
 MSTATUS IdParseAsn1(ubyte *pInput, ubyte4 inputLen, ubyte *pOid, ubyte4 oidLen,
                     ubyte **ppId, ubyte4 *pIdLen, ubyte4 *pTokenId,
                     ubyte4 *pProvider, ubyte4 *pModule)
@@ -121,52 +151,18 @@ MSTATUS IdParseAsn1(ubyte *pInput, ubyte4 inputLen, ubyte *pOid, ubyte4 oidLen,
   if (NULL != pModule)
   {
     /* Get module ID, at most 4 bytes in length */
-    if (pArray[3].valueLen > 0)
-    {
-      moduleId = pArray[3].value.pValue[0];
-    }
-    if (pArray[3].valueLen > 1)
-    {
-      moduleId <<= 8;
-      moduleId |= (pArray[3].value.pValue[1]);
-    }
-    if (pArray[3].valueLen > 2)
-    {
-      moduleId <<= 8;
-      moduleId |= (pArray[3].value.pValue[2]);
-    }
-    if (pArray[3].valueLen > 3)
-    {
-      moduleId <<= 8;
-      moduleId |= (pArray[3].value.pValue[3]);
-    }
-
+    status = IdParseUbyte4(pArray + 3, &moduleId);
+    if (OK != status)
+      goto exit;
     *pModule = moduleId;
   }
 
   if (NULL != pTokenId)
   {
     /* Get TokenId, at most 4 bytes in length */
-    if (pArray[4].valueLen > 0)
-    {
-      tokenId = pArray[4].value.pValue[0];
-    }
-    if (pArray[4].valueLen > 1)
-    {
-      tokenId <<= 8;
-      tokenId |= (pArray[4].value.pValue[1]);
-    }
-    if (pArray[4].valueLen > 2)
-    {
-      tokenId <<= 8;
-      tokenId |= (pArray[4].value.pValue[2]);
-    }
-    if (pArray[4].valueLen > 3)
-    {
-      tokenId <<= 8;
-      tokenId |= (pArray[4].value.pValue[3]);
-    }
-
+    status = IdParseUbyte4(pArray + 4, &tokenId);
+    if (OK != status)
+      goto exit;
     *pTokenId = tokenId;
   }
 
