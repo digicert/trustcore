@@ -16,6 +16,7 @@ MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapdeserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/rsatapsize.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/idkeytap.c
+MSS_SRC_DIR/crypto/mocasymkeys/mocsw/id.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/idtapserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/idtapdeserial.c
 MSS_SRC_DIR/crypto/mocasymkeys/tap/idtapload.c
