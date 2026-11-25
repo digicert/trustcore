@@ -1579,7 +1579,7 @@ exit_nanoroot_gen:
                         if (pEstArgs->useTEE)
                         {
                             status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(gHwAccelCtx) &asymKey,
-                                privateKeyPem, pEstArgs->tapKeyHandle.pBuffer, pEstArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE,
+                                privateKeyPem, pEstArgs->tapKeyHandle.pBuffer, pEstArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE, FALSE,
                                 &pSerializedPemKey, &serializedPemKeyLen);
                         }
                         else

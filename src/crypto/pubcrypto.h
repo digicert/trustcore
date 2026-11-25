@@ -804,10 +804,10 @@ MOC_EXTERN MSTATUS CRYPTO_serializeKeyId(
 
 /** Serialize an asymmetric key to storage with a given token and identifier.
  * Requires serialization and asymmetric key support, and either TAP or
- * __ENABLE_DIGICERT_ID_CALLBACK__. When both are
- * available, a registered ID callback selects KeyOperatorId; otherwise TAP
- * secure storage is used. Callback-backed IDs encode
- * \c ID_CALLBACK_PROVIDER as the provider.
+ * __ENABLE_DIGICERT_ID_CALLBACK__. The isTap argument selects TAP secure
+ * storage or the registered ID serialization callback. The selected backend
+ * must be enabled, and the callback must be registered for the ID path.
+ * Callback-backed IDs encode \c ID_CALLBACK_PROVIDER as the provider.
  *
  * @param pKeyToSerialize The AsymmetricKey you want serialized.
  * @param format  The format into which you want the key's outer identifier to be serialized.
@@ -815,6 +815,7 @@ MOC_EXTERN MSTATUS CRYPTO_serializeKeyId(
  * @param pId     Buffer holding the identifier for the key.
  * @param idLen   The length of the id in bytes.
  * @param tokenId The token (ie secure storage application id) to be used.
+ * @param isTap   TRUE to use TAP secure storage; FALSE to use the ID callback.
  * @param ppSerializedKey The address where the function will deposit a pointer
  * to allocated memory containing the serialized key. It is the responsiblity of
  * the caller to free that memory using DIGI_FREE.
@@ -833,6 +834,7 @@ MOC_EXTERN MSTATUS CRYPTO_serializeAsymKeyToStorage(
   ubyte *pId,
   ubyte4 idLen,
   ubyte4 tokenId,
+  byteBoolean isTap,
   ubyte **ppSerializedKey,
   ubyte4 *pSerializedKeyLen
 );

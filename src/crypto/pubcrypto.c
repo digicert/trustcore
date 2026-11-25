@@ -1092,6 +1092,7 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
   ubyte *pId,
   ubyte4 idLen,
   ubyte4 tokenId,
+  byteBoolean isTap,
   ubyte **ppSerializedKey,
   ubyte4 *pSerializedKeyLen
 )
@@ -1132,6 +1133,24 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
   if (noFormat == format || mocanaBlobVersion2 == format || deserialize == format)
     goto exit;
 
+  if (isTap)
+  {
+#if !defined(__ENABLE_DIGICERT_TAP__)
+    status = ERR_NOT_IMPLEMENTED;
+    goto exit;
+#endif
+  }
+  else
+  {
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__)
+    if (NULL == idCallback)
+#endif
+    {
+      status = ERR_NOT_IMPLEMENTED;
+      goto exit;
+    }
+  }
+
   /* Execute initialization code common to all serialization routines */
   status = SerializeCommonInit(&serialInfo, format);
   if (OK != status)
@@ -1158,18 +1177,15 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
   outputInfo.ppData = serialInfo.dataToReturn.ppData;
   outputInfo.pLength = serialInfo.dataToReturn.pLength;
 
-  /* A configured ID callback takes precedence over TAP secure storage. */
-#if defined(__ENABLE_DIGICERT_ID_CALLBACK__)
+  if (isTap)
+  {
 #if defined(__ENABLE_DIGICERT_TAP__)
-  if (NULL != idCallback)
-#else
-  if (NULL == idCallback)
-  {
-    status = ERR_NOT_IMPLEMENTED;
-    goto exit;
-  }
+    status = KeyOperatorSSTap (NULL, NULL, MOC_ASYM_OP_SERIALIZE, &inputInfo, &outputInfo, NULL);
 #endif
+  }
+  else
   {
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__)
     status = idCallback(pId, idLen, pInnerKey, innerKeyLen, NULL, &callbackIdLen);
     if (OK != status && ERR_BUFFER_TOO_SMALL != status)
       goto exit;
@@ -1198,14 +1214,8 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
     objInfo.idLen = callbackIdLen;
     objInfo.provider = ID_CALLBACK_PROVIDER;
     status = KeyOperatorId (NULL, NULL, MOC_ASYM_OP_SERIALIZE, &inputInfo, &outputInfo, NULL);
+#endif
   }
-#if defined(__ENABLE_DIGICERT_TAP__)
-  else
-#endif
-#endif
-#if defined(__ENABLE_DIGICERT_TAP__)
-  status = KeyOperatorSSTap (NULL, NULL, MOC_ASYM_OP_SERIALIZE, &inputInfo, &outputInfo, NULL);
-#endif
   if (OK != status)
     goto exit;
 
