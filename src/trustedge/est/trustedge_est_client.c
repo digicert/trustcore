@@ -1575,6 +1575,10 @@ exit_nanoroot_gen:
                     }
                     else
                     {
+#ifdef __ENABLE_DIGICERT_ID_CALLBACK__
+                        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(gHwAccelCtx) &asymKey,
+                            privateKeyPem, NULL, 0, 0, FALSE, &pSerializedPemKey, &serializedPemKeyLen);
+#else
 #ifdef __ENABLE_DIGICERT_TEE__
                         if (pEstArgs->useTEE)
                         {
@@ -1589,6 +1593,7 @@ exit_nanoroot_gen:
                                 &asymKey, privateKeyPem, &pSerializedPemKey,
                                 &serializedPemKeyLen);
                         }
+#endif /* else leg of __ENABLE_DIGICERT_ID_CALLBACK__ */
                     }
                     if (OK != status)
                     {

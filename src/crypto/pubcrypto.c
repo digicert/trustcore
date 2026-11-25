@@ -1126,7 +1126,7 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
     .dataToReturn = {0}
   };
 
-  if (NULL == pKeyToSerialize || NULL == pId || NULL == ppSerializedKey || NULL == pSerializedKeyLen)
+  if (NULL == pKeyToSerialize || NULL == ppSerializedKey || NULL == pSerializedKeyLen)
     goto exit;
 
   status = ERR_INVALID_ARG;
@@ -1135,7 +1135,13 @@ extern MSTATUS CRYPTO_serializeAsymKeyToStorage(
 
   if (isTap)
   {
-#if !defined(__ENABLE_DIGICERT_TAP__)
+#if defined(__ENABLE_DIGICERT_TAP__)
+    if (NULL == pId || !idLen)
+    {
+      status = ERR_NULL_POINTER;
+      goto exit;
+    }
+#else 
     status = ERR_NOT_IMPLEMENTED;
     goto exit;
 #endif
