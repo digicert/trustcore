@@ -1529,7 +1529,8 @@ exit_nanoroot_gen:
                     }
 
                     /* Only write out Mocana key blob if the caller does not want
-                     * a password protected key file (and we are not TEE)*/
+                     * a password protected key file (and we are not TEE nor ID CALLBACK)*/
+#ifndef __ENABLE_DIGICERT_ID_CALLBACK__
 #ifdef __ENABLE_DIGICERT_TEE__
                     if (NULL == pEstArgs->pPkcs8Pw && !pEstArgs->useTEE)
 #else
@@ -1545,6 +1546,7 @@ exit_nanoroot_gen:
                             goto exit;
                         }
                     }
+#endif /* __ENABLE_DIGICERT_ID_CALLBACK__ */
                     /* Convert pem key to keyblob and write to the keystore. */
 
                     if (OK > (status = CRYPTO_initAsymmetricKey (&asymKey)))
@@ -1778,7 +1780,8 @@ exit_nanoroot_pem:
                         goto exit_pem;
                     }
 
-                    /* Only write out key blob if file is not password protected (and not TEE nor NanoRoot) */
+                    /* Only write out key blob if file is not password protected (and not TEE nor NanoRoot nor CALLBACK ID) */
+#ifndef __ENABLE_DIGICERT_ID_CALLBACK__
 #ifdef __ENABLE_DIGICERT_TEE__
                     if (NULL == pEstArgs->pPkcs8Pw && !pEstArgs->useTEE)
 #else
@@ -1794,6 +1797,7 @@ exit_nanoroot_pem:
                             goto exit_pem;
                         }
                     }
+#endif /* __ENABLE_DIGICERT_ID_CALLBACK__ */
 exit_pem:
                     (void) CRYPTO_uninitAsymmetricKey(&asymKey, NULL);
 
