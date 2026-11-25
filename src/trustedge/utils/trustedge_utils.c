@@ -1901,7 +1901,7 @@ extern MSTATUS TRUSTEDGE_utilsWriteKeyAndCert(
                 goto exit;
             }
             status = CRYPTO_serializeAsymKeyToStorage( pKey,
-                privateKeyPem, pTapAttributes->pKeyHandle->pBuffer, pTapAttributes->pKeyHandle->bufferLen, TEE_SECURE_STORAGE, FALSE,
+                privateKeyPem, pTapAttributes->pKeyHandle->pBuffer, pTapAttributes->pKeyHandle->bufferLen, TEE_SECURE_STORAGE, TRUE,
                 &pOutKey, &outKeyLen);
             if (OK != status)
             {
