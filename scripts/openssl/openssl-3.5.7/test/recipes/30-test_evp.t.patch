@@ -1,0 +1,284 @@
+31a32
+> my $no_gost = disabled("gost");
+36a38,40
+> my $test_moc_ossl = !disabled("moc-ossl-v3-test");
+> my $export = ($ENV{EXPORT} // 0);
+> my $fips = ($ENV{FIPS} // 0);
+39a44,47
+> if ($test_moc_ossl)
+> {
+>     $defaultcnf = $no_legacy ? 'digi-and-default.cnf' : 'digi-and-default-and-legacy.cnf';
+> }
+47,51d54
+<                 evpciph_aes_ccm_cavs.txt
+<                 evpciph_aes_common.txt
+<                 evpciph_aes_cts.txt
+<                 evpciph_aes_wrap.txt
+<                 evpciph_aes_stitched.txt
+54,57d56
+<                 evpkdf_kbkdf_counter.txt
+<                 evpkdf_kbkdf_kmac.txt
+<                 evpkdf_pbkdf1.txt
+<                 evpkdf_pbkdf2.txt
+63,66d61
+<                 evpkdf_x963.txt
+<                 evpmac_common.txt
+<                 evpmd_sha.txt
+<                 evppbe_pbkdf2.txt
+68,72d62
+<                 evppkey_rsa.txt
+<                 evppkey_rsa_common.txt
+<                 evppkey_rsa_kem.txt
+<                 evppkey_rsa_sigalg.txt
+<                 evprand.txt
+73a64,135
+> # Disabled tests:
+> # evpkdf_kbkdf_counter.txt
+> # evpkdf_kbkdf_kmac.txt
+> # evppkey_rsa_kem.txt
+> # evppkey_rsa_sigalg.txt
+> # Files different between export, fips, and normal
+> if ($export)
+> {
+>     push @files, qw(
+>                     evpciph_aes_common_export.txt
+>                 );
+> }
+> elsif ($fips)
+> {
+>     push @files, qw(
+>                     evpciph_aes_common_fips.txt
+>                 );
+> }
+> else
+> {
+>     push @files, qw(
+>                     evpciph_aes_common.txt
+>                 );
+> }
+> 
+> # Files different only in FIPS
+> if ($fips)
+> {
+>     push @files, qw(
+>                     evppbe_pbkdf2_fips.txt
+>                     evpkdf_pbkdf2_fips.txt
+>                 );
+>     push @files, qw(
+>                 evppkey_dh_fips.txt
+>                ) unless $no_dh;
+> }
+> else
+> {
+>     push @files, qw(
+>                     evppbe_pbkdf2.txt
+>                     evpkdf_pbkdf2.txt
+>                 );
+>     push @files, qw(
+>                 evppkey_dh.txt
+>                ) unless $no_dh;
+> }
+> 
+> # Files different only in export
+> if ($export)
+> {
+>     push @files, qw(
+>                     evpmac_common_export.txt
+>                     evpmd_sha_export.txt
+>                     evppkey_rsa_common_export.txt
+>                     evprand_export.txt
+>                 );
+> }
+> else
+> {
+>     push @files, qw(
+>                     evpmac_common.txt
+>                     evpmd_sha.txt
+>                     evppkey_rsa_common.txt
+>                     evpciph_aes_ccm_cavs.txt
+>                     evpciph_aes_wrap.txt
+>                     evpkdf_x963.txt
+>                     evpkdf_pbkdf1.txt
+>                     evprand.txt
+>                 );
+>     push @files, qw(evppkey_dsa.txt) unless $no_dsa;
+> }
+> 
+76d137
+<                 evppkey_dh.txt
+80d140
+<                 evpmac_cmac_des.txt
+82,126c142,201
+< push @files, qw(
+<                 evppkey_slh_dsa_siggen.txt
+<                 evppkey_slh_dsa_sigver.txt
+<                ) unless $no_slh_dsa;
+< push @files, qw(
+<                 evppkey_dsa.txt
+<                 evppkey_dsa_sigalg.txt
+<                ) unless $no_dsa;
+< push @files, qw(
+<                 evppkey_ecx.txt
+<                 evppkey_ecx_sigalg.txt
+<                 evppkey_mismatch_ecx.txt
+<                ) unless $no_ecx;
+< push @files, qw(
+<                 evppkey_ecc.txt
+<                 evppkey_ecdh.txt
+<                 evppkey_ecdsa.txt
+<                 evppkey_ecdsa_sigalg.txt
+<                 evppkey_kas.txt
+<                 evppkey_mismatch.txt
+<                ) unless $no_ec;
+< push @files, qw(
+<                 evppkey_ml_dsa_keygen.txt
+<                 evppkey_ml_dsa_siggen.txt
+<                 evppkey_ml_dsa_sigver.txt
+<                 evppkey_ml_dsa_44_wycheproof_sign.txt
+<                 evppkey_ml_dsa_44_wycheproof_verify.txt
+<                 evppkey_ml_dsa_65_wycheproof_sign.txt
+<                 evppkey_ml_dsa_65_wycheproof_verify.txt
+<                 evppkey_ml_dsa_87_wycheproof_sign.txt
+<                 evppkey_ml_dsa_87_wycheproof_verify.txt
+<                ) unless $no_ml_dsa;
+< push @files, qw(
+<                 evppkey_ml_kem_512_keygen.txt
+<                 evppkey_ml_kem_512_encap.txt
+<                 evppkey_ml_kem_512_decap.txt
+<                 evppkey_ml_kem_768_keygen.txt
+<                 evppkey_ml_kem_768_encap.txt
+<                 evppkey_ml_kem_768_decap.txt
+<                 evppkey_ml_kem_1024_keygen.txt
+<                 evppkey_ml_kem_1024_encap.txt
+<                 evppkey_ml_kem_1024_decap.txt
+<                 evppkey_ml_kem_keygen.txt
+<                 evppkey_ml_kem_encap_decap.txt
+<                ) unless $no_ml_kem;
+---
+> # push @files, qw(
+> #                 evppkey_slh_dsa_siggen.txt
+> #                 evppkey_slh_dsa_sigver.txt
+> #                ) unless $no_slh_dsa;
+> 
+> # Disabled tests:
+> # evppkey_dsa_sigalg.txt
+> 
+> if ($export)
+> {
+>     push @files, qw(
+>                     evppkey_ecc.txt
+>                     evppkey_ecdh.txt
+>                     evppkey_ecdsa_export.txt
+>                     evppkey_kas.txt
+>                     evppkey_mismatch.txt
+>                 ) unless $no_ec || $no_gost;
+> }
+> else
+> {
+>     push @files, qw(evppkey_ecx.txt) unless $no_ec;
+>     push @files, qw(
+>                     evppkey_ecc.txt
+>                     evppkey_ecdh.txt
+>                     evppkey_ecdsa.txt
+>                     evppkey_kas.txt
+>                     evppkey_mismatch.txt
+>                 ) unless $no_ec || $no_gost;
+> }
+> 
+> # Disabled tests:
+> # evppkey_ecx_sigalg.txt
+> # evppkey_mismatch_ecx.txt
+> 
+> # Disabled tests:
+> # evppkey_ecdsa_sigalg.txt
+> # push @files, qw(
+> #                 evppkey_ml_dsa_keygen.txt
+> #                 evppkey_ml_dsa_siggen.txt
+> #                 evppkey_ml_dsa_sigver.txt
+> #                 evppkey_ml_dsa_44_wycheproof_sign.txt
+> #                 evppkey_ml_dsa_44_wycheproof_verify.txt
+> #                 evppkey_ml_dsa_65_wycheproof_sign.txt
+> #                 evppkey_ml_dsa_65_wycheproof_verify.txt
+> #                 evppkey_ml_dsa_87_wycheproof_sign.txt
+> #                 evppkey_ml_dsa_87_wycheproof_verify.txt
+> #                ) unless $no_ml_dsa;
+> # push @files, qw(
+> #                 evppkey_ml_kem_512_keygen.txt
+> #                 evppkey_ml_kem_512_encap.txt
+> #                 evppkey_ml_kem_512_decap.txt
+> #                 evppkey_ml_kem_768_keygen.txt
+> #                 evppkey_ml_kem_768_encap.txt
+> #                 evppkey_ml_kem_768_decap.txt
+> #                 evppkey_ml_kem_1024_keygen.txt
+> #                 evppkey_ml_kem_1024_encap.txt
+> #                 evppkey_ml_kem_1024_decap.txt
+> #                 evppkey_ml_kem_keygen.txt
+> #                 evppkey_ml_kem_encap_decap.txt
+> #                ) unless $no_ml_kem;
+143d217
+<                      evpciph_rc5.txt
+148d221
+<                      evpkdf_scrypt.txt
+150,151d222
+<                      evpkdf_hmac_drbg.txt
+<                      evpmac_blake.txt
+154,155d224
+<                      evpmac_sm3.txt
+<                      evpmd_blake.txt
+159d227
+<                      evpmd_sm3.txt
+161d228
+<                      evppbe_scrypt.txt
+163d229
+<                      evppkey_kdf_scrypt.txt
+166,173c232,272
+< push @defltfiles, qw(evppkey_brainpool.txt) unless $no_ec;
+< push @defltfiles, qw(evppkey_ecdsa_rfc6979.txt) unless $no_ec;
+< push @defltfiles, qw(evppkey_ecx_kem.txt) unless $no_ecx;
+< push @defltfiles, qw(evppkey_dsa_rfc6979.txt) unless $no_dsa;
+< push @defltfiles, qw(evppkey_sm2.txt) unless $no_sm2;
+< push @defltfiles, qw(evpciph_aes_gcm_siv.txt) unless $no_siv;
+< push @defltfiles, qw(evpciph_aes_siv.txt) unless $no_siv;
+< push @defltfiles, qw(evpkdf_argon2.txt) unless $no_argon2;
+---
+> # Disabled tests:
+> # evpkdf_hmac_drbg.txt
+> #push @defltfiles, qw(evppkey_ecdsa_rfc6979.txt) unless $no_ec;
+> #push @defltfiles, qw(evppkey_ecx_kem.txt) unless $no_ecx;
+> #push @defltfiles, qw(evppkey_dsa_rfc6979.txt) unless $no_dsa;
+> #push @defltfiles, qw(evpkdf_argon2.txt) unless $no_argon2;
+> 
+> if ($fips)
+> {
+>     push @defltfiles, qw(
+>                     evppkey_kdf_scrypt_fips.txt
+>                     evppbe_scrypt_fips.txt
+>                     evpkdf_scrypt_fips.txt
+>                 );
+> }
+> else
+> {
+>     push @defltfiles, qw(
+>                     evppkey_kdf_scrypt.txt
+>                     evppbe_scrypt.txt
+>                     evpkdf_scrypt.txt
+>                 );
+> }
+> 
+> if ($export)
+> {
+>     push @defltfiles, qw(
+>                     evppkey_rsa_export.txt
+>                     evpmd_sm3_export.txt
+>                 );
+> }
+> else
+> {
+>     push @defltfiles, qw(
+>                     evpmac_blake.txt
+>                     evpmd_blake.txt
+>                     evppkey_rsa.txt
+>                     evpciph_rc5.txt
+>                     evpmd_sm3.txt
+>                 );
+> }

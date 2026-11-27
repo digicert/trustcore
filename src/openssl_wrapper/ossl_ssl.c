@@ -615,7 +615,9 @@ OPENSSL_GLOBAL const SSL_CIPHER ssl2_ciphers[] = {
 
 #define SSL3_NUM_CIPHERS        (sizeof(ssl3_ciphers)/sizeof(SSL_CIPHER))
 
-# define OSSL_NELEM(x)    (sizeof(x)/sizeof((x)[0]))
+# ifndef OSSL_NELEM
+#  define OSSL_NELEM(x)    (sizeof(x)/sizeof((x)[0]))
+# endif
 /* list of available SSLv3 ciphers (sorted by id) */
 #if defined(__ENABLE_DIGICERT_OPENSSL_LIB_1_1_1C__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_0__) || defined(__ENABLE_DIGICERT_OPENSSL_LIB_3_5__)
 static SSL_CIPHER ssl3_ciphers[] = {

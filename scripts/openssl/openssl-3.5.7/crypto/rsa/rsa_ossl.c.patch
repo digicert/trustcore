@@ -1,0 +1,10 @@
+83a84,90
+> #ifdef __ENABLE_DIGICERT_OSSL_FORCE_METH_BIND__
+> const RSA_METHOD *DIGI_RSA_get_default_method(void);
+> const RSA_METHOD *RSA_get_default_method(void)
+> {
+>     return DIGI_RSA_get_default_method();
+> }
+> #else
+87a95
+> #endif

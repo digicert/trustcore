@@ -17,7 +17,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        openssl_version: ["3.0.7", "3.0.12", "3.5.0"]
+        openssl_version: ["3.0.7", "3.0.12", "3.5.0", "3.5.7"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -41,8 +41,10 @@ jobs:
             ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_0_7 --ossl-digi-test
           elif [ "${{ matrix.openssl_version }}" = "3.0.12" ]; then
             ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_0_12 --ossl-digi-test
-          else
+          elif [ "${{ matrix.openssl_version }}" = "3.5.0" ]; then
             ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_5_0 --ossl-digi-test
+          elif [ "${{ matrix.openssl_version }}" = "3.5.7" ]; then
+            ./scripts/nanossl/openssl_connector_test/build_digiprov_test.sh --build-for-osi --openssl_3_5_7 --ossl-digi-test
           fi
 
       - name: Run digiprov_test
@@ -60,8 +62,10 @@ jobs:
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_7
           elif [ "${{ matrix.openssl_version }}" = "3.0.12" ]; then
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_0_12
-          else
+          elif [ "${{ matrix.openssl_version }}" = "3.5.0" ]; then
             ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_5_0
+          elif [ "${{ matrix.openssl_version }}" = "3.5.7" ]; then
+            ./scripts/nanossl/openssl_connector/build_openssl_connector_tap_local.sh --build-for-osi --openssl_3_5_7
           fi
 
       - name: Run OpenSSL Crypto Tests
@@ -76,16 +80,16 @@ jobs:
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_server --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_server_cert certs/rsa_cert.pem --ssl_server_keyblob keys/rsa_key.pem &
           sleep 2
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/lib ./openssl_client_local --ssl_certpath $GITHUB_WORKSPACE/keystore --ssl_ca_cert ca/rsa_ca.pem --ssl_servername rsa-test
-          
+
       - name: Get Slack User ID
         if: always()
         id: slack_map
         run: |
           GITHUB_USER="${{ github.actor }}"
           SLACK_USER_MAP='${{ vars.SLACK_USER_MAP_JSON }}'
-          
+
           SLACK_USER_ID=$(echo "$SLACK_USER_MAP" | jq -r --arg user "$GITHUB_USER" '.[$user] // ""')
-          
+
           echo "GitHub User: $GITHUB_USER"
           echo "slack_user_id=$SLACK_USER_ID" >> $GITHUB_OUTPUT
 
@@ -102,5 +106,5 @@ jobs:
             MESSAGE="OpenSSL Connector UnitTest failed on branch \`${GITHUB_REF_NAME}\`\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           else
             MESSAGE="OpenSSL Connector UnitTest failed on branch \`${GITHUB_REF_NAME}\`\nTriggered by: ${MENTION}\nRun: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          fi  
+          fi
           curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${MESSAGE}\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

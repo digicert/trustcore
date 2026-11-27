@@ -112,6 +112,7 @@ if "%~1"=="--srtp" echo Building with srtp dtls...& set BUILD_OPTIONS=%BUILD_OPT
 if "%~1"=="--openssl_3_0_7" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_SSL_OPENSSL_LIB_3_0_7=ON& goto next
 if "%~1"=="--openssl_3_0_12" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_SSL_OPENSSL_LIB_3_0_12=ON& goto next
 if "%~1"=="--openssl_3_5_0" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_SSL_OPENSSL_LIB_3_5_0=ON& goto next
+if "%~1"=="--openssl_3_5_7" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_SSL_OPENSSL_LIB_3_5_7=ON& goto next
 if "%~1"=="--openssl_1_1_1" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_SSL_OPENSSL_LIB_1_1_1=ON& goto next
 if "%~1"=="--openssl_1_1_1i" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_SSL_OPENSSL_LIB_1_1_1I=ON& goto next
 if "%~1"=="--openssl_1_1_1k" set BUILD_OPTIONS=%BUILD_OPTIONS% -DCM_ENABLE_SSL_OPENSSL_LIB_1_1_1K=ON& goto next
@@ -408,6 +409,7 @@ goto:EOF
   echo "   --openssl_3_0_7   - Build with openssl 3_0_7."
   echo "   --openssl_3_0_12  - Build with openssl 3_0_12."
   echo "   --openssl_3_5_0   - Build with openssl 3_5_0."
+  echo "   --openssl_3_5_7   - Build with openssl 3_5_7."
   echo "   --openssl_load_algos - Build option to load all algorithms."
   echo "   --osslc_thread_safe - Build with thread safe handling for OpenSSL connector client."
   echo "   --extended-key    - Enable extended key usage."

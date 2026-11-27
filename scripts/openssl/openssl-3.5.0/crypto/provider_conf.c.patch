@@ -9,7 +9,7 @@
 >         if (ok && ((0 == strcmp(name, "default")) || (0 == strcmp(name, "legacy")))) {
 >             if (!prov_already_activated("digi", pcgbl->activated_providers)) {
 >                 digiprov = OSSL_PROVIDER_try_load(libctx, "digi", 0);
->                 if (!digiprov) {
+>                 if (digiprov != NULL) {
 >                     if (pcgbl->activated_providers == NULL
 >                         || !sk_OSSL_PROVIDER_push(pcgbl->activated_providers,
 >                                                 digiprov)) {

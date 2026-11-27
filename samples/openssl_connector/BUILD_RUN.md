@@ -24,6 +24,10 @@ The build process downloads OpenSSL source, applies patches, and compiles the co
      ```bash
      wget https://github.com/openssl/openssl/releases/download/openssl-3.5.0/openssl-3.5.0.tar.gz
      ```
+    - For OpenSSL 3.5.7:
+     ```bash
+     wget https://github.com/openssl/openssl/releases/download/openssl-3.5.7/openssl-3.5.7.tar.gz
+     ```
    - For OpenSSL 1.1.1i:
      ```bash
      wget https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1i/openssl-1.1.1i.tar.gz
@@ -56,7 +60,7 @@ The build process downloads OpenSSL source, applies patches, and compiles the co
    ./scripts/nanossl/openssl_connector/build_openssl_connector_cap.sh --openssl_3_5_0
    ```
 
-**Note:** For other supported versions (3.0.7, 3.0.12 or 1.1.1i), download the corresponding tar.gz, extract it, apply the patch with the version name (e.g., `./apply-patch.sh openssl-3.0.12`), and build with the matching flag (e.g., `--openssl_3_0_12`).
+**Note:** For other supported versions (3.5.7, 3.0.7, 3.0.12 or 1.1.1i), download the corresponding tar.gz, extract it, apply the patch with the version name (e.g., `./apply-patch.sh openssl-3.0.12`), and build with the matching flag (e.g., `--openssl_3_0_12`).
 
 ## Common Setup for OpenSSL s_server/s_client
 
@@ -177,6 +181,7 @@ OpenSSL's own `test_evp` suite against it.
    cd scripts/nanossl/openssl_connector/
    ./build_openssl_connector_cap.sh --openssl_3_5_0
    ```
+   For OpenSSL 3.5.7, use `--openssl_3_5_7` and `thirdparty/openssl-3.5.7` below.
 
 2. **Navigate to the OpenSSL 3.5.0 directory:**
    ```bash

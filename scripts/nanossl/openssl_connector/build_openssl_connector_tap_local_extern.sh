@@ -32,6 +32,7 @@ function show_usage
   echo "   --openssl_3_0_7   - Build with openssl 3.0.7."
   echo "   --openssl_3_0_12  - Build with openssl 3.0.12."
   echo "   --openssl_3_5_0   - Build with openssl 3.5.0."
+  echo "   --openssl_3_5_7   - Build with openssl 3.5.7."
   echo "   --enable_extended_master_secret - Build with support for Extended Master Secret"
   echo "   --rsa1024         - Build with RSA 1024 support."
   echo "   --rsa_8k          - Build with RSA 8K support."
@@ -58,6 +59,7 @@ TAP_HYBRID_SIGN_OPTION=""
 OPENSSL_OPTION="--openssl_3_0_12"
 OPENSSL_VER="3.0.12"
 OPENSSL_LIB_OPTION="openssl-3.0.12"
+OPENSSL_FAMILY=""
 SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
 OSSL_VER="3"
 OPENSSL_GDB_OPTIONS=""
@@ -207,6 +209,17 @@ do
             OPENSSL_LIB_OPTION="openssl-3.5.0"
             OPENSSL_ENGINE_TYPE=
             OPENSSL_VER="3.5.0"
+            OPENSSL_FAMILY="3.5"
+            SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
+            OSSL_VER="3"
+            ;;
+        --openssl_3_5_7)
+            echo "Build with openssl 3.5.7..."
+            OPENSSL_OPTION=" $1"
+            OPENSSL_LIB_OPTION="openssl-3.5.7"
+            OPENSSL_ENGINE_TYPE=
+            OPENSSL_VER="3.5.7"
+            OPENSSL_FAMILY="3.5"
             SAMPLE_CRYPTOINTERFACE_OPTION="cryptointerface=true"
             OSSL_VER="3"
             ;;
@@ -325,13 +338,13 @@ do
 
     if [ "$pass" == "second" ]; then
         cd ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}
-        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]; then
+        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_FAMILY" == "3.5" ]]; then
             ./Configure enable-rc5 $STRICT_DH_OPTION_OSSL3 enable-mocana-cryptointerface enable-mocana-tap ${FIPS_MAKE30_OPTION} ${OPENSSL_GDB_OPTIONS} ${OSSL_PQC_OPTION}
         else
             ./config $OPENSSL_GDB_OPTIONS $OPENSSL_ENGINE_TYPE
         fi
         make clean
-        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
+        if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_FAMILY" == "3.5" ]]
         then
             make build_libs
             cp ${MSS_DIR}/thirdparty/${OPENSSL_LIB_OPTION}/libcrypto.so* ${MSS_DIR}/${BIN_DIR}
@@ -360,7 +373,7 @@ do
 
 done
 
-if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_VER" == "3.5.0" ]]
+if [[ "$OPENSSL_VER" == "3.0.7" ]] || [[ "$OPENSSL_VER" == "3.0.12" ]] || [[ "$OPENSSL_FAMILY" == "3.5" ]]
 then
     cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so
     cd ${MSS_DIR}/${BIN_DIR} && ln -sf libopenssl_shim.so libssl.so.3
