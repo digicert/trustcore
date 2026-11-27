@@ -4501,7 +4501,7 @@ EST_EXAMPLE_loadCertsAndKeysIntoCertStore(ubyte *pKeyAlias, ubyte4 keyAliasLen, 
                     if (useTEE)
                     {
                         status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(gHwAccelCtx) &asymKey,
-                            privateKeyPem, estc_tapKeyHandle.pBuffer, estc_tapKeyHandle.bufferLen, TEE_SECURE_STORAGE,
+                            privateKeyPem, estc_tapKeyHandle.pBuffer, estc_tapKeyHandle.bufferLen, TEE_SECURE_STORAGE, TRUE,
                             &pSerializedPemKey, &serializedPemKeyLen);
                     }
                     else

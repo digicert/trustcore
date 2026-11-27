@@ -208,7 +208,7 @@ static int serialize_test(void)
         goto exit;
     }
 
-    status = CRYPTO_serializeAsymKeyToStorage (&asymKey, privateKeyPem, (ubyte *) pId, idLen, TEE_SECURE_STORAGE, &pPem, &pemLen);
+    status = CRYPTO_serializeAsymKeyToStorage (&asymKey, privateKeyPem, (ubyte *) pId, idLen, TEE_SECURE_STORAGE, TRUE, &pPem, &pemLen);
     if (OK != status)
     {
         printf("ERROR: line = %d, status = %d\n", __LINE__, status);
@@ -216,7 +216,7 @@ static int serialize_test(void)
     }
 
     /* use a different ID to test calling the API to give back DER */
-    status = CRYPTO_serializeAsymKeyToStorage (&asymKey, privateKeyInfoDer, (ubyte *) pId2, idLen, TEE_SECURE_STORAGE, &pDer, &derLen);
+    status = CRYPTO_serializeAsymKeyToStorage (&asymKey, privateKeyInfoDer, (ubyte *) pId2, idLen, TEE_SECURE_STORAGE, TRUE, &pDer, &derLen);
     if (OK != status)
     {
         printf("ERROR: line = %d, status = %d\n", __LINE__, status);

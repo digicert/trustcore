@@ -40,12 +40,103 @@
 #include "../../crypto/primefld.h"
 #include "../../crypto/primeec.h"
 #include "../../crypto/pubcrypto.h"
+#include "../../crypto/mocasym.h"
 #include "../../crypto/keyblob.h"
 #include "../../crypto/ca_mgmt.h"
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+#include "../../crypto_interface/cryptointerface.h"
+#endif
 
 #include "../../../unit_tests/unittest.h"
 
-int pubcrypto_sw_serializeOutRSA(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext* rc)
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__) && defined(__ENABLE_DIGICERT_ASYM_KEY__) && \
+    defined(__ENABLE_DIGICERT_SERIALIZE__)
+static int pubcrypto_testFailStoreId(
+    ubyte *pInId, ubyte4 inIdLen, ubyte *pKeyBuffer, ubyte4 keyBufferLen,
+    ubyte *pOutId, ubyte4 *pOutIdLen)
+{
+    return ERR_NOT_IMPLEMENTED;
+}
+
+static ubyte *pTestStoredKey = NULL;
+static ubyte4 testStoredKeyLen = 0;
+static int testSerializeError = 0;
+static int testSerializeCalls = 0;
+static int testDeserializeError = 0;
+static int testDeserializeCalls = 0;
+static ubyte testOutputId[] = {4, 5, 6, 7};
+
+static int pubcrypto_testStoreId(
+    ubyte *pInId, ubyte4 inIdLen, ubyte *pKeyBuffer, ubyte4 keyBufferLen,
+    ubyte *pOutId, ubyte4 *pOutIdLen)
+{
+    MSTATUS status;
+    ++testSerializeCalls;
+    if (3 != inIdLen || 1 != pInId[0] || 2 != pInId[1] || 3 != pInId[2])
+        return ERR_INVALID_INPUT;
+    if (NULL == pOutId || *pOutIdLen < sizeof(testOutputId))
+    {
+        *pOutIdLen = sizeof(testOutputId);
+        return ERR_BUFFER_TOO_SMALL;
+    }
+
+    if (1 == testSerializeError)
+        return ERR_NOT_IMPLEMENTED;
+    if (2 == testSerializeError)
+    {
+        *pOutIdLen += 1;
+        return OK;
+    }
+    if (NULL != pTestStoredKey)
+        return ERR_INVALID_INPUT;
+    status = DIGI_MALLOC_MEMCPY((void **) &pTestStoredKey, keyBufferLen,
+                                pKeyBuffer, keyBufferLen);
+    if (OK != status)
+        return status;
+    testStoredKeyLen = keyBufferLen;
+    status = DIGI_MEMCPY(pOutId, testOutputId, sizeof(testOutputId));
+    *pOutIdLen = sizeof(testOutputId);
+    return status;
+}
+
+#if defined(__ENABLE_DIGICERT_TAP__) && defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+static int testTapCalls = 0;
+static MSTATUS pubcrypto_testTapContext(
+    TAP_Context **ppTapCtx, TAP_EntityCredentialList **ppTapEntityCred,
+    TAP_CredentialList **ppTapKeyCred, void *pKey, TapOperation op, ubyte getContext)
+{
+    ++testTapCalls;
+    return ERR_BAD_KEY_TYPE;
+}
+#endif
+
+static int pubcrypto_testIdCallback(
+    ubyte *pId, ubyte4 idLen, ubyte *pKeyBufferOut, ubyte4 *pKeyBufferOutLen)
+{
+    sbyte4 cmp = 0;
+    ++testDeserializeCalls;
+    if (1 == testDeserializeError || (2 == testDeserializeError && NULL != pKeyBufferOut))
+        return ERR_NOT_IMPLEMENTED;
+    if (idLen != sizeof(testOutputId) || NULL == pTestStoredKey)
+        return ERR_INVALID_INPUT;
+    if (OK != DIGI_MEMCMP(pId, testOutputId, idLen, &cmp) || 0 != cmp)
+        return ERR_INVALID_INPUT;
+    if (NULL == pKeyBufferOut || *pKeyBufferOutLen < testStoredKeyLen)
+    {
+        *pKeyBufferOutLen = testStoredKeyLen;
+        return ERR_BUFFER_TOO_SMALL;
+    }
+    if (3 == testDeserializeError)
+    {
+        *pKeyBufferOutLen += 1;
+        return OK;
+    }
+    *pKeyBufferOutLen = testStoredKeyLen;
+    return DIGI_MEMCPY(pKeyBufferOut, pTestStoredKey, testStoredKeyLen);
+}
+#endif
+
+int pubcrypto_sw_serializeOutRSA(hwAccelDescr hwAccelCtx, randomContext* rc)
 {
     MSTATUS status;
     int retVal = 0;
@@ -78,6 +169,193 @@ int pubcrypto_sw_serializeOutRSA(MOC_RSA(hwAccelDescr hwAccelCtx) randomContext*
         retVal += UNITTEST_STATUS( 0, status);
         goto exit;
     }
+
+#if defined(__ENABLE_DIGICERT_TAP__) && !defined(__ENABLE_DIGICERT_ID_CALLBACK__) && \
+    defined(__ENABLE_DIGICERT_ASYM_KEY__) && defined(__ENABLE_DIGICERT_SERIALIZE__)
+    {
+        ubyte id[] = {1, 2, 3};
+        ubyte *pStoredKey = NULL;
+        ubyte4 storedKeyLen = 0;
+        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+            &key, privateKeyInfoDer, id, sizeof(id), 0, FALSE, &pStoredKey, &storedKeyLen);
+        retVal += UNITTEST_INT(0, status, ERR_NOT_IMPLEMENTED);
+        if (NULL != pStoredKey)
+            DIGI_MEMSET_FREE(&pStoredKey, storedKeyLen);
+    }
+#endif
+
+#if defined(__ENABLE_DIGICERT_ID_CALLBACK__) && defined(__ENABLE_DIGICERT_ASYM_KEY__) && \
+    defined(__ENABLE_DIGICERT_SERIALIZE__)
+    {
+        IdSerializationCallback oldCallback = CRYPTO_getIdSerializationCallback();
+        IdDeserializationCallback oldDeserializationCallback = CRYPTO_getIdDeserializationCallback();
+        serializedKeyFormat formats[] = {privateKeyInfoDer, privateKeyPem};
+        ubyte id[] = {1, 2, 3};
+        ubyte *pStoredKey = NULL;
+        ubyte4 storedKeyLen = 0;
+        ubyte *pRecoveredKey = NULL;
+        ubyte4 recoveredKeyLen = 0;
+        int previousCalls;
+        sbyte4 cmp;
+        ubyte4 i;
+
+        CRYPTO_setIdSerializationCallback(pubcrypto_testFailStoreId);
+        retVal += UNITTEST_TRUE(0, CRYPTO_getIdSerializationCallback() == pubcrypto_testFailStoreId);
+        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+            &key, privateKeyInfoDer, id, sizeof(id), 0, FALSE, &pStoredKey, &storedKeyLen);
+        retVal += UNITTEST_INT(0, status, ERR_NOT_IMPLEMENTED);
+        if (NULL != pStoredKey)
+            DIGI_MEMSET_FREE(&pStoredKey, storedKeyLen);
+        CRYPTO_setIdSerializationCallback(NULL);
+        retVal += UNITTEST_TRUE(0, NULL == CRYPTO_getIdSerializationCallback());
+        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+            &key, privateKeyInfoDer, id, sizeof(id), 0, FALSE, &pStoredKey, &storedKeyLen);
+        retVal += UNITTEST_INT(0, status, ERR_NOT_IMPLEMENTED);
+
+        CRYPTO_setIdSerializationCallback(pubcrypto_testStoreId);
+        CRYPTO_setIdDeserializationCallback(pubcrypto_testIdCallback);
+        retVal += UNITTEST_TRUE(0, CRYPTO_getIdDeserializationCallback() == pubcrypto_testIdCallback);
+        previousCalls = testSerializeCalls;
+#if !defined(__ENABLE_DIGICERT_TAP__)
+        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+            &key, privateKeyInfoDer, id, sizeof(id), 0, TRUE, &pStoredKey, &storedKeyLen);
+        retVal += UNITTEST_INT(0, status, ERR_NOT_IMPLEMENTED);
+        retVal += UNITTEST_INT(0, testSerializeCalls, previousCalls);
+#elif defined(__ENABLE_DIGICERT_CRYPTO_INTERFACE__)
+        {
+            pFuncPtrGetTapContext oldTapContext = g_pFuncPtrGetTapContext;
+            int previousTapCalls = testTapCalls;
+            g_pFuncPtrGetTapContext = pubcrypto_testTapContext;
+            status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+                &key, privateKeyInfoDer, id, sizeof(id), 0, TRUE, &pStoredKey, &storedKeyLen);
+            retVal += UNITTEST_INT(0, status, ERR_BAD_KEY_TYPE);
+            retVal += UNITTEST_INT(0, testTapCalls, previousTapCalls + 1);
+            retVal += UNITTEST_INT(0, testSerializeCalls, previousCalls);
+            CRYPTO_setIdSerializationCallback(NULL);
+            status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+                &key, privateKeyInfoDer, id, sizeof(id), 0, TRUE, &pStoredKey, &storedKeyLen);
+            CRYPTO_setIdSerializationCallback(pubcrypto_testStoreId);
+            g_pFuncPtrGetTapContext = oldTapContext;
+            retVal += UNITTEST_INT(0, status, ERR_BAD_KEY_TYPE);
+            retVal += UNITTEST_INT(0, testTapCalls, previousTapCalls + 2);
+        }
+#endif
+        testSerializeError = 1;
+        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+            &key, privateKeyInfoDer, id, sizeof(id), 0, FALSE, &pStoredKey, &storedKeyLen);
+        retVal += UNITTEST_INT(0, status, ERR_NOT_IMPLEMENTED);
+        testSerializeError = 2;
+        status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+            &key, privateKeyInfoDer, id, sizeof(id), 0, FALSE, &pStoredKey, &storedKeyLen);
+        retVal += UNITTEST_INT(0, status, ERR_INVALID_INPUT);
+        testSerializeError = 0;
+
+        for (i = 0; i < sizeof(formats) / sizeof(formats[0]); ++i)
+        {
+            status = CRYPTO_serializeAsymKeyToStorage(MOC_ASYM(hwAccelCtx)
+                &key, formats[i], id, sizeof(id), 0, FALSE, &pStoredKey, &storedKeyLen);
+            retVal += UNITTEST_INT(0, status, OK);
+            if (OK == status)
+            {
+                if (privateKeyInfoDer == formats[i])
+                {
+                    MKeyOperatorData idInput = {0};
+                    MKeyOperatorData wrongInput = {0};
+                    MKeyOperatorDataReturn wrongOutput = {0};
+                    MKeyObjectInfo idInfo = {0};
+                    ubyte *pWrongKey = NULL;
+                    ubyte4 wrongKeyLen = 0;
+                    int previousCalls = testDeserializeCalls;
+                    idInput.pData = pStoredKey;
+                    idInput.length = storedKeyLen;
+                    status = KeyOperatorId(NULL, NULL, MOC_ASYM_OP_GET_PARAMS,
+                                           &idInput, &idInfo, NULL);
+                    retVal += UNITTEST_INT(0, status, OK);
+                    if (OK == status)
+                        retVal += UNITTEST_TRUE(0, idInfo.provider == ID_CALLBACK_PROVIDER);
+
+                    idInfo.provider = ID_CALLBACK_PROVIDER ^ 1;
+                    wrongInput.pData = testOutputId;
+                    wrongInput.length = sizeof(testOutputId);
+                    wrongInput.pAdditionalOpInfo = &idInfo;
+                    wrongOutput.ppData = &pWrongKey;
+                    wrongOutput.pLength = &wrongKeyLen;
+                    status = KeyOperatorId(NULL, NULL, MOC_ASYM_OP_SERIALIZE,
+                                           &wrongInput, &wrongOutput, NULL);
+                    retVal += UNITTEST_INT(0, status, OK);
+                    if (OK == status)
+                    {
+                        status = CRYPTO_deserializeAsymKey(MOC_ASYM(hwAccelCtx)
+                            pWrongKey, wrongKeyLen, NULL, &outKey);
+                        retVal += UNITTEST_INT(0, status, ERR_INVALID_INPUT);
+                        retVal += UNITTEST_INT(0, testDeserializeCalls, previousCalls);
+                    }
+                    if (NULL != pWrongKey)
+                        DIGI_MEMSET_FREE(&pWrongKey, wrongKeyLen);
+                }
+                testDeserializeError = 1;
+                status = CRYPTO_deserializeAsymKey(MOC_ASYM(hwAccelCtx)
+                    pStoredKey, storedKeyLen, NULL, &outKey);
+                retVal += UNITTEST_INT(0, status, ERR_NOT_IMPLEMENTED);
+                testDeserializeError = 2;
+                status = CRYPTO_deserializeAsymKey(MOC_ASYM(hwAccelCtx)
+                    pStoredKey, storedKeyLen, NULL, &outKey);
+                retVal += UNITTEST_INT(0, status, ERR_NOT_IMPLEMENTED);
+                testDeserializeError = 3;
+                status = CRYPTO_deserializeAsymKey(MOC_ASYM(hwAccelCtx)
+                    pStoredKey, storedKeyLen, NULL, &outKey);
+                retVal += UNITTEST_INT(0, status, ERR_INVALID_INPUT);
+                testDeserializeError = 0;
+                previousCalls = testDeserializeCalls;
+                status = CRYPTO_deserializeAsymKey(MOC_ASYM(hwAccelCtx)
+                    pStoredKey, storedKeyLen, NULL, &outKey);
+                retVal += UNITTEST_INT(0, status, OK);
+                retVal += UNITTEST_INT(0, testDeserializeCalls, previousCalls + 2);
+                if (OK == status)
+                {
+                    retVal += UNITTEST_STATUS(0, CRYPTO_matchPublicKey(&key, &outKey));
+                    status = CRYPTO_serializeAsymKey(MOC_ASYM(hwAccelCtx)
+                        &outKey, privateKeyInfoDer, &pRecoveredKey, &recoveredKeyLen);
+                    retVal += UNITTEST_INT(0, status, OK);
+                    if (OK == status)
+                    {
+                        retVal += UNITTEST_INT(0, recoveredKeyLen, testStoredKeyLen);
+                        if (recoveredKeyLen == testStoredKeyLen)
+                        {
+                            status = DIGI_MEMCMP(
+                                pRecoveredKey, pTestStoredKey, recoveredKeyLen, &cmp);
+                            retVal += UNITTEST_STATUS(0, status);
+                            if (OK == status)
+                                retVal += UNITTEST_INT(0, cmp, 0);
+                        }
+                    }
+                    if (NULL != pRecoveredKey)
+                        DIGI_MEMSET_FREE(&pRecoveredKey, recoveredKeyLen);
+                }
+                CRYPTO_uninitAsymmetricKey(&outKey, NULL);
+                CRYPTO_initAsymmetricKey(&outKey);
+                previousCalls = testDeserializeCalls;
+                status = CRYPTO_deserializeAsymKey(MOC_ASYM(hwAccelCtx)
+                    pTestStoredKey, testStoredKeyLen, NULL, &outKey);
+                retVal += UNITTEST_INT(0, status, OK);
+                retVal += UNITTEST_INT(0, testDeserializeCalls, previousCalls);
+                if (OK == status)
+                    retVal += UNITTEST_STATUS(0, CRYPTO_matchPublicKey(&key, &outKey));
+                CRYPTO_uninitAsymmetricKey(&outKey, NULL);
+                CRYPTO_initAsymmetricKey(&outKey);
+            }
+            if (NULL != pStoredKey)
+                DIGI_MEMSET_FREE(&pStoredKey, storedKeyLen);
+            if (NULL != pTestStoredKey)
+                DIGI_MEMSET_FREE(&pTestStoredKey, testStoredKeyLen);
+            testStoredKeyLen = 0;
+        }
+        CRYPTO_setIdDeserializationCallback(NULL);
+        retVal += UNITTEST_TRUE(0, NULL == CRYPTO_getIdDeserializationCallback());
+        CRYPTO_setIdDeserializationCallback(oldDeserializationCallback);
+        CRYPTO_setIdSerializationCallback(oldCallback);
+    }
+#endif
 
     /* testing for KEYBLOB_makeKeyBlobEx */
     if(OK > (status = KEYBLOB_makeKeyBlobEx(&key, &buffer, &bufferLen)))
@@ -247,7 +525,7 @@ int pubcrypto_test_all()
     if (OK > (MSTATUS)(retVal = HARDWARE_ACCEL_OPEN_CHANNEL(MOCANA_SSL, &hwAccelCtx)))
         goto exit;
 
-    retVal += pubcrypto_sw_serializeOutRSA(MOC_RSA(hwAccelCtx) g_pRandomContext);
+    retVal += pubcrypto_sw_serializeOutRSA(hwAccelCtx, g_pRandomContext);
     retVal += pubcrypto_sw_serializeOutDSA(MOC_DSA(hwAccelCtx) g_pRandomContext);
     retVal += pubcrypto_sw_serializeOutECC(MOC_RSA(hwAccelCtx) g_pRandomContext);
 

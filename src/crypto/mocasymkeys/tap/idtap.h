@@ -31,29 +31,6 @@ extern "C" {
 
 #if defined(__ENABLE_DIGICERT_TAP__)
 
-/* first two methods are externed so Secure Storage TAP operator
-   can make use of them */
-MOC_EXTERN MSTATUS IdTapCreateAsn1(
-  ubyte4 provider,
-  ubyte4 moduleId,
-  ubyte4 tokenId,
-  ubyte *pOid,
-  ubyte4 oidLen,
-  ubyte *pId,
-  ubyte4 idLen,
-  ubyte **ppOut,
-  ubyte4 *pOutLen);
-
-MOC_EXTERN MSTATUS IdTapParseAsn1(
-  ubyte *pInput,
-  ubyte4 inputLen,
-  ubyte *pOid,
-  ubyte4 oidLen,
-  TAP_Buffer *pId,
-  ubyte4 *pTokenId,
-  ubyte4 *pProvider,
-  ubyte4 *pModule);
-
 MOC_EXTERN MSTATUS IdTapSerializeKey (
   MKeyOperatorData *pInput,
   MKeyOperatorDataReturn *pOutput

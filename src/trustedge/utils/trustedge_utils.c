@@ -1888,6 +1888,16 @@ extern MSTATUS TRUSTEDGE_utilsWriteKeyAndCert(
 
     if (NULL != pKey)
     {
+#ifdef __ENABLE_DIGICERT_ID_CALLBACK__
+        status = CRYPTO_serializeAsymKeyToStorage( pKey,
+            privateKeyPem, NULL, 0, 0, FALSE, &pOutKey, &outKeyLen);
+        if (OK != status)
+        {
+            MSG_LOG_print(MSG_LOG_ERROR, "%s line %d status: %d = %s\n",
+                __func__, __LINE__, status, MERROR_lookUpErrorCode(status));
+            goto exit;
+        }
+#else
 #ifdef __ENABLE_DIGICERT_TEE__
         if (NULL != pTapAttributes && TAP_PROVIDER_TEE == pTapAttributes->provider)
         {
@@ -1901,7 +1911,7 @@ extern MSTATUS TRUSTEDGE_utilsWriteKeyAndCert(
                 goto exit;
             }
             status = CRYPTO_serializeAsymKeyToStorage( pKey,
-                privateKeyPem, pTapAttributes->pKeyHandle->pBuffer, pTapAttributes->pKeyHandle->bufferLen, TEE_SECURE_STORAGE,
+                privateKeyPem, pTapAttributes->pKeyHandle->pBuffer, pTapAttributes->pKeyHandle->bufferLen, TEE_SECURE_STORAGE, TRUE,
                 &pOutKey, &outKeyLen);
             if (OK != status)
             {
@@ -1967,6 +1977,7 @@ extern MSTATUS TRUSTEDGE_utilsWriteKeyAndCert(
                 goto exit;
             }
         }
+#endif /* else leg of __ENABLE_DIGICERT_ID_CALLBACK__ */
     }
 
     status = COMMON_UTILS_addPathExtension(pBaseName, TRUSTEDGE_SUFFIX_PEM, &pFileName);

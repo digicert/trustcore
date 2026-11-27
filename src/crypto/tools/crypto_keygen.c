@@ -3224,7 +3224,7 @@ MOC_EXTERN MSTATUS KEYGEN_outputPrivKey(KeyGenArgs *pArgs, AsymmetricKey *pKey, 
 #ifdef __ENABLE_DIGICERT_TEE__
         if (pArgs->gTap)
         {
-            status = CRYPTO_serializeAsymKeyToStorage (pKey, privForm, pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE, &pPriv, &privLen);
+            status = CRYPTO_serializeAsymKeyToStorage (pKey, privForm, pArgs->tapKeyHandle.pBuffer, pArgs->tapKeyHandle.bufferLen, TEE_SECURE_STORAGE, TRUE, &pPriv, &privLen);
         }
         else
 #elif __ENABLE_DIGICERT_SMP_NANOROOT__
